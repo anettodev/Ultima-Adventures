@@ -43,10 +43,10 @@ namespace Server {
 		}
 #endif
 
-		private static int bufferSize = 1 * MB;
-		private static int concurrency = 1;
+		private static int bufferSize = 50 * MB;
+		private static int concurrency = 0;
 
-		private static bool unbuffered = true;
+		private static bool unbuffered = false;
 
 		public static int BufferSize {
 			get {

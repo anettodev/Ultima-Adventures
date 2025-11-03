@@ -35,7 +35,7 @@ namespace Server.Misc
 			//return @"C:\UOShard\Ultima-Adventures\Files";
 
 			//Linux (production VPS path)
-			return @"/opt/ultima-adventures/Files";
+			return @"/opt/Ultima-Adventures/Files";
 		}
 
 		public static bool AllowSaveFunction()
