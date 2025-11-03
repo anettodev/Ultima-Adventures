@@ -624,7 +624,19 @@ namespace Server.ACC.CM
             {
                 Console.WriteLine("An error was encountered while loading a Module of Type: {0}", failedType);
                 Console.WriteLine("Remove this type of Module? (y/n)");
-                if (Console.ReadLine() == "y")
+
+                string response = "";
+                try
+                {
+                    response = Console.ReadLine();
+                }
+                catch (System.IO.IOException)
+                {
+                    // No interactive terminal - cannot prompt user, will throw exception
+                    Console.WriteLine("No interactive console available - cannot prompt for module removal");
+                }
+
+                if (response == "y")
                 {
                     for (int i = 0; i < modules.Count; )
                     {
@@ -638,7 +650,14 @@ namespace Server.ACC.CM
                 }
 
                 Console.WriteLine("After pressing return an exception will be thrown and the server will terminate");
-                Console.ReadLine();
+                try
+                {
+                    Console.ReadLine();
+                }
+                catch (System.IO.IOException)
+                {
+                    // No interactive terminal - skip waiting for input
+                }
 
                 throw new Exception(String.Format("Load failed (type={0})", failedType), failed);
             }
