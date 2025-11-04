@@ -49,8 +49,18 @@ namespace Server.Misc
         {
             if (!paging)
             {
-                string input = Console.ReadLine();
-                Next(input);
+                try
+                {
+                    string input = Console.ReadLine();
+                    Next(input);
+                }
+                catch (IOException)
+                {
+                    // No interactive terminal available (running as service/daemon)
+                    // Stop trying to read console input
+                    Console.WriteLine("Console input not available - running in non-interactive mode");
+                    return;
+                }
             }
         }
         public static void PageResp(object obj)
@@ -63,15 +73,40 @@ namespace Server.Misc
             if (w == 1)
             {
             up:
-                try { paG = Convert.ToInt32(Console.ReadLine()); }
-                catch { Console.WriteLine("Thats not a number,try again."); goto up; }
+                try
+                {
+                    paG = Convert.ToInt32(Console.ReadLine());
+                }
+                catch (IOException)
+                {
+                    // No interactive terminal - exit paging mode
+                    Console.WriteLine("Console input not available - cannot process pages");
+                    paging = false;
+                    return;
+                }
+                catch
+                {
+                    Console.WriteLine("Thats not a number,try again.");
+                    goto up;
+                }
                 Console.WriteLine("Type your response");
                 object[] ob = new object[] { 2, paG };
                 ThreadPool.QueueUserWorkItem(new WaitCallback(PageResp), ob);
             }
             else
             {
-                string resp = Console.ReadLine();
+                string resp;
+                try
+                {
+                    resp = Console.ReadLine();
+                }
+                catch (IOException)
+                {
+                    // No interactive terminal - exit paging mode
+                    Console.WriteLine("Console input not available - cannot process pages");
+                    paging = false;
+                    return;
+                }
                 ArrayList list = PageQueue.List;
                 m_List = (PageEntry[])list.ToArray(typeof(PageEntry));
                 if (m_List.Length > 0)

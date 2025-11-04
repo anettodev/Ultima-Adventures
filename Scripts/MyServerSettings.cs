@@ -32,10 +32,10 @@ namespace Server.Misc
 			// SET THE BELOW PATH TO WHERE THIS FOLDER IS LOCATED
 
 			//Windows
-			return @"C:\UOShard\Ultima-Adventures\Files";
+			//return @"C:\UOShard\Ultima-Adventures\Files";
 
-			//Linux
-			//return @"./Files";
+			//Linux (production VPS path)
+			return @"/opt/Ultima-Adventures/Files";
 		}
 
 		public static bool AllowSaveFunction()

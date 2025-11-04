@@ -85,10 +85,18 @@ namespace Bittiez
         /// <param name="Text">The string you want to write</param>
         public static void ConsoleWrite(ConsoleColor Color, string Text)
         {
-            ConsoleColor o = Console.ForegroundColor;
-            Console.ForegroundColor = Color;
-            Console.WriteLine(Text);
-            Console.ForegroundColor = o;
+            try
+            {
+                ConsoleColor o = Console.ForegroundColor;
+                Console.ForegroundColor = Color;
+                Console.WriteLine(Text);
+                Console.ForegroundColor = o;
+            }
+            catch
+            {
+                // Fallback for non-interactive terminals (systemd, Docker, redirected I/O)
+                Console.WriteLine(Text);
+            }
         }
         #endregion
 

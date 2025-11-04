@@ -1,0 +1,150 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  # Deploy on push to main branch
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Framework (Mono)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete mono-devel msbuild
+
+      - name: Restore dependencies
+        run: |
+          msbuild Scripts/Scripts.csproj /t:Restore /p:Configuration=Release
+
+      - name: Build Scripts
+        run: |
+          msbuild Scripts/Scripts.csproj /p:Configuration=Release /v:minimal
+
+      - name: Verify build output
+        run: |
+          ls -la Scripts/bin/Release/
+          if [ ! -f "Scripts/bin/Release/Scripts.dll" ]; then
+            echo "Error: Scripts.dll not found!"
+            exit 1
+          fi
+
+      - name: Prepare deployment package
+        run: |
+          mkdir -p deploy-package
+          cp -r Scripts/bin/Release/* deploy-package/
+          cp -r Data deploy-package/ 2>/dev/null || true
+          cp WindowsServer.exe LinuxServer.exe deploy-package/ 2>/dev/null || true
+          tar -czf deploy.tar.gz deploy-package/
+
+      - name: Setup SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Stop server
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
+            cd ${{ secrets.VPS_PATH }}
+            # Find and kill server process if running
+            pkill -f "LinuxServer.exe" || true
+            # Wait for graceful shutdown
+            sleep 5
+            # Force kill if still running
+            pkill -9 -f "LinuxServer.exe" || true
+            echo "Server stopped"
+          EOF
+
+      - name: Backup current version
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
+            cd ${{ secrets.VPS_PATH }}
+            BACKUP_DIR="backups/$(date +%Y%m%d_%H%M%S)"
+            mkdir -p "$BACKUP_DIR"
+            cp -r Scripts/bin/Release/* "$BACKUP_DIR/" 2>/dev/null || true
+            echo "Backup created at $BACKUP_DIR"
+            # Keep only last 5 backups
+            cd backups
+            ls -t | tail -n +6 | xargs -r rm -rf
+          EOF
+
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+        run: |
+          scp -i ~/.ssh/deploy_key deploy.tar.gz $VPS_USER@$VPS_HOST:${{ secrets.VPS_PATH }}/
+
+      - name: Extract and setup files
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
+            cd ${{ secrets.VPS_PATH }}
+            tar -xzf deploy.tar.gz
+            cp -r deploy-package/* .
+            rm -rf deploy-package deploy.tar.gz
+            chmod +x LinuxServer.exe
+            echo "Deployment files extracted"
+          EOF
+
+      - name: Start server
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
+            cd ${{ secrets.VPS_PATH }}
+            # Start server in background with nohup
+            nohup mono LinuxServer.exe > /dev/null 2>&1 &
+            echo "Server started with PID $!"
+            sleep 3
+            # Check if server is running
+            if pgrep -f "LinuxServer.exe" > /dev/null; then
+              echo "Server is running successfully"
+            else
+              echo "Warning: Server may not have started properly"
+              exit 1
+            fi
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key
+          rm -f deploy.tar.gz
+
+      - name: Deployment notification
+        if: success()
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "Server: ${{ secrets.VPS_HOST }}"
+          echo "Time: $(date)"
+
+      - name: Deployment failed notification
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs and server status"
