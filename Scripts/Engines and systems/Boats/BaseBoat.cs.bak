@@ -1831,7 +1831,7 @@ namespace Server.Multis
 				return m_AmbrosiaWrap;
 			else if ( Worlds.GetMyWorld( m, location, x, y ) == "the Isles of Dread" )
 				return m_TokunoWrap;
-			else if ( Worlds.GetMyWorld( m, location, x, y ) == "the Bottle World of Kuldar" )
+			else if ( Worlds.GetMyWorld( m, location, x, y ) == "ilha de Kuldar" )
 				return m_BottleWrap;
 			else if ( Worlds.GetMyWorld( m, location, x, y ) == "the Island of Umber Veil" )
 				return m_UmberWrap;

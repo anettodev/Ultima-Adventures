@@ -159,7 +159,7 @@ namespace Server.Items
 			string world = Worlds.GetMyWorld( map, location, x, y ); // NO TREASURE MAPS IN THE BELOW AREAS...
 				if ( world == "the Town of Skara Brae" ){ world = "the Land of Sosaria"; }
 				else if ( world == "the Moon of Luna" ){ world = "the Land of Sosaria"; }
-				else if ( world == "the Bottle World of Kuldar" ){ world = "the Serpent Island"; }
+				else if ( world == "ilha de Kuldar" ){ world = "the Serpent Island"; }
 
 			Point3D loc = Worlds.GetRandomLocation( world, "land" );
 			map = Worlds.GetMyDefaultMap( world );
@@ -192,7 +192,7 @@ namespace Server.Items
 
 			if ( world == "the Land of Ambrosia" ){ if (x1 < 5122) { x1 = 5122; } if (y1 < 3036) { y1 = 3036; } }
 			else if ( world == "the Island of Umber Veil" ){ if (x1 < 699) { x1 = 699; } if (y1 < 3129) { y1 = 3129; } }
-			else if ( world == "the Bottle World of Kuldar" ){ if (x1 < 6127) { x1 = 6127; } if (y1 < 828) { y1 = 828; } }
+			else if ( world == "ilha de Kuldar" ){ if (x1 < 6127) { x1 = 6127; } if (y1 < 828) { y1 = 828; } }
 			else if ( world == "the Savaged Empire" ){ if (x1 < 136) { x1 = 136; } if (y1 < 8) { y1 = 8; } }
 
             int x2 = x1 + width;
@@ -207,7 +207,7 @@ namespace Server.Items
 			if ( world == "the Moon of Luna" ){ if (x2 >= 6125) { x2 = 6125; } if (y2 >= 3034) { y2 = 3034; } }
 			else if ( world == "the Land of Ambrosia" ){ if (x2 >= 6126) { x2 = 6126; } if (y2 >= 4095) { y2 = 4095; } }
 			else if ( world == "the Island of Umber Veil" ){ if (x2 >= 2272) { x2 = 2272; } if (y2 >= 4095) { y2 = 4095; } }
-			else if ( world == "the Bottle World of Kuldar" ){ if (x2 >= 7167) { x2 = 7167; } if (y2 >= 2742) { y2 = 2742; } }
+			else if ( world == "ilha de Kuldar" ){ if (x2 >= 7167) { x2 = 7167; } if (y2 >= 2742) { y2 = 2742; } }
 			else if ( world == "the Land of Lodoria" ){ if (x2 >= 5120) { x2 = 5119; } if (y2 >= 4096) { y2 = 4095; } }
 			else if ( world == "the Land of Sosaria" ){ if (x2 >= 5119) { x2 = 5118; } if (y2 >= 3127) { y2 = 3126; } }
 			else if ( world == "the Underworld" ){ if (x2 >= 1581) { x2 = 1581; } if (y2 >= 1599) { y2 = 1599; } }

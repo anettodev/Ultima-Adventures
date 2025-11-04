@@ -13,26 +13,31 @@ using Server.Mobiles;
 namespace Server.Mobiles 
 { 
 	public class TownGuards : BasePerson
-	{
-		[Constructable] 
-		public TownGuards() : base( ) 
+    {
+
+        private static bool m_Talked;
+
+        [Constructable] 
+		public TownGuards() : base() 
 		{
-			Title = "the guard";
+			Title = "o guarda";
 			NameHue = 1154;
-			SetStr( 3000, 3000 );
-			SetDex( 3000, 3000 );
-			SetInt( 3000, 3000 );
-			SetHits( 6000,6000 );
-			SetDamage( 500, 900 );
+			SetStr( 200, 300 );
+			SetDex( 200, 300 );
+			SetInt( 200, 300 );
+			SetHits( 500,5000 );
+			SetDamage( 200, 500 );
 			VirtualArmor = 3000;
 
-			SetSkill( SkillName.Anatomy, 200.0 );
-			SetSkill( SkillName.MagicResist, 200.0 );
-			SetSkill( SkillName.Macing, 200.0 );
-			SetSkill( SkillName.Fencing, 200.0 );
-			SetSkill( SkillName.Wrestling, 200.0 );
-			SetSkill( SkillName.Swords, 200.0 );
-			SetSkill( SkillName.Tactics, 200.0 );
+			SetSkill( SkillName.Anatomy, 120.0 );
+			SetSkill( SkillName.MagicResist, 120.0);
+			SetSkill( SkillName.Parry, 120.0);
+            SetSkill(SkillName.Fencing, 120.0);
+            SetSkill(SkillName.Macing, 120.0);
+            SetSkill( SkillName.DetectHidden, 120.0);
+			SetSkill( SkillName.Wrestling, 120.0);
+			SetSkill( SkillName.Swords, 120.0);
+			SetSkill( SkillName.Tactics, 120.0);
 		}
 
 		public override bool BardImmune{ get{ return true; } }
@@ -40,196 +45,140 @@ namespace Server.Mobiles
 		public override bool Unprovokable { get { return true; } }
 		public override bool Uncalmable{ get{ return true; } }
 
+		private string getBountyDialog(Mobile from, Item dropped, int gold) 
+		{
+            string sMessage = "";
+			string sReward = "";
+
+            switch (Utility.RandomMinMax(0, 3))
+            {
+                case 0: sReward = "Aqui está a sua recompensa de " + gold.ToString() + " moedas de ouro."; break;
+                case 1: sReward = "Tome o seu pagamento de " + gold.ToString() + " moedas de ouro."; break;
+                case 2: sReward = "Sua recompensa é de " + gold.ToString() + " moedas de ouro."; break;
+                case 3: sReward = "Este procurado tinha uma recompensa de " + gold.ToString() + " moedas de ouro."; break;
+            }
+
+            switch (Utility.RandomMinMax(0, 4))
+            {
+                case 0: sMessage = "Ora ora! Estavamos a muito tempo atrás desse aí. " + sReward; break;
+                case 1: sMessage = "Que satisfação hein aspira?! " + sReward; break;
+                case 2: sMessage = "Hmm..eu nunca achei que pegariam esse criminoso. " + sReward; break;
+                case 3: sMessage = "Os mares agora estão mais seguros. " + sReward; break;
+                case 4: sMessage = "Onde você achou esse traste!? " + sReward; break;
+            }
+
+            return sMessage;
+        }
+
 		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
-			if ( dropped is PirateBounty )
+			if (IntelligentAction.GetMyEnemies(from, this, false) == true)
 			{
-				if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
-				{
-					string sSay = "You shouldn't be carrying that around with you.";
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
-				}
-				else
+				string sSay = "Você não deveria estar carregando isso com você!";
+				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
+            }
+			else 
+			{
+				string sMessage = "";
+                int karma = 0;
+                int gold = 0;
+				int fame = 0;
+
+				if (dropped is PirateBounty)
 				{
 					PirateBounty bounty = (PirateBounty)dropped;
-					int fame = (int)(bounty.BountyValue/5);
-					int karma = -1*fame;
-					int gold = bounty.BountyValue;
-					string sMessage = "";
-					string sReward = "Here is " + gold.ToString() + " gold for you.";
-
-					switch ( Utility.RandomMinMax( 0, 9 ) )
-					{
-						case 0:	sReward = "Here is " + gold.ToString() + " gold for you.";							break;
-						case 1:	sReward = "Take this " + gold.ToString() + " gold for your trouble.";				break;
-						case 2:	sReward = "The reward is " + gold.ToString() + " gold.";							break;
-						case 3:	sReward = "Here is " + gold.ToString() + " gold for the bounty.";					break;
-						case 4:	sReward = "The bounty is " + gold.ToString() + " gold for this one.";				break;
-						case 5:	sReward = "Here is your reward of " + gold.ToString() + " gold";					break;
-						case 6:	sReward = "You can have this " + gold.ToString() + " gold for the bounty.";			break;
-						case 7:	sReward = "There is a reward of " + gold.ToString() + " gold for this one.";		break;
-						case 8:	sReward = "This one was worth " + gold.ToString() + " gold for their crimes.";		break;
-						case 9:	sReward = "Their crimes called for a bounty of " + gold.ToString() + " gold.";		break;
-					}
-
-					Titles.AwardKarma( from, karma, true );
-					Titles.AwardFame( from, fame, true );
-					from.SendSound( 0x2E6 );
-					from.AddToBackpack ( new Gold( gold ) );
-
-					switch ( Utility.RandomMinMax( 0, 9 ) )
-					{
-						case 0:	sMessage = "We have been looking for this pirate. " + sReward;	break;
-						case 1:	sMessage = "I have heard of this pirate before. " + sReward;	break;
-						case 2:	sMessage = "I never thought I would see this pirate brought to justice. " + sReward;	break;
-						case 3:	sMessage = "This pirate will plunder no more. " + sReward;	break;
-						case 4:	sMessage = "Our galleons are safer now. " + sReward;	break;
-						case 5:	sMessage = "The sea is safer because of you. " + sReward;	break;
-						case 6:	sMessage = "The sailors at the docks will not believe this. " + sReward;	break;
-						case 7:	sMessage = "I have only heard stories about this pirate. " + sReward;	break;
-						case 8:	sMessage = "How did you come across this pirate? " + sReward;	break;
-						case 9:	sMessage = "Where did you find this pirate? " + sReward;	break;
-					}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-					dropped.Delete();
-					return true;
+					fame = (int)(bounty.BountyValue / 5);
+					karma = -1 * fame;
+					gold = bounty.BountyValue;
 				}
-			}
-			else if ( dropped is Head && !from.Blessed )
-			{
-				if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
-				{
-					string sSay = "You shouldn't be carrying that around with you.";
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
-				}
-				else
+				else if (dropped is Head && !from.Blessed)
 				{
 					Head head = (Head)dropped;
-					int karma = 0;
-					int gold = 0;
-					string sMessage = "";
-					string sReward = "Here is " + gold.ToString() + " gold for you.";
 
-					if ( head.m_Job == "Thief" )
+					if (head.m_Job == "Thief")
 					{
-						karma = Utility.RandomMinMax( 40, 60 );
-						gold = Utility.RandomMinMax( 80, 120 );
+						karma = Utility.RandomMinMax(40, 60);
+						gold = Utility.RandomMinMax(80, 120);
 					}
-					else if ( head.m_Job == "Bandit" )
+					else if (head.m_Job == "Bandit")
 					{
-						karma = Utility.RandomMinMax( 20, 30 );
-						gold = Utility.RandomMinMax( 30, 40 );
+						karma = Utility.RandomMinMax(20, 30);
+						gold = Utility.RandomMinMax(30, 40);
 					}
-					else if ( head.m_Job == "Brigand" )
+					else if (head.m_Job == "Brigand")
 					{
-						karma = Utility.RandomMinMax( 30, 40 );
-						gold = Utility.RandomMinMax( 50, 80 );
+						karma = Utility.RandomMinMax(30, 40);
+						gold = Utility.RandomMinMax(50, 80);
 					}
-					else if ( head.m_Job == "Pirate" )
+					else if (head.m_Job == "Pirate")
 					{
-						karma = Utility.RandomMinMax( 90, 110 );
-						gold = Utility.RandomMinMax( 120, 160 );
+						karma = Utility.RandomMinMax(90, 110);
+						gold = Utility.RandomMinMax(120, 160);
 					}
-					else if ( head.m_Job == "Assassin" )
+					else if (head.m_Job == "Assassin")
 					{
-						karma = Utility.RandomMinMax( 60, 80 );
-						gold = Utility.RandomMinMax( 100, 140 );
-					}
-
-					switch ( Utility.RandomMinMax( 0, 9 ) )
-					{
-						case 0:	sReward = "Here is " + gold.ToString() + " gold for you.";							break;
-						case 1:	sReward = "Take this " + gold.ToString() + " gold for your trouble.";				break;
-						case 2:	sReward = "The reward is " + gold.ToString() + " gold.";							break;
-						case 3:	sReward = "Here is " + gold.ToString() + " gold for the bounty.";					break;
-						case 4:	sReward = "The bounty is " + gold.ToString() + " gold for this one.";				break;
-						case 5:	sReward = "Here is your reward of " + gold.ToString() + " gold";					break;
-						case 6:	sReward = "You can have this " + gold.ToString() + " gold for the bounty.";			break;
-						case 7:	sReward = "There is a reward of " + gold.ToString() + " gold for this one.";		break;
-						case 8:	sReward = "This one was worth " + gold.ToString() + " gold for their crimes.";		break;
-						case 9:	sReward = "Their crimes called for a bounty of " + gold.ToString() + " gold.";		break;
-					}
-
-
-					if ( head.m_Job == "Thief" || head.m_Job == "Bandit" || head.m_Job == "Brigand" )
-					{
-						Titles.AwardKarma( from, karma, true );
-						from.SendSound( 0x2E6 );
-						from.AddToBackpack ( new Gold( gold ) );
-
-						switch ( Utility.RandomMinMax( 0, 9 ) )
-						{
-							case 0:	sMessage = "We have been looking for this rogue. " + sReward;	break;
-							case 1:	sMessage = "I have heard of this thief before. " + sReward;	break;
-							case 2:	sMessage = "I never thought I would see this bandit brought to justice. " + sReward;	break;
-							case 3:	sMessage = "This rouge will steal no more. " + sReward;	break;
-							case 4:	sMessage = "Our gold purses are safer now. " + sReward;	break;
-							case 5:	sMessage = "The land is safer because of you. " + sReward;	break;
-							case 6:	sMessage = "The others at the guard house will not believe this. " + sReward;	break;
-							case 7:	sMessage = "I have only heard stories about this rogue. " + sReward;	break;
-							case 8:	sMessage = "How did you come across this thief? " + sReward;	break;
-							case 9:	sMessage = "Where did you find this sneak? " + sReward;	break;
-						}
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-						dropped.Delete();
-						return true;
-					}
-					else if ( head.m_Job == "Pirate" )
-					{
-						Titles.AwardKarma( from, karma, true );
-						from.SendSound( 0x2E6 );
-						from.AddToBackpack ( new Gold( gold ) );
-
-						switch ( Utility.RandomMinMax( 0, 9 ) )
-						{
-							case 0:	sMessage = "We have been looking for this pirate. " + sReward;	break;
-							case 1:	sMessage = "I have heard of this pirate before. " + sReward;	break;
-							case 2:	sMessage = "I never thought I would see this pirate brought to justice. " + sReward;	break;
-							case 3:	sMessage = "This pirate will plunder no more. " + sReward;	break;
-							case 4:	sMessage = "Our galleons are safer now. " + sReward;	break;
-							case 5:	sMessage = "The sea is safer because of you. " + sReward;	break;
-							case 6:	sMessage = "The sailors at the docks will not believe this. " + sReward;	break;
-							case 7:	sMessage = "I have only heard stories about this pirate. " + sReward;	break;
-							case 8:	sMessage = "How did you come across this pirate? " + sReward;	break;
-							case 9:	sMessage = "Where did you find this pirate? " + sReward;	break;
-						}
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-						dropped.Delete();
-						return true;
-					}
-					else if ( head.m_Job == "Assassin" )
-					{
-						Titles.AwardKarma( from, karma, true );
-						from.SendSound( 0x2E6 );
-						from.AddToBackpack ( new Gold( gold ) );
-
-						switch ( Utility.RandomMinMax( 0, 9 ) )
-						{
-							case 0:	sMessage = "We have been living in fear of this one. " + sReward;	break;
-							case 1:	sMessage = "I have heard others speak of this assassin. " + sReward;	break;
-							case 2:	sMessage = "I never thought this assassin existed. " + sReward;	break;
-							case 3:	sMessage = "This assassin will kill no more. " + sReward;	break;
-							case 4:	sMessage = "Our nobles are safer now. " + sReward;	break;
-							case 5:	sMessage = "The shadows are less feared because of you. " + sReward;	break;
-							case 6:	sMessage = "Those in the tavern will not believe this. " + sReward;	break;
-							case 7:	sMessage = "I have only heard rumors about this assassin. " + sReward;	break;
-							case 8:	sMessage = "It is good to see this assassin did not best you. " + sReward;	break;
-							case 9:	sMessage = "How did you survive this assassin? " + sReward;	break;
-						}
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-						dropped.Delete();
-						return true;
+						karma = Utility.RandomMinMax(60, 80);
+						gold = Utility.RandomMinMax(100, 140);
 					}
 					else
 					{
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "I assume they done you harm. Let me rid you of this thing.", from.NetState);
-						dropped.Delete();
-						return true;
+						sMessage = "Irei assumir que ele lhe fez algum mal. Vou fazer vista grossa dessa vez!";
+						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+						return base.OnDragDrop(from, dropped);
 					}
 				}
-			}
 
-			return base.OnDragDrop( from, dropped );
+                sMessage = getBountyDialog(from, dropped, gold);
+
+                Titles.AwardKarma(from, karma, true);
+                Titles.AwardFame(from, fame, true);
+
+                from.SendSound(0x2E6);
+                from.AddToBackpack(new Gold(gold));
+
+                this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+                dropped.Delete();
+                return true;
+            }
+            return base.OnDragDrop(from, dropped);
+        }
+
+        public override void OnMovement(Mobile m, Point3D oldLocation)
+        {
+            WalkAwayCombatTimer t = new WalkAwayCombatTimer(this);
+            t.Start();
+
+        }
+
+        private class WalkAwayCombatTimer : Timer
+        {
+            private static TownGuards m_from;
+
+            public WalkAwayCombatTimer(TownGuards from) : base(TimeSpan.FromSeconds(5))
+            {
+				m_Talked = true;
+                m_from = from;
+                Priority = TimerPriority.OneSecond;
+            }
+
+            protected override void OnTick()
+            {
+                if ((int)m_from.GetDistanceToSqrt(m_from.Home) > (m_from.RangeHome + 15))
+                {
+                    string sMessage = "Estou retornando para o meu posto!";
+                    m_from.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, m_from.NetState);
+
+                    m_from.Location = m_from.Home;
+                    Effects.SendLocationParticles(EffectItem.Create(m_from.Location, m_from.Map, EffectItem.DefaultDuration), 0x3728, 8, 20, 5042);
+                    Effects.PlaySound(m_from, m_from.Map, 0x201);
+                }
+                m_Talked = false;
+            }
+        }
+
+        private int getCityColor() 
+		{
+			return 0;
 		}
 
 		public override void OnAfterSpawn()
@@ -331,9 +280,9 @@ namespace Server.Mobiles
 			{
 				clothColor = 0xA5D;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x96D;		weapon = new Halberd();
 			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Kuldara" )
+			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "ilha de Kuldar" || Server.Misc.Worlds.GetRegionName(this.Map, this.Location) == "cidade de Kuldara")
 			{
-				clothColor = 0x965;		shieldType = 0x1BC3;	helmType = 0x140E;		cloakColor = 0x845;		weapon = new Maul();
+				clothColor = 0xB3B;		shieldType = 0x1BC3;	helmType = 0x140E;		cloakColor = 0x845;		weapon = new Maul();
 			}
 			else if ( World == "the Isles of Dread" )
 			{
@@ -353,14 +302,14 @@ namespace Server.Mobiles
 			}
 			else // if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Britain" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Britain Castle Grounds" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Lord British Castle" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Britain Dungeons" )
 			{
-				clothColor = 0x9C4;		shieldType = 0x1BC4;	helmType = 0x140E;		cloakColor = 0x845;		weapon = new VikingSword();
+				clothColor = 0x966;		shieldType = 0x1BC4;	helmType = 0x140E;		cloakColor = 2900;		weapon = new VikingSword();
 			}
 
 			weapon.Movable = false;
 			((BaseWeapon)weapon).MaxHitPoints = 1000;
 			((BaseWeapon)weapon).HitPoints = 1000;
-			((BaseWeapon)weapon).MinDamage = 500;
-			((BaseWeapon)weapon).MaxDamage = 900;
+			((BaseWeapon)weapon).MinDamage = 100;
+			((BaseWeapon)weapon).MaxDamage = 500;
 			AddItem( weapon );
 
 			AddItem( new PlateChest() );
@@ -399,17 +348,20 @@ namespace Server.Mobiles
 
 		public override void OnGaveMeleeAttack( Mobile defender )
 		{
-			switch ( Utility.Random( 8 ))		   
+			if (m_Talked == false)
 			{
-				case 0: Say("Die villian!"); break;
-				case 1: Say("I will bring you justice!"); break;
-				case 2: Say("So, " + defender.Name + "? Your evil ends here!"); break;
-				case 3: Say("We have been told to watch for " + defender.Name + "!"); break;
-				case 4: Say("Fellow guardsmen, " + defender.Name + " is here!"); break;
-				case 5: Say("We have ways of dealing with the likes of " + defender.Name + "!"); break;
-				case 6: Say("Give up! We do not fear " + defender.Name + "!"); break;
-				case 7: Say("So, " + defender.Name + "? I sentence you to death!"); break;
-			};
+                switch (Utility.Random(8))
+                {
+                    case 0: Say("AUTO! Pare em nome da lei!"); break;
+                    case 1: Say("Eu irei lhe mostrar a justiça!"); break;
+                    case 2: Say("" + defender.Name + "!! Sua história acaba aqui e agora!"); break;
+                    case 3: Say("Estavamos atrás de você " + defender.Name + "!"); break;
+                    case 4: Say("Soldados! " + defender.Name + " está aqui!"); break;
+                    case 5: Say("Somos treinados para caçar criminosos como você " + defender.Name + "!"); break;
+                    case 6: Say("Desista! Irei acabar com você " + defender.Name + "!"); break;
+                    case 7: Say("" + defender.Name + "! Sua sentença será a morte!"); break;
+                };
+            }
 		}
 
 		public override bool IsEnemy( Mobile m )
@@ -436,9 +388,10 @@ namespace Server.Mobiles
 		{ 
 			base.GetContextMenuEntries( from, list ); 
 			list.Add( new SpeechGumpEntry( from, this ) ); 
-		} 
+		}
 
-		public class SpeechGumpEntry : ContextMenuEntry
+		
+        public class SpeechGumpEntry : ContextMenuEntry
 		{
 			private Mobile m_Mobile;
 			private Mobile m_Giver;
@@ -458,7 +411,7 @@ namespace Server.Mobiles
 				{
 					if ( ! mobile.HasGump( typeof( SpeechGump ) ) )
 					{
-						mobile.SendGump(new SpeechGump( "The Duties Of The Guard", SpeechFunctions.SpeechText( m_Giver.Name, m_Mobile.Name, "Guard" ) ));
+						mobile.SendGump(new SpeechGump( "Código de Conduta Militar", SpeechFunctions.SpeechText( m_Giver.Name, m_Mobile.Name, "Guard" ) ));
 					}
 				}
 
@@ -488,7 +441,7 @@ namespace Server.Mobiles
 						GuardNote note = new GuardNote();
 						note.ScrollText = DB.CharacterWanted;
 						m_Mobile.AddToBackpack( note );
-						m_Giver.Say("Here is a note citizen. Be on the lookout.");
+						m_Giver.Say("Cidadão, fique atento!");
 					}
 				}
             }
@@ -496,7 +449,7 @@ namespace Server.Mobiles
 
 		public override bool OnBeforeDeath()
 		{
-			Say("You will be brought to justice one day!");
+			Say("A aura da irmandade militar irá me proteger!");
 			this.Hits = this.HitsMax;
 			this.FixedParticles( 0x376A, 9, 32, 5030, EffectLayer.Waist );
 			this.PlaySound( 0x202 );

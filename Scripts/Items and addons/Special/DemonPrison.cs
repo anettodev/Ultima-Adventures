@@ -124,7 +124,7 @@ namespace Server.Items
 						tWorld == "the Isles of Dread" || 
 						tWorld == "the Savaged Empire" || 
 						tWorld == "the Island of Umber Veil" || 
-						tWorld == "the Bottle World of Kuldar" )
+						tWorld == "ilha de Kuldar" )
 				{
 					if ( ( target is NecromancerGuildmaster || target is MageGuildmaster || target is Mage || target is NecroMage || target is Necromancer || target is Witches ) && reg.IsPartOf( typeof( VillageRegion ) ))
 					{

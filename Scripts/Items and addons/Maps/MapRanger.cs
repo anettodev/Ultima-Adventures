@@ -73,7 +73,7 @@ namespace Server.Items
 			else if ( GoToWorld == "the Serpent Island" && CharacterDatabase.GetDiscovered( from, "the Serpent Island" ) ){ CanUseMap = true; }
 			else if ( GoToWorld == "the Isles of Dread" && CharacterDatabase.GetDiscovered( from, "the Isles of Dread" ) ){ CanUseMap = true; }
 			else if ( GoToWorld == "the Savaged Empire" && CharacterDatabase.GetDiscovered( from, "the Savaged Empire" ) ){ CanUseMap = true; }
-			else if ( GoToWorld == "the Bottle World of Kuldar" && CharacterDatabase.GetDiscovered( from, "the Bottle World of Kuldar" ) ){ CanUseMap = true; }
+			else if ( GoToWorld == "ilha de Kuldar" && CharacterDatabase.GetDiscovered( from, "ilha de Kuldar" ) ){ CanUseMap = true; }
 
 			if ( from.Skills[SkillName.Tracking].Value < 80 && from.Skills[SkillName.Cartography].Value < 80 )
 			{
@@ -312,7 +312,7 @@ namespace Server.Items
 					case 5: paper.m_MapDestination = "the Village of Grey"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(866, 2082, 0); break;
 					case 6: paper.m_MapDestination = "the City of Montor"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(3198, 2590, 0); break;
 					case 7: paper.m_MapDestination = "the Town of Renika"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(1471, 3761, 0); break;
-					case 8: paper.m_MapDestination = "the Bottle World of Kuldar"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6675, 1820, 15); break;
+					case 8: paper.m_MapDestination = "ilha de Kuldar"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6675, 1820, 15); break;
 					case 9: paper.m_MapDestination = "the Village of Kurak"; paper.m_MapDest = Map.TerMur; paper.m_PointDest = new Point3D(807, 857, -1); break;
 					case 10: paper.m_MapDestination = "the Village of Barako"; paper.m_MapDest = Map.TerMur; paper.m_PointDest = new Point3D(196, 1698, 37); break;
 					case 11: paper.m_MapDestination = "the Cimmeran Hold"; paper.m_MapDest = Map.Tokuno; paper.m_PointDest = new Point3D(299, 1068, 15); break;

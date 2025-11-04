@@ -4762,7 +4762,7 @@ namespace Server.Mobiles
 
 			//no change for serps, darkmoor
 				
-			if (reg.IsPartOf("the Land of Ambrosia") || reg.IsPartOf("the Bottle World of Kuldar") || reg.IsPartOf("the Savaged Empire"))
+			if (reg.IsPartOf("the Land of Ambrosia") || reg.IsPartOf("ilha de Kuldar") || reg.IsPartOf("the Savaged Empire"))
 				diff +=1;
 			
 			if (reg.IsPartOf("the Underworld"))

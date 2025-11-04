@@ -1415,7 +1415,7 @@ namespace Server.Items
 
 			string world = Server.Misc.Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y );
 			bool HumanLands = false;
-				if ( world == "the Bottle World of Kuldar" || world == "the Land of Sosaria" ){ HumanLands = true; }
+				if ( world == "ilha de Kuldar" || world == "the Land of Sosaria" ){ HumanLands = true; }
 
 			if ( GetFlag( CorpseFlag.Carved ) || dead == null )
 			{

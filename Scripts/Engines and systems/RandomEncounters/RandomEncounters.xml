@@ -54,7 +54,7 @@ requires some planning on your behalf. GOOD LUCK.
 					region == "the Land of Sosaria" || 
 					region == "the Island of Umber Veil" || 
 					region == "the Land of Ambrosia" || 
-					region == "the Bottle World of Kuldar" || 
+					region == "ilha de Kuldar" || 
 					region == "the Underworld" || 
 					region == "the Serpent Island" || 
 					region == "the Isles of Dread" || 
@@ -67,7 +67,7 @@ requires some planning on your behalf. GOOD LUCK.
 { regionName = "the Land of Sosaria"; }
 { regionName = "the Island of Umber Veil"; }
 { regionName = "the Land of Ambrosia"; }
-{ regionName = "the Bottle World of Kuldar"; }
+{ regionName = "ilha de Kuldar"; }
 				}
 ( map == Map.Ilshenar )
 { regionName = "the Underworld"; }

@@ -142,7 +142,7 @@ namespace Server.Misc
 				case 10:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 11:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 12:	searchLocation = "the Island of Umber Veil";	if ( !( CharacterDatabase.GetDiscovered( m, "the Island of Umber Veil" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
-				case 13:	searchLocation = "the Bottle World of Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
+				case 13:	searchLocation = "ilha de Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 14:	searchLocation = "the Underworld";				if ( !( CharacterDatabase.GetDiscovered( m, "the Underworld" ) ) ){ searchLocation = "the Underworld"; } break;
 				case 15:	searchLocation = "the Land of Ambrosia";		if ( !( CharacterDatabase.GetDiscovered( m, "the Land of Ambrosia" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 			}
@@ -170,7 +170,7 @@ namespace Server.Misc
 					else if ( searchLocation == "the Isles of Dread"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
 					else if ( searchLocation == "the Savaged Empire"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
 					else if ( searchLocation == "the Island of Umber Veil"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
-					else if ( searchLocation == "the Bottle World of Kuldar"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
+					else if ( searchLocation == "ilha de Kuldar"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
 					else if ( searchLocation == "the Underworld"  && tWorld == searchLocation ){ targets.Add( target ); aCount++; }
 				}
 

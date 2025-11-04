@@ -37,15 +37,15 @@ namespace Server.Items
 			{
 				from.SendLocalizedMessage( 1060640 ); // The item must be in your backpack to use it.
 			}
-			else if ( from is PlayerMobile && world == "the Bottle World of Kuldar" && !( Server.Items.CharacterDatabase.GetKeys( from, "VordoKey" ) ) )
+			else if ( from is PlayerMobile && world == "ilha de Kuldar" && !( Server.Items.CharacterDatabase.GetKeys( from, "VordoKey" ) ) )
 			{
 				from.SendMessage( "This magical gate doesn't seem to do anything." );
 			}
-			else if ( Worlds.AllowEscape( from, from.Map, from.Location, from.X, from.Y ) == false && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "the Bottle World of Kuldar" )
+			else if ( Worlds.AllowEscape( from, from.Map, from.Location, from.X, from.Y ) == false && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "ilha de Kuldar" )
 			{
 				from.SendMessage( "This magical gate doesn't seem to do anything." );
 			}
-			else if ( Worlds.RegionAllowedRecall( from.Map, from.Location, from.X, from.Y ) == false && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "the Land of Ambrosia" && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "the Bottle World of Kuldar" )
+			else if ( Worlds.RegionAllowedRecall( from.Map, from.Location, from.X, from.Y ) == false && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "the Land of Ambrosia" && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) != "ilha de Kuldar" )
 			{
 				from.SendMessage( "This magical gate doesn't seem to do anything." );
 			}

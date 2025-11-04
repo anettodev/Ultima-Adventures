@@ -8661,8 +8661,8 @@ namespace Server
 		/// </summary>
 		public virtual void OnPoisonImmunity( Mobile from, Poison poison )
 		{
-			this.PublicOverheadMessage( MessageType.Emote, 0x3B2, 1005534 ); // * The poison seems to have no effect. *
-		}
+			this.PrivateOverheadMessage( MessageType.Emote, 11, "* Eba! O veneno parece não fazer efeito em mim. *" ); // 1005534 * The poison seems to have no effect. *
+        }
 
 		/// <summary>
 		/// Overridable. Virtual event invoked when a call to <see cref="ApplyPoison" /> failed because <see cref="CheckHigherPoison" /> returned false: the Mobile was already poisoned by an equal or greater strength poison.

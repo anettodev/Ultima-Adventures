@@ -1057,37 +1057,37 @@ namespace Server.Items
 
 			if ( save == "Magic" )
 			{
-				area = "magical resistance";
+				area = "resistência mágica";
 				SaveThrow = (int)(( m.Int + m.Skills[SkillName.MagicResist].Value + m.EnergyResistance ) / 4);
 			}
 			else if ( save == "Physical" )
 			{
-				area = "physical resistance";
+				area = "resistência física";
 				SaveThrow = (int)(( m.Str + m.PhysicalResistance ) / 3);
 			}
 			else if ( save == "Agility" )
 			{
-				area = "quick reflexes";
+				area = "reflexos rápidos";
 				SaveThrow = m.Dex;
 			}
 			else if ( save == "Cold" )
 			{
-				area = "cold resistance";
+				area = "resistência de gelo";
 				SaveThrow = (int)(( m.Dex + m.ColdResistance ) / 3);
 			}
 			else if ( save == "Fire" )
 			{
-				area = "fire resistance";
+				area = "resistência de fogo";
 				SaveThrow = (int)(( m.Dex + m.FireResistance ) / 3);
 			}
 			else if ( save == "Poison" )
 			{
-				area = "poison resistance";
+				area = "resistência de veneno";
 				SaveThrow = (int)(( m.Str + m.Skills[SkillName.Poisoning].Value + m.PoisonResistance ) / 4);
 			}
 			else if ( save == "Energy" )
 			{
-				area = "energy resistance";
+				area = "resistência de energia";
 				SaveThrow = (int)(( m.Int + m.EnergyResistance ) / 3);
 			}
 
@@ -1097,12 +1097,15 @@ namespace Server.Items
 			{
 				if ( isTrap && Server.Misc.MyServerSettings.AnnounceTrapSaves() )
 				{
-					string textSay = "You got near a hidden trap, but with your " + area + "...you avoid it.";
+					string textSay = "Você chegou perto de uma armadilha escondida mas com a sua " + area + "... você evita.";
+					if (save == "Agility") { textSay = "Você chegou perto de uma armadilha escondida mas com o seu " + area + "... você evita.";  }
+
 					if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 					{
-						textSay = "You got near something dangerous, but with your " + area + "...you avoid it.";
-					}
-					m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+						textSay = "Você chegou perto de um grande perigo mas com a sua " + area + "... você evita.";
+                        if (save == "Agility") { textSay = "Você chegou perto de um grande perigo mas com o seu " + area + "... você evita."; }
+                    }
+					m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 					m.PlaySound( m.Female ? 793 : 1065 );
 				}
 				madeSave = true;
@@ -1146,16 +1149,18 @@ namespace Server.Items
 				{
 					if ( Trap is MushroomTrap )
 					{
-						m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, "You got near a strange mushroom, but your skill in removing traps has helped you avoid it.");
+						m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, "Você chegou perto de um cogumelo estranho mas sua habilidade em remover armadilhas o ajudou a evitá-lo.");
 					}
 					else
 					{
-						textSay = "You got near a hidden trap, but your skill in removing traps has helped you disable it.";
+						textSay = "Você chegou perto de uma armadilha escondida mas sua habilidade em remover armadilhas o ajudou a desativá-la.";
 						if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 						{
-							textSay = "You got near something dangerous, but your skill in removing traps has helped you avoid it.";
+							textSay = "Você chegou perto de algo perigoso, mas sua habilidade em remover armadilhas o ajudou a evitá-lo.";
 						}
-						m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+						//m.SendMessage(95, textSay)
+
+                        m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 						m.PlaySound( 0x241 );
 					}
 				}
@@ -1176,16 +1181,16 @@ namespace Server.Items
 						{
 							if ( Trap is MushroomTrap )
 							{
-								m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, "You got near a strange mushroom, but the magic of your orb has helped you avoid it.");
+								m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, "Você chegou perto de um cogumelo estranho, mas a magia do seu orbe o ajudou a evitá-lo.");
 							}
 							else
 							{
-								textSay = "You got near a hidden trap, but the magic of your orb has disabled it.";
+								textSay = "Você chegou perto de uma armadilha escondida, mas a magia do seu orbe a desativou.";
 								if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 								{
-									textSay = "You got near something dangerous, but the magic of your orb has helped you avoid it.";
+									textSay = "Você chegou perto de algo perigoso, mas a magia do seu orbe o ajudou a evitá-lo.";
 								}
-								m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+								m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 							}
 							m.PlaySound( 0x1F0 );
 							nSprung = 0;
@@ -1196,17 +1201,18 @@ namespace Server.Items
 				{
 					if ( Trap is MushroomTrap )
 					{
-						m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, "You got near a strange mushroom, but with luck on your side...you avoid it.");
+						m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, "Você chegou perto de um cogumelo estranho, mas com a sorte do seu lado... você evita.");
 					}
 					else
 					{
-						textSay = "You got near a hidden trap, but with luck on your side...it broke.";
+						textSay = "Você chegou perto de uma armadilha escondida, mas com a sorte do seu lado... ela estava quebrada.";
 						if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 						{
-							textSay = "You got near something dangerous, but with luck on your side...you avoid it."; m.PlaySound( 0x54B );
+							textSay = "Você chegou perto de algo perigoso, mas com a sorte do seu lado... você evita."; 
+							m.PlaySound( 0x54B );
 						}
 						else { m.PlaySound( 0x241 ); }
-						m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+						m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 					}
 					nSprung = 0;
 				}
@@ -1225,16 +1231,18 @@ namespace Server.Items
 							{
 								if ( Trap is MushroomTrap )
 								{
-									m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, "You break your ten foot pole, but avoid the strange mushroom nearby.");
+									m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, "Você quebrou o seu cajado anti-armadilhas e evitou o cogumelo que estava próximo.");
 								}
 								else
 								{
-									textSay = "You tap your ten foot pole, disabling a hidden trap and breaking the pole.";
-									if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
+									textSay = "Você usou o seu cajado anti-armadilhas e desativou a armadilha que estava próxima.";
+
+                                    if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 									{
-										textSay = "You tap your ten foot pole, avoiding something dangerous and breaking the pole.";
-									}
-									m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+										textSay = "Você usou o seu cajado anti-armadilhas e desativou a um perigo que estava próximo.";
+
+                                    }
+									m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 								}
 								poles.Delete();
 							}
@@ -1242,16 +1250,16 @@ namespace Server.Items
 							{
 								if ( Trap is MushroomTrap )
 								{
-									m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, "You tap your ten foot pole, avoiding a strange mushroom nearby.");
+									m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, "Você usou o seu cajado anti-armadilhas e evitou o cogumelo que estava próximo.");
 								}
 								else
 								{
-									textSay = "You tap your ten foot pole, disabling a hidden trap.";
-									if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
+                                    textSay = "Você usou o seu cajado anti-armadilhas e desativou uma armadilha escondida que estava próxima.";
+                                    if ( Server.Misc.Worlds.IsOnSpaceship( m.Location, m.Map ) )
 									{
-										textSay = "You tap your ten foot pole, avoiding something dangerous.";
-									}
-									m.LocalOverheadMessage(Network.MessageType.Emote, 0x3B2, false, textSay);
+										textSay = "Você usou o seu cajado anti-armadilhas e desativou a um perigo que estava muito próximo.";
+                                    }
+									m.LocalOverheadMessage(Network.MessageType.Emote, 11, false, textSay);
 								}
 								poles.InvalidateProperties();
 							}

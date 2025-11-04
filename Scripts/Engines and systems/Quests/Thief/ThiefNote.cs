@@ -291,7 +291,7 @@ namespace Server.Items
 					case 10:	searchLocation = "the Savaged Empire";			rewardMod = 5;	if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 11:	searchLocation = "the Savaged Empire";			rewardMod = 5;	if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 12:	searchLocation = "the Island of Umber Veil";	rewardMod = 2;	if ( !( CharacterDatabase.GetDiscovered( m, "the Island of Umber Veil" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
-					case 13:	searchLocation = "the Bottle World of Kuldar";	rewardMod = 4;	if ( !( CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
+					case 13:	searchLocation = "ilha de Kuldar";	rewardMod = 4;	if ( !( CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 14:	searchLocation = "DarkMoor";					rewardMod = 3;	if ( !( CharacterDatabase.GetDiscovered( m, "DarkMoor" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				}
 
@@ -349,7 +349,7 @@ namespace Server.Items
 					case 10:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 11:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 12:	searchLocation = "the Island of Umber Veil";	if ( !( CharacterDatabase.GetDiscovered( m, "the Island of Umber Veil" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
-					case 13:	searchLocation = "the Bottle World of Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
+					case 13:	searchLocation = "ilha de Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 					case 14:	searchLocation = "the Underworld";				if ( !( CharacterDatabase.GetDiscovered( m, "the Underworld" ) ) ){ searchLocation = "the Underworld"; } break;
 					case 15:	searchLocation = "the Land of Ambrosia";		if ( !( CharacterDatabase.GetDiscovered( m, "the Land of Ambrosia" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				}
@@ -406,7 +406,7 @@ namespace Server.Items
 				case 10:	dropLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
 				case 11:	dropLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
 				case 12:	dropLocation = "the Island of Umber Veil";		if ( !( CharacterDatabase.GetDiscovered( m, "the Island of Umber Veil" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
-				case 13:	dropLocation = "the Bottle World of Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
+				case 13:	dropLocation = "ilha de Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
 				case 14:	dropLocation = "DarkMoor";						if ( !( CharacterDatabase.GetDiscovered( m, "DarkMoor" ) ) ){ dropLocation = "the Land of Sosaria"; } break;
 			}
 

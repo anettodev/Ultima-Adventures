@@ -493,7 +493,7 @@ namespace Server.Items
 				case 7:		searchLocation = "the Land of Ambrosia";		break;
 				case 8:		searchLocation = "the Isles of Dread";			break;
 				case 9:		searchLocation = "the Savaged Empire";			break;
-				case 10:	searchLocation = "the Bottle World of Kuldar";	break;
+				case 10:	searchLocation = "ilha de Kuldar";	break;
 			}
 
 			string dungeon = "the Dungeon of Abandon";

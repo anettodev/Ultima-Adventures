@@ -50,7 +50,7 @@ namespace Server.Misc
 			else if ( map == Map.Trammel && reg.IsPartOf( "the Mausoleum" ) ){ worldLocation = "the Island of Umber Veil"; }
 			else if ( map == Map.Trammel && reg.IsPartOf( "the Tower of Brass" ) ){ worldLocation = "the Island of Umber Veil"; }
 
-			else if ( map == Map.Trammel && x > 6127 && y > 980 && x < 7168 && y < 2460 ){ worldLocation = "the Bottle World of Kuldar"; }
+			else if ( map == Map.Trammel && x > 6127 && y > 980 && x < 7168 && y < 2460 ){ worldLocation = "ilha de Kuldar"; }
 			else if ( map == Map.Trammel && ( reg.IsPartOf( "Highrock Mine" ) || 
 												reg.IsPartOf( "Waterfall Cavern" ) || 
 												reg.IsPartOf( "the Crumbling Cave" ) || 
@@ -60,7 +60,7 @@ namespace Server.Misc
 												reg.IsPartOf( "the Kuldara Sewers" ) || 
 												reg.IsPartOf( "the Crypts of Kuldar" ) || 
 												reg.IsPartOf( "Vordo's Castle" ) || 
-												reg.IsPartOf( "Vordo's Dungeon" ) ) ){ worldLocation = "the Bottle World of Kuldar"; }
+												reg.IsPartOf( "Vordo's Dungeon" ) ) ){ worldLocation = "ilha de Kuldar"; }
 
 			else if ( map == Map.Felucca && ( reg.IsPartOf( "Morgaelin's Inferno" ) || 
 												reg.IsPartOf( "the Zealan Tombs" ) || 
@@ -154,7 +154,7 @@ namespace Server.Misc
 					if (from.Criminal)
 						from.Criminal = false;
 				}
-				else if ( world == "the Bottle World of Kuldar" ){ CharacterDatabase.SetDiscovered( from, world, true ); runLog = true; }
+				else if ( world == "ilha de Kuldar" ){ CharacterDatabase.SetDiscovered( from, world, true ); runLog = true; }
 
 				if ( runLog )
 					LoggingFunctions.LogRegions( from, world, "enter" );
@@ -208,7 +208,7 @@ namespace Server.Misc
 					if ( location.X >= 0 && location.Y >= 0 && location.X <= 5118 && location.Y <= 3125 ){ regionName = "the Land of Sosaria"; }
 					else if ( location.X >= 699 && location.Y >= 3129 && location.X <= 2272 && location.Y <= 4095 ){ regionName = "the Island of Umber Veil"; }
 					else if ( location.X >= 5122 && location.Y >= 3036 && location.X <= 6126 && location.Y <= 4095 ){ regionName = "the Land of Ambrosia"; }
-					else if ( location.X >= 6127 && location.Y >= 828 && location.X <= 7167 && location.Y <= 2743 ){ regionName = "the Bottle World of Kuldar"; }
+					else if ( location.X >= 6124 && location.Y >= 982 && location.X <= 7167 && location.Y <= 2460 ){ regionName = "ilha de Kuldar"; }
 				}
 				else if ( map == Map.Ilshenar )
 				{
@@ -242,7 +242,7 @@ namespace Server.Misc
 					region == "the Land of Sosaria" || 
 					region == "the Island of Umber Veil" || 
 					region == "the Land of Ambrosia" || 
-					region == "the Bottle World of Kuldar" || 
+					region == "ilha de Kuldar" || 
 					region == "the Underworld" || 
 					region == "the Serpent Island" || 
 					region == "the Isles of Dread" || 
@@ -482,7 +482,7 @@ namespace Server.Misc
 			if ( reg.IsPartOf( typeof( DungeonRegion ) ) )
 				return false;
 
-			if ( world == "the Bottle World of Kuldar" )
+			if ( world == "ilha de Kuldar" )
 				return false;
 
 			if ( world == "the Underworld" )
@@ -587,7 +587,7 @@ namespace Server.Misc
 			string world = Worlds.GetMyWorld( map, location, x, y );
 			Region reg = Region.Find( location, map );
 
-			if ( world == "the Bottle World of Kuldar" && CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) )
+			if ( world == "ilha de Kuldar" && CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) )
 				canLeave = false;
 
 			if ( world == "the Town of Skara Brae" )
@@ -640,7 +640,7 @@ namespace Server.Misc
 			if ( reg.IsPartOf( "Moonlight Cavern" ) )
 				return false;
 
-			if ( world == "the Bottle World of Kuldar" )
+			if ( world == "ilha de Kuldar" )
 				return false;
 
 			if ( world == "the Land of Ambrosia" )
@@ -679,7 +679,7 @@ namespace Server.Misc
 				return true;
 			else if ( world == "the Island of Umber Veil" && x >= 699 && y >= 3129 && x <= 2272 && y <= 4095 )
 				return true;
-			else if ( world == "the Bottle World of Kuldar" && x >= 6127 && y >= 828 && x <= 7168 && y <= 2742 )
+			else if ( world == "ilha de Kuldar" && x >= 6127 && y >= 828 && x <= 7168 && y <= 2742 )
 				return true;
 			else if ( world == "the Underworld" && x >= 1012 && y >= 0 && x <= 2013 && y <= 775 )
 				return true;
@@ -808,7 +808,7 @@ namespace Server.Misc
 
 			switch ( Utility.RandomMinMax( 0, 8 ) )
 			{
-				case 0: world = "the Bottle World of Kuldar";	map = Map.Trammel;	break;
+				case 0: world = "ilha de Kuldar";	map = Map.Trammel;	break;
 				case 1: world = "the Land of Ambrosia";			map = Map.Trammel;	break;
 				case 2: world = "the Island of Umber Veil";		map = Map.Trammel;	break;
 				case 3: world = "the Land of Lodoria";			map = Map.Felucca;	break;
@@ -1087,7 +1087,7 @@ namespace Server.Misc
          		"Dawn", "Death Gulch", "Fawn", "Glacial Coast", "Iceclad Fisherman", "Mountain Crest"
          	};
 			switch (world) {
-			    case "the Bottle World of Kuldar": //Trammel
+			    case "ilha de Kuldar": //Trammel
 			    case "the Land of Ambrosia":
 			    case "the Island of Umber Veil":
 			    case "the Moon of Luna":
@@ -1173,7 +1173,7 @@ namespace Server.Misc
 
             while ( tm < 1 )
             {
-                if (world == "the Bottle World of Kuldar")
+                if (world == "ilha de Kuldar")
                 {
 					tl = Map.Trammel;
                     tx = Utility.RandomMinMax( 6166+swrapx, 7204-swrapx );

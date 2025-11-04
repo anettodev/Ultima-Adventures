@@ -1179,7 +1179,7 @@ namespace Server.Engines.Help
 			if ( CharacterDatabase.GetDiscovered( from, "the Serpent Island" ) ){ sQuests = sQuests + "-Discovered the Serpent Island.<br><br>"; }
 			if ( CharacterDatabase.GetDiscovered( from, "the Isles of Dread" ) ){ sQuests = sQuests + "-Discovered the Isles of Dread.<br><br>"; }
 			if ( CharacterDatabase.GetDiscovered( from, "the Savaged Empire" ) ){ sQuests = sQuests + "-Discovered the Valley of the Savaged Empire.<br><br>"; }
-			if ( CharacterDatabase.GetDiscovered( from, "the Bottle World of Kuldar" ) ){ sQuests = sQuests + "-Discovered the Bottle World of Kuldar.<br><br>"; }
+			if ( CharacterDatabase.GetDiscovered( from, "ilha de Kuldar" ) ){ sQuests = sQuests + "-Discovered the Bottle World of Kuldar.<br><br>"; }
 			if ( CharacterDatabase.GetDiscovered( from, "the Underworld" ) ){ sQuests = sQuests + "-Discovered the Underworld.<br><br>"; }
 
 			return "Quests For " + from.Name + "<br><br>" + sQuests;

@@ -64,7 +64,7 @@ namespace Server.Spells.Jedi
 				describe = "The Jedi can heal themselves and others. With a high enough level of Jedi power, they could potentially cure poison, stop bleeding, and heal mortal wounds."; }
 			else if ( spellID == 288 ){ name = "Stasis Field"; icon="11253"; crystal = "52"; skill = "50"; mana = "36"; mantra = "Greggs"; map = "Lodor"; dungeon = "Greensky Village"; world = "Land of Lodoria"; jedi = "Ganer Rhysode"; scroll = "JediDatacron09"; 
 				describe = "A Jedi can create a field around another that will put them in stasis for a period of time, where they cannot take any actions for a short duration."; }
-			else if ( spellID == 289 ){ name = "Replicate"; icon="11218"; crystal = "250"; skill = "100"; mana = "40"; mantra = "Leantre"; map = "Sosaria"; dungeon = "the Kuldar Cemetery"; world = "the Bottle World of Kuldar"; jedi = "Coran Horn"; scroll = "JediDatacron10"; 
+			else if ( spellID == 289 ){ name = "Replicate"; icon="11218"; crystal = "250"; skill = "100"; mana = "40"; mantra = "Leantre"; map = "Sosaria"; dungeon = "the Kuldar Cemetery"; world = "ilha de Kuldar"; jedi = "Coran Horn"; scroll = "JediDatacron10"; 
 				describe = "This power allows the Jedi to create a replication crystal that can hold the Jedi's genetic pattern. If the Jedi meets an untimely end, the crystal will activate in 30 seconds and create a replicant that the Jedi's soul can then occupy. These crystal are quite fragile so you would need to make sure the crystal did not crumble while you were resting for long periods of time."; }
 
 			if ( slice == 1 ){ value = name; }

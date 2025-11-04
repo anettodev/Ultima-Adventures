@@ -151,7 +151,7 @@ namespace Server.Items
 						case 4: world = "the Savaged Empire"; break;
 						case 5: world = "the Land of Ambrosia"; break;
 						case 6: world = "the Island of Umber Veil"; break;
-						case 7: world = "the Bottle World of Kuldar"; break;
+						case 7: world = "ilha de Kuldar"; break;
 						case 8: world = "the Underworld"; break;
 					}
 					Point3D loc = Worlds.GetRandomLocation( world, "land" );
@@ -192,7 +192,7 @@ namespace Server.Items
 						case 4: world = "the Savaged Empire"; break;
 						case 5: world = "the Land of Ambrosia"; break;
 						case 6: world = "the Island of Umber Veil"; break;
-						case 7: world = "the Bottle World of Kuldar"; break;
+						case 7: world = "ilha de Kuldar"; break;
 						case 8: world = "the Underworld"; break;
 					}
 					Point3D loc = Worlds.GetRandomLocation( world, "land" );
@@ -246,7 +246,7 @@ namespace Server.Items
 						case 4: world = "the Savaged Empire"; break;
 						case 5: world = "the Land of Ambrosia"; break;
 						case 6: world = "the Island of Umber Veil"; break;
-						case 7: world = "the Bottle World of Kuldar"; break;
+						case 7: world = "ilha de Kuldar"; break;
 						case 8: world = "the Underworld"; break;
 					}
 

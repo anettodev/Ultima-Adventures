@@ -444,7 +444,7 @@ namespace Server.Mobiles
 			else if ( Server.Misc.Worlds.GetMyWorld( captain.Map, captain.Location, captain.X, captain.Y ) == "the Savaged Empire" ){ title = Utility.RandomMinMax( 22, 23 ); }
 			else if ( Server.Misc.Worlds.GetMyWorld( captain.Map, captain.Location, captain.X, captain.Y ) == "the Isles of Dread" ){ title = 21; }
 			else if ( Server.Misc.Worlds.GetMyWorld( captain.Map, captain.Location, captain.X, captain.Y ) == "the Island of Umber Veil" ){ title = 19; }
-			else if ( Server.Misc.Worlds.GetMyWorld( captain.Map, captain.Location, captain.X, captain.Y ) == "the Bottle World of Kuldar" ){ title = 20; }
+			else if ( Server.Misc.Worlds.GetMyWorld( captain.Map, captain.Location, captain.X, captain.Y ) == "ilha de Kuldar" ){ title = 20; }
 
 			switch( title )
 			{

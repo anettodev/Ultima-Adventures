@@ -9,23 +9,31 @@ namespace Server.Mobiles
 { 
 	public class BasePerson : BaseConvo
 	{
-		[Constructable] 
-		public BasePerson() : base( AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4 ) 
-		{ 
-			Name = "person";
-			SpeechHue = Server.Misc.RandomThings.GetSpeechHue();
-			Hue = Server.Misc.RandomThings.GetRandomSkinColor();
+		[Constructable]
+		public BasePerson(AIType ai, FightMode fMode, int iRangePerception, int rangeFight, double activeSpeed, double passiveSpeed)
+            : base(ai, fMode, iRangePerception, rangeFight, activeSpeed, passiveSpeed)
+        {
+            Name = "person";
+            SpeechHue = Server.Misc.RandomThings.GetSpeechHue();
+            Hue = Server.Misc.RandomThings.GetRandomSkinColor();
 
-			if ( Female = Utility.RandomBool() ) 
-			{ 
-				this.Body = 0x191;
-				this.Name = NameList.RandomName( "female" );
-			}
-			else 
-			{ 
-				this.Body = 0x190;
-				this.Name = NameList.RandomName( "male" );
-			}
+            if (Female = Utility.RandomBool())
+            {
+                this.Body = 0x191;
+                this.Name = NameList.RandomName("female");
+            }
+            else
+            {
+                this.Body = 0x190;
+                this.Name = NameList.RandomName("male");
+            }
+        }
+
+        [Constructable] 
+		public BasePerson() 
+			: this( AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4 ) 
+		{ 
+
 		}
 
 		public override bool ClickTitle{ get{ return false; } }
@@ -99,14 +107,14 @@ namespace Server.Mobiles
 				killer.Kills = killer.Kills + 1;
 			}
 
-			string bSay = "Help!";
+			string bSay = "Socorro!";
 
 				switch ( Utility.Random( 5 ))		   
 				{
-					case 0: bSay = "Guards!"; break;
-					case 1: bSay = "There will be no place for you to hide!"; break;
-					case 2: bSay = "Noooo!"; break;
-					case 3: bSay = "Vile rogue!"; break;
+					case 0: bSay = "Guardas!"; break;
+					case 1: bSay = "Não há local que você possa se esconder!"; break;
+					case 2: bSay = "Nãaaaaoo!"; break;
+					case 3: bSay = "Vagabundo!"; break;
 					case 4: bSay = "Aarrgh!"; break;
 				};
 

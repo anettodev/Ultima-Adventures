@@ -321,12 +321,12 @@ namespace Server.Items
 
 					if ( Utility.RandomMinMax(1, 200) == 69 && house == null && !(reg.IsPartOf( typeof( SafeRegion )) || reg.IsPartOf( typeof ( PublicRegion )) || reg.IsPartOf( typeof ( ProtectedRegion )) || reg.IsPartOf( typeof ( HouseRegion )) ) )
 					{
-						AdventuresFunctions.PopulateStones( stone );
+						//AdventuresFunctions.PopulateStones( stone );
 					}
 				}
 				foreach( EssenceBones bns in bones)
 				{
-					AdventuresFunctions.PopulateBones(bns);
+					//AdventuresFunctions.PopulateBones(bns);
 				}
 
 				//Decay BalanceEffect and crown champion

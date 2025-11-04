@@ -64,7 +64,7 @@ namespace Server.Menus.Questions
 			if ( myWorld == "the Moon of Luna" ) { entries = m_LunaEntries; m_Map = Map.Trammel; }
 			else if ( myWorld == "the Land of Ambrosia" ) { entries = m_AmbrosiaEntries; m_Map = Map.Trammel; }
 			else if ( myWorld == "the Island of Umber Veil" ) { entries = m_UmberEntries; m_Map = Map.Trammel; }
-			else if ( myWorld == "the Bottle World of Kuldar" ) { entries = m_KuldarEntries; m_Map = Map.Trammel; }
+			else if ( myWorld == "ilha de Kuldar" ) { entries = m_KuldarEntries; m_Map = Map.Trammel; }
 			else if ( myWorld == "the Town of Skara Brae" ) { entries = m_BardEntries; m_Map = Map.Felucca; }
 			else if ( myWorld == "the Land of Lodoria" ) { entries = m_LodorEntries; m_Map = Map.Felucca; }
 			else if ( myWorld == "the Land of Sosaria" ) { entries = m_Entries; m_Map = Map.Trammel; }
@@ -154,7 +154,7 @@ namespace Server.Menus.Questions
 				if ( myWorld == "the Moon of Luna" ) { entries = m_LunaEntries; }
 				else if ( myWorld == "the Land of Ambrosia" ) { entries = m_AmbrosiaEntries; }
 				else if ( myWorld == "the Island of Umber Veil" ) { entries = m_UmberEntries; }
-				else if ( myWorld == "the Bottle World of Kuldar" ) { entries = m_KuldarEntries; }
+				else if ( myWorld == "ilha de Kuldar" ) { entries = m_KuldarEntries; }
 				else if ( myWorld == "the Town of Skara Brae" ) { entries = m_BardEntries; }
 				else if ( myWorld == "the Land of Lodoria" ) { entries = m_LodorEntries; }
 				else if ( myWorld == "the Land of Sosaria" ) { entries = m_Entries; }

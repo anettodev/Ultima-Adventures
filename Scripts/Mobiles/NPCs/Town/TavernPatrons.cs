@@ -304,7 +304,7 @@ namespace Server.Misc
 				{
 					where = Server.Misc.Worlds.GetRegionName( mob.Map, mob.Location );	
 
-					if ( where == "the Bottle World of Kuldar" ){ 		where = "the waters of the Kuldar Sea"; }
+					if ( where == "ilha de Kuldar" ){ 		where = "the waters of the Kuldar Sea"; }
 					else if ( where == "the Land of Ambrosia" ){ 		where = "the waters of the Ambrosia Lakes"; }
 					else if ( where == "the Island of Umber Veil" ){ 	where = "the waters of the Umber Sea"; }
 					else if ( where == "the Land of Lodoria" ){ 		where = "the waters of the Lodoria Ocean"; }

@@ -1207,7 +1207,7 @@
 		</region>
 
 		// Bottle World
-		<region type="VillageRegion" priority="50" name="the City of Kuldara">
+		<region type="VillageRegion" priority="50" name="cidade de Kuldara">
 			<rect x="6720" y="1630" width="20" height="12" />
 			<rect x="6749" y="1613" width="62" height="28" />
 			<rect x="6709" y="1639" width="118" height="22" />
@@ -1230,14 +1230,14 @@
 			<rect x="6579" y="1847" width="29" height="47" />
 			<rect x="6812" y="1677" width="28" height="18" />
 		</region>
-		<region type="OutDoorBadRegion" priority="50" name="the Kuldar Cemetery">
+		<region type="OutDoorBadRegion" priority="50" name="cemitério de Kuldara">
 			<rect x="6632" y="1597" width="40" height="18" />
 			<rect x="6632" y="1547" width="55" height="51" />
 		</region>
 		<region type="OutDoorBadRegion" priority="50" name="the Valley of Dark Druids">
 			<rect x="6638" y="78" width="322" height="279" />
 		</region>
-		<region type="OutDoorBadRegion" priority="80" name="The Castle of Vordo">
+		<region type="OutDoorBadRegion" priority="80" name="castelo de Vordo">
 			<rect x="6598" y="1670" width="101" height="115" />
 			<rect x="6591" y="1782" width="115" height="20" />
 			<rect x="6686" y="1661" width="19" height="20" />
@@ -1258,14 +1258,14 @@
 		<region type="OutDoorBadRegion" priority="50" name="Vordo's Castle Grounds">
 			<rect x="7018" y="2803" width="123" height="146" />
 		</region>
-		<region type="DungeonRegion" priority="50" name="the Kuldara Sewers">
+		<region type="DungeonRegion" priority="50" name="esgoto de Kuldara">
 			<rect x="6162" y="2786" width="216" height="259" />
 				<spawning>
 					<object id="5001" type="HiddenTrap" minSpawnTime="PT1S" maxSpawnTime="PT1S" amount="22" />
 					<object id="5002" type="HiddenChest" minSpawnTime="PT1S" maxSpawnTime="PT1S" amount="11" />
 				</spawning>
 		</region>
-		<region type="DungeonRegion" priority="50" name="the Crypts of Kuldar">
+		<region type="DungeonRegion" priority="50" name="criptas de Kuldara">
 			<rect x="6451" y="2811" width="161" height="153" />
 				<spawning>
 					<object id="5003" type="HiddenTrap" minSpawnTime="PT1S" maxSpawnTime="PT1S" amount="15" />

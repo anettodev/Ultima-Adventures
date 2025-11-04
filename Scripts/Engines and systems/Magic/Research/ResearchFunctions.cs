@@ -80,7 +80,7 @@ namespace Server.Misc
 				case 4:		searchLocation = "the Isles of Dread";			break;
 				case 5:		searchLocation = "the Savaged Empire";			break;
 				case 6:		searchLocation = "the Serpent Island";			break;
-				case 7:		searchLocation = "the Bottle World of Kuldar";	break;
+				case 7:		searchLocation = "ilha de Kuldar";	break;
                 case 8:     searchLocation = "the Underworld";              break;
 			}
 

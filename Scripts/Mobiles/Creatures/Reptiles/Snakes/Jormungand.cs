@@ -107,7 +107,7 @@ namespace Server.Mobiles
 
 						string waters = Server.Misc.Worlds.GetRegionName( killer.Map, killer.Location );
 
-						if ( waters == "the Bottle World of Kuldar" ){ 		waters = "the Kuldar Sea"; }
+						if ( waters == "ilha de Kuldar" ){ 		waters = "the Kuldar Sea"; }
 						else if ( waters == "the Land of Ambrosia" ){ 		waters = "the Ambrosia Lakes"; }
 						else if ( waters == "the Island of Umber Veil" ){ 	waters = "the Umber Sea"; }
 						else if ( waters == "the Land of Lodoria" ){ 		waters = "the Lodoria Ocean"; }

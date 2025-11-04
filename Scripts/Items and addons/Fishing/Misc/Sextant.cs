@@ -97,7 +97,7 @@ namespace Server.Items
 			{
 				xWidth = 1573; yHeight = 966; startX = 699; startY = 3129;
 			}
-			else if ( world == "the Bottle World of Kuldar" && x >= 6127 && y >= 828 && x <= 7168 && y <= 2743 )
+			else if ( world == "ilha de Kuldar" && x >= 6127 && y >= 828 && x <= 7168 && y <= 2743 )
 			{
 				xWidth = 1041; yHeight = 1915; startX = 6127; startY = 828;
 			}

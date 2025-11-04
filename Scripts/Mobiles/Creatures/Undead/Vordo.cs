@@ -227,7 +227,7 @@ namespace Server.Items
 			{
 				from.SendMessage(55, "O item precisa estar na sua mochila." );
 			}
-			else if ( world == "the Bottle World of Kuldar" )
+			else if ( world == "ilha de Kuldar" )
 			{
 				Server.Items.CharacterDatabase.SetKeys( from, "VordoKey", true );
 				from.PlaySound( 0x249 );

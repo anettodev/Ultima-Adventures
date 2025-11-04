@@ -78,7 +78,7 @@ namespace Server.Mobiles
 							Server.Items.CharacterDatabase.GetDiscovered( from, "the Serpent Island" ) && 
 							Server.Items.CharacterDatabase.GetDiscovered( from, "the Isles of Dread" ) && 
 							Server.Items.CharacterDatabase.GetDiscovered( from, "the Savaged Empire" ) && 
-							Server.Items.CharacterDatabase.GetDiscovered( from, "the Bottle World of Kuldar" ) && 
+							Server.Items.CharacterDatabase.GetDiscovered( from, "ilha de Kuldar" ) && 
 							Server.Items.CharacterDatabase.GetDiscovered( from, "the Underworld" )
 					)
 					{

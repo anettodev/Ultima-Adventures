@@ -25,15 +25,15 @@ namespace Server.Items
 			{
 				string world = Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y );
 
-				if ( m is PlayerMobile && world == "the Bottle World of Kuldar" && !( Server.Items.CharacterDatabase.GetKeys( m, "VordoKey" ) ) )
+				if ( m is PlayerMobile && world == "ilha de Kuldar" && !( Server.Items.CharacterDatabase.GetKeys( m, "VordoKey" ) ) )
 				{
 					m.SendMessage(55, "Você não possui permissão para utilizar este portal. Talvez lhe falte um passaporte." );
 				}
-				else if ( Worlds.AllowEscape( m, m.Map, m.Location, m.X, m.Y ) == false && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "the Bottle World of Kuldar" )
+				else if ( Worlds.AllowEscape( m, m.Map, m.Location, m.X, m.Y ) == false && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "ilha de Kuldar" )
 				{
 					m.SendMessage( "This magical gate doesn't seem to do anything." );
 				}
-				else if ( Worlds.RegionAllowedRecall( m.Map, m.Location, m.X, m.Y ) == false && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "the Land of Ambrosia" && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "the Bottle World of Kuldar" )
+				else if ( Worlds.RegionAllowedRecall( m.Map, m.Location, m.X, m.Y ) == false && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "the Land of Ambrosia" && Worlds.GetMyWorld( m.Map, m.Location, m.X, m.Y ) != "ilha de Kuldar" )
 				{
 					m.SendMessage( "This magical gate doesn't seem to do anything." );
 				}
@@ -265,8 +265,8 @@ namespace Server.Items
 
 					int gX = 0; int gY = 0; int gZ = 0; Map map = Map.Trammel;
 
-                    if (gate1 && CharacterDatabase.GetDiscovered(from, "the Bottle World of Kuldar")) { gX = 6603; gY = 1082; gZ = 2; map = Map.Trammel; }
-                    if (gate2 && CharacterDatabase.GetDiscovered(from, "the Bottle World of Kuldar")) { gX = 6841; gY = 2212; gZ = 2; map = Map.Trammel; }
+                    if (gate1 && CharacterDatabase.GetDiscovered(from, "ilha de Kuldar")) { gX = 6603; gY = 1082; gZ = 2; map = Map.Trammel; }
+                    if (gate2 && CharacterDatabase.GetDiscovered(from, "ilha de Kuldar")) { gX = 6841; gY = 2212; gZ = 2; map = Map.Trammel; }
 
                     /*if (gate1 && CharacterDatabase.GetDiscovered( from, "the Land of Sosaria" )){gX = 2518; gY = 1529; gZ = 3; map = Map.Trammel;  }
 					else if (gate2 && CharacterDatabase.GetDiscovered( from, "the Land of Sosaria" )){gX = 3723; gY = 2155; gZ = 4; map = Map.Trammel;  }
@@ -296,8 +296,8 @@ namespace Server.Items
 					else if (gate26 && CharacterDatabase.GetDiscovered( from, "the Savaged Empire" )){gX = 656; gY = 240; gZ = 3; map = Map.TerMur;  }
 					else if (gate27 && CharacterDatabase.GetDiscovered( from, "the Savaged Empire" )){gX = 1112; gY = 1710; gZ = 20; map = Map.TerMur;  }
 					else if (gate28 && CharacterDatabase.GetDiscovered( from, "the Savaged Empire" )){gX = 303; gY = 1269; gZ = 3; map = Map.TerMur;  }
-					else if (gate29 && CharacterDatabase.GetDiscovered( from, "the Bottle World of Kuldar" )){gX = 6603; gY = 1082; gZ = 2; map = Map.Trammel;  }
-					else if (gate30 && CharacterDatabase.GetDiscovered( from, "the Bottle World of Kuldar" )){gX = 6377; gY = 302; gZ = 15; map = Map.Felucca;  }
+					else if (gate29 && CharacterDatabase.GetDiscovered( from, "ilha de Kuldar" )){gX = 6603; gY = 1082; gZ = 2; map = Map.Trammel;  }
+					else if (gate30 && CharacterDatabase.GetDiscovered( from, "ilha de Kuldar" )){gX = 6377; gY = 302; gZ = 15; map = Map.Felucca;  }
 					else if (gate31 && CharacterDatabase.GetDiscovered( from, "DarkMoor" )){gX = 603; gY = 709; gZ = -38; map = Map.Ilshenar;  }*/
 
                     if ( gX > 0 )
@@ -346,9 +346,9 @@ namespace Server.Items
 
 			string sGate = "";
 
-			if ( world == "the Bottle World of Kuldar" && !(CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" )) ){}
-            else if (gate == 1 && CharacterDatabase.GetDiscovered(m, "the Bottle World of Kuldar")) { sGate = "Ilha de Kuldar - Norte"; }
-            else if (gate == 2 && CharacterDatabase.GetDiscovered(m, "the Bottle World of Kuldar")) { sGate = "Ilha de Kuldar - Sul"; }
+			if ( world == "ilha de Kuldar" && !(CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" )) ){}
+            else if (gate == 1 && CharacterDatabase.GetDiscovered(m, "ilha de Kuldar")) { sGate = "Ilha de Kuldar - Norte"; }
+            else if (gate == 2 && CharacterDatabase.GetDiscovered(m, "ilha de Kuldar")) { sGate = "Ilha de Kuldar - Sul"; }
 
             /*else if ( gate == 1 && CharacterDatabase.GetDiscovered( m, "the Land of Sosaria" ) ){ sGate = "Sosaria - Central"; }
 			else if ( gate == 2 && CharacterDatabase.GetDiscovered( m, "the Land of Sosaria" )){ sGate = "Sosaria - Clues"; }
@@ -384,8 +384,8 @@ namespace Server.Items
 			else if ( gate == 27 && CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ){ sGate = "Savaged Empire - South"; }
 			else if ( gate == 28 && CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ){ sGate = "Savaged Empire - West"; }
 
-			else if ( gate == 29 && CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ){ sGate = "Ilha de Kuldar - Norte"; }
-			else if ( gate == 30 && CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ){ sGate = "Black Knight's Vault"; }
+			else if ( gate == 29 && CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ){ sGate = "Ilha de Kuldar - Norte"; }
+			else if ( gate == 30 && CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ){ sGate = "Black Knight's Vault"; }
 			else if ( gate == 31 && CharacterDatabase.GetDiscovered( m, "DarkMoor" ) ){ sGate = "The Lands of DarkMoor"; }*/
 
 			return sGate;

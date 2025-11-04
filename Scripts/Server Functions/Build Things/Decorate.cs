@@ -47,7 +47,7 @@ namespace Server.Commands
 				item.Delete();
 			}
 
-			m_Mobile.SendMessage( "Generating world decoration, please wait." );
+			m_Mobile.SendMessage( 95, "Generating world decoration, please wait." );
 
 			///// BUILD THE QUEST TELEPORTERS //////////////////////////////////////
 			BuildQuestItems.CreateQuestItems();

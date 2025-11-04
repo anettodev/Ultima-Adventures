@@ -871,7 +871,7 @@ namespace Server.Mobiles
 				else if ( m.X >= 1125 && m.Y >= 298 && m.X <= 1131 && m.Y <= 305 && m.Map == Map.TerMur ){ m.Location = Worlds.GetRandomLocation( "the Savaged Empire", "land" ); m.WhisperHue = 911; }
 				else if ( m.X >= 5457 && m.Y >= 3300 && m.X <= 5459 && m.Y <= 3302 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Land of Ambrosia", "land" ); m.WhisperHue = 911; }
 				else if ( m.X >= 608 && m.Y >= 4090 && m.X <= 704 && m.Y <= 4096 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Island of Umber Veil", "land" ); m.WhisperHue = 911; }
-				else if ( m.X >= 6126 && m.Y >= 827 && m.X <= 6132 && m.Y <= 833 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Bottle World of Kuldar", "land" ); m.WhisperHue = 911; }
+				else if ( m.X >= 6126 && m.Y >= 827 && m.X <= 6132 && m.Y <= 833 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "ilha de Kuldar", "land" ); m.WhisperHue = 911; }
 				else if ( m.X == 4 && m.Y == 4 && m.Map == Map.Ilshenar ){ m.Location = Worlds.GetRandomLocation( "the Underworld", "land" ); m.WhisperHue = 911; }
 			}
 			else
@@ -884,7 +884,7 @@ namespace Server.Mobiles
 				else if ( m.X >= 1125 && m.Y >= 298 && m.X <= 1131 && m.Y <= 305 && m.Map == Map.TerMur ){ m.Location = Worlds.GetRandomLocation( "the Savaged Empire", "sea" ); m.WhisperHue = 999; }
 				else if ( m.X >= 5457 && m.Y >= 3300 && m.X <= 5459 && m.Y <= 3302 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Land of Ambrosia", "sea" ); m.WhisperHue = 999; }
 				else if ( m.X >= 608 && m.Y >= 4090 && m.X <= 704 && m.Y <= 4096 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Island of Umber Veil", "sea" ); m.WhisperHue = 999; }
-				else if ( m.X >= 6126 && m.Y >= 827 && m.X <= 6132 && m.Y <= 833 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "the Bottle World of Kuldar", "sea" ); m.WhisperHue = 999; }
+				else if ( m.X >= 6126 && m.Y >= 827 && m.X <= 6132 && m.Y <= 833 && m.Map == Map.Trammel ){ m.Location = Worlds.GetRandomLocation( "ilha de Kuldar", "sea" ); m.WhisperHue = 999; }
 				else if ( m.X == 3 && m.Y == 3 && m.Map == Map.Ilshenar ){ m.Location = Worlds.GetRandomLocation( "the Underworld", "sea" ); m.WhisperHue = 999; }
 				else if ( m.X == 4 && m.Y == 4 && m.Map == Map.Ilshenar ){ m.Location = Worlds.GetRandomLocation( "the Underworld", "land" ); m.WhisperHue = 911; }
 
@@ -916,7 +916,7 @@ namespace Server.Mobiles
 				else if ( i.X >= 1125 && i.Y >= 298 && i.X <= 1131 && i.Y <= 305 && i.Map == Map.TerMur ){ i.Location = Worlds.GetRandomLocation( "the Savaged Empire", "sea" ); }
 				else if ( i.X >= 5457 && i.Y >= 3300 && i.X <= 5459 && i.Y <= 3302 && i.Map == Map.Trammel ){ i.Location = Worlds.GetRandomLocation( "the Land of Ambrosia", "sea" ); }
 				else if ( i.X >= 608 && i.Y >= 4090 && i.X <= 704 && i.Y <= 4096 && i.Map == Map.Trammel ){ i.Location = Worlds.GetRandomLocation( "the Island of Umber Veil", "sea" ); }
-				else if ( i.X >= 6126 && i.Y >= 827 && i.X <= 6132 && i.Y <= 833 && i.Map == Map.Trammel ){ i.Location = Worlds.GetRandomLocation( "the Bottle World of Kuldar", "sea" ); }
+				else if ( i.X >= 6126 && i.Y >= 827 && i.X <= 6132 && i.Y <= 833 && i.Map == Map.Trammel ){ i.Location = Worlds.GetRandomLocation( "ilha de Kuldar", "sea" ); }
 				else if ( i.X == 3 && i.Y == 3 && i.Map == Map.Ilshenar ){ i.Location = Worlds.GetRandomLocation( "the Underworld", "sea" ); }
 			}
 		}

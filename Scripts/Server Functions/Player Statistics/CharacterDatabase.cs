@@ -743,7 +743,7 @@ namespace Server.Items
 					else if ( nEntry == 5 && found == "1" && world == "the Serpent Island" ){ BeenThere = true; }
 					else if ( nEntry == 6 && found == "1" && world == "the Isles of Dread" ){ BeenThere = true; }
 					else if ( nEntry == 7 && found == "1" && world == "the Savaged Empire" ){ BeenThere = true; }
-					else if ( nEntry == 8 && found == "1" && world == "the Bottle World of Kuldar" ){ BeenThere = true; }
+					else if ( nEntry == 8 && found == "1" && world == "ilha de Kuldar" ){ BeenThere = true; }
 					else if ( nEntry == 9 && found == "1" && world == "the Underworld" ){ BeenThere = true; }
 					else if ( nEntry == 10 && found == "1" && world == "DarkMoor" ){ BeenThere = true; }
 
@@ -777,7 +777,7 @@ namespace Server.Items
 					else if ( nEntry == 5 && world == "the Serpent Island" ){ entry = entry + "1#"; }
 					else if ( nEntry == 6 && world == "the Isles of Dread" ){ entry = entry + "1#"; }
 					else if ( nEntry == 7 && world == "the Savaged Empire" ){ entry = entry + "1#"; }
-					else if ( nEntry == 8 && world == "the Bottle World of Kuldar" ){ entry = entry + "1#"; }
+					else if ( nEntry == 8 && world == "ilha de Kuldar" ){ entry = entry + "1#"; }
 					else if ( nEntry == 9 && world == "the Underworld" ){ entry = entry + "1#"; }
 					else if ( nEntry == 10 && world == "DarkMoor" ){ entry = entry + "1#"; }
 					else if ( nEntry == 1 ){ entry = entry + lands + "#"; }

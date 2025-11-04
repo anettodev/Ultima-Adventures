@@ -159,7 +159,7 @@ namespace Server.Misc
 				case 10:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 11:	searchLocation = "the Savaged Empire";			if ( !( CharacterDatabase.GetDiscovered( m, "the Savaged Empire" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 12:	searchLocation = "the Island of Umber Veil";	if ( !( CharacterDatabase.GetDiscovered( m, "the Island of Umber Veil" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
-				case 13:	searchLocation = "the Bottle World of Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "the Bottle World of Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
+				case 13:	searchLocation = "ilha de Kuldar";	if ( !( CharacterDatabase.GetDiscovered( m, "ilha de Kuldar" ) ) ){ searchLocation = "the Land of Sosaria"; } break;
 				case 14:	searchLocation = "the Underworld";				if ( !( CharacterDatabase.GetDiscovered( m, "the Underworld" ) ) ){ searchLocation = "the Underworld"; } break;
 			}
 
@@ -245,7 +245,7 @@ namespace Server.Misc
 							targets.Add( target ); aCount++;
 						}
 					}
-					else if ( searchLocation == "the Bottle World of Kuldar" )
+					else if ( searchLocation == "ilha de Kuldar" )
 					{
 						if ( SkipMe( target ) == true && target.Karma < 0 && target.Fame < fee && target.WhisperHue == 999 && Server.Misc.Worlds.IsMainRegion( Server.Misc.Worlds.GetRegionName( target.Map, target.Location ) ) && target.Map == Map.Trammel && Worlds.GetMyWorld( target.Map, target.Location, target.X, target.Y ) == searchLocation )
 						{

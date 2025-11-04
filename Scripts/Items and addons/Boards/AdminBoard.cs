@@ -264,7 +264,7 @@ namespace Server.Items
 			string world = Worlds.GetMyWorld( map, location, x, y );
 			Region reg = Region.Find( location, map );
 
-			if ( world == "the Bottle World of Kuldar" ){ face = 0x479; }
+			if ( world == "ilha de Kuldar" ){ face = 0x479; }
 			else if ( world == "the Land of Lodoria" ){ face = 0x4DC; }
 			else if ( world == "the Serpent Island" ){ face = 0x46A; }
 			else if ( world == "the Isles of Dread" ){ face = 0x469; }

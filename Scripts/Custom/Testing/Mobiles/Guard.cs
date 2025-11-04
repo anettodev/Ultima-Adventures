@@ -12,59 +12,46 @@ namespace Server.Mobiles
         Pikeman,
         Swordsman,
         Archer,
+        Melee,
         Cavalry,
         Wizard,
         Medic
     }
 
-    [CorpseName("a fallen Imperial guard")]
-    public class Guard : BaseCreature
+    public enum GuardPatent
+    {
+        Soldier=0,
+        Sargent=1,
+        lieutenant=2,
+        Captain=3,
+        Colonel=4,
+        General=5
+    }
+
+    [CorpseName("corpo de mercenario")]
+    public class Guard : BasePerson
     {
         private GuardType m_Type;
+        private GuardPatent m_Patent;
 
         [CommandProperty(AccessLevel.GameMaster)]
         public GuardType Type { get { return m_Type; } }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public GuardPatent Patent { get { return m_Patent; } }
 
         [Constructable]
-        public Guard(GuardType type)
-            : this(type, AIType.AI_Melee)
+        public Guard(GuardType type, GuardPatent patent) : this(type, patent, AIType.AI_Melee)
         {
 
         }
 
         [Constructable]
-        public Guard(GuardType type, AIType ai)
+        public Guard(GuardType type, GuardPatent patent, AIType ai)
             : base(ai, FightMode.Closest, 20, 1, 0.2, 0.4)
         {
-            m_Type = type;
+            setGuardsAttributes(type, patent);
 
-                        if (m_Type == GuardType.Wizard)
-                ChangeAIType(AIType.AI_Mage);
-
-            if (m_Type == GuardType.Archer)
-                ChangeAIType(AIType.AI_Archer);
-
-            if (m_Type == GuardType.Medic)
-                ChangeAIType(AIType.AI_Healer);
-
-            Title = GetTitle(type);
-            Hue = Utility.RandomSkinHue();
-            Karma = 12000;
-
-            if (0.50 >= Utility.RandomDouble())
-            {
-                Name = NameList.RandomName("female") + ",";
-                Female = true;
-                Body = 0x191;
-            }
-            else
-            {
-                Name = NameList.RandomName("male") + ",";
-                Body = 0x190;
-                FacialHairItemID = Utility.RandomList(0x203E, 0x203F, 0x2040, 0x2041, 0x204B, 0x204C, 0x204D);
-            }
-
-            SetStatsAndSkills(type);
+            SetStatsAndSkills(type, patent);
 
             SetDamage(7, 13);
             SetDamageType(ResistanceType.Physical, 100);
@@ -83,7 +70,7 @@ namespace Server.Mobiles
 
             this.AddItem(pack);
 
-            AddEquipment(type);
+            AddEquipment(type, patent);
 
             if (type == GuardType.Cavalry)
             {
@@ -92,18 +79,18 @@ namespace Server.Mobiles
                 horse.Controlled = true;
                 horse.ControlMaster = this;
                 horse.ControlOrder = OrderType.Come;
-                horse.RawName = "an Imperial War Horse";
-                horse.Hue = 1410;
+                horse.RawName = "Cavalo";
+                horse.Hue = 0;
                 horse.ItemID = 16033;
                 horse.Rider = this;
 
-                horse.RawStr += Utility.RandomMinMax(45, 60);
-                horse.RawDex += Utility.RandomMinMax(25, 30);
-                horse.RawInt += Utility.RandomMinMax(15, 20);
+                horse.RawStr += Utility.RandomMinMax(80, 100);
+                horse.RawDex += Utility.RandomMinMax(90, 120);
+                horse.RawInt += Utility.RandomMinMax(25, 40);
 
-                horse.SetSkill(SkillName.Wrestling, horse.Skills.Wrestling.Value + Utility.RandomMinMax(15, 20));
-                horse.SetSkill(SkillName.Tactics, horse.Skills.Tactics.Value + Utility.RandomMinMax(20, 25));
-                horse.SetSkill(SkillName.MagicResist, horse.Skills.MagicResist.Value + Utility.RandomMinMax(30, 40));
+                horse.SetSkill(SkillName.Wrestling, horse.Skills.Wrestling.Value + Utility.RandomMinMax(50, 70));
+                horse.SetSkill(SkillName.Tactics, horse.Skills.Tactics.Value + Utility.RandomMinMax(50, 70));
+                horse.SetSkill(SkillName.MagicResist, horse.Skills.MagicResist.Value + Utility.RandomMinMax(35, 60));
 
             }
         }
@@ -111,9 +98,47 @@ namespace Server.Mobiles
         public Guard(Serial serial)
             : base(serial)
         {
-        }    
+        }
 
         #region Stats
+        private void setGuardsAttributes(GuardType type, GuardPatent Patent)
+        {
+            // Gender
+            if (0.50 >= Utility.RandomDouble())
+            {
+                Name = NameList.RandomName("female");
+                Female = true;
+                Body = 0x191;
+            }
+            else
+            {
+                Name = NameList.RandomName("male");
+                Body = 0x190;
+                FacialHairItemID = Utility.RandomList(0x203E, 0x203F, 0x2040, 0x2041, 0x204B, 0x204C, 0x204D);
+            }
+
+            // Set the Type AI Attrs
+            m_Type = type;
+            m_Patent = Patent;
+            ChangeAIType(AIType.AI_Melee);
+            if (m_Type == GuardType.Wizard)
+            {
+                ChangeAIType(AIType.AI_Mage);
+            }
+            else if (m_Type == GuardType.Archer)
+            {
+                ChangeAIType(AIType.AI_Archer);
+            }
+            else if (m_Type == GuardType.Medic)
+            {
+                ChangeAIType(AIType.AI_Healer);
+            }
+
+            Title = GetTitle(type);
+            Hue = Utility.RandomSkinHue();
+            Karma = Utility.RandomMinMax(2000, 10000);
+        }
+
         private string GetTitle(GuardType type)
         {
             string title;
@@ -121,130 +146,314 @@ namespace Server.Mobiles
             switch (type)
             {
                 default:
-                case GuardType.Archer: title = "the Imperial Archer"; break;
-                case GuardType.Cavalry: title = "Imperial Cavalry"; break;
-                case GuardType.Pikeman: title = "the Imperial Hoplite"; break;
-                case GuardType.Swordsman: title = "the Imperial Knight"; break;
-                case GuardType.Wizard: title = "the Imperial Wizard"; break;
-                case GuardType.Medic: title = "the Imperial Medic"; break;
+                case GuardType.Archer: title = "o Arqueiro"; break;
+                case GuardType.Cavalry: title = "o Cavaleiro"; break;
+                case GuardType.Pikeman: title = "o Hoplita"; break;
+                case GuardType.Swordsman: title = "o Espadachim"; break;
+                case GuardType.Wizard: title = "o Mago"; break;
+                case GuardType.Medic: title = "o Curandeiro"; break;
             }
 
             return title;
         }
 
-        private void SetStatsAndSkills(GuardType type)
+        private void SetStatsAndSkills(GuardType type, GuardPatent patent)
         {
-            switch (type)
+            switch (patent) 
             {
                 default:
-                case GuardType.Cavalry:
-                case GuardType.Pikeman:
-                case GuardType.Swordsman:
+                case GuardPatent.Soldier: 
                     {
-                        SetStr(150, 175);
-                        SetDex(80, 100);
-                        SetInt(65, 80);
+                        SetStr(70, 80);
+                        SetDex(70, 80);
+                        SetInt(70, 80);
 
-                        SetHits(475, 700);
+                        SetHits(100, 120);
+                        
+                        SetSkill(SkillName.Tactics, 70, 80);
+                        SetSkill(SkillName.Healing, 70, 80);
+                        SetSkill(SkillName.Anatomy, 70, 80);
+                        SetSkill(SkillName.Wrestling, 70, 80);
+                        SetSkill(SkillName.Swords, 70, 80);
+                        SetSkill(SkillName.Fencing, 70, 80);
+                        SetSkill(SkillName.Parry, 50, 70);
+                        SetSkill(SkillName.Macing, 70, 80);
+                        SetSkill(SkillName.MagicResist, 50, 70);
 
-                        SetSkill(SkillName.Tactics, 85, 100);
-                        SetSkill(SkillName.Healing, 65, 85);
-                        SetSkill(SkillName.Anatomy, 100, 110);
-                        SetSkill(SkillName.Wrestling, 95, 110);
-                        SetSkill(SkillName.Swords, 95, 105);
-                        SetSkill(SkillName.Fencing, 95, 105);
-                        SetSkill(SkillName.MagicResist, 95, 105);
-
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(70, 90);
+                            SetSkill(SkillName.Magery, 70, 80);
+                            SetSkill(SkillName.EvalInt, 70, 80);
+                            SetSkill(SkillName.Focus, 50, 70);
+                            SetSkill(SkillName.Meditation, 70, 80);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 70, 80);
+                            this.RangeFight = 6;
+                        }
                     } break;
-
-                case GuardType.Archer:
+                case GuardPatent.Sargent:
                     {
-                        SetStr(100, 130);
-                        SetDex(125, 140);
-                        SetInt(75, 90);
+                        SetStr(80, 90);
+                        SetDex(80, 90);
+                        SetInt(80, 90);
 
-                        SetHits(300, 400);
+                        SetHits(120, 140);
 
-                        SetSkill(SkillName.Tactics, 85, 100);
-                        SetSkill(SkillName.Healing, 65, 85);
-                        SetSkill(SkillName.Anatomy, 100, 105);
-                        SetSkill(SkillName.Wrestling, 75, 80);
-                        SetSkill(SkillName.Archery, 95, 105);
-                        SetSkill(SkillName.MagicResist, 95, 105);
+                        SetSkill(SkillName.Tactics, 80, 90);
+                        SetSkill(SkillName.Healing, 80, 90);
+                        SetSkill(SkillName.Anatomy, 80, 90);
+                        SetSkill(SkillName.Wrestling, 80, 90);
+                        SetSkill(SkillName.Swords, 80, 90);
+                        SetSkill(SkillName.Fencing, 80, 90);
+                        SetSkill(SkillName.Parry, 70, 80);
+                        SetSkill(SkillName.Macing, 80, 90);
+                        SetSkill(SkillName.MagicResist, 65, 75);
 
-                        this.RangeFight = 6;
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(80, 100);
+                            SetSkill(SkillName.Magery, 80, 90);
+                            SetSkill(SkillName.EvalInt, 80, 90);
+                            SetSkill(SkillName.Focus, 60, 80);
+                            SetSkill(SkillName.Meditation, 80, 90);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 80, 90);
+                            this.RangeFight = 6;
+                        }
                     } break;
-
-                case GuardType.Wizard:
+                case GuardPatent.lieutenant:
                     {
-                        SetStr(75, 80);
-                        SetDex(100, 125);
-                        SetInt(175, 200);
+                        SetStr(90, 100);
+                        SetDex(90, 100);
+                        SetInt(90, 100);
 
-                        SetHits(200, 250);
-                        SetMana(200, 300);
+                        SetHits(150, 170);
 
-                        SetSkill(SkillName.Tactics, 70, 85);
-                        SetSkill(SkillName.Wrestling, 70, 85);
-                        SetSkill(SkillName.Magery, 100, 130);
-                        SetSkill(SkillName.EvalInt, 95, 105);
-                        SetSkill(SkillName.Focus, 60, 70);
+                        SetSkill(SkillName.Tactics, 90, 100);
+                        SetSkill(SkillName.Healing, 90, 100);
+                        SetSkill(SkillName.Anatomy, 90, 100);
+                        SetSkill(SkillName.Wrestling, 90, 100);
+                        SetSkill(SkillName.Swords, 90, 100);
+                        SetSkill(SkillName.Fencing, 90, 100);
+                        SetSkill(SkillName.Parry, 80, 90);
                         SetSkill(SkillName.Macing, 90, 100);
-                        SetSkill(SkillName.MagicResist, 95, 105);
-                        SetSkill(SkillName.Meditation, 90, 100);
+                        SetSkill(SkillName.MagicResist, 75, 85);
 
-                    } break;
-
-                case GuardType.Medic:
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(90, 110);
+                            SetSkill(SkillName.Magery, 80, 90);
+                            SetSkill(SkillName.EvalInt, 80, 90);
+                            SetSkill(SkillName.Focus, 60, 80);
+                            SetSkill(SkillName.Meditation, 80, 90);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 80, 90);
+                            this.RangeFight = 6;
+                        }
+                    }
+                    break;
+                case GuardPatent.Captain:
                     {
-                        SetStr(75, 80);
-                        SetDex(100, 125);
-                        SetInt(175, 200);
+                        SetStr(100, 110);
+                        SetDex(100, 110);
+                        SetInt(100, 110);
+
+                        SetHits(170, 190);
+
+                        SetSkill(SkillName.Tactics, 95, 110);
+                        SetSkill(SkillName.Healing, 95, 110);
+                        SetSkill(SkillName.Anatomy, 95, 110);
+                        SetSkill(SkillName.Wrestling, 95, 110);
+                        SetSkill(SkillName.Swords, 95, 110);
+                        SetSkill(SkillName.Fencing, 95, 110);
+                        SetSkill(SkillName.Parry, 85, 100);
+                        SetSkill(SkillName.Macing, 95, 110);
+                        SetSkill(SkillName.MagicResist, 85, 95);
+
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(100, 120);
+                            SetSkill(SkillName.Magery, 90, 100);
+                            SetSkill(SkillName.EvalInt, 90, 100);
+                            SetSkill(SkillName.Focus, 70, 90);
+                            SetSkill(SkillName.Meditation, 90, 100);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 90, 100);
+                            this.RangeFight = 6;
+                        }
+                    }
+                    break;
+                case GuardPatent.Colonel:
+                    {
+                        SetStr(110, 120);
+                        SetDex(110, 120);
+                        SetInt(110, 120);
 
                         SetHits(200, 250);
-                        SetMana(200, 300);
 
-                        SetSkill(SkillName.Tactics, 40, 55);
-                        SetSkill(SkillName.Wrestling, 90, 105);
-                        SetSkill(SkillName.Magery, 100, 105);
-                        SetSkill(SkillName.EvalInt, 55, 65);
-                        SetSkill(SkillName.Focus, 60, 70);
-                        SetSkill(SkillName.Meditation, 90, 100);
-                        SetSkill(SkillName.MagicResist, 95, 105);
+                        SetSkill(SkillName.Tactics, 110, 120);
+                        SetSkill(SkillName.Healing, 110, 120);
+                        SetSkill(SkillName.Anatomy, 110, 120);
+                        SetSkill(SkillName.Wrestling, 110, 120);
+                        SetSkill(SkillName.Swords, 110, 120);
+                        SetSkill(SkillName.Fencing, 110, 120);
+                        SetSkill(SkillName.Parry, 100, 110);
+                        SetSkill(SkillName.Macing, 110, 120);
+                        SetSkill(SkillName.MagicResist, 100, 110);
 
-                    } break;
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(120, 150);
+                            SetSkill(SkillName.Magery, 100, 110);
+                            SetSkill(SkillName.EvalInt, 100, 110);
+                            SetSkill(SkillName.Focus, 80, 100);
+                            SetSkill(SkillName.Meditation, 100, 110);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 100, 110);
+                            this.RangeFight = 6;
+                        }
+                    }
+                    break;
+                case GuardPatent.General:
+                    {
+                        SetStr(120, 120);
+                        SetDex(120, 120);
+                        SetInt(120, 120);
+
+                        SetHits(300, 500);
+
+                        SetSkill(SkillName.Tactics, 120);
+                        SetSkill(SkillName.Healing, 120);
+                        SetSkill(SkillName.Anatomy, 120);
+                        SetSkill(SkillName.Wrestling, 120);
+                        SetSkill(SkillName.Swords, 120);
+                        SetSkill(SkillName.Fencing, 120);
+                        SetSkill(SkillName.Parry, 120);
+                        SetSkill(SkillName.Macing, 120);
+                        SetSkill(SkillName.MagicResist, 120);
+
+                        if (type == GuardType.Wizard)
+                        {
+                            SetMana(150, 200);
+                            SetSkill(SkillName.Magery, 120);
+                            SetSkill(SkillName.EvalInt, 120);
+                            SetSkill(SkillName.Focus, 100);
+                            SetSkill(SkillName.Meditation, 120);
+                        }
+                        else if (type == GuardType.Archer)
+                        {
+                            SetSkill(SkillName.Archery, 120);
+                            this.RangeFight = 6;
+                        }
+                    }
+                    break;
             }
         }
 
-        private void AddEquipment(GuardType type)
+        private void AddEquipment(GuardType type, GuardPatent patent)
         {
-            AddItem(new Boots());
-            AddItem(new Cloak(1155));
-            AddItem(new BodySash(1155));
-
+            // color
+            int cloathColor = 0; // soldier
+            switch (patent)
+            {
+                default:
+                case GuardPatent.Soldier:
+                case GuardPatent.Sargent:
+                    {
+                        cloathColor = 0;
+                    }
+                    break;
+                case GuardPatent.lieutenant:
+                    {
+                        cloathColor = 291;
+                    }
+                    break;
+                case GuardPatent.Captain: 
+                    {
+                        cloathColor = 346;
+                    } break;
+                case GuardPatent.Colonel:
+                case GuardPatent.General:
+                    {
+                        cloathColor = 2815;
+                    }
+                    break;
+            }
+            // equipments
             switch (type)
             {
                 default:
                 case GuardType.Archer:
                     {
-                        AddItem(new LeatherLegs());
-                        AddItem(new StuddedChest());
-                        AddItem(new LeatherGloves());
-                        AddItem(new LeatherArms());
-
+                        LeatherLegs legs = new LeatherLegs();
+                        StuddedChest chest = new StuddedChest();
+                        LeatherGloves gloves = new LeatherGloves();
+                        LeatherArms arms = new LeatherArms();
                         Bow bow = new Bow();
-                        bow.Quality = WeaponQuality.Exceptional;
+                        bow.Quality = WeaponQuality.Low;
 
+                        AddToBackpack(new Arrow(100));
+
+                        if (patent >= GuardPatent.lieutenant) 
+                        {
+                            legs.Resource = CraftResource.SpinedLeather;
+                            chest.Resource = CraftResource.SpinedLeather;
+                            gloves.Resource = CraftResource.SpinedLeather;
+                            arms.Resource = CraftResource.SpinedLeather;
+
+                            //bow.Resource = CraftResource.AshTree;
+                            bow.Quality = WeaponQuality.Regular;
+                        }
+                        if (patent >= GuardPatent.Captain)
+                        {
+                            legs.Resource = CraftResource.HornedLeather;
+                            chest.Resource = CraftResource.HornedLeather;
+                            gloves.Resource = CraftResource.HornedLeather;
+                            arms.Resource = CraftResource.HornedLeather;
+
+                            bow.Resource = CraftResource.AshTree;
+                            bow.Quality = WeaponQuality.Regular;
+
+                            //bow.Speed += 3;
+                            AddToBackpack(new Arrow(50));
+                        }
+                        if (patent >= GuardPatent.Colonel)
+                        {
+                            legs.Resource = CraftResource.BarbedLeather;
+                            chest.Resource = CraftResource.BarbedLeather;
+                            gloves.Resource = CraftResource.BarbedLeather;
+                            arms.Resource = CraftResource.BarbedLeather;
+
+                            bow.Resource = CraftResource.EbonyTree;
+                            bow.Quality = WeaponQuality.Regular;
+                            bow.Speed += 1;
+                            AddToBackpack(new Arrow(100)); // + 100
+                        }
+                        AddItem(legs);
+                        AddItem(chest);
+                        AddItem(gloves);
+                        AddItem(arms);
                         AddItem(bow);
-                        AddToBackpack(new Arrow(200));
                     } break;
                 case GuardType.Cavalry:
                     {
-                        AddItem(new PlateLegs());
-                        AddItem(new RingmailChest());
-                        AddItem(new FancyShirt());
-                        AddItem(new PlateGorget());
-                        AddItem(new RingmailGloves());
+
+                        PlateLegs legs = new PlateLegs();
+                        RingmailChest chest = new RingmailChest();
+                        FancyShirt shirt = new FancyShirt();
+                        PlateGorget gorget = new PlateGorget();
+                        RingmailGloves gloves = new RingmailGloves();
 
                         BaseWeapon weapon;
 
@@ -253,43 +462,140 @@ namespace Server.Mobiles
                         else
                             weapon = new Bardiche();
 
-                        weapon.Quality = WeaponQuality.Exceptional;
-                        weapon.Resource = CraftResource.Gold;
-                        weapon.Speed += 5;
+                        legs.Resource = CraftResource.Iron;
+                        chest.Resource = CraftResource.Iron;
+                        shirt.Resource = CraftResource.Iron;
+                        gorget.Resource = CraftResource.Iron;
+                        gloves.Resource = CraftResource.Iron;
+                        weapon.Quality = WeaponQuality.Low;
+                        weapon.Resource = CraftResource.Iron;
 
+                        if (patent >= GuardPatent.lieutenant)
+                        {
+                            legs.Resource = CraftResource.DullCopper;
+                            chest.Resource = CraftResource.DullCopper;
+                            shirt.Resource = CraftResource.DullCopper;
+                            gorget.Resource = CraftResource.DullCopper;
+                            gloves.Resource = CraftResource.DullCopper;
+
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.DullCopper;
+                            weapon.Speed += 1;
+                        }
+                        if (patent >= GuardPatent.Captain)
+                        {
+                            legs.Resource = CraftResource.Copper;
+                            chest.Resource = CraftResource.Copper;
+                            shirt.Resource = CraftResource.Copper;
+                            gorget.Resource = CraftResource.Copper;
+                            gloves.Resource = CraftResource.Copper;
+
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.Copper;
+                            //weapon.Speed += 1;
+                        }
+                        if (patent >= GuardPatent.Colonel)
+                        {
+                            legs.Resource = CraftResource.Bronze;
+                            chest.Resource = CraftResource.Bronze;
+                            shirt.Resource = CraftResource.Bronze;
+                            gorget.Resource = CraftResource.Bronze;
+                            gloves.Resource = CraftResource.Bronze;
+
+                            weapon.Quality = WeaponQuality.Exceptional;
+                            weapon.Resource = CraftResource.Bronze;
+                            //weapon.Speed += 1;
+                        }
+                        AddItem(legs);
+                        AddItem(chest);
+                        AddItem(shirt);
+                        AddItem(gorget);
+                        AddItem(gloves);
                         AddItem(weapon);
                     } break;
-
                 case GuardType.Pikeman:
                     {
-                        AddItem(new RingmailLegs());
-                        AddItem(new RingmailChest());
-                        AddItem(new RingmailArms());
-                        AddItem(new RingmailGloves());
-                        AddItem(new PlateGorget());
+                        RingmailLegs legs = new RingmailLegs();
+                        RingmailChest chest = new RingmailChest();
+                        RingmailArms arms = new RingmailArms();
+                        PlateGorget gorget = new PlateGorget();
+                        RingmailGloves gloves = new RingmailGloves();
 
+                        BaseArmor helm = new CloseHelm();
                         if (Utility.RandomBool())
-                            AddItem(new CloseHelm());
-                        else
-                            AddItem(new NorseHelm());
+                            helm = new NorseHelm();
 
-                        AddItem(new Pike());
+                        Pike weapon = new Pike();
+
+                        helm.Resource = CraftResource.Iron;
+                        legs.Resource = CraftResource.Iron;
+                        chest.Resource = CraftResource.Iron;
+                        arms.Resource = CraftResource.Iron;
+                        gorget.Resource = CraftResource.Iron;
+                        gloves.Resource = CraftResource.Iron;
+                        weapon.Quality = WeaponQuality.Low;
+                        weapon.Resource = CraftResource.Iron;
+
+                        if (patent >= GuardPatent.lieutenant)
+                        {
+                            helm.Resource = CraftResource.DullCopper;
+                            legs.Resource = CraftResource.DullCopper;
+                            chest.Resource = CraftResource.DullCopper;
+                            arms.Resource = CraftResource.DullCopper;
+                            gorget.Resource = CraftResource.DullCopper;
+                            gloves.Resource = CraftResource.DullCopper;
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.DullCopper;
+                            //weapon.Speed += 3;
+                        }
+                        if (patent >= GuardPatent.Captain)
+                        {
+                            helm.Resource = CraftResource.Copper;
+                            legs.Resource = CraftResource.Copper;
+                            chest.Resource = CraftResource.Copper;
+                            arms.Resource = CraftResource.Copper;
+                            gorget.Resource = CraftResource.Copper;
+                            gloves.Resource = CraftResource.Copper;
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.Copper;
+                            //weapon.Speed += 3;
+                        }
+                        if (patent >= GuardPatent.Colonel)
+                        {
+                            helm.Resource = CraftResource.Bronze;
+                            legs.Resource = CraftResource.Bronze;
+                            chest.Resource = CraftResource.Bronze;
+                            arms.Resource = CraftResource.Bronze;
+                            gorget.Resource = CraftResource.Bronze;
+                            gloves.Resource = CraftResource.Bronze;
+                            weapon.Quality = WeaponQuality.Exceptional;
+                            weapon.Resource = CraftResource.Bronze;
+                            //weapon.Speed += 5;
+                        }
+
+                        AddItem(helm);
+                        AddItem(legs);
+                        AddItem(chest);
+                        AddItem(arms);
+                        AddItem(gorget);
+                        AddItem(gloves);
+                        AddItem(weapon);
                     }
                     break;
-
                 case GuardType.Swordsman:
                     {
-                        AddItem(new ChainLegs());
-                        AddItem(new ChainChest());
-                        AddItem(new RingmailArms());
-                        AddItem(new RingmailGloves());
-                        AddItem(new PlateGorget());
+                        ChainLegs legs = new ChainLegs();
+                        ChainChest chest = new ChainChest();
+                        RingmailArms arms = new RingmailArms();
+                        PlateGorget gorget = new PlateGorget();
+                        RingmailGloves gloves = new RingmailGloves();
 
+                        BaseArmor helm = new CloseHelm();
                         switch (Utility.Random(3))
                         {
-                            case 0: AddItem(new CloseHelm()); break;
-                            case 1: AddItem(new NorseHelm()); break;
-                            case 2: AddItem(new PlateHelm()); break;
+                            case 0: helm = new CloseHelm(); break;
+                            case 1: helm = new NorseHelm(); break;
+                            case 2: helm = new PlateHelm(); break;
                         }
 
                         BaseWeapon weapon;
@@ -303,39 +609,122 @@ namespace Server.Mobiles
                             case 3: weapon = new Axe(); break;
                         }
 
-                        weapon.Quality = WeaponQuality.Exceptional;
-                        weapon.Resource = CraftResource.Gold;
+                        BaseShield shield = new HeaterShield();
+                        if (Utility.RandomBool()) 
+                        {
+                            shield = new MetalKiteShield();
+                        }
+
+                        helm.Resource = CraftResource.Iron;
+                        legs.Resource = CraftResource.Iron;
+                        chest.Resource = CraftResource.Iron;
+                        arms.Resource = CraftResource.Iron;
+                        gorget.Resource = CraftResource.Iron;
+                        gloves.Resource = CraftResource.Iron;
+                        shield.Quality = ArmorQuality.Low;
+                        shield.Resource = CraftResource.Iron;
+                        weapon.Quality = WeaponQuality.Low;
+                        weapon.Resource = CraftResource.Iron;
                         weapon.Layer = Layer.OneHanded;
 
-                        AddItem(weapon);
+                        if (patent >= GuardPatent.lieutenant)
+                        {
+                            helm.Resource = CraftResource.DullCopper;
+                            legs.Resource = CraftResource.DullCopper;
+                            chest.Resource = CraftResource.DullCopper;
+                            arms.Resource = CraftResource.DullCopper;
+                            gorget.Resource = CraftResource.DullCopper;
+                            gloves.Resource = CraftResource.DullCopper;
+                            shield.Quality = ArmorQuality.Regular;
+                            shield.Resource = CraftResource.DullCopper;
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.DullCopper;
+                            //weapon.Speed += 3;
+                        }
+                        if (patent >= GuardPatent.Captain)
+                        {
+                            helm.Resource = CraftResource.Copper;
+                            legs.Resource = CraftResource.Copper;
+                            chest.Resource = CraftResource.Copper;
+                            arms.Resource = CraftResource.Copper;
+                            gorget.Resource = CraftResource.Copper;
+                            gloves.Resource = CraftResource.Copper;
+                            shield.Quality = ArmorQuality.Regular;
+                            shield.Resource = CraftResource.Copper;
+                            weapon.Quality = WeaponQuality.Regular;
+                            weapon.Resource = CraftResource.Copper;
+                            //weapon.Speed += 3;
+                        }
+                        if (patent >= GuardPatent.Colonel)
+                        {
+                            helm.Resource = CraftResource.Bronze;
+                            legs.Resource = CraftResource.Bronze;
+                            chest.Resource = CraftResource.Bronze;
+                            arms.Resource = CraftResource.Bronze;
+                            gorget.Resource = CraftResource.Bronze;
+                            gloves.Resource = CraftResource.Bronze;
+                            shield.Quality = ArmorQuality.Exceptional;
+                            shield.Resource = CraftResource.Bronze;
+                            weapon.Quality = WeaponQuality.Exceptional;
+                            weapon.Resource = CraftResource.Bronze;
+                            //weapon.Speed += 5;
+                        }
 
-                        if (Utility.RandomBool())
-                            AddItem(new HeaterShield());
-                        else
-                            AddItem(new MetalKiteShield());
+                        AddItem(helm);
+                        AddItem(legs);
+                        AddItem(chest);
+                        AddItem(arms);
+                        AddItem(gorget);
+                        AddItem(gloves);
+                        AddItem(weapon);
+                        AddItem(shield);
                     } 
                     break;
-
                 case GuardType.Wizard:
                     {
-                        AddItem(new WizardsHat(Utility.RandomGreenHue()));
-                        AddItem(new Robe(Utility.RandomGreenHue()));      
-   
+                        AddItem(new WizardsHat(cloathColor));
+                        AddItem(new Robe(Utility.RandomNondyedHue()));
+
+                        BagOfReagents reags = new BagOfReagents();
+                        AddItem(reags);
+
                         GnarledStaff staff = new GnarledStaff();
                         staff.Attributes.SpellChanneling = 1;
-                        staff.Attributes.SpellDamage = Utility.RandomMinMax(4, 8);
+                        staff.Attributes.SpellDamage = Utility.RandomMinMax(2, 4);
+                        staff.Quality = WeaponQuality.Low;
+
+                        if (patent >= GuardPatent.lieutenant)
+                        {
+                            staff.Attributes.SpellDamage = Utility.RandomMinMax(3, 5);
+                            staff.Resource = CraftResource.RegularWood;
+                            staff.Quality = WeaponQuality.Regular;
+                        }
+                        if (patent >= GuardPatent.Captain)
+                        {
+                            staff.Attributes.SpellDamage = Utility.RandomMinMax(5, 7);
+                            staff.Resource = CraftResource.AshTree;
+                            staff.Quality = WeaponQuality.Regular;
+                        }
+                        if (patent >= GuardPatent.Colonel)
+                        {
+                            staff.Attributes.SpellDamage = Utility.RandomMinMax(7, 9);
+                            staff.Resource = CraftResource.EbonyTree;
+                            staff.Quality = WeaponQuality.Exceptional;
+                        }
                         AddItem(staff);
                     }
                     break;
-
                 case GuardType.Medic:
                     {
-                        AddItem(new Bandana(Utility.RandomGreenHue()));
-                        AddItem(new Robe(Utility.RandomGreenHue()));
-
+                        AddItem(new Bandana(cloathColor));
+                        AddItem(new Robe(Utility.RandomNondyedHue()));
                     } 
                     break;
             }
+
+            AddItem(new Boots());
+            AddItem(new Cloak(cloathColor));
+            AddItem(new BodySash(cloathColor));
         }
         #endregion
 
@@ -408,11 +797,11 @@ namespace Server.Mobiles
                 {
                     switch(Utility.RandomMinMax( 1, 5 ))
                     {
-                        case 1: Say("I am in dire need of assistance."); break;
-                        case 2: Say("I don't think I'm going to make it."); break;
-                        case 3: Say("I could use a hand over here."); break;
-                        case 4: Say("I can't handle this alone."); break;
-                        case 5: Say("This isn't going to end well for me."); break;
+                        case 1: Say("Preciso de ajuda!!"); break;
+                        case 2: Say("Eu não acho que vou conseguir!"); break;
+                        case 3: Say("Alguém pode me ajudar?"); break;
+                        case 4: Say("Não consigo sozinho!."); break;
+                        case 5: Say("Acho que me lasquei!"); break;
                         default: break;
                     }
 
@@ -428,10 +817,10 @@ namespace Server.Mobiles
                                 {                                
                                     switch (Utility.RandomMinMax(1, 4))
                                     {
-                                        case 1: m.Say("I'm on the way."); break;
-                                        case 2: m.Say("Hold tight {0} I've got you.", Name); break;
-                                        case 3: m.Say("You're going to make it out of this."); break;
-                                        case 4: m.Say("Just hang on {0} I'm coming.", Name); break;
+                                        case 1: m.Say("Estou a caminho!"); break;
+                                        case 2: m.Say("Aguente firme {0} ! Estou com você!", Name); break;
+                                        case 3: m.Say("Você consegue!"); break;
+                                        case 4: m.Say("Segura ai {0} ! Estou chegando.", Name); break;
                                         default: break;
                                     }
                                 }
@@ -459,6 +848,7 @@ namespace Server.Mobiles
             writer.Write((int)0);
 
             writer.Write((int)m_Type);
+            writer.Write((int)m_Patent);
         }
 
         public override void Deserialize(GenericReader reader)
@@ -468,6 +858,7 @@ namespace Server.Mobiles
             int version = reader.ReadInt();
 
             m_Type = (GuardType)reader.ReadInt();
+            m_Patent = (GuardPatent)reader.ReadInt();
         }
     }
 }

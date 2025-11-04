@@ -36,7 +36,7 @@ namespace Server.Items
 			else if ( MapWorld == "the Savaged Empire" ){ dist = 40 + (int)(skillValue * 9); size = 24 + (int)(skillValue * 2.4); }
 			else if ( MapWorld == "the Isles of Dread" ){ dist = 40 + (int)(skillValue * 9); size = 24 + (int)(skillValue * 2.4); }
 			else if ( MapWorld == "the Land of Ambrosia" ){ dist = 40 + (int)(skillValue * 8); size = 24 + (int)(skillValue * 2); }
-			else if ( MapWorld == "the Bottle World of Kuldar" ){ dist = 40 + (int)(skillValue * 8); size = 24 + (int)(skillValue * 2); }
+			else if ( MapWorld == "ilha de Kuldar" ){ dist = 40 + (int)(skillValue * 8); size = 24 + (int)(skillValue * 2); }
 			else if ( MapWorld == "the Island of Umber Veil" ){ dist = 40 + (int)(skillValue * 8); size = 24 + (int)(skillValue * 2); }
 			else if ( MapWorld == "the Underworld" ){ dist = 50 + (int)(skillValue * 10); size = 24 + (int)(skillValue * 2.8); }
 			else

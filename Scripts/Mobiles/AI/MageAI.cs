@@ -1602,6 +1602,7 @@ namespace Server.Mobiles
                 // If more than 10 steps away from home range:
                 if ( (int)m_Mobile.GetDistanceToSqrt(m_Mobile.Home) > (m_Mobile.RangeHome + 15) )
                 {
+
                     int i = 0;
                     while (i < iSteps)
                     {

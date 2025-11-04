@@ -113,7 +113,7 @@ namespace Server.Misc
 				list = m_Tokuno;
 			else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" )
 				list = m_TerMur;
-			else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Bottle World of Kuldar" )
+			else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "ilha de Kuldar" )
 				list = m_Bottle;
 			else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" )
 				list = m_Umber;
@@ -176,7 +176,7 @@ namespace Server.Misc
 			else if ( world == "the Serpent Island" ){ list = m_Malas; map = Map.Malas; }
 			else if ( world == "the Isles of Dread" ){ list = m_Tokuno; map = Map.Tokuno; }
 			else if ( world == "the Savaged Empire" ){ list = m_TerMur; map = Map.TerMur; }
-			else if ( world == "the Bottle World of Kuldar" ){ list = m_Bottle; map = Map.Trammel; }
+			else if ( world == "ilha de Kuldar" ){ list = m_Bottle; map = Map.Trammel; }
 			else if ( world == "the Island of Umber Veil" ){ list = m_Umber; map = Map.Trammel; }
 			else if ( world == "the Land of Ambrosia" ){ list = m_Ambrosia; map = Map.Trammel; }
 			else if ( world == "the Underworld" ){ list = m_Ilshenar; map = Map.Ilshenar; }

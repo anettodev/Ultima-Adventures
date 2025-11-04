@@ -24,15 +24,15 @@ namespace Server.Items
 		{
 			ShroomType = Utility.RandomMinMax( 1, 3 );
 			Light = LightType.Circle150;
-			Name = "mushroom";
+			Name = "cogumelo";
 			switch( Utility.RandomMinMax( 1, 6 ) )
 			{
-				case 1: Name = "strange mushroom"; break;
-				case 2: Name = "weird mushroom"; break;
-				case 3: Name = "odd mushroom"; break;
-				case 4: Name = "curious mushroom"; break;
-				case 5: Name = "peculiar mushroom"; break;
-				case 6: Name = "bizarre mushroom"; break;
+				case 1: Name = "cogumelo estranho"; break;
+				case 2: Name = "cogumelo esquisito"; break;
+				case 3: Name = "cogumelo bizarro"; break;
+				case 4: Name = "cogumelo diferente"; break;
+				case 5: Name = "cogumelo peculiar"; break;
+				case 6: Name = "cogumelo colorido"; break;
 			}
 			Hue = Utility.RandomList( 0x47E, 0x48B, 0x495, 0xB95, 0x5B6, 0x5B7, 0x55F, 0x55C, 0x556, 0x54F, 0x489 );
 		}
@@ -65,16 +65,16 @@ namespace Server.Items
 			{
 				case 1:
 
-						itHurts = (int)( (Utility.RandomMinMax(40,200) * ( 100 - from.PhysicalResistance ) ) / 100 );
+						itHurts = (int)( (Utility.RandomMinMax(40,80) * ( 100 - from.PhysicalResistance ) ) / 100 );
 						Spells.SpellHelper.Damage( TimeSpan.FromSeconds( 0.5 ), from, from, itHurts ); // WIZARD
 						from.FixedParticles( 0x36BD, 20, 10, 5044, EffectLayer.Head );
 						from.PlaySound( 0x307 );
-						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "A mushroom exploded near you!");
+						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "Um cogumelo explodiu do meu lado!");
 
 					break;
 
 				case 2:
-						int itSicks = 5;
+						int itSicks = 4;
 
 						if ( from.PoisonResistance >= 70 ){ itSicks = 1; }
 						else if ( from.PoisonResistance >= 50 ){ itSicks = 2; }
@@ -87,21 +87,21 @@ namespace Server.Items
 							case 2: from.ApplyPoison( from, Poison.Regular );	break;
 							case 3: from.ApplyPoison( from, Poison.Greater );	break;
 							case 4: from.ApplyPoison( from, Poison.Deadly );	break;
-							case 5: from.ApplyPoison( from, Poison.Lethal );	break;
+							//case 5: from.ApplyPoison( from, Poison.Lethal );	break;
 						}
 
 						Effects.SendLocationEffect( this.Location, this.Map, 0x11A8 - 2, 16, 3, 0, 0 );
 						Effects.PlaySound( this.Location, this.Map, 0x231 );
-						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "A mushroom released odd spores!");
+						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "Um cogumelo liberou esporos venenosos!");
 
 					break;
 
 				case 3:
 
 						from.BoltEffect( 0 );
-						itHurts = (int)( (Utility.RandomMinMax(40,200) * ( 100 - from.EnergyResistance ) ) / 100 );
+						itHurts = (int)( (Utility.RandomMinMax(40,80) * ( 100 - from.EnergyResistance ) ) / 100 );
 						from.Damage( itHurts, from );
-						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "A mushroom released strange energy!");
+						from.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "Um cogumelo soltou uma energia poderosa!");
 
 					break;
 			}
