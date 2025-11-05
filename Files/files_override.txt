@@ -1,0 +1,45 @@
+# ClassicUO Files Override Map
+# This file tells ClassicUO to use custom map files from the Files directory
+# Format: filename=full_path_to_file
+# Comments start with # or ;
+
+# Map 0 (Felucca) - 896 x 512 blocks, 7168 x 4096 tiles
+map0legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map0LegacyMUL.uop
+statics0.mul=C:\UOShard\Ultima-Adventures\Files\statics0.mul
+staidx0.mul=C:\UOShard\Ultima-Adventures\Files\staidx0.mul
+
+# Map 1 (Trammel) - 896 x 512 blocks, 7168 x 4096 tiles
+map1legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map1LegacyMUL.uop
+statics1.mul=C:\UOShard\Ultima-Adventures\Files\statics1.mul
+staidx1.mul=C:\UOShard\Ultima-Adventures\Files\staidx1.mul
+
+# Map 2 (Ilshenar Legacy) - 288 x 200 blocks, 2304 x 1600 tiles
+# Note: Rarely used in modern servers, most use Map 3 instead
+map2legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map2LegacyMUL.uop
+statics2.mul=C:\UOShard\Ultima-Adventures\Files\statics2.mul
+staidx2.mul=C:\UOShard\Ultima-Adventures\Files\staidx2.mul
+
+# Map 3 (Ilshenar Current) - 320 x 256 blocks, 2560 x 2048 tiles
+map3legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map3LegacyMUL.uop
+statics3.mul=C:\UOShard\Ultima-Adventures\Files\statics3.mul
+staidx3.mul=C:\UOShard\Ultima-Adventures\Files\staidx3.mul
+
+# Map 4 (Malas) - 181 x 181 blocks, 1448 x 1448 tiles
+map4legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map4LegacyMUL.uop
+statics4.mul=C:\UOShard\Ultima-Adventures\Files\statics4.mul
+staidx4.mul=C:\UOShard\Ultima-Adventures\Files\staidx4.mul
+
+# Map 5 (Tokuno) - 160 x 512 blocks, 1280 x 4096 tiles
+map5legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map5LegacyMUL.uop
+statics5.mul=C:\UOShard\Ultima-Adventures\Files\statics5.mul
+staidx5.mul=C:\UOShard\Ultima-Adventures\Files\staidx5.mul
+
+# Common Files (used by all maps)
+tiledata.mul=C:\UOShard\Ultima-Adventures\Files\tiledata.mul
+radarcol.mul=C:\UOShard\Ultima-Adventures\Files\radarcol.mul
+
+# Custom Maps (if you have them)
+# map33legacymul.uop=C:\UOShard\Ultima-Adventures\Files\map33LegacyMUL.uop
+# statics33.mul=C:\UOShard\Ultima-Adventures\Files\statics33.mul
+# staidx33.mul=C:\UOShard\Ultima-Adventures\Files\staidx33.mul
+
