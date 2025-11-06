@@ -109,7 +109,7 @@ namespace Server.Spells.Third
 				else
 				{
 					// Calculate success chance based on door difficulty
-					int keyValue = door.KeyValue;
+					int keyValue = (int)door.KeyValue;
 					if (keyValue <= DOOR_KEY_VALUE_THRESHOLD &&
 						Utility.RandomDouble() < (double)(DOOR_KEY_VALUE_MAX - keyValue) / DOOR_KEY_VALUE_MAX)
 					{
