@@ -6,6 +6,10 @@ using Server.Items;
 
 namespace Server.Spells.Third
 {
+	/// <summary>
+	/// Poison - 3rd Circle Attack Spell
+	/// Applies poison to a target based on caster skills
+	/// </summary>
 	public class PoisonSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -17,6 +21,31 @@ namespace Server.Spells.Third
 
 		public override SpellCircle Circle { get { return SpellCircle.Third; } }
 
+		#region Constants
+		// Poison Level Skill Requirements
+		private const int POISON_LEVEL_4_MIN_SKILLS = 240; // Magery + Poisoning >= 240
+		private const int POISON_LEVEL_3_MAGERY_MIN = 120;
+		private const int POISON_LEVEL_3_POISONING_MIN = 100;
+		private const int POISON_LEVEL_2_MAGERY_MIN = 100;
+		private const int POISON_LEVEL_2_POISONING_MIN = 80;
+		private const int POISON_LEVEL_2_EVAL_INT_MIN = 100;
+		private const int POISON_LEVEL_1_MAGERY_MIN = 80;
+		private const int POISON_LEVEL_1_POISONING_MIN = 60;
+		private const int POISON_LEVEL_1_EVAL_INT_MIN = 80;
+
+		// Effect Constants
+		private const int EFFECT_ID = 0x374A;
+		private const int EFFECT_SPEED = 10;
+		private const int EFFECT_RENDER = 15;
+		private const int EFFECT_DURATION = 5021;
+		private const int SOUND_ID = 0x205;
+		private const int DEFAULT_HUE = 0;
+
+		// Target Constants
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		public PoisonSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -26,107 +55,118 @@ namespace Server.Spells.Third
 			Caster.Target = new InternalTarget( this );
 		}
 
-		public void Target( Mobile m )
+		public void Target(Mobile target)
 		{
-			if ( !Caster.CanSee( m ) )
+			if (!Caster.CanSee(target))
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-                //Caster.SendLocalizedMessage( 500237 ); // Target can not be seen.
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
 			}
-			else if ( CheckHSequence( m ) )
+			else if (CheckHSequence(target))
 			{
-				SpellHelper.Turn( Caster, m );
+				SpellHelper.Turn(Caster, target);
+				SpellHelper.CheckReflect((int)this.Circle, Caster, ref target);
 
-				SpellHelper.CheckReflect( (int)this.Circle, Caster, ref m );
+				PrepareTargetForPoison(target);
 
-				if ( m.Spell != null )
-					m.Spell.OnCasterHurt();
-
-				m.Paralyzed = false;
-
-				if ( CheckResisted( m ) )
+				if (CheckResisted(target))
 				{
-                    m.SendMessage(55, "Você se sente resistindo ao feitiço.");
-					// m.SendLocalizedMessage( 501783 ); // You feel yourself resisting magical energy.
+					target.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_RESIST_POISON);
 				}
 				else
 				{
-					int level;
-
-                    int total = (int)(Caster.Skills[SkillName.Magery].Value + Caster.Skills[SkillName.Poisoning].Value);
-                    bool empoweredFromPhylactery = false;
-/*                    if (Caster is PlayerMobile)
-                    {
-                        PlayerMobile player = (PlayerMobile)Caster;
-                        Phylactery phylactery = player.FindPhylactery();
-                        if (phylactery != null && (Scroll is SoulShard))
-                        {
-                            empoweredFromPhylactery = true;
-                        }
-                    }*/
-                    if (total >= 240 || empoweredFromPhylactery)
-                    {
-                        level = 4;
-                    }
-                    else if ((Caster.Skills[SkillName.Magery].Value >= 120) && (Caster.Skills[SkillName.Poisoning].Value >= 100))
-                    {
-                        level = 3;
-                    }
-                    else if ((Caster.Skills[SkillName.Magery].Value >= 100) && ( (Caster.Skills[SkillName.Poisoning].Value >= 80 || (Caster.Skills[SkillName.EvalInt].Value >= 100 ))))
-                    {
-                        level = 2;
-                    }
-                    else if ((Caster.Skills[SkillName.Magery].Value >= 80) && ( (Caster.Skills[SkillName.Poisoning].Value >= 60 || (Caster.Skills[SkillName.EvalInt].Value >= 80))))
-                    {
-                        level = 1;
-                    }
-                    else
-                    {
-                        level = 0;
-                    }
-
-                    /*if ( Caster.InRange( m, 2 ) )
-					{
-
-					}
-					else
-					{
-						level = 0;
-					}*/
-
-                    m.ApplyPoison( Caster, Poison.GetPoison( level ) );
-/*					if (Scroll is SoulShard) {
-						((SoulShard)Scroll).SuccessfulCast = true;
-					}*/
+					int poisonLevel = CalculatePoisonLevel(target);
+					target.ApplyPoison(Caster, Poison.GetPoison(poisonLevel));
 				}
 
-				m.FixedParticles( 0x374A, 10, 15, 5021, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Waist );
-				m.PlaySound( 0x205 );
-
-				HarmfulSpell( m );
+				PlayEffects(target);
+				HarmfulSpell(target);
 			}
 
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Prepares target for poison application
+		/// </summary>
+		/// <param name="target">The target mobile</param>
+		private void PrepareTargetForPoison(Mobile target)
+		{
+			if (target.Spell != null)
+				target.Spell.OnCasterHurt();
+
+			target.Paralyzed = false;
+		}
+
+		/// <summary>
+		/// Calculates poison level based on caster skills
+		/// </summary>
+		/// <param name="target">The target mobile (unused in calculation)</param>
+		/// <returns>Poison level (0-4)</returns>
+		private int CalculatePoisonLevel(Mobile target)
+		{
+			int magery = (int)Caster.Skills[SkillName.Magery].Value;
+			int poisoning = (int)Caster.Skills[SkillName.Poisoning].Value;
+			int evalInt = (int)Caster.Skills[SkillName.EvalInt].Value;
+			int total = magery + poisoning;
+
+			// Level 4: Highest poison level
+			if (total >= POISON_LEVEL_4_MIN_SKILLS)
+			{
+				return 4;
+			}
+			// Level 3: Deadly poison
+			else if (magery >= POISON_LEVEL_3_MAGERY_MIN && poisoning >= POISON_LEVEL_3_POISONING_MIN)
+			{
+				return 3;
+			}
+			// Level 2: Greater poison
+			else if (magery >= POISON_LEVEL_2_MAGERY_MIN &&
+					(poisoning >= POISON_LEVEL_2_POISONING_MIN || evalInt >= POISON_LEVEL_2_EVAL_INT_MIN))
+			{
+				return 2;
+			}
+			// Level 1: Regular poison
+			else if (magery >= POISON_LEVEL_1_MAGERY_MIN &&
+					(poisoning >= POISON_LEVEL_1_POISONING_MIN || evalInt >= POISON_LEVEL_1_EVAL_INT_MIN))
+			{
+				return 1;
+			}
+			// Level 0: Lesser poison (default)
+			else
+			{
+				return 0;
+			}
+		}
+
+		/// <summary>
+		/// Plays visual and sound effects for the spell
+		/// </summary>
+		/// <param name="target">The target mobile</param>
+		private void PlayEffects(Mobile target)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
+			target.FixedParticles(EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, EFFECT_DURATION, hue, 0, EffectLayer.Waist);
+			target.PlaySound(SOUND_ID);
 		}
 
 		private class InternalTarget : Target
 		{
 			private PoisonSpell m_Owner;
 
-			public InternalTarget( PoisonSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.Harmful )
+			public InternalTarget(PoisonSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.Harmful)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+			protected override void OnTarget(Mobile from, object o)
 			{
-				if ( o is Mobile )
+				if (o is Mobile mobile)
 				{
-					m_Owner.Target( (Mobile)o );
+					m_Owner.Target(mobile);
 				}
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

@@ -39,7 +39,7 @@ namespace Server.Spells
 			max = avg + ChanceOffset;
 		}
 
-		private static int[] m_ManaTable = new int[] { 4, 6, 9, 11, 14, 20, 40, 50 };
+		private static int[] m_ManaTable = new int[] { 4, 7, 11, 16, 22, 28, 36, 48 };
 
 		public override int GetMana()
 		{
@@ -94,7 +94,7 @@ namespace Server.Spells
             }
 			double secondPercent = firstPercent + rInt;
             double final = (secondPercent > 0 ? secondPercent : 1);
-            target.SendMessage(95, "Você teve " + final + "% de chance de resistir a magia.");
+            target.SendMessage(95, "Vocï¿½ teve " + final + "% de chance de resistir a magia.");
 			return final;
         }
 

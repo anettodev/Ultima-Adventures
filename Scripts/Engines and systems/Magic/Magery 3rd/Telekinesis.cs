@@ -6,6 +6,10 @@ using Server.Items;
 
 namespace Server.Spells.Third
 {
+    /// <summary>
+    /// Telekinesis - 3rd Circle Utility Spell
+    /// Allows manipulation of objects and containers at a distance
+    /// </summary>
     public class TelekinesisSpell : MagerySpell
     {
         private static readonly SpellInfo m_Info = new SpellInfo(
@@ -18,6 +22,23 @@ namespace Server.Spells.Third
         public TelekinesisSpell(Mobile caster, Item scroll) : base(caster, scroll, m_Info)
         {
         }
+
+        #region Constants
+        // Weight Calculation
+        private const int WEIGHT_DIVISOR = 20; // Caster.Int / 20
+
+        // Effect Constants
+        private const int EFFECT_ID = 0x376A;
+        private const int EFFECT_SPEED = 9;
+        private const int EFFECT_RENDER = 32;
+        private const int EFFECT_DURATION = 5022;
+        private const int SOUND_ID = 0x1F5;
+        private const int DEFAULT_HUE = 0;
+
+        // Target Constants
+        private const int TARGET_RANGE_ML = 10;
+        private const int TARGET_RANGE_LEGACY = 12;
+        #endregion
 
         public override SpellCircle Circle
         {
@@ -50,27 +71,9 @@ namespace Server.Spells.Third
             {
                 SpellHelper.Turn(this.Caster, item);
 
-                object root = item.RootParent;
-
-                if (!item.IsAccessibleTo(this.Caster))
+                if (CanAccessContainer(item))
                 {
-                    item.OnDoubleClickNotAccessible(this.Caster);
-                }
-                else if (!item.CheckItemUse(this.Caster, item))
-                {
-                }
-                else if (root != null && root is Mobile && root != this.Caster)
-                {
-                    item.OnSnoop(this.Caster);
-                }
-                else if (item is Corpse && !((Corpse)item).CheckLoot(this.Caster, null))
-                {
-                }
-                else if (this.Caster.Region.OnDoubleClick(this.Caster, item))
-                {
-                    Effects.SendLocationParticles(EffectItem.Create(item.Location, item.Map, EffectItem.DefaultDuration), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5022, 0);
-                    Effects.PlaySound(item.Location, item.Map, 0x1F5);
-
+                    PlayEffects(item);
                     item.OnItemUsed(this.Caster, item);
                 }
             }
@@ -78,48 +81,135 @@ namespace Server.Spells.Third
             this.FinishSequence();
         }
 
-#region Grab
+        /// <summary>
+        /// Handles telekinetic grabbing of movable items
+        /// </summary>
+        /// <param name="item">The item to grab</param>
         public void Target(Item item)
         {
             if (this.CheckSequence())
             {
                 SpellHelper.Turn(this.Caster, item);
-                object root = item.RootParent;
 
-				if (item.Movable == false){ Caster.SendMessage(55, "Esse item não parece se mover."); }
-				else if (item.Amount > 1){ Caster.SendMessage(55, "Há muitos itens empilhados aqui para serem movidos."); }
-				else if (item.Weight > (Caster.Int / 20)){ Caster.SendMessage(55, "Isso é muito pesado para mover."); }
-				else if (item.RootParentEntity != null){ Caster.SendMessage(55, "Você não pode mover objetos que estão dentro de outros objetos ou sendo usados."); }
-				else
-				{
-					Effects.SendLocationParticles(EffectItem.Create(item.Location, item.Map, EffectItem.DefaultDuration), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5022, 0);
-					Effects.PlaySound(item.Location, item.Map, 0x1F5);
-					Caster.AddToBackpack( item );
-					Caster.SendMessage(55, "Você move o objeto ao seu alcance e o coloca em sua mochila."); 
-				}
-			}
+                if (!CanGrabItem(item))
+                {
+                    // Error messages handled in CanGrabItem
+                }
+                else
+                {
+                    PlayEffects(item);
+                    Caster.AddToBackpack(item);
+                    Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.SUCCESS_ITEM_MOVED_TO_BACKPACK);
+                }
+            }
+
             this.FinishSequence();
         }
-#endregion
+
+        /// <summary>
+        /// Checks if caster can access the container
+        /// </summary>
+        /// <param name="item">The container to check</param>
+        /// <returns>True if container can be accessed</returns>
+        private bool CanAccessContainer(Container item)
+        {
+            object root = item.RootParent;
+
+            if (!item.IsAccessibleTo(this.Caster))
+            {
+                item.OnDoubleClickNotAccessible(this.Caster);
+                return false;
+            }
+            else if (!item.CheckItemUse(this.Caster, item))
+            {
+                return false;
+            }
+            else if (root != null && root is Mobile && root != this.Caster)
+            {
+                item.OnSnoop(this.Caster);
+                return false;
+            }
+            else if (item is Corpse && !((Corpse)item).CheckLoot(this.Caster, null))
+            {
+                return false;
+            }
+            else if (!this.Caster.Region.OnDoubleClick(this.Caster, item))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if an item can be grabbed with telekinesis
+        /// </summary>
+        /// <param name="item">The item to check</param>
+        /// <returns>True if item can be grabbed</returns>
+        private bool CanGrabItem(Item item)
+        {
+            if (!item.Movable)
+            {
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ITEM_NOT_MOVABLE);
+                return false;
+            }
+            else if (item.Amount > 1)
+            {
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TOO_MANY_ITEMS_STACKED);
+                return false;
+            }
+            else if (item.Weight > (Caster.Int / WEIGHT_DIVISOR))
+            {
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ITEM_TOO_HEAVY);
+                return false;
+            }
+            else if (item.RootParentEntity != null)
+            {
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CANNOT_MOVE_WORN_ITEMS);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Plays visual and sound effects for the spell
+        /// </summary>
+        /// <param name="item">The item location for effects</param>
+        private void PlayEffects(Item item)
+        {
+            int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
+            Effects.SendLocationParticles(EffectItem.Create(item.Location, item.Map, EffectItem.DefaultDuration), EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
+            Effects.PlaySound(item.Location, item.Map, SOUND_ID);
+        }
 
         public class InternalTarget : Target
         {
             private readonly TelekinesisSpell m_Owner;
-            public InternalTarget(TelekinesisSpell owner) : base(Core.ML ? 10 : 12, false, TargetFlags.None)
+
+            public InternalTarget(TelekinesisSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.None)
             {
                 this.m_Owner = owner;
             }
 
             protected override void OnTarget(Mobile from, object o)
             {
-                if (o is ITelekinesisable)
-                    this.m_Owner.Target((ITelekinesisable)o);
-                else if (o is Container)
-                    this.m_Owner.Target((Container)o);
-                    else if (o is Item)
-                    this.m_Owner.Target((Item)o);
+                if (o is ITelekinesisable telekinesisable)
+                {
+                    this.m_Owner.Target(telekinesisable);
+                }
+                else if (o is Container container)
+                {
+                    this.m_Owner.Target(container);
+                }
+                else if (o is Item item)
+                {
+                    this.m_Owner.Target(item);
+                }
                 else
-                    from.SendMessage(95, "Este feitiço não funcionará nisso!");//SendLocalizedMessage(501857); // This spell won't work on that!
+                {
+                    from.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
+                }
             }
 
             protected override void OnTargetFinish(Mobile from)

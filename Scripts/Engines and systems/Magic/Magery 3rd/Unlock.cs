@@ -5,6 +5,10 @@ using Server.Items;
 
 namespace Server.Spells.Third
 {
+	/// <summary>
+	/// Unlock Spell - 3rd Circle Utility Spell
+	/// Unlocks doors and containers using magical power
+	/// </summary>
 	public class UnlockSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -17,6 +21,45 @@ namespace Server.Spells.Third
 
 		public override SpellCircle Circle { get { return SpellCircle.Third; } }
 
+		#region Constants
+		// Effect Constants
+		private const int EFFECT_ID = 0x376A;
+		private const int EFFECT_SPEED = 9;
+		private const int EFFECT_RENDER = 32;
+		private const int EFFECT_DURATION = 5024;
+		private const int SOUND_ID = 0x1FF;
+		private const int DEFAULT_HUE = 0;
+
+		// Door Unlocking Constants
+		private const int DOOR_KEY_VALUE_THRESHOLD = 65;
+		private const int DOOR_KEY_VALUE_MAX = 100;
+		private const int DOOR_SUCCESS_SOUND_FEMALE = 779;
+		private const int DOOR_SUCCESS_SOUND_MALE = 1050;
+		private const int DOOR_FAIL_SOUND_FEMALE = 811;
+		private const int DOOR_FAIL_SOUND_MALE = 1085;
+
+		// Container Unlocking Constants
+		private const int CONTAINER_SKILL_BONUS = 20;
+		private const int CONTAINER_SUCCESS_SOUND_FEMALE = 783;
+		private const int CONTAINER_SUCCESS_SOUND_MALE = 1054;
+		private const int CONTAINER_FAIL_SOUND_FEMALE = 799;
+		private const int CONTAINER_FAIL_SOUND_MALE = 1071;
+
+		// Special Container Sounds
+		private const int SPECIAL_CONTAINER_SOUND_FEMALE = 778;
+		private const int SPECIAL_CONTAINER_SOUND_MALE = 1049;
+
+		// Error Sounds
+		private const int ERROR_SOUND_FEMALE = 812;
+		private const int ERROR_SOUND_MALE = 1086;
+		private const int DISAPPOINT_SOUND_FEMALE = 811;
+		private const int DISAPPOINT_SOUND_MALE = 1085;
+
+		// Target Constants
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		public UnlockSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -26,150 +69,230 @@ namespace Server.Spells.Third
 			Caster.Target = new InternalTarget( this );
 		}
 
+		/// <summary>
+		/// Plays the unlock spell effects
+		/// </summary>
+		/// <param name="location">Location to play effects</param>
+		private void PlayUnlockEffects(IPoint3D location)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
+			Effects.SendLocationParticles(EffectItem.Create(new Point3D(location), Caster.Map, EffectItem.DefaultDuration),
+				EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
+			Effects.PlaySound(location, Caster.Map, SOUND_ID);
+		}
+
+		/// <summary>
+		/// Handles invalid targets with appropriate message and emote
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		/// <param name="message">Error message to display</param>
+		private void HandleInvalidTarget(Mobile caster, string message)
+		{
+			caster.SendMessage(Spell.MSG_COLOR_ERROR, message);
+			PlayErrorEmote(caster);
+		}
+
+		/// <summary>
+		/// Attempts to unlock a dungeon door
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		/// <param name="door">The door to unlock</param>
+		private void TryUnlockDoor(Mobile caster, BaseDoor door)
+		{
+			if (Server.Items.DoorType.IsDungeonDoor(door))
+			{
+				if (!door.Locked)
+				{
+					caster.LocalOverheadMessage(MessageType.Regular, 55, false, "Isso nÃ£o precisava ser destrancado.");
+					PlayErrorEmote(caster);
+				}
+				else
+				{
+					// Calculate success chance based on door difficulty
+					int keyValue = door.KeyValue;
+					if (keyValue <= DOOR_KEY_VALUE_THRESHOLD &&
+						Utility.RandomDouble() < (double)(DOOR_KEY_VALUE_MAX - keyValue) / DOOR_KEY_VALUE_MAX)
+					{
+						// Success
+						door.Locked = false;
+						door.KeyValue = 0;
+						Server.Items.DoorType.UnlockDoors(door);
+						caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.SUCCESS_UNLOCKED);
+						PlaySuccessEmote(caster, DOOR_SUCCESS_SOUND_FEMALE, DOOR_SUCCESS_SOUND_MALE, "*ah ha!*");
+					}
+					else
+					{
+						// Failure
+						caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_LOCK_TOO_COMPLEX);
+						PlayDisappointEmote(caster);
+					}
+				}
+			}
+			else
+			{
+				// Not a dungeon door
+				caster.LocalOverheadMessage(MessageType.Regular, 55, false, "Isso nÃ£o precisava ser destrancado.");
+				PlayErrorEmote(caster);
+			}
+		}
+
+		/// <summary>
+		/// Attempts to unlock a container
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		/// <param name="container">The container to unlock</param>
+		private void TryUnlockContainer(Mobile caster, LockableContainer container)
+		{
+			if (Multis.BaseHouse.CheckSecured(container))
+			{
+				caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CANNOT_USE_MAGIC_ON_SECURED);
+				PlayDisappointEmote(caster);
+			}
+			else if (!container.Locked || container.LockLevel == 0)
+			{
+				caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CHEST_NOT_LOCKED);
+				caster.LocalOverheadMessage(MessageType.Regular, 55, false, "* Aff! Isso parece jÃ¡ estar destrancado! *");
+				PlayErrorEmote(caster);
+			}
+			else if (container is TreasureMapChest || container is ParagonChest || container is PirateChest)
+			{
+				caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_MAGIC_AURA_PREVENTS_UNLOCK);
+				PlaySpecialContainerEmote(caster);
+			}
+			else
+			{
+				// Calculate unlock skill
+				int unlockSkill = (int)NMSUtils.getBeneficialMageryInscribePercentage(caster) + CONTAINER_SKILL_BONUS;
+
+				if (unlockSkill >= container.RequiredSkill &&
+					!(container is TreasureMapChest && ((TreasureMapChest)container).Level > 2))
+				{
+					// Success
+					container.Locked = false;
+					caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.SUCCESS_UNLOCKED);
+					PlaySuccessEmote(caster, CONTAINER_SUCCESS_SOUND_FEMALE, CONTAINER_SUCCESS_SOUND_MALE, "*woohoo!*");
+
+					if (container.LockLevel == -255)
+						container.LockLevel = container.RequiredSkill - 10;
+				}
+				else
+				{
+					// Failure
+					caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_LOCK_TOO_COMPLEX_FOR_SPELL);
+					PlayConfusionEmote(caster);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Plays error emote with sound
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		private void PlayErrorEmote(Mobile caster)
+		{
+			caster.PlaySound(caster.Female ? ERROR_SOUND_FEMALE : ERROR_SOUND_MALE);
+			caster.Say("*oops*");
+		}
+
+		/// <summary>
+		/// Plays disappointment emote with sound
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		private void PlayDisappointEmote(Mobile caster)
+		{
+			caster.PlaySound(caster.Female ? DISAPPOINT_SOUND_FEMALE : DISAPPOINT_SOUND_MALE);
+			caster.Say("*oooh*");
+		}
+
+		/// <summary>
+		/// Plays success emote with appropriate sound
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		/// <param name="femaleSound">Sound for female casters</param>
+		/// <param name="maleSound">Sound for male casters</param>
+		/// <param name="emote">Emote text</param>
+		private void PlaySuccessEmote(Mobile caster, int femaleSound, int maleSound, string emote)
+		{
+			caster.PlaySound(caster.Female ? femaleSound : maleSound);
+			caster.Say(emote);
+		}
+
+		/// <summary>
+		/// Plays confusion emote with sound
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		private void PlayConfusionEmote(Mobile caster)
+		{
+			caster.PlaySound(caster.Female ? CONTAINER_FAIL_SOUND_FEMALE : CONTAINER_FAIL_SOUND_MALE);
+			caster.Say("*huh?*");
+		}
+
+		/// <summary>
+		/// Plays special container emote with sound
+		/// </summary>
+		/// <param name="caster">The caster</param>
+		private void PlaySpecialContainerEmote(Mobile caster)
+		{
+			caster.PlaySound(caster.Female ? SPECIAL_CONTAINER_SOUND_FEMALE : SPECIAL_CONTAINER_SOUND_MALE);
+			caster.Say("*ah!*");
+		}
+
 		private class InternalTarget : Target
 		{
 			private UnlockSpell m_Owner;
 
-			public InternalTarget( UnlockSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.None )
+			public InternalTarget(UnlockSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.None)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+			protected override void OnTarget(Mobile from, object o)
 			{
 				IPoint3D loc = o as IPoint3D;
 
-				if ( loc == null )
+				if (loc == null)
 					return;
 
-				if ( m_Owner.CheckSequence() ) {
-					SpellHelper.Turn( from, o );
+				if (m_Owner.CheckSequence())
+				{
+					SpellHelper.Turn(from, o);
+					m_Owner.PlayUnlockEffects(loc);
 
-					Effects.SendLocationParticles( EffectItem.Create( new Point3D( loc ), from.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( from, 0 ), 0, 5024, 0 );
-
-					Effects.PlaySound( loc, from.Map, 0x1FF );
-
-					if ( o is Mobile )
+					// Route to appropriate handler based on target type
+					if (o is Mobile)
 					{
-                        from.PlaySound(from.Female ? 812 : 1086);
-                        from.Say("*oops*");
-                        from.SendMessage(55, "Você não tem o que destrancar.");
-                        //from.LocalOverheadMessage( MessageType.Regular, 0x3B2, 503101 ); // That did not need to be unlocked.
+						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_NOTHING_TO_UNLOCK);
 					}
-					else if ( o is BaseHouseDoor )  // house door check
+					else if (o is BaseHouseDoor)
 					{
-                        from.PlaySound(from.Female ? 812 : 1086);
-                        from.Say("*oops*");
-                        from.SendMessage(55, "Este feitiço é para destrancar baús, caixas, cofres e algumas portas.");
+						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_UNLOCK_WRONG_SPELL);
 					}
-					else if ( o is BookBox )  // cursed box of books
+					else if (o is BookBox)
 					{
-                        from.PlaySound(from.Female ? 812 : 1086);
-                        from.Say("*oops*");
-                        from.SendMessage(55, "Este feitiço nunca será capaz de destrancar uma caixa amaldiçoada.");
+						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_CURSED_BOX_CANNOT_UNLOCK);
 					}
-					else if ( o is UnidentifiedArtifact || o is UnidentifiedItem || o is CurseItem )
+					else if (o is UnidentifiedArtifact || o is UnidentifiedItem || o is CurseItem)
 					{
-                        from.PlaySound(from.Female ? 812 : 1086);
-                        from.Say("*oops*");
-                        from.SendMessage(55, "Este feitiço não serve para destrancar isto.");
+						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_UNLOCK_NO_EFFECT);
 					}
-					else if ( o is BaseDoor )
+					else if (o is BaseDoor door)
 					{
-						if (Server.Items.DoorType.IsDungeonDoor((BaseDoor)o))
-						{
-							if (((BaseDoor)o).Locked == false)
-							{
-								//from.SendMessage(55, "Isso não precisava ser desbloqueado.");
-								from.PlaySound(from.Female ? 812 : 1086);
-								from.Say("*oops*");
-								from.LocalOverheadMessage(MessageType.Regular, 55, false, "Isso não precisava ser destrancado."); // That did not need to be unlocked.
-							}
-							else
-							{
-								if (((BaseDoor)o).KeyValue <= 65 && Utility.RandomDouble() < (double)((100 - ((BaseDoor)o).KeyValue) / 100))
-								{
-									((BaseDoor)o).Locked = false;
-									((BaseDoor)o).KeyValue = 0;
-									Server.Items.DoorType.UnlockDoors((BaseDoor)o);
-									from.SendMessage(2253, "Você ouve a fechadura abrir.");
-									from.PlaySound(from.Female ? 779 : 1050);
-									from.Say("*ah ha!*");
-								}
-								else
-								{
-									from.SendMessage(55, "A fechadura é muito complexa para este feitiço.");
-									from.PlaySound(from.Female ? 811 : 1085);
-									from.Say("*oooh*");
-								}
-
-							}
-						}
-						else {
-                            from.PlaySound(from.Female ? 812 : 1086);
-                            from.Say("*oops*");
-                            from.LocalOverheadMessage(MessageType.Regular, 55, false, "Isso não precisava ser destrancado.");
-                            //from.LocalOverheadMessage( MessageType.Regular, 0x3B2, 503101 ); // That did not need to be unlocked.
-                        }
-                    }
-					else if ( !( o is LockableContainer ) )
+						m_Owner.TryUnlockDoor(from, door);
+					}
+					else if (o is LockableContainer container)
 					{
-                        from.SendMessage(55, "Você não pode destrancar isso!");
-                        from.PlaySound(from.Female ? 812 : 1086);
-                        from.Say("*oops*");
-                        //from.SendLocalizedMessage( 501666 ); // You can't unlock that!
-                    }
-					else {
-						LockableContainer cont = (LockableContainer)o;
-
-						if (Multis.BaseHouse.CheckSecured(cont))
-						{
-                            from.SendMessage(55, "Você não pode usar magia em um item seguro.");
-                            from.PlaySound(from.Female ? 811 : 1085);
-                            from.Say("*oooh*");
-						}
-						else if (!cont.Locked || cont.LockLevel == 0) 
-						{
-                            from.PlaySound(from.Female ? 812 : 1086);
-                            from.Say("*oops*");
-                            from.SendMessage(55, "Este baú não parece estar trancado ou não possuir um nível de trava.");
-                            from.LocalOverheadMessage(MessageType.Regular, 55, false, "* Aff! Isso parece já estar destrancado! *");
-                        }
-                        else if ( this is TreasureMapChest || this is ParagonChest || this is PirateChest)
-						{
-                            from.PlaySound(from.Female ? 778 : 1049);
-                            from.Say("*ah!*");
-                            from.SendMessage(55, "Uma forte aura mágica neste baú impede o funcionamento do seu feitiço mas talvez um ladrão possa abri-lo");
-						}
-						else {
-                            // Max lvl gonna be 76 (120x120 supers), SO THIEF (lockpick) IS SPECIAL AND IS THE ONLY ABLE THE UNLOCK +75 lvl locked container
-                            int level = (int)NMSUtils.getBeneficialMageryInscribePercentage(from) + 20; 
-
-                            if (level >= cont.RequiredSkill && !(cont is TreasureMapChest && ((TreasureMapChest)cont).Level > 2))
-							{
-								cont.Locked = false;
-								from.SendMessage(2253, "Você ouve a fechadura abrir.");
-								from.PlaySound(from.Female ? 783 : 1054);
-								from.Say("*woohoo!*");
-
-								if (cont.LockLevel == -255)
-									cont.LockLevel = cont.RequiredSkill - 10;
-							}
-							else 
-							{
-                                from.PlaySound(from.Female ? 799 : 1071);
-                                from.Say("*huh?*");
-                                from.SendMessage(55, "Esta fechadura parece ser muito complexa para o seu feitiço.");
-                                //from.LocalOverheadMessage(MessageType.Regular, 55, false, "Esta fechadura parece ser muito complexa para o seu feitiço."); // My spell does not seem to have an effect on that lock.
-                            }
-						}		
+						m_Owner.TryUnlockContainer(from, container);
+					}
+					else
+					{
+						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_CANNOT_UNLOCK_ITEM);
 					}
 				}
 
 				m_Owner.FinishSequence();
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

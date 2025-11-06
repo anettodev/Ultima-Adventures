@@ -9,6 +9,10 @@ using System.Collections.Generic;
 
 namespace Server.Spells.Third
 {
+	/// <summary>
+	/// Wall of Stone - 3rd Circle Field Spell
+	/// Creates a temporary wall of stone that blocks movement
+	/// </summary>
 	public class WallOfStoneSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -22,6 +26,38 @@ namespace Server.Spells.Third
 
 		public override SpellCircle Circle { get { return SpellCircle.Third; } }
 
+		#region Constants
+		// Wall Geometry
+		private const int WALL_LENGTH = 5; // -2 to +2 = 5 segments
+		private const int WALL_MIN_OFFSET = -2;
+		private const int WALL_MAX_OFFSET = 2;
+		private const int ORIENTATION_MULTIPLIER = 44;
+
+		// Z-Axis Detection
+		private const int Z_DIFFERENCE_MAX = 18;
+		private const int Z_DIFFERENCE_MIN = -10;
+
+		// Duration Constants
+		private const double BASE_DURATION_SECONDS = 5.0;
+		private const double DURATION_BONUS_SECONDS = 10.0; // Version 0 fallback
+		private const double INSCRIBE_DURATION_DIVISOR = 4.0;
+
+		// Effect Constants
+		private const int SOUND_ID = 0x1F6;
+		private const int EFFECT_ID = 0x376A;
+		private const int EFFECT_SPEED = 9;
+		private const int EFFECT_RENDER = 10;
+		private const int EFFECT_DURATION = 5025;
+		private const int DEFAULT_HUE = 0;
+
+		// Item Constants
+		private const int WALL_ITEM_ID = 0x80;
+
+		// Target Constants
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		public WallOfStoneSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -31,91 +67,161 @@ namespace Server.Spells.Third
 			Caster.Target = new InternalTarget( this );
 		}
 
-		public void Target( IPoint3D p )
+		public void Target(IPoint3D targetPoint)
 		{
-			if ( !Caster.CanSee( p ) )
+			if (!Caster.CanSee(targetPoint))
 			{
-				Caster.SendLocalizedMessage( 500237 ); // Target can not be seen.
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
 			}
-			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
+			else if (SpellHelper.CheckTown(targetPoint, Caster) && CheckSequence())
 			{
-				SpellHelper.Turn( Caster, p );
+				SpellHelper.Turn(Caster, targetPoint);
+				SpellHelper.GetSurfaceTop(ref targetPoint);
 
-				SpellHelper.GetSurfaceTop( ref p );
+				bool eastToWest = DetermineWallOrientation(targetPoint);
+				PlaySound(targetPoint);
 
-				int dx = Caster.Location.X - p.X;
-				int dy = Caster.Location.Y - p.Y;
-				int rx = (dx - dy) * 44;
-				int ry = (dx + dy) * 44;
-
-				bool eastToWest;
-
-				if ( rx >= 0 && ry >= 0 )
-				{
-					eastToWest = false;
-				}
-				else if ( rx >= 0 )
-				{
-					eastToWest = true;
-				}
-				else if ( ry >= 0 )
-				{
-					eastToWest = true;
-				}
-				else
-				{
-					eastToWest = false;
-				}
-
-				Effects.PlaySound( p, Caster.Map, 0x1F6 );
-
-				for ( int i = -2; i <= 2; ++i )
-				{
-					Point3D loc = new Point3D( eastToWest ? p.X + i : p.X, eastToWest ? p.Y : p.Y + i, p.Z );
-					//bool canFit = SpellHelper.AdjustField( ref loc, Caster.Map, 22, true );
-
-                    IPooledEnumerable eable = Caster.Map.GetMobilesInRange(loc, 0);
-                    bool canFit = true;
-
-                    foreach (Mobile m in eable)
-                    {
-                        if (m.AccessLevel != AccessLevel.Player || !m.Alive)
-                            continue;
-
-                        if (m.Location.Z - loc.Z < 18 && m.Location.Z - loc.Z > -10)
-                        {
-                            //The whole field counts as a harmful action, not just the target
-                            //Caster.DoHarmful(m);
-                            //Make a hole in the wall if a mobile is there
-                            canFit = false;
-                            break;
-                        }
-                    }
-                    eable.Free();
-
-
-                    if ( !canFit )
-						continue;
-
-                    //remove existing wall items
-                    List<Item> itemsFound = new List<Item>();
-
-                    foreach (Item item in Caster.Map.GetItemsInRange(loc, 0))
-                    {
-                        if (item is InternalItem) itemsFound.Add(item);
-                    }
-
-                    eable.Free();
-
-                    for (int j = itemsFound.Count - 1; j >= 0; --j) itemsFound[j].Delete();
-
-                    Item wall = new InternalItem( loc, Caster.Map, Caster );
-
-					Effects.SendLocationParticles(wall, 0x376A, 9, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5025, 0 );
-				}
+				CreateWallSegments(targetPoint, eastToWest);
 			}
 
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Determines the orientation of the wall based on caster and target positions
+		/// </summary>
+		/// <param name="targetPoint">The target point for the wall</param>
+		/// <returns>True if wall should be east-to-west, false for north-to-south</returns>
+		private bool DetermineWallOrientation(IPoint3D targetPoint)
+		{
+			int dx = Caster.Location.X - targetPoint.X;
+			int dy = Caster.Location.Y - targetPoint.Y;
+			int rx = (dx - dy) * ORIENTATION_MULTIPLIER;
+			int ry = (dx + dy) * ORIENTATION_MULTIPLIER;
+
+			if (rx >= 0 && ry >= 0)
+			{
+				return false; // North-to-South
+			}
+			else if (rx >= 0)
+			{
+				return true; // East-to-West
+			}
+			else if (ry >= 0)
+			{
+				return true; // East-to-West
+			}
+			else
+			{
+				return false; // North-to-South
+			}
+		}
+
+		/// <summary>
+		/// Plays the sound effect for wall creation
+		/// </summary>
+		/// <param name="targetPoint">Location to play sound</param>
+		private void PlaySound(IPoint3D targetPoint)
+		{
+			Effects.PlaySound(targetPoint, Caster.Map, SOUND_ID);
+		}
+
+		/// <summary>
+		/// Creates all wall segments for the field spell
+		/// </summary>
+		/// <param name="targetPoint">The center point of the wall</param>
+		/// <param name="eastToWest">Wall orientation</param>
+		private void CreateWallSegments(IPoint3D targetPoint, bool eastToWest)
+		{
+			for (int i = WALL_MIN_OFFSET; i <= WALL_MAX_OFFSET; ++i)
+			{
+				Point3D segmentLocation = new Point3D(
+					eastToWest ? targetPoint.X + i : targetPoint.X,
+					eastToWest ? targetPoint.Y : targetPoint.Y + i,
+					targetPoint.Z
+				);
+
+				if (CanPlaceWallSegment(segmentLocation))
+				{
+					RemoveExistingWalls(segmentLocation);
+					CreateWallSegment(segmentLocation);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Checks if a wall segment can be placed at the given location
+		/// </summary>
+		/// <param name="location">Location to check</param>
+		/// <returns>True if segment can be placed</returns>
+		private bool CanPlaceWallSegment(Point3D location)
+		{
+			IPooledEnumerable mobiles = Caster.Map.GetMobilesInRange(location, 0);
+
+			foreach (Mobile mobile in mobiles)
+			{
+				if (mobile.AccessLevel != AccessLevel.Player || !mobile.Alive)
+					continue;
+
+				int zDifference = mobile.Location.Z - location.Z;
+				if (zDifference < Z_DIFFERENCE_MAX && zDifference > Z_DIFFERENCE_MIN)
+				{
+					// Mobile is in the way, cannot place wall segment
+					mobiles.Free();
+					return false;
+				}
+			}
+
+			mobiles.Free();
+			return true;
+		}
+
+		/// <summary>
+		/// Removes any existing wall items at the location
+		/// </summary>
+		/// <param name="location">Location to clear</param>
+		private void RemoveExistingWalls(Point3D location)
+		{
+			List<Item> existingWalls = new List<Item>();
+
+			foreach (Item item in Caster.Map.GetItemsInRange(location, 0))
+			{
+				if (item is InternalItem)
+					existingWalls.Add(item);
+			}
+
+			for (int j = existingWalls.Count - 1; j >= 0; --j)
+			{
+				existingWalls[j].Delete();
+			}
+		}
+
+		/// <summary>
+		/// Creates a single wall segment at the specified location
+		/// </summary>
+		/// <param name="location">Location for the wall segment</param>
+		private void CreateWallSegment(Point3D location)
+		{
+			Item wall = new InternalItem(location, Caster.Map, Caster);
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
+
+			Effects.SendLocationParticles(wall, EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
+		}
+
+		/// <summary>
+		/// Calculates the duration of the wall based on caster's inscribe skill
+		/// </summary>
+		/// <param name="caster">The caster of the spell</param>
+		/// <returns>Duration of the wall</returns>
+		private static TimeSpan CalculateWallDuration(Mobile caster)
+		{
+			if (caster is PlayerMobile)
+			{
+				int inscribeBonus = (int)(caster.Skills[SkillName.Inscribe].Value / INSCRIBE_DURATION_DIVISOR);
+				return TimeSpan.FromSeconds(BASE_DURATION_SECONDS + inscribeBonus);
+			}
+
+			return TimeSpan.FromSeconds(BASE_DURATION_SECONDS);
 		}
 
 		[DispellableField]
@@ -127,33 +233,28 @@ namespace Server.Spells.Third
 
 			public override bool BlocksFit{ get{ return true; } }
 
-			public InternalItem( Point3D loc, Map map, Mobile caster ) : base( 0x80 )
+			public InternalItem(Point3D loc, Map map, Mobile caster) : base(WALL_ITEM_ID)
 			{
 				Visible = false;
 				Movable = false;
 
-				MoveToWorld( loc, map );
+				MoveToWorld(loc, map);
 
 				m_Caster = caster;
 
-				if ( caster.InLOS( this ) )
+				if (caster.InLOS(this))
 					Visible = true;
 				else
 					Delete();
 
-				if ( Deleted )
+				if (Deleted)
 					return;
 
-				int nBenefit = 0;
-				if ( caster is PlayerMobile ) // WIZARD
-				{
-					nBenefit = (int)(caster.Skills[SkillName.Inscribe].Value / 4);
-				}
-
-				m_Timer = new InternalTimer( this, TimeSpan.FromSeconds( 5.0 + nBenefit ) );
+				TimeSpan duration = CalculateWallDuration(caster);
+				m_Timer = new InternalTimer(this, duration);
 				m_Timer.Start();
 
-				m_End = DateTime.Now + TimeSpan.FromSeconds( 5.0 );
+				m_End = DateTime.Now + duration;
 			}
 
 			public InternalItem( Serial serial ) : base( serial )
@@ -175,22 +276,22 @@ namespace Server.Spells.Third
 
 				int version = reader.ReadInt();
 
-				switch ( version )
+				switch (version)
 				{
 					case 1:
 					{
 						m_End = reader.ReadDeltaTime();
 
-						m_Timer = new InternalTimer( this, m_End - DateTime.UtcNow );
+						m_Timer = new InternalTimer(this, m_End - DateTime.UtcNow);
 						m_Timer.Start();
 
 						break;
 					}
 					case 0:
 					{
-						TimeSpan duration = TimeSpan.FromSeconds( 10.0 );
+						TimeSpan duration = TimeSpan.FromSeconds(DURATION_BONUS_SECONDS);
 
-						m_Timer = new InternalTimer( this, duration );
+						m_Timer = new InternalTimer(this, duration);
 						m_Timer.Start();
 
 						m_End = DateTime.UtcNow + duration;
@@ -242,18 +343,20 @@ namespace Server.Spells.Third
 		{
 			private WallOfStoneSpell m_Owner;
 
-			public InternalTarget( WallOfStoneSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget(WallOfStoneSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, true, TargetFlags.None)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+			protected override void OnTarget(Mobile from, object o)
 			{
-				if ( o is IPoint3D )
-					m_Owner.Target( (IPoint3D)o );
+				if (o is IPoint3D point)
+				{
+					m_Owner.Target(point);
+				}
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

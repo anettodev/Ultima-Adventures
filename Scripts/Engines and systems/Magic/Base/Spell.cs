@@ -175,6 +175,43 @@ namespace Server.Spells
 	public const string REMOVE_TRAP_WAND_CREATED = "Você invoca um orbe mágico em sua mochila.";
 	#endregion
 
+	#region 3rd Circle Spell Messages
+	// Bless Spell
+	public const string ERROR_ALREADY_BLESSED = "O alvo já está abençoado.";
+	public const string SUCCESS_CURSE_REMOVED = "A maldição foi removida!";
+	public const string ERROR_CURSE_REMOVE_FAILED = "Você tenta remover a maldição, mas falha!";
+
+	// Poison Spell
+	public const string ERROR_RESIST_POISON = "Você se sente resistindo ao feitiço.";
+
+	// Telekinesis Spell
+	public const string ERROR_ITEM_NOT_MOVABLE = "Esse item não parece se mover.";
+	public const string ERROR_TOO_MANY_ITEMS_STACKED = "Há muitos itens empilhados aqui para serem movidos.";
+	public const string ERROR_ITEM_TOO_HEAVY = "Isso é muito pesado para mover.";
+	public const string ERROR_CANNOT_MOVE_WORN_ITEMS = "Você não pode mover objetos que estão dentro de outros objetos ou sendo usados.";
+	public const string SUCCESS_ITEM_MOVED_TO_BACKPACK = "Você move o objeto ao seu alcance e o coloca em sua mochila.";
+	public const string ERROR_SPELL_WONT_WORK = "Este feitiço não funcionará nisso!";
+
+	// Teleport Spell
+	public const string ERROR_TOO_HEAVY_TELEPORT = "Você está muito pesado para se teletransportar!";
+	public const string ERROR_LOCATION_BLOCKED = "Esse local está bloqueado com aura anti-magia.";
+	public const string ERROR_CURSED_PREVENTS_TELEPORT = "Você falhou em se teletransportar para longe desta criatura!";
+
+	// Unlock Spell
+	public const string SUCCESS_UNLOCKED = "Você ouve a fechadura abrir.";
+	public const string ERROR_LOCK_TOO_COMPLEX = "A fechadura é muito complexa para este feitiço.";
+	public const string ERROR_NOTHING_TO_UNLOCK = "Você não tem o que destrancar.";
+	public const string ERROR_UNLOCK_WRONG_SPELL = "Este feitiço é para destrancar baús, caixas, cofres e algumas portas.";
+	public const string ERROR_CURSED_BOX_CANNOT_UNLOCK = "Este feitiço nunca será capaz de destrancar uma caixa amaldiçoada.";
+	public const string ERROR_UNLOCK_NO_EFFECT = "Este feitiço não serve para destrancar isto.";
+	public const string ERROR_ALREADY_UNLOCKED = "Isso não precisava ser destrancado.";
+	public const string ERROR_CANNOT_UNLOCK_ITEM = "Você não pode destrancar isso!";
+	public const string ERROR_CANNOT_USE_MAGIC_ON_SECURED = "Você não pode usar magia em um item seguro.";
+	public const string ERROR_CHEST_NOT_LOCKED = "Este baú não parece estar trancado ou não possuir um nível de trava.";
+	public const string ERROR_MAGIC_AURA_PREVENTS_UNLOCK = "Uma forte aura mágica neste baú impede o funcionamento do seu feitiço mas talvez um ladrão possa abri-lo.";
+	public const string ERROR_LOCK_TOO_COMPLEX_FOR_SPELL = "Esta fechadura parece ser muito complexa para o seu feitiço.";
+	#endregion
+
 		#region Drunk Messages
 		// Drunk Messages - Easter Eggs (Cheese references)
 		public const string DRUNK_CHEESE_1 = "Llhc";  // Leo liked his cheese

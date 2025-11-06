@@ -136,7 +136,7 @@ namespace Server.Mobiles
 			return m_Mobile.Skills[ SkillName.Necromancy ].Value * v * 0.1;
 		}
 
-		private readonly int[] m_ManaTable = {4, 6, 9, 11, 14, 20, 40, 50};
+		private readonly int[] m_ManaTable = {4, 7, 11, 16, 22, 28, 36, 48};
 
 		public virtual bool CheckCanCastMagery(int circle)
 		{
