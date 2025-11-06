@@ -3,12 +3,43 @@ using Server.Targeting;
 using Server.Network;
 using Server.Items;
 using System.Collections.Generic;
-using System.Collections;
 
 namespace Server.Spells.Second
 {
+	/// <summary>
+	/// Remove Trap - 2nd Circle Utility Spell
+	/// Removes traps from containers or creates a protection wand when targeting self
+	/// </summary>
 	public class RemoveTrapSpell : MagerySpell
 	{
+		#region Constants
+		// Skill Check Constants
+		private const int MAGERY_LEVEL_DIVISOR = 3;
+		private const int SKILL_CHECK_VARIANCE = 1; // 0-1 random penalty
+
+		// Trap Wand Constants (Balance Nerf)
+		private const int WAND_BASE_POWER = 20;
+		private const int WAND_MAX_POWER = 50;
+
+		// Effect Constants
+		private const int EFFECT_ID = 0x376A;
+		private const int EFFECT_SPEED = 9;
+		private const int EFFECT_RENDER = 32;
+		private const int EFFECT_DURATION_SUCCESS = 5015;
+		private const int EFFECT_DURATION_WAND = 5008;
+		private const int SOUND_SUCCESS = 0x1F0;
+		private const int SOUND_SUCCESS_ALT = 61;
+		private const int SOUND_FAIL = 10;
+		private const int SOUND_WAND = 0x1ED;
+
+		// Message Colors
+		private const int MSG_COLOR_INSTRUCTION = 95;
+		private const int MSG_COLOR_SUCCESS = 2253;
+
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		private static SpellInfo m_Info = new SpellInfo(
 				"Remove Trap", "An Jux",
 				212,
@@ -19,104 +50,193 @@ namespace Server.Spells.Second
 
 		public override SpellCircle Circle { get { return SpellCircle.Second; } }
 
-		public RemoveTrapSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
+		public RemoveTrapSpell(Mobile caster, Item scroll) : base(caster, scroll, m_Info)
 		{
 		}
 
 		public override void OnCast()
 		{
-			Caster.Target = new InternalTarget( this );
-			Caster.SendMessage( 95, "Selecione uma armadilha ou você mesmo para invocar um amuleto de proteção." );
+			Caster.Target = new InternalTarget(this);
+			Caster.SendMessage(MSG_COLOR_INSTRUCTION, SpellMessages.REMOVE_TRAP_INSTRUCTION);
 		}
 
-		public void Target( TrapableContainer item )
+		public void Target(TrapableContainer container)
 		{
-			if ( !Caster.CanSee( item ) )
+			if (!Caster.CanSee(container))
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
-			else if ( CheckSequence() )
+				Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+			}
+			else if (CheckSequence())
 			{
-				int mageLvl = (int)((Caster.Skills[SkillName.Magery].Value) / 3) - Utility.RandomMinMax(0, 1); // 50% chance to be weaker than the top
-                Point3D loc = item.GetWorldLocation();
-                if ( mageLvl >= item.TrapLevel)
+				if (TryRemoveTrap(container))
 				{
-					Effects.SendLocationParticles( EffectItem.Create( loc, item.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5015, 0 );
-					Effects.PlaySound( loc, item.Map, 0x1F0 );
-                    Effects.PlaySound(loc, item.Map, 61);
-
-                    Caster.SendMessage(55, "Todas as armadilhas aqui foram desativadas.");
-
-					item.TrapType = TrapType.None;
-					item.TrapPower = 0;
-					item.TrapLevel = 0;
+					HandleTrapRemovalSuccess(container);
 				}
 				else
 				{
-                    Caster.LocalOverheadMessage(MessageType.Emote, 55, true, "* aff! *");
-                    Caster.SendMessage(55, "Essa armadilha parece complicada demais para ser desfeita por sua magia.");
-                    Effects.PlaySound(loc, item.Map, 10);
-                    //base.DoFizzle();
-                }
+					HandleTrapRemovalFailed(container);
+				}
 			}
+
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Calculates caster's trap removal skill level
+		/// </summary>
+		private int CalculateRemovalSkillLevel()
+		{
+			int skillLevel = (int)((Caster.Skills[SkillName.Magery].Value) / MAGERY_LEVEL_DIVISOR);
+			skillLevel -= Utility.RandomMinMax(0, SKILL_CHECK_VARIANCE);
+			return skillLevel;
+		}
+
+		/// <summary>
+		/// Attempts to remove trap from container
+		/// </summary>
+		private bool TryRemoveTrap(TrapableContainer container)
+		{
+			int casterSkill = CalculateRemovalSkillLevel();
+			return casterSkill >= container.TrapLevel;
+		}
+
+		/// <summary>
+		/// Handles successful trap removal
+		/// </summary>
+		private void HandleTrapRemovalSuccess(TrapableContainer container)
+		{
+			Point3D loc = container.GetWorldLocation();
+
+			PlayRemovalSuccessEffects(loc, container.Map);
+			Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.REMOVE_TRAP_SUCCESS);
+
+			// Clear trap
+			container.TrapType = TrapType.None;
+			container.TrapPower = 0;
+			container.TrapLevel = 0;
+		}
+
+		/// <summary>
+		/// Handles failed trap removal
+		/// </summary>
+		private void HandleTrapRemovalFailed(TrapableContainer container)
+		{
+			Point3D loc = container.GetWorldLocation();
+
+			Caster.LocalOverheadMessage(MessageType.Emote, MSG_COLOR_ERROR, true, "* aff! *");
+			Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.REMOVE_TRAP_FAILED);
+			Effects.PlaySound(loc, container.Map, SOUND_FAIL);
+		}
+
+		/// <summary>
+		/// Plays effects for successful trap removal
+		/// </summary>
+		private void PlayRemovalSuccessEffects(Point3D loc, Map map)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+			Effects.SendLocationParticles(
+				EffectItem.Create(loc, map, EffectItem.DefaultDuration), 
+				EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION_SUCCESS, 0);
+			Effects.PlaySound(loc, map, SOUND_SUCCESS);
+			Effects.PlaySound(loc, map, SOUND_SUCCESS_ALT);
+		}
+
+		/// <summary>
+		/// Creates protection wand when targeting self
+		/// </summary>
+		public void CreateProtectionWand()
+		{
+			// Delete existing wands
+			DeleteExistingWands();
+
+			// Play effects
+			Caster.PlaySound(SOUND_WAND);
+			PlayWandCreationEffects();
+			Caster.SendMessage(MSG_COLOR_SUCCESS, SpellMessages.REMOVE_TRAP_WAND_CREATED);
+
+			// Create new wand
+			TrapWand wand = new TrapWand(Caster);
+			wand.WandPower = CalculateWandPower();
+			Caster.AddToBackpack(wand);
+		}
+
+		/// <summary>
+		/// Deletes all existing trap wands owned by caster
+		/// </summary>
+		private void DeleteExistingWands()
+		{
+			List<Item> existingWands = new List<Item>();
+
+		foreach (Item item in World.Items.Values)
+		{
+			if (item is TrapWand)
+			{
+				TrapWand wand = (TrapWand)item;
+				if (wand.owner == Caster)
+				{
+					existingWands.Add(item);
+				}
+			}
+		}
+
+			foreach (Item wand in existingWands)
+			{
+				wand.Delete();
+			}
+		}
+
+		/// <summary>
+		/// Calculates power level for created trap wand
+		/// </summary>
+		private int CalculateWandPower()
+		{
+			int power = (int)(NMSUtils.getBeneficialMageryInscribePercentage(Caster) + WAND_BASE_POWER);
+
+			if (power > WAND_MAX_POWER)
+				power = WAND_MAX_POWER;
+
+			return power;
+		}
+
+		/// <summary>
+		/// Plays effects for wand creation
+		/// </summary>
+		private void PlayWandCreationEffects()
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+			Caster.FixedParticles(EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, EFFECT_DURATION_WAND, hue, 0, EffectLayer.Waist);
 		}
 
 		private class InternalTarget : Target
 		{
 			private RemoveTrapSpell m_Owner;
 
-			public InternalTarget( RemoveTrapSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.None )
+			public InternalTarget(RemoveTrapSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.None)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+		protected override void OnTarget(Mobile from, object o)
+		{
+			if (o is TrapableContainer)
 			{
-				if ( o is TrapableContainer )
+				m_Owner.Target((TrapableContainer)o);
+			}
+			else if (from == o) // Self-target for wand creation
 				{
-					m_Owner.Target( (TrapableContainer)o );
-				}
-				else if ( from == o )
-				{
-					if ( m_Owner.CheckSequence() )
+					if (m_Owner.CheckSequence())
 					{
-						ArrayList targets = new ArrayList();
-						foreach ( Item item in World.Items.Values )
-						if ( item is TrapWand )
-						{
-							TrapWand myWand = (TrapWand)item;
-							if ( myWand.owner == from )
-							{
-								targets.Add( item );
-							}
-						}
-						for ( int i = 0; i < targets.Count; ++i )
-						{
-							Item item = ( Item )targets[ i ];
-							item.Delete();
-						}
-
-						from.PlaySound( 0x1ED );
-						from.FixedParticles( 0x376A, 9, 32, 5008, Server.Items.CharacterDatabase.GetMySpellHue( from, 0 ), 0, EffectLayer.Waist );
-						from.SendMessage(2253, "Você invoca um orbe mágico em sua mochila.");
-						Item iWand = new TrapWand(from);
-						int nPower = (int)(NMSUtils.getBeneficialMageryInscribePercentage(from) + 30);//(int)(from.Skills[SkillName.Magery].Value / 2 ) + 25;
-
-                        if (nPower > 75){nPower = 75;}
-						TrapWand xWand = (TrapWand)iWand;
-						xWand.WandPower = nPower;
-						from.AddToBackpack( xWand );
+						m_Owner.CreateProtectionWand();
 					}
 					m_Owner.FinishSequence();
 				}
 				else
 				{
-					from.SendMessage( 55, "Este feitiço não tem efeito sobre isso!");
+					from.SendMessage(MSG_COLOR_ERROR, SpellMessages.REMOVE_TRAP_INVALID);
 				}
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

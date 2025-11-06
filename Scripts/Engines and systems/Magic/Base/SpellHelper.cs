@@ -219,11 +219,17 @@ namespace Server.Spells
 			return true;
 		}
 
+		/// <summary>
+		/// Adds a stat bonus (3-parameter overload - calculates offset and duration automatically)
+		/// </summary>
 		public static bool AddStatBonus( Mobile caster, Mobile target, StatType type )
 		{
 			return AddStatBonus( caster, target, type, GetOffset( caster, target, type, false ), NMSGetDuration( caster, target, true ) );
 		}
 
+		/// <summary>
+		/// Adds a stat bonus with explicit bonus and duration values (5-parameter overload)
+		/// </summary>
 		public static bool AddStatBonus( Mobile caster, Mobile target, StatType type, int bonus, TimeSpan duration )
 		{
 			int offset = bonus;
@@ -231,12 +237,22 @@ namespace Server.Spells
 
 			StatMod mod = target.GetStatMod( name );
 
+			// If target already has a positive buff active, prevent stacking (no cumulative buffs)
+			if( mod != null && mod.Offset > 0 )
+			{
+				caster.SendMessage(55, "O alvo j√° est√° sob efeito deste feiti√ßo.");
+				return false;
+			}
+
+			// If target has a curse (negative offset), the buff can counteract it
 			if( mod != null && mod.Offset < 0 )
 			{
 				target.AddStatMod( new StatMod( type, name, mod.Offset + offset, duration ) );
 				return true;
 			}
-			else if( mod == null || mod.Offset < offset )
+
+			// No existing mod, apply the buff
+			if( mod == null )
 			{
 				target.AddStatMod( new StatMod( type, name, offset, duration ) );
 				return true;
@@ -323,9 +339,22 @@ namespace Server.Spells
             }
 
 			int total = rInt + durationBonus;
+
+			// Apply 30% reduction to beneficial buffs with min/max caps (balance nerf)
+			if (isBeneficial)
+			{
+				total = (int)(total * 0.70); // 30% reduction
+				
+				// Apply caps: minimum 15 seconds, maximum 60 seconds
+				if (total < 15)
+					total = 15;
+				else if (total > 60)
+					total = 60;
+			}
+
 			if (flag == 0)
 			{
-                caster.SendMessage(95, "O feitiÁo ter· a duraÁ„o de aproximadamente " + total + " segundos");
+                caster.SendMessage(95, "O feitiÔøΩo terÔøΩ a duraÔøΩÔøΩo de aproximadamente " + total + " segundos");
 				flag = 1;
 			}
 
@@ -387,16 +416,33 @@ namespace Server.Spells
 				}
 
 				double percent = GetOffsetScalar( caster, target, curse );
+				int statValue = 0;
 
 				switch( type )
 				{
 					case StatType.Str:
-						return (int)(target.RawStr * percent);
+						statValue = (int)(target.RawStr * percent);
+						break;
 					case StatType.Dex:
-						return (int)(target.RawDex * percent);
+						statValue = (int)(target.RawDex * percent);
+						break;
 					case StatType.Int:
-						return (int)(target.RawInt * percent);
+						statValue = (int)(target.RawInt * percent);
+						break;
 				}
+
+				// Apply 30-50% random reduction for beneficial buffs (balance nerf)
+				if( !curse && statValue > 0 )
+				{
+					double reductionFactor = 0.50 + (Utility.RandomDouble() * 0.20); // 50-70% of original
+					statValue = (int)(statValue * reductionFactor);
+					
+					// Ensure at least 1 point if original was > 0
+					if( statValue < 1 )
+						statValue = 1;
+				}
+
+				return statValue;
 			}
 
 			return 1 + (int)(caster.Skills[SkillName.Magery].Value * 0.1);
@@ -666,11 +712,11 @@ namespace Server.Spells
 		public static void SendInvalidMessage( Mobile caster, TravelCheckType type )
 		{
 			if( type == TravelCheckType.RecallTo || type == TravelCheckType.GateTo )
-                caster.SendMessage(55, "VocÍ n„o tem permiss„o para se teletransportar para l·."); //caster.SendLocalizedMessage( 1019004 ); // You are not allowed to travel there.
+                caster.SendMessage(55, "VocÔøΩ nÔøΩo tem permissÔøΩo para se teletransportar para lÔøΩ."); //caster.SendLocalizedMessage( 1019004 ); // You are not allowed to travel there.
 			else if( type == TravelCheckType.TeleportTo )
-                caster.SendMessage(55, "VocÍ n„o pode se teletransportar para o destino."); //caster.SendLocalizedMessage( 501035 ); // You cannot teleport from here to the destination.
+                caster.SendMessage(55, "VocÔøΩ nÔøΩo pode se teletransportar para o destino."); //caster.SendLocalizedMessage( 501035 ); // You cannot teleport from here to the destination.
 			else
-                caster.SendMessage(55, "Seu feitiÁo parece n„o funcionar."); //caster.SendLocalizedMessage( 501802 ); // Thy spell doth not appear to work...
+                caster.SendMessage(55, "Seu feitiÔøΩo parece nÔøΩo funcionar."); //caster.SendLocalizedMessage( 501802 ); // Thy spell doth not appear to work...
 		}
 
 		public static bool CheckTravel( Map map, Point3D loc, TravelCheckType type )
@@ -699,7 +745,7 @@ namespace Server.Spells
 			if ( map != null && (type == TravelCheckType.RecallTo || type == TravelCheckType.GateTo) )
 			{
 				if (reg.IsPartOf(typeof(DungeonRegion)) || reg.IsPartOf(typeof(HouseRegion))) {
-                    caster.SendMessage("Este local possui proteÁ„o anti-magia de teletransporte.");
+                    caster.SendMessage("Este local possui proteÔøΩÔøΩo anti-magia de teletransporte.");
                     return false;
                 }	
 			}
@@ -707,7 +753,7 @@ namespace Server.Spells
 
 			if( caster != null && caster.AccessLevel == AccessLevel.Player && caster.Region.IsPartOf( typeof( Regions.Jail ) ) )
 			{
-                caster.SendMessage("Este local possui proteÁ„o anti-magia de teletransporte.");
+                caster.SendMessage("Este local possui proteÔøΩÔøΩo anti-magia de teletransporte.");
                 //caster.SendLocalizedMessage( 1042632 ); // You'll need a better jailbreak plan then that!
 				return false;
 			}
@@ -716,7 +762,7 @@ namespace Server.Spells
 
 /*			if (caster is PlayerMobile && !CharacterDatabase.GetDiscovered(caster, world))
 			{
-				caster.SendMessage("VocÍ n„o conhece ou descobriu este local ainda.");
+				caster.SendMessage("VocÔøΩ nÔøΩo conhece ou descobriu este local ainda.");
 				return false;
 			}*/
 
@@ -1428,7 +1474,7 @@ namespace Server.Spells
 			
 			if (caster is PlayerMobile && ((PlayerMobile)caster).Alchemist())
 			{
-				caster.SendMessage("VocÍ n„o consegue entender as forÁas m·gicas!"); 
+				caster.SendMessage("VocÔøΩ nÔøΩo consegue entender as forÔøΩas mÔøΩgicas!"); 
 				return false;
 			}
 			
@@ -1437,13 +1483,13 @@ namespace Server.Spells
 
 			if( !caster.CanBeginAction( typeof( PolymorphSpell ) ) )
 			{
-                caster.SendMessage("O Polimorfismo j· est· utilizando bastante de sua magia.");
+                caster.SendMessage("O Polimorfismo jÔøΩ estÔøΩ utilizando bastante de sua magia.");
                 // caster.SendLocalizedMessage( 1061628 ); // You can't do that while polymorphed.
 				return false;
 			}
 			else if( AnimalForm.UnderTransformation( caster ) )
 			{
-                caster.SendMessage("A transmutaÁ„o j· est· utilizando bastante de sua magia.");
+                caster.SendMessage("A transmutaÔøΩÔøΩo jÔøΩ estÔøΩ utilizando bastante de sua magia.");
                 // caster.SendLocalizedMessage( 1061091 ); // You cannot cast that spell in this form.
 				return false;
 			}
@@ -1460,7 +1506,7 @@ namespace Server.Spells
 			
 			if( !caster.CanBeginAction( typeof( PolymorphSpell ) ) )
 			{
-                caster.SendMessage("O Polimorfismo j· est· utilizando bastante de sua magia.");
+                caster.SendMessage("O Polimorfismo jÔøΩ estÔøΩ utilizando bastante de sua magia.");
                 // caster.SendLocalizedMessage( 1061628 ); // You can't do that while polymorphed.
 			}
 /*			else if ( DisguiseTimers.IsDisguised( caster ) )
@@ -1471,7 +1517,7 @@ namespace Server.Spells
 			}*/
 			else if( AnimalForm.UnderTransformation( caster ) )
 			{
-                caster.SendMessage("A transmutaÁ„o j· est· utilizando bastante de sua magia.");
+                caster.SendMessage("A transmutaÔøΩÔøΩo jÔøΩ estÔøΩ utilizando bastante de sua magia.");
                 // caster.SendLocalizedMessage( 1061091 ); // You cannot cast that spell in this form.
 			}
 			else if( !caster.CanBeginAction( typeof( IncognitoSpell ) ) || (caster.IsBodyMod && GetContext( caster ) == null) )

@@ -45,11 +45,49 @@ namespace Server.Items
 			thisTimer.Start();
 		}
 
+		/// <summary>
+		/// Prevents wand from being dropped or traded
+		/// </summary>
+		public override bool DropToWorld( Mobile from, Point3D p )
+		{
+			from.SendMessage( 0x3B2, "O orbe anti-armadilha não pode sair da sua mochila." );
+			return false;
+		}
+
+		/// <summary>
+		/// Prevents wand from being given to others
+		/// </summary>
+		public override bool OnDragLift( Mobile from )
+		{
+			if ( from != owner && owner != null )
+			{
+				from.SendMessage( 0x3B2, "Este orbe não pertence a você." );
+				return false;
+			}
+			return base.OnDragLift( from );
+		}
+
+		/// <summary>
+		/// Checks if wand is in owner's backpack, deletes if not
+		/// </summary>
+		public override void OnLocationChange( Point3D oldLocation )
+		{
+			base.OnLocationChange( oldLocation );
+
+			if ( owner != null && this.Parent != owner.Backpack )
+			{
+				owner.SendMessage( 0x3B2, "* Seu orbe anti-armadilha desapareceu ao sair da mochila. *" );
+				owner.PlaySound( 0x1F0 );
+				this.Delete();
+			}
+		}
+
         public override void AddNameProperties(ObjectPropertyList list)
 		{
             base.AddNameProperties(list);
 			list.Add( 1070722, "Evita armadilhas em paredes e pisos em " + WandPower + "%");
-			list.Add( 1049644, "Deve estar na mochila e dura 10 minutos"); // PARENTHESIS
+			list.Add( 1049644, "Deve estar na mochila e dura 5 minutos"); // PARENTHESIS
+			list.Add( 1070722, "Não pode ser transferido ou removido da mochila");
         }
 
 		private void RenameWand()
@@ -90,7 +128,7 @@ namespace Server.Items
 		public class ItemRemovalTimer : Timer 
 		{ 
 			private Item i_item; 
-			public ItemRemovalTimer( Item item ) : base( TimeSpan.FromMinutes( 10.0 ) ) 
+			public ItemRemovalTimer( Item item ) : base( TimeSpan.FromMinutes( 5.0 ) ) 
 			{ 
 				Priority = TimerPriority.OneSecond; 
 				i_item = item; 

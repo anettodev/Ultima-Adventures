@@ -4,8 +4,38 @@ using Server.Network;
 
 namespace Server.Spells.Second
 {
+	/// <summary>
+	/// Cure - 2nd Circle Beneficial Spell
+	/// Cures poison from the target based on caster's skill
+	/// </summary>
 	public class CureSpell : MagerySpell
 	{
+		#region Constants
+		private const int DEADLY_POISON_LEVEL = 4;
+		private const int KARMA_AWARD = 10;
+
+		// Effect IDs
+		private const int EFFECT_ID_FAIL = 0x374A;
+		private const int EFFECT_ID_SUCCESS = 0x373A;
+		private const int EFFECT_SPEED = 10;
+		private const int EFFECT_RENDER = 15;
+		private const int EFFECT_DURATION_FAIL = 5028;
+		private const int EFFECT_DURATION_MORTAL = 5021;
+		private const int EFFECT_DURATION_SUCCESS = 5012;
+
+		// Sound IDs
+		private const int SOUND_FAIL = 342;
+		private const int SOUND_MORTAL_WOUND = 343;
+		private const int SOUND_SUCCESS = 0x1E0;
+
+		// Message Colors
+		private const int MSG_COLOR_FAIL = 33;
+		private const int MSG_COLOR_SUCCESS = 2253;
+
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		private static SpellInfo m_Info = new SpellInfo(
 				"Cure", "An Nox",
 				212,
@@ -16,80 +46,165 @@ namespace Server.Spells.Second
 
 		public override SpellCircle Circle { get { return SpellCircle.Second; } }
 
-		public CureSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
+		public CureSpell(Mobile caster, Item scroll) : base(caster, scroll, m_Info)
 		{
 		}
 
 		public override void OnCast()
 		{
-			Caster.Target = new InternalTarget( this );
+			Caster.Target = new InternalTarget(this);
 		}
 
-		public void Target( Mobile m )
+		public void Target(Mobile target)
 		{
-			if ( !Caster.CanSee( m ) )
+			if (!Caster.CanSee(target))
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
-			else if ( CheckBSequence( m ) )
+				Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+			}
+			else if (CheckBSequence(target))
 			{
-				SpellHelper.Turn( Caster, m );
+				SpellHelper.Turn(Caster, target);
 
-				Poison p = m.Poison;
+				Poison poison = target.Poison;
 
-				if ( p != null )
+				if (poison != null)
 				{
-					int chanceToCure = (int)NMSUtils.getBeneficialMageryInscribePercentage(Caster);
-                    chanceToCure -= p.Level;
-                    if (chanceToCure < 0) chanceToCure = 0;
-
-                    if ((m.Poisoned && m.Poison.Level >= 4) || Server.Items.MortalStrike.IsWounded(m))
-                    {
-                        m.LocalOverheadMessage(MessageType.Emote, 33, true, "* Ouch! *");
-                        m.PlaySound(343);
-                        m.FixedParticles(0x374A, 10, 15, 5021, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
-                        Caster.SendMessage(33, ((Caster == m) ? "Você está mortalmente envenenado e não poderá se curar com esse simples feitiço!" : "O seu alvo está mortalmente envenenado e não poderá ser curado com esse simples feitiço!"));
-                    }
-                    else if (chanceToCure <= Utility.RandomMinMax(p.Level * 2, 100))
+					if (IsTargetMortallyPoisoned(target))
 					{
-                        m.PlaySound(342);
-                        m.SendMessage(33, "Você falhou em curar o veneno!"); //m.SendLocalizedMessage( 1010060 ); // You have failed to cure your target!
-                        m.FixedParticles(0x374A, 10, 15, 5028, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
-                    }
-                    else
+						HandleMortalPoison(target);
+					}
+					else
 					{
-                        m.CurePoison(Caster);
-                        m.PlaySound(0x1E0);
+						int cureChance = CalculateCureChance(poison);
+						int successThreshold = Utility.RandomMinMax(poison.Level * 2, 100);
 
-                        Misc.Titles.AwardKarma(Caster, 10, true);
-                        Caster.SendMessage(2253, ((Caster == m) ? "Você curou o veneno!" : "Você curou o veneno do alvo!"));
-                        m.FixedParticles(0x373A, 10, 15, 5012, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
-                        //m.SendLocalizedMessage( 1010059 ); // You have been cured of all poisons.
-                    }
-                }
+						if (cureChance <= successThreshold)
+						{
+							HandleCureFailed(target);
+						}
+						else
+						{
+							HandleCureSuccess(target);
+						}
+					}
+				}
 			}
 
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Checks if target is mortally poisoned (Level 4+) or under Mortal Strike
+		/// </summary>
+		private bool IsTargetMortallyPoisoned(Mobile target)
+		{
+			return (target.Poisoned && target.Poison.Level >= DEADLY_POISON_LEVEL) 
+			       || Server.Items.MortalStrike.IsWounded(target);
+		}
+
+		/// <summary>
+		/// Calculates cure success chance based on caster skill and poison level
+		/// </summary>
+		private int CalculateCureChance(Poison poison)
+		{
+			int chanceToCure = (int)NMSUtils.getBeneficialMageryInscribePercentage(Caster);
+			chanceToCure -= poison.Level;
+
+			if (chanceToCure < 0)
+				chanceToCure = 0;
+
+			return chanceToCure;
+		}
+
+		/// <summary>
+		/// Handles mortal poison case (cannot cure with this spell)
+		/// </summary>
+		private void HandleMortalPoison(Mobile target)
+		{
+			target.LocalOverheadMessage(MessageType.Emote, MSG_COLOR_FAIL, true, "* Ouch! *");
+			target.PlaySound(SOUND_MORTAL_WOUND);
+			PlayEffectsMortalWound(target);
+
+			string message = (Caster == target) 
+				? SpellMessages.CURE_MORTAL_POISON_SELF 
+				: SpellMessages.CURE_MORTAL_POISON_OTHER;
+
+			Caster.SendMessage(MSG_COLOR_FAIL, message);
+		}
+
+		/// <summary>
+		/// Handles failed cure attempt
+		/// </summary>
+		private void HandleCureFailed(Mobile target)
+		{
+			target.PlaySound(SOUND_FAIL);
+			target.SendMessage(MSG_COLOR_FAIL, SpellMessages.CURE_FAILED);
+			PlayEffectsFailed(target);
+		}
+
+		/// <summary>
+		/// Handles successful cure
+		/// </summary>
+		private void HandleCureSuccess(Mobile target)
+		{
+			target.CurePoison(Caster);
+			target.PlaySound(SOUND_SUCCESS);
+
+			Misc.Titles.AwardKarma(Caster, KARMA_AWARD, true);
+
+			string message = (Caster == target) 
+				? SpellMessages.CURE_SUCCESS_SELF 
+				: SpellMessages.CURE_SUCCESS_OTHER;
+
+			Caster.SendMessage(MSG_COLOR_SUCCESS, message);
+			PlayEffectsSuccess(target);
+		}
+
+		/// <summary>
+		/// Plays effects for mortal wound case
+		/// </summary>
+		private void PlayEffectsMortalWound(Mobile target)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+			target.FixedParticles(EFFECT_ID_FAIL, EFFECT_SPEED, EFFECT_RENDER, EFFECT_DURATION_MORTAL, hue, 0, EffectLayer.Waist);
+		}
+
+		/// <summary>
+		/// Plays effects for failed cure
+		/// </summary>
+		private void PlayEffectsFailed(Mobile target)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+			target.FixedParticles(EFFECT_ID_FAIL, EFFECT_SPEED, EFFECT_RENDER, EFFECT_DURATION_FAIL, hue, 0, EffectLayer.Waist);
+		}
+
+		/// <summary>
+		/// Plays effects for successful cure
+		/// </summary>
+		private void PlayEffectsSuccess(Mobile target)
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+			target.FixedParticles(EFFECT_ID_SUCCESS, EFFECT_SPEED, EFFECT_RENDER, EFFECT_DURATION_SUCCESS, hue, 0, EffectLayer.Waist);
 		}
 
 		public class InternalTarget : Target
 		{
 			private CureSpell m_Owner;
 
-			public InternalTarget( CureSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.Beneficial )
+			public InternalTarget(CureSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.Beneficial)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+		protected override void OnTarget(Mobile from, object o)
+		{
+			if (o is Mobile)
 			{
-				if ( o is Mobile )
-				{
-					m_Owner.Target( (Mobile)o );
-				}
+				m_Owner.Target((Mobile)o);
+			}
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

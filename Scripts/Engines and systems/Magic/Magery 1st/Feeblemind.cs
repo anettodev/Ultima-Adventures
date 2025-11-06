@@ -6,12 +6,36 @@ using Server.Items;
 
 namespace Server.Spells.First
 {
+	/// <summary>
+	/// Feeblemind - 1st Circle Curse Spell
+	/// Temporarily reduces the target's Intelligence
+	/// </summary>
 	public class FeeblemindSpell : MagerySpell
 	{
+		#region Constants
+		// Spell Info
+		private const int SPELL_ID = 212;
+		private const int SPELL_ACTION = 9031;
+
+		// Effect Constants
+		private const int EFFECT_ID = 0x3779;
+		private const int EFFECT_SPEED = 10;
+		private const int EFFECT_RENDER = 15;
+		private const int EFFECT_EFFECT = 5004;
+		private const int EFFECT_HUE_DEFAULT = 0;
+
+		// Sound Constants
+		private const int SOUND_ID = 0x1E4;
+
+		// Target Constants
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		#endregion
+
 		private static SpellInfo m_Info = new SpellInfo(
 				"Feeblemind", "Rel Wis",
-				212,
-				9031,
+				SPELL_ID,
+				SPELL_ACTION,
 				Reagent.Ginseng,
 				Reagent.Nightshade
 			);
@@ -27,63 +51,90 @@ namespace Server.Spells.First
 			Caster.Target = new InternalTarget( this );
 		}
 
-		public void Target( Mobile m )
+		public void Target( Mobile target )
 		{
-			// cant get cursed when wearing those
-			if (m is PlayerMobile && ((PlayerMobile)m).Sorcerer())
+			// Check for Sorcerer immunity (SkirtOfPower)
+			if ( HasSorcererImmunity( target ) )
 			{
-					Item pants = ((PlayerMobile)m).FindItemOnLayer( Layer.OuterLegs );
-					if (pants != null && pants is SkirtOfPower)
-						return;
+				return;
 			}
 
-			if ( !Caster.CanSee( m ) )
+			if ( !Caster.CanSee( target ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
-			else if ( CheckHSequence( m ) )
+				Caster.SendMessage( MSG_COLOR_ERROR, SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
+			else if ( CheckHSequence( target ) )
 			{
-				SpellHelper.Turn( Caster, m );
+				SpellHelper.Turn( Caster, target );
 
-				SpellHelper.CheckReflect( (int)this.Circle, Caster, ref m );
+				SpellHelper.CheckReflect( (int)Circle, Caster, ref target );
 
-				SpellHelper.AddStatCurse( Caster, m, StatType.Int );
+				SpellHelper.AddStatCurse( Caster, target, StatType.Int );
 
-				if ( m.Spell != null )
-					m.Spell.OnCasterHurt();
+				if ( target.Spell != null )
+					target.Spell.OnCasterHurt();
 
-				m.Paralyzed = false;
+				target.Paralyzed = false;
 
-				m.FixedParticles( 0x3779, 10, 15, 5004, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
-				m.PlaySound( 0x1E4 );
+				PlayEffects( target );
 
-				int percentage = (int)(SpellHelper.GetOffsetScalar( Caster, m, true )*100);
-				TimeSpan length = SpellHelper.NMSGetDuration( Caster, m, false );
+				int percentage = (int)(SpellHelper.GetOffsetScalar( Caster, target, true ) * 100);
+				TimeSpan length = SpellHelper.NMSGetDuration( Caster, target, false );
 
-				BuffInfo.AddBuff( m, new BuffInfo( BuffIcon.FeebleMind, 1075833, length, m, percentage.ToString() ) );
+				BuffInfo.AddBuff( target, new BuffInfo( BuffIcon.FeebleMind, 1075833, length, target, percentage.ToString() ) );
 
-				HarmfulSpell( m );
+				HarmfulSpell( target );
 			}
 
 			FinishSequence();
+		}
+
+	/// <summary>
+	/// Checks if target has Sorcerer immunity via SkirtOfPower
+	/// </summary>
+	private bool HasSorcererImmunity( Mobile target )
+	{
+		if ( target is PlayerMobile )
+		{
+			PlayerMobile playerMobile = (PlayerMobile)target;
+			if ( playerMobile.Sorcerer() )
+			{
+				Item pants = playerMobile.FindItemOnLayer( Layer.OuterLegs );
+				if ( pants != null && pants is SkirtOfPower )
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+		/// <summary>
+		/// Plays visual and sound effects for the spell
+		/// </summary>
+		private void PlayEffects( Mobile target )
+		{
+			int hue = Server.Items.CharacterDatabase.GetMySpellHue( Caster, EFFECT_HUE_DEFAULT );
+			target.FixedParticles( EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, EFFECT_EFFECT, hue, EFFECT_HUE_DEFAULT, EffectLayer.Head );
+			target.PlaySound( SOUND_ID );
 		}
 
 		private class InternalTarget : Target
 		{
 			private FeeblemindSpell m_Owner;
 
-			public InternalTarget( FeeblemindSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.Harmful )
+			public InternalTarget( FeeblemindSpell owner ) : base( Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.Harmful )
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+		protected override void OnTarget( Mobile from, object o )
+		{
+			if ( o is Mobile )
 			{
-				if ( o is Mobile )
-				{
-					m_Owner.Target( (Mobile)o );
-				}
+				m_Owner.Target( (Mobile)o );
 			}
+		}
 
 			protected override void OnTargetFinish( Mobile from )
 			{

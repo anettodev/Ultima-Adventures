@@ -18,6 +18,8 @@ namespace Server.Items
 		private TrapType m_TrapType;
 		private int m_TrapPower;
 		private int m_TrapLevel;
+		private DateTime m_TrapExpiration;
+		private Timer m_TrapTimer;
 
 		[CommandProperty( AccessLevel.GameMaster )]
 		public TrapType TrapType
@@ -29,6 +31,16 @@ namespace Server.Items
 			set
 			{
 				m_TrapType = value;
+				
+				// Start expiration timer for Magic Trap (30 minutes)
+				if (value == TrapType.MagicTrap)
+				{
+					StartTrapExpiration(TimeSpan.FromMinutes(30));
+				}
+				else if (value == TrapType.None)
+				{
+					StopTrapExpiration();
+				}
 			}
 		}
 
@@ -196,7 +208,8 @@ namespace Server.Items
 					{
 						if ( from.InRange( loc, 1 ) )
 						{
-							int damage = Utility.RandomMinMax( 50, 200 );
+							// Balance Nerf: 50% damage reduction, max 100
+							int damage = Utility.RandomMinMax( 25, 100 );
 							damage = (int)( ( damage * ( 100 - MagicAvoid ) ) / 100 );
 							from.Damage( damage );
 						}
@@ -296,11 +309,45 @@ namespace Server.Items
 				base.Open( from );
 		}
 
+		/// <summary>
+		/// Starts trap expiration timer (Balance: Magic Traps now expire after 30 minutes)
+		/// </summary>
+		private void StartTrapExpiration(TimeSpan duration)
+		{
+			StopTrapExpiration();
+			m_TrapExpiration = DateTime.UtcNow + duration;
+			m_TrapTimer = Timer.DelayCall(duration, ExpireTrap);
+		}
+
+		/// <summary>
+		/// Stops trap expiration timer
+		/// </summary>
+		private void StopTrapExpiration()
+		{
+			if (m_TrapTimer != null)
+			{
+				m_TrapTimer.Stop();
+				m_TrapTimer = null;
+			}
+		}
+
+		/// <summary>
+		/// Called when trap expires (removes trap)
+		/// </summary>
+		private void ExpireTrap()
+		{
+			m_TrapType = TrapType.None;
+			m_TrapPower = 0;
+			m_TrapLevel = 0;
+		}
+
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int) 2 ); // version
+			writer.Write( (int) 3 ); // version (updated for trap expiration)
+
+			writer.Write( m_TrapExpiration );
 
 			writer.Write( (int) m_TrapLevel );
 
@@ -316,6 +363,19 @@ namespace Server.Items
 
 			switch ( version )
 			{
+				case 3:
+				{
+					m_TrapExpiration = reader.ReadDateTime();
+					
+					// Restart expiration timer if trap still active
+					if (m_TrapExpiration > DateTime.UtcNow && m_TrapType == TrapType.MagicTrap)
+					{
+						TimeSpan remaining = m_TrapExpiration - DateTime.UtcNow;
+						m_TrapTimer = Timer.DelayCall(remaining, ExpireTrap);
+					}
+					
+					goto case 2;
+				}
 				case 2:
 				{
 					m_TrapLevel = reader.ReadInt();
