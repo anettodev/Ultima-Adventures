@@ -1,0 +1,275 @@
+---
+description: Server administration guidelines and best practices for Ultima Adventures
+globs:
+alwaysApply: false
+---
+
+# Server Administration Rules
+
+## Command Usage Guidelines
+
+### Access Level Enforcement
+
+When implementing or modifying commands:
+
+1. **Always specify appropriate AccessLevel**:
+   ```csharp
+   CommandSystem.Register("CommandName", AccessLevel.GameMaster, new CommandEventHandler(Command_OnCommand));
+   ```
+
+2. **Use correct access levels**:
+   - Player (0): Player-facing features only
+   - Counselor (1): Player assistance, limited viewing
+   - GameMaster (2): World building, spawn management
+   - Administrator (4): Dangerous operations, server management
+   - Owner (6): Critical system access
+
+### Command Implementation Standards
+
+1. **Include Usage and Description attributes**:
+   ```csharp
+   [Usage("CommandName [parameters]")]
+   [Description("Clear description of what the command does")]
+   public static void Command_OnCommand(CommandEventArgs e)
+   ```
+
+2. **Validate parameters before execution**:
+   ```csharp
+   if (e.Arguments.Length < requiredCount)
+   {
+       e.Mobile.SendMessage("Usage: [command <param1> <param2>]");
+       return;
+   }
+   ```
+
+3. **Provide feedback to user**:
+   ```csharp
+   e.Mobile.SendMessage("Command executed successfully");
+   ```
+
+### Dangerous Command Safety
+
+For destructive commands (delete, clear, wipe):
+
+1. **Always provide warnings**:
+   ```csharp
+   e.Mobile.SendMessage(38, "WARNING: This will delete all items!");
+   ```
+
+2. **Consider confirmation prompts** for critical operations
+
+3. **Log destructive actions** to server console
+
+4. **Document in command description** that action is irreversible
+
+## World Management
+
+### BuildWorld Command Pattern
+
+When creating world generation commands:
+
+1. **Preserve player data**:
+   - Never delete player mobiles
+   - Never delete controlled/tamed creatures
+   - Preserve player houses and belongings
+
+2. **Clear only intended objects**:
+   ```csharp
+   if (being is BaseCreature)
+   {
+       BaseCreature bc = (BaseCreature)being;
+       if (bc.Home.X > 0 && !bc.IsStabled && !bc.Controlled && bc.ControlMaster == null)
+           beings.Add(being);
+   }
+   ```
+
+3. **Call decoration and spawn functions in correct order**:
+   - Decorate first
+   - Generate structures
+   - Place spawns last
+
+### Spawner Management
+
+1. **Use SpawnIDs for organization**:
+   - Default (1): Hand-placed spawners
+   - 10-19: Cities
+   - 20-29: Dungeons  
+   - 30+: Custom systems
+
+2. **Always provide save option before remove**:
+   ```csharp
+   // Recommend backup
+   from.SendMessage("Consider running [spawngen save first!");
+   ```
+
+3. **Use Premium Spawner for new spawns**:
+   - Supports map files
+   - Better organization
+   - Bulk operations
+
+## Configuration Files
+
+### MyServerSettings.cs Patterns
+
+When adding new server settings:
+
+1. **Use static methods**:
+   ```csharp
+   public static bool FeatureName()
+   {
+       return true; // or false
+   }
+   ```
+
+2. **Include descriptive comments**:
+   ```csharp
+   // THIS FEATURE ENABLES/DISABLES [specific functionality]
+   // SETTING TO FALSE WILL [consequence]
+   ```
+
+3. **Provide reasonable defaults**:
+   - Safe options for new servers
+   - Performance-conscious values
+   - Document any caveats
+
+### Region Configuration
+
+When modifying Regions.xml:
+
+1. **Use proper XML structure**:
+   ```xml
+   <region priority="50" name="RegionName">
+       <rect x="1400" y="1520" width="200" height="200" />
+       <go location="(1450,1650,0)" />
+       <music name="MusicName" />
+   </region>
+   ```
+
+2. **Set appropriate priorities**:
+   - Higher priority = takes precedence
+   - Default: 50
+   - Dungeons: 75-100
+   - Special areas: 100+
+
+## Task Manager Guidelines
+
+When creating periodic tasks:
+
+1. **Use existing TaskManager system**:
+   ```csharp
+   TaskManager.RegisterTask("TaskName", TimeSpan.FromHours(1), () =>
+   {
+       // Task code
+   });
+   ```
+
+2. **Consider performance impact**:
+   - Avoid heavy operations during peak hours
+   - Spread intensive tasks across different intervals
+   - Use incremental processing for large operations
+
+3. **Provide admin control**:
+   - Allow enable/disable
+   - Adjustable intervals
+   - Manual trigger option
+
+## Documentation Standards
+
+### Command Documentation
+
+Every command should have:
+
+1. **Help text** via attributes
+2. **Example usage** in comments
+3. **Parameter descriptions**
+4. **Warning notes** for dangerous operations
+
+### Code Comments
+
+```csharp
+// COMMAND: [commandname
+// PURPOSE: Brief description
+// ACCESS: GameMaster+
+// EXAMPLE: [commandname param1 param2
+// CAUTION: Any warnings
+```
+
+## Error Handling
+
+### Robust Command Handling
+
+1. **Try-catch for risky operations**:
+   ```csharp
+   try
+   {
+       // Risky operation
+   }
+   catch (Exception ex)
+   {
+       from.SendMessage($"Error: {ex.Message}");
+       Console.WriteLine($"Error in [command]: {ex}");
+   }
+   ```
+
+2. **Validate targets**:
+   ```csharp
+   if (targeted is Item item)
+   {
+       // Safe to use item
+   }
+   else
+   {
+       from.SendMessage("Invalid target");
+       return;
+   }
+   ```
+
+3. **Check permissions**:
+   ```csharp
+   if (from.AccessLevel < AccessLevel.GameMaster)
+   {
+       from.SendMessage("Insufficient access");
+       return;
+   }
+   ```
+
+## Best Practices Summary
+
+**DO:**
+- Use appropriate access levels
+- Validate all inputs
+- Provide user feedback
+- Document dangerous operations
+- Preserve player data
+- Log important actions
+- Handle errors gracefully
+
+**DON'T:**
+- Delete without confirmation
+- Skip input validation
+- Hard-code paths
+- Ignore error states
+- Modify player data casually
+- Create commands without documentation
+
+## Testing Guidelines
+
+Before committing administration commands:
+
+1. **Test with different access levels**
+2. **Verify parameter validation**
+3. **Test edge cases** (null, invalid inputs)
+4. **Confirm error messages** are clear
+5. **Test on backup first** for destructive operations
+
+## Security Considerations
+
+1. **Never expose passwords** or account details
+2. **Log sensitive operations** (bans, firewalls, account changes)
+3. **Validate serial/ID inputs** to prevent exploits
+4. **Limit command scope** - don't give more power than needed
+5. **Regular access audits** - review who has what level
+
+---
+
+**Remember**: Administrative commands have power. Use it responsibly.

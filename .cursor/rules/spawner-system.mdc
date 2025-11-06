@@ -1,0 +1,510 @@
+---
+description: Premium Spawner system development and usage guidelines
+globs: Scripts/Server Functions/Spawner/**/*
+alwaysApply: false
+---
+
+# Premium Spawner System Rules
+
+## Spawner Implementation Standards
+
+### Premium Spawner Properties
+
+When modifying PremiumSpawner class:
+
+1. **Core Properties (Never Remove)**:
+   - SpawnID (int)
+   - OverrideMap (int) 
+   - OverrideID (int)
+   - OverrideMinTime (double)
+   - OverrideMaxTime (double)
+   - SpawnObject0-5 (string arrays)
+   - Count0-5 (int)
+
+2. **Use CommandProperty attributes**:
+   ```csharp
+   [CommandProperty(AccessLevel.GameMaster)]
+   public int SpawnID { get; set; }
+   ```
+
+### Map File Format Rules
+
+When parsing or generating map files:
+
+1. **Strict Format**:
+   ```
+   *|List1|List2|List3|List4|List5|List6|X|Y|Z|Facet|MinTime|MaxTime|WalkRange|HomeRange|SpawnID|Count1|Count2|Count3|Count4|Count5|Count6
+   ```
+
+2. **Field Validation**:
+   - Always validate field count (21 fields after split)
+   - Handle empty fields (empty string between pipes)
+   - Validate numeric conversions with try-catch
+
+3. **Override Handling**:
+   ```csharp
+   if (line.StartsWith("overridemap"))
+       m_MapOverride = Utility.ToInt32(value);
+   if (line.StartsWith("overrideid"))
+       m_IDOverride = Utility.ToInt32(value);
+   ```
+
+4. **Comment Lines**:
+   - Lines starting with `##` are comments
+   - Skip during parsing
+   - Preserve when saving
+
+### SpawnID Management
+
+1. **Reserved IDs**:
+   - 1: Hand-placed spawners (default)
+   - 1000: UO Classic spawns
+   - Never use 0 (causes issues)
+
+2. **Recommended Ranges**:
+   ```csharp
+   // Custom map SpawnID scheme
+   10-19:  Cities and towns
+   20-29:  Dungeons
+   30-39:  Wilderness
+   40-49:  Special areas
+   50-99:  Events/temporary
+   100+:   Expansion/custom packs
+   ```
+
+3. **Always Check SpawnID**:
+   ```csharp
+   public static void Remove(int spawnID)
+   {
+       if (spawnID == 0)
+       {
+           Console.WriteLine("WARNING: SpawnID 0 not allowed");
+           return;
+       }
+       // Process removal
+   }
+   ```
+
+## Command Implementation
+
+### SpawnGen Command Pattern
+
+1. **Argument Validation**:
+   ```csharp
+   if (e.Arguments.Length == 0)
+   {
+       e.Mobile.SendMessage("Usage: [spawngen <file>|save|remove|unload <id>");
+       return;
+   }
+   ```
+
+2. **File Path Handling**:
+   ```csharp
+   string path = Path.Combine(Core.BaseDirectory, "Data", "Monsters", filename);
+   if (!File.Exists(path))
+   {
+       from.SendMessage("File not found: " + filename);
+       return;
+   }
+   ```
+
+3. **Feedback Messages**:
+   ```csharp
+   from.SendMessage($"Loaded {count} spawners from {filename}");
+   ```
+
+### Save Operation Safety
+
+1. **Always Backup**:
+   ```csharp
+   // Before overwriting existing file
+   if (File.Exists(targetFile))
+   {
+       string backup = targetFile + ".backup";
+       File.Copy(targetFile, backup, true);
+   }
+   ```
+
+2. **Atomic Writes**:
+   ```csharp
+   // Write to temp, then rename
+   string temp = targetFile + ".tmp";
+   using (StreamWriter writer = new StreamWriter(temp))
+   {
+       // Write data
+   }
+   File.Move(temp, targetFile, true);
+   ```
+
+3. **Transaction Model**:
+   - Count spawners first
+   - Show confirmation
+   - Execute save
+   - Report results
+
+## Spawn Editor Guidelines
+
+### Editor Gump Design
+
+1. **List Management**:
+   ```csharp
+   // Store spawner list in gump
+   private ArrayList m_tempList;
+   
+   // Filter before display
+   private ArrayList FilterSpawners(ArrayList all, Filter filter)
+   {
+       ArrayList filtered = new ArrayList();
+       foreach (Item spawner in all)
+       {
+           if (MeetsFilter(spawner, filter))
+               filtered.Add(spawner);
+       }
+       return filtered;
+   }
+   ```
+
+2. **Pagination**:
+   - Max 10-15 items per page
+   - Include page navigation
+   - Show page X of Y
+
+3. **Action Confirmation**:
+   - Delete: "Are you sure?"
+   - Modify multiple: Show count
+   - Critical operations: Require double confirmation
+
+### Editor Performance
+
+1. **Lazy Loading**:
+   ```csharp
+   // Don't load all spawners at once
+   public static ArrayList GetSpawnersInRegion(string region, int maxCount = 100)
+   {
+       ArrayList list = new ArrayList();
+       foreach (Item item in World.Items.Values)
+       {
+           if (list.Count >= maxCount) break;
+           if (item is PremiumSpawner && InRegion(item, region))
+               list.Add(item);
+       }
+       return list;
+   }
+   ```
+
+2. **Filter Early**:
+   - Apply filters during iteration
+   - Don't create huge temporary lists
+   - Use yield return for large sets
+
+## Spawn Overseer System
+
+### Overseer Implementation
+
+1. **Range Check Optimization**:
+   ```csharp
+   // Use squared distance to avoid sqrt
+   public bool InRange(Point3D point, int range)
+   {
+       int dx = Math.Abs(point.X - X);
+       int dy = Math.Abs(point.Y - Y);
+       return (dx <= range && dy <= range);
+   }
+   ```
+
+2. **Timer Management**:
+   ```csharp
+   // Different intervals for different states
+   private static readonly TimeSpan InRangeDelay = TimeSpan.FromMinutes(30);
+   private static readonly TimeSpan OutRangeDelay = TimeSpan.FromSeconds(5);
+   ```
+
+3. **Spawner Disable Logic**:
+   ```csharp
+   private void DisableSpawners()
+   {
+       foreach (PremiumSpawner spawner in GetSpawnersInRange())
+       {
+           spawner.Running = false;
+           spawner.RemoveSpawnedObjects(); // Clean up
+       }
+   }
+   ```
+
+### Config File Parsing
+
+1. **Robust Parsing**:
+   ```csharp
+   public static void ParseConfigFile(string path)
+   {
+       using (StreamReader reader = new StreamReader(path))
+       {
+           int lineNum = 0;
+           string line;
+           OverseerConfig config = null;
+           
+           while ((line = reader.ReadLine()) != null)
+           {
+               lineNum++;
+               line = line.Trim();
+               
+               if (line.StartsWith("#") || line.Length == 0)
+                   continue; // Skip comments and empty lines
+                   
+               if (line.StartsWith("SpawnsOverseer"))
+               {
+                   config = ParseOverseerConfig(line);
+               }
+               else if (config != null)
+               {
+                   ParseCoordinates(line, config);
+               }
+           }
+       }
+   }
+   ```
+
+2. **Parameter Parsing**:
+   ```csharp
+   // Parse: SpawnsOverseer 7966 (Range=50; InRangeDelay=30)
+   private static Dictionary<string, string> ParseParameters(string paramString)
+   {
+       Dictionary<string, string> parameters = new Dictionary<string, string>();
+       string[] parts = paramString.Split(';');
+       
+       foreach (string part in parts)
+       {
+           string[] keyValue = part.Split('=');
+           if (keyValue.Length == 2)
+               parameters[keyValue[0].Trim()] = keyValue[1].Trim();
+       }
+       
+       return parameters;
+   }
+   ```
+
+## Performance Optimization
+
+### Spawner Iteration
+
+1. **Efficient Collection Access**:
+   ```csharp
+   // BAD: Creates new list each time
+   foreach (Item item in World.Items.Values)
+       if (item is PremiumSpawner) DoSomething(item);
+   
+   // GOOD: Pre-filter collection
+   List<PremiumSpawner> spawners = new List<PremiumSpawner>();
+   foreach (Item item in World.Items.Values)
+       if (item is PremiumSpawner) spawners.Add((PremiumSpawner)item);
+   
+   foreach (PremiumSpawner spawner in spawners)
+       DoSomething(spawner);
+   ```
+
+2. **Batch Operations**:
+   ```csharp
+   // Process in batches to avoid UI locks
+   public static void ProcessSpawnersBatch(List<PremiumSpawner> spawners, int batchSize = 100)
+   {
+       for (int i = 0; i < spawners.Count; i += batchSize)
+       {
+           int count = Math.Min(batchSize, spawners.Count - i);
+           ProcessBatch(spawners.GetRange(i, count));
+           
+           // Allow other processes to run
+           System.Threading.Thread.Sleep(10);
+       }
+   }
+   ```
+
+### Memory Management
+
+1. **Dispose Resources**:
+   ```csharp
+   using (StreamWriter writer = new StreamWriter(path))
+   {
+       // Write data
+   } // Automatically disposed
+   ```
+
+2. **Clear Temporary Lists**:
+   ```csharp
+   ArrayList temp = new ArrayList();
+   try
+   {
+       // Use temp
+   }
+   finally
+   {
+       temp.Clear();
+       temp = null;
+   }
+   ```
+
+## Testing Requirements
+
+### Unit Tests for Spawner System
+
+1. **Map File Parsing**:
+   ```csharp
+   [Test]
+   public void TestMapFileParsing()
+   {
+       string line = "*|Orc||||||1500|1600|0|2|5|10|20|15|1|5|0|0|0|0|0";
+       Spawner spawner = ParseSpawnerLine(line);
+       
+       Assert.AreEqual("Orc", spawner.SpawnObject0);
+       Assert.AreEqual(1500, spawner.X);
+       Assert.AreEqual(5, spawner.Count0);
+   }
+   ```
+
+2. **Override Logic**:
+   ```csharp
+   [Test]
+   public void TestMapOverride()
+   {
+       SetMapOverride(0);
+       Spawner spawner = CreateSpawner(facet: 2);
+       
+       Assert.AreEqual(0, spawner.Map.MapID);
+   }
+   ```
+
+3. **SpawnID Filtering**:
+   ```csharp
+   [Test]
+   public void TestSpawnIDFilter()
+   {
+       CreateSpawners(spawnID: 14, count: 5);
+       CreateSpawners(spawnID: 20, count: 3);
+       
+       List<Spawner> filtered = GetSpawnersByID(14);
+       Assert.AreEqual(5, filtered.Count);
+   }
+   ```
+
+## Error Handling
+
+### Graceful Degradation
+
+1. **Invalid Creature Names**:
+   ```csharp
+   Type type = ScriptCompiler.FindTypeByName(creatureName);
+   if (type == null)
+   {
+       Console.WriteLine($"WARNING: Unknown creature '{creatureName}' in spawner at {Location}");
+       // Continue with other creatures
+       continue;
+   }
+   ```
+
+2. **Invalid Coordinates**:
+   ```csharp
+   if (x < 0 || x > map.Width || y < 0 || y > map.Height)
+   {
+       Console.WriteLine($"WARNING: Invalid coordinates ({x},{y}) in {filename}");
+       // Skip this spawner
+       continue;
+   }
+   ```
+
+3. **File Access Errors**:
+   ```csharp
+   try
+   {
+       using (StreamReader reader = new StreamReader(path))
+       {
+           // Read file
+       }
+   }
+   catch (IOException ex)
+   {
+       Console.WriteLine($"ERROR: Cannot read {path}: {ex.Message}");
+       from.SendMessage($"Error loading spawn file: {ex.Message}");
+       return false;
+   }
+   ```
+
+## Documentation Standards
+
+### Code Comments
+
+```csharp
+/// <summary>
+/// Loads spawners from a map file
+/// </summary>
+/// <param name="filename">Map file name (without path)</param>
+/// <param name="from">Mobile executing the command</param>
+/// <returns>Number of spawners loaded</returns>
+public static int LoadFromMap(string filename, Mobile from)
+{
+    // Implementation
+}
+```
+
+### Map File Headers
+
+Every map file should have:
+
+```
+## [Map Name]
+## Version: X.X
+## Last Updated: YYYY-MM-DD
+## Author: [Name]
+## SpawnID: [ID Number]
+## Description: [What this map contains]
+## Dependencies: [Any required scripts/systems]
+
+overrideid [ID]
+```
+
+## Best Practices Summary
+
+**DO:**
+- Validate all spawner data before creation
+- Use SpawnIDs for organization
+- Backup before bulk operations
+- Handle file I/O errors gracefully
+- Provide user feedback
+- Document map files thoroughly
+- Use override commands efficiently
+- Test with various spawn counts
+
+**DON'T:**
+- Use SpawnID 0
+- Hard-code file paths
+- Load entire world into memory
+- Skip input validation
+- Create spawners at invalid coordinates
+- Mix targetable/non-targetable in same list
+- Delete without confirmation
+- Ignore parse errors
+
+## Security Considerations
+
+1. **File Path Validation**:
+   ```csharp
+   // Prevent directory traversal
+   string safeFilename = Path.GetFileName(userInput);
+   string fullPath = Path.Combine(BaseDirectory, "Data", "Monsters", safeFilename);
+   ```
+
+2. **Access Level Checks**:
+   ```csharp
+   if (from.AccessLevel < AccessLevel.GameMaster)
+   {
+       from.SendMessage("Insufficient access to modify spawners");
+       return;
+   }
+   ```
+
+3. **Rate Limiting**:
+   - Limit spawner creation rate
+   - Prevent spawn bombing
+   - Cap creatures per spawner
+
+---
+
+**Remember**: The spawner system affects server performance. Optimize always.
