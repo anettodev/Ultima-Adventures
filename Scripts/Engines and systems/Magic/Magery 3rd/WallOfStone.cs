@@ -51,7 +51,11 @@ namespace Server.Spells.Third
 		private const int DEFAULT_HUE = 0;
 
 		// Item Constants
-		private const int WALL_ITEM_ID = 0x80;
+		// Orientation-based wall IDs:
+		// 87 (0x57) = East-West orientation wall
+		// 88 (0x58) = North-South orientation wall
+		private const int WALL_ITEM_ID_EAST_WEST = 0x58;  // 87 decimal
+		private const int WALL_ITEM_ID_NORTH_SOUTH = 0x57; // 88 decimal
 
 		// Target Constants
 		private const int TARGET_RANGE_ML = 10;
@@ -92,6 +96,34 @@ namespace Server.Spells.Third
 		/// </summary>
 		/// <param name="targetPoint">The target point for the wall</param>
 		/// <returns>True if wall should be east-to-west, false for north-to-south</returns>
+		/// 
+		/// TODO: FUTURE REFACTOR - WALL ORIENTATION ISSUE
+		/// ================================================
+		/// Current Problem:
+		/// - The orientation calculation is not working correctly
+		/// - Wrong wall ItemID is being rendered (87 vs 88 are swapped or logic is inverted)
+		/// - Walls appear in incorrect orientation relative to casting direction
+		/// 
+		/// Expected Behavior:
+		/// - When casting East or West: Wall should be East-West (horizontal) - ItemID 87 (0x57)
+		/// - When casting North or South: Wall should be North-South (vertical) - ItemID 88 (0x58)
+		/// - Wall should be aligned parallel to the casting direction
+		/// - The wall orientation should match the direction the caster is facing after SpellHelper.Turn()
+		/// 
+		/// Possible Solutions to Investigate:
+		/// 1. Use caster's Direction property after SpellHelper.Turn() instead of position-based calculation
+		/// 2. Invert the return values (swap true/false logic)
+		/// 3. Swap the ItemID constants (currently swapped as workaround: 0x58 for EW, 0x57 for NS)
+		/// 4. Check if wall should be parallel vs perpendicular to casting direction
+		/// 5. Compare with working field spells (EnergyField, FireField) for correct orientation logic
+		/// 6. Test with different casting angles (cardinal vs diagonal directions)
+		/// 
+		/// Current Workaround:
+		/// - ItemID constants are swapped: WALL_ITEM_ID_EAST_WEST = 0x58, WALL_ITEM_ID_NORTH_SOUTH = 0x57
+		/// - This is a temporary fix but the underlying orientation logic still needs correction
+		/// - Correct mapping should be:
+		///   * WALL_ITEM_ID_EAST_WEST = 0x57 (87) for East/West casting
+		///   * WALL_ITEM_ID_NORTH_SOUTH = 0x58 (88) for North/South casting
 		private bool DetermineWallOrientation(IPoint3D targetPoint)
 		{
 			int dx = Caster.Location.X - targetPoint.X;
@@ -144,7 +176,7 @@ namespace Server.Spells.Third
 				if (CanPlaceWallSegment(segmentLocation))
 				{
 					RemoveExistingWalls(segmentLocation);
-					CreateWallSegment(segmentLocation);
+					CreateWallSegment(segmentLocation, eastToWest);
 				}
 			}
 		}
@@ -200,9 +232,12 @@ namespace Server.Spells.Third
 		/// Creates a single wall segment at the specified location
 		/// </summary>
 		/// <param name="location">Location for the wall segment</param>
-		private void CreateWallSegment(Point3D location)
+		/// <param name="eastToWest">Wall orientation - true for East-West, false for North-South</param>
+		private void CreateWallSegment(Point3D location, bool eastToWest)
 		{
-			Item wall = new InternalItem(location, Caster.Map, Caster);
+			// Select ItemID based on orientation
+			int itemID = eastToWest ? WALL_ITEM_ID_EAST_WEST : WALL_ITEM_ID_NORTH_SOUTH;
+			Item wall = new InternalItem(location, Caster.Map, Caster, itemID);
 			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
 
 			Effects.SendLocationParticles(wall, EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
@@ -233,7 +268,7 @@ namespace Server.Spells.Third
 
 			public override bool BlocksFit{ get{ return true; } }
 
-			public InternalItem(Point3D loc, Map map, Mobile caster) : base(WALL_ITEM_ID)
+			public InternalItem(Point3D loc, Map map, Mobile caster, int itemID) : base(itemID)
 			{
 				Visible = false;
 				Movable = false;
