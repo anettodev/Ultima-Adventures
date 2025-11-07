@@ -139,7 +139,17 @@ namespace Server.Mobiles
 		public IEntity GetDisplayEntity()
 		{
 			if ( m_DisplayEntity != null && !IsDeleted( m_DisplayEntity ) )
+			{
+				// Update name if we have a custom name and the entity is an Item
+				if ( m_DisplayEntity is Item )
+				{
+					Item item = (Item)m_DisplayEntity;
+					string displayName = GetDisplayName( item );
+					if ( !String.IsNullOrEmpty( displayName ) && item.Name != displayName )
+						item.Name = displayName;
+				}
 				return m_DisplayEntity;
+			}
 
 			bool canCache = this.CanCacheDisplay;
 
@@ -149,9 +159,59 @@ namespace Server.Mobiles
 			if ( m_DisplayEntity == null || IsDeleted( m_DisplayEntity ) )
 				m_DisplayEntity = GetEntity();
 
+			// Set custom name on display entity
+			if ( m_DisplayEntity is Item )
+			{
+				Item item = (Item)m_DisplayEntity;
+				string displayName = GetDisplayName( item );
+				if ( !String.IsNullOrEmpty( displayName ) )
+					item.Name = displayName;
+			}
+
 			DisplayCache.Cache.Store( m_Type, m_DisplayEntity, canCache );
 
 			return m_DisplayEntity;
+		}
+
+		private string GetDisplayName( Item item )
+		{
+			// If we have a custom name, use it
+			if ( !String.IsNullOrEmpty( m_Name ) && m_Name != "indefinido" )
+				return m_Name;
+
+			// For ingots, build name from resource type
+			if ( item is BaseIngot )
+			{
+				BaseIngot ingot = (BaseIngot)item;
+				string resourceName = CraftResources.GetName( ingot.Resource );
+				
+				if ( !String.IsNullOrEmpty( resourceName ) )
+				{
+					// Map resource names to PT-BR
+					switch ( resourceName.ToLower() )
+					{
+						case "iron": return "Ferro Ingots";
+						case "dull copper": return "CR Ingots";
+						case "copper": return "Cobre Ingots";
+						case "shadow iron": return "Ferro Negro Ingots";
+						case "bronze": return "Bronze Ingots";
+						case "gold": return "Dourado Ingots";
+						case "agapite": return "Agapite Ingots";
+						case "verite": return "Verite Ingots";
+						case "valorite": return "Valorite Ingots";
+						case "rosenium": return "Rosenium Ingots";
+						case "titanium": return "Titanium Ingots";
+						case "platinum": return "Platinum Ingots";
+						default: return resourceName + " Ingots";
+					}
+				}
+			}
+
+			// For items with their own name, use it (like books)
+			if ( !String.IsNullOrEmpty( item.Name ) )
+				return item.Name;
+
+			return null;
 		}
 
 		public Type Type

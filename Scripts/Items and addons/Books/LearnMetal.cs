@@ -14,13 +14,13 @@ namespace Server.Items
 		public LearnMetalBook( ) : base( 0x4C5B )
 		{
 			Weight = 1.0;
-			Name = "Pergaminho do Conhecimento";
+			Name = "Guia de MinÃ©rios";
 		}
 
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
-			list.Add( "Guia sobre Mineração, Minérios & Metais" );
+			list.Add( "Guia sobre MinÃ©rios & Metais" );
 		}
 
 		public class LearnMetalGump : Gump
@@ -71,7 +71,7 @@ namespace Server.Items
 				AddItem(730, 117, 4015);
 				AddItem(502, 126, 3718);
 
-				AddHtml( 170, 70, 600, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>GUIA SOBRE MINERAÇÃO E OS TIPOS DE MINÉRIOS & METAIS</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 170, 70, 600, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>GUIA SOBRE MINERAï¿½ï¿½O E OS TIPOS DE MINï¿½RIOS & METAIS</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 
 				int i = 115;
 				int o = 32;
@@ -79,7 +79,7 @@ namespace Server.Items
 				AddItem(100, i, 7153, 0);
 				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Ferro</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
 				AddItem(100, i, 7153, MaterialInfo.GetMaterialColor( "dull copper", "", 0 ));
-				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre Rústico</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
+				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre Rï¿½stico</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
 
                 AddItem(100, i, 7153, MaterialInfo.GetMaterialColor("copper", "", 0));
                 AddHtml(150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i = i + o;
@@ -126,7 +126,7 @@ namespace Server.Items
 				AddItem(100, i, 7153, MaterialInfo.GetMaterialColor( "dwarven", "", 0 ));
 				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Dwarven</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;*/
 
-				AddHtml( 303, 198, 573, 466, @"<BODY><BASEFONT Color=#FBFBFB><BIG>A mineração é a habilidade necessária para encontrar minério dentro de cavernas e montanhas. Com o minério extraído, é possível fundi-lo e criar os lingotes e, em seguida, com a habilidade de metalurgia e funilaria pode-se criar armas, armaduras e ferramentas.<br/><br/>Você simplesmente precisa uma picareta, marreta ou uma pá, clicar duas vezes nela e, em seguida, mirar em um lado da montanha ou no chão de cavernas. Embora normalmente se obtenha minério regular (ferro), você acabará ficando habilidoso o suficiente para desenterrar outros tipos de minério mais raros.<br/>Os muitos tipos de metal estão listados aqui, começando do mais simples para o de maior qualidade. Um escudo de valorite será um escudo muito melhor do que um feito de cobre, por exemplo.<br/><br/>Entretanto, cada metal possui propriedades distintas e que podem, se bem utilizados, dar vantagens e certos aspectos como ajudar a criar e ativar atributos mágicos em armas e itens especiais.<br/>Seja qual for a cor do metal que você usar, a arma, ferramenta ou armadura manterá a cor do metal.<br/><br/>Para fazer coisas a partir do minério, você precisa transformar o minério em lingotes. Para fazer isso, clique duas vezes nos lingotes e direcione uma forja. Estas forjas são comumente encontradas em ferrarias. Então você pode começar a criar com um martelo de ferreiro, ou mexer com ferramentas de funilaria.<br/>Tenha em mente que, para fabricar itens, você precisará estar perto de uma forja e bigorna.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 303, 198, 573, 466, @"<BODY><BASEFONT Color=#FBFBFB><BIG>A mineraï¿½ï¿½o ï¿½ a habilidade necessï¿½ria para encontrar minï¿½rio dentro de cavernas e montanhas. Com o minï¿½rio extraï¿½do, ï¿½ possï¿½vel fundi-lo e criar os lingotes e, em seguida, com a habilidade de metalurgia e funilaria pode-se criar armas, armaduras e ferramentas.<br/><br/>Vocï¿½ simplesmente precisa uma picareta, marreta ou uma pï¿½, clicar duas vezes nela e, em seguida, mirar em um lado da montanha ou no chï¿½o de cavernas. Embora normalmente se obtenha minï¿½rio regular (ferro), vocï¿½ acabarï¿½ ficando habilidoso o suficiente para desenterrar outros tipos de minï¿½rio mais raros.<br/>Os muitos tipos de metal estï¿½o listados aqui, comeï¿½ando do mais simples para o de maior qualidade. Um escudo de valorite serï¿½ um escudo muito melhor do que um feito de cobre, por exemplo.<br/><br/>Entretanto, cada metal possui propriedades distintas e que podem, se bem utilizados, dar vantagens e certos aspectos como ajudar a criar e ativar atributos mï¿½gicos em armas e itens especiais.<br/>Seja qual for a cor do metal que vocï¿½ usar, a arma, ferramenta ou armadura manterï¿½ a cor do metal.<br/><br/>Para fazer coisas a partir do minï¿½rio, vocï¿½ precisa transformar o minï¿½rio em lingotes. Para fazer isso, clique duas vezes nos lingotes e direcione uma forja. Estas forjas sï¿½o comumente encontradas em ferrarias. Entï¿½o vocï¿½ pode comeï¿½ar a criar com um martelo de ferreiro, ou mexer com ferramentas de funilaria.<br/>Tenha em mente que, para fabricar itens, vocï¿½ precisarï¿½ estar perto de uma forja e bigorna.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			}
 		}
 

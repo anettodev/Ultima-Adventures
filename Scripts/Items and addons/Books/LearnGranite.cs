@@ -14,13 +14,13 @@ namespace Server.Items
 		public LearnGraniteBook( ) : base( 0x4C5C )
 		{
 			Weight = 1.0;
-			Name = "Pergaminho do Conhecimento";
+			Name = "Guia de Granitos";
 		}
 
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
-			list.Add( "Guia sobre Vidros, Granitos & Mármore" );
+			list.Add( "Guia sobre Vidros, Granitos & MÃ¡rmore" );
 		}
 
 		public class LearnGraniteGump : Gump
@@ -71,7 +71,7 @@ namespace Server.Items
 				AddItem(752, 130, 4787);
 				AddItem(486, 131, 3718);
 
-				AddHtml( 170, 70, 600, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>GUIA SOBRE VIDRO, GRANITOS & MÁRMORE</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 170, 70, 600, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>GUIA SOBRE VIDRO, GRANITOS & Mï¿½RMORE</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 
 				int i = 135;
 				int o = 36;
@@ -80,7 +80,7 @@ namespace Server.Items
 				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Regular</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
 
 				AddItem(100, i, 6011, MaterialInfo.GetMaterialColor( "dull copper", "classic", 0 ));
-				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre Rústico</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
+				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre Rï¿½stico</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;
 
                 AddItem(100, i, 6011, MaterialInfo.GetMaterialColor("copper", "classic", 0));
                 AddHtml(150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Cobre</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i = i + o;
@@ -122,7 +122,7 @@ namespace Server.Items
 				AddItem(100, i, 6011, MaterialInfo.GetMaterialColor( "dwarven", "classic", 0 ));
 				AddHtml( 150, i, 137, 21, @"<BODY><BASEFONT Color=#FCFF00><BIG>Dwarven</BIG></BASEFONT></BODY>", (bool)false, (bool)false); i=i+o;*/
 
-				AddHtml( 303, 198, 573, 466, @"<BODY><BASEFONT Color=#FBFBFB><BIG>A mineração é a habilidade necessária para encontrar granito e mármore dentro de cavernas e montanhas. Com estes materias, o artesão pode criar mobilia e estátuas.<br/><br/>Você simplesmente precisa uma picareta, marreta ou uma pá, clicar duas vezes nela e em seguida mirar em um lado da montanha ou no chão de cavernas. Embora normalmente se obtenha granito regular, você acabará ficando habilidoso o suficiente para desenterrar outros tipos de granitos mais raros.<br/><br/>Os muitos tipos de granitos estão listados aqui, começando do mais simples para o de maior qualidade.<br/><br/>Para criar objetos com granitos, primeiro você precisa aprender a habilidade de cavar, identificar e extrair corretamente estas pedras. Lendas dizem que os gárgulas são os criadores deste conhecimento secreto e que eles passaram partes destes segredos ao mestres do conhecimento. Por isso, além de deter o conhecimento de mineração, você precisa adquirir uma forma de obter este saber através do estudo desta arte e/ou ciência.<br/>Somente após isso, é possível combinar este conhecimento com as habilidades avançadas de capintaria através do uso de ferramentas como martelo e chisel.<br/><br/>Também é possível através da mineração em desertos e praias encontrar areia para aa criação de vidro. Com este material em mãos é possível utilizar uma ferramenta de sopro para fundir a areia em vidro e assim, criar itens como garrafas e jarras. Você precisará de uma marreta ou pá e selecionar uma área com areia de qualidade próxima a você que poderá ser utilizada para a criação dos itens de vidro.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 303, 198, 573, 466, @"<BODY><BASEFONT Color=#FBFBFB><BIG>A mineraï¿½ï¿½o ï¿½ a habilidade necessï¿½ria para encontrar granito e mï¿½rmore dentro de cavernas e montanhas. Com estes materias, o artesï¿½o pode criar mobilia e estï¿½tuas.<br/><br/>Vocï¿½ simplesmente precisa uma picareta, marreta ou uma pï¿½, clicar duas vezes nela e em seguida mirar em um lado da montanha ou no chï¿½o de cavernas. Embora normalmente se obtenha granito regular, vocï¿½ acabarï¿½ ficando habilidoso o suficiente para desenterrar outros tipos de granitos mais raros.<br/><br/>Os muitos tipos de granitos estï¿½o listados aqui, comeï¿½ando do mais simples para o de maior qualidade.<br/><br/>Para criar objetos com granitos, primeiro vocï¿½ precisa aprender a habilidade de cavar, identificar e extrair corretamente estas pedras. Lendas dizem que os gï¿½rgulas sï¿½o os criadores deste conhecimento secreto e que eles passaram partes destes segredos ao mestres do conhecimento. Por isso, alï¿½m de deter o conhecimento de mineraï¿½ï¿½o, vocï¿½ precisa adquirir uma forma de obter este saber atravï¿½s do estudo desta arte e/ou ciï¿½ncia.<br/>Somente apï¿½s isso, ï¿½ possï¿½vel combinar este conhecimento com as habilidades avanï¿½adas de capintaria atravï¿½s do uso de ferramentas como martelo e chisel.<br/><br/>Tambï¿½m ï¿½ possï¿½vel atravï¿½s da mineraï¿½ï¿½o em desertos e praias encontrar areia para aa criaï¿½ï¿½o de vidro. Com este material em mï¿½os ï¿½ possï¿½vel utilizar uma ferramenta de sopro para fundir a areia em vidro e assim, criar itens como garrafas e jarras. Vocï¿½ precisarï¿½ de uma marreta ou pï¿½ e selecionar uma ï¿½rea com areia de qualidade prï¿½xima a vocï¿½ que poderï¿½ ser utilizada para a criaï¿½ï¿½o dos itens de vidro.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			}
 		}
 
