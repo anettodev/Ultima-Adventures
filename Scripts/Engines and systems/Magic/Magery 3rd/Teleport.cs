@@ -214,12 +214,12 @@ namespace Server.Spells.Third
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget(Mobile from, object o)
+		protected override void OnTarget(Mobile from, object o)
+		{
+			if (o is IPoint3D)
 			{
-				if (o is IPoint3D point)
-				{
-					m_Owner.Target(point);
-				}
+				m_Owner.Target((IPoint3D)o);
+			}
 			}
 
 			protected override void OnTargetFinish(Mobile from)

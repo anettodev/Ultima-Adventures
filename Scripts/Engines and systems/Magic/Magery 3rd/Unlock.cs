@@ -275,14 +275,14 @@ namespace Server.Spells.Third
 					{
 						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_UNLOCK_NO_EFFECT);
 					}
-					else if (o is BaseDoor door)
-					{
-						m_Owner.TryUnlockDoor(from, door);
-					}
-					else if (o is LockableContainer container)
-					{
-						m_Owner.TryUnlockContainer(from, container);
-					}
+				else if (o is BaseDoor)
+				{
+					m_Owner.TryUnlockDoor(from, (BaseDoor)o);
+				}
+				else if (o is LockableContainer)
+				{
+					m_Owner.TryUnlockContainer(from, (LockableContainer)o);
+				}
 					else
 					{
 						m_Owner.HandleInvalidTarget(from, Spell.SpellMessages.ERROR_CANNOT_UNLOCK_ITEM);

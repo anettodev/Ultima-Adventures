@@ -86,20 +86,20 @@ namespace Server.Spells.Third
 			Caster.Target = new InternalTarget( this );
 		}
 
-		public void Target(object target)
+	public void Target(object target)
+	{
+		if (target is LockableContainer)
 		{
-			if (target is LockableContainer container)
-			{
-				TryLockContainer(container);
-			}
-			else if (target is BaseDoor door)
-			{
-				TryLockDoor(door);
-			}
-			else if (target is BaseCreature creature)
-			{
-				TryCaptureSoul(creature);
-			}
+			TryLockContainer((LockableContainer)target);
+		}
+		else if (target is BaseDoor)
+		{
+			TryLockDoor((BaseDoor)target);
+		}
+		else if (target is BaseCreature)
+		{
+			TryCaptureSoul((BaseCreature)target);
+		}
 			else if (target is PlayerMobile)
 			{
 				HandleSoulCaptureFailure("Esta alma é forte demais para ficar presa no frasco!");
@@ -277,11 +277,11 @@ namespace Server.Spells.Third
 						creature.PlaySound(0x665);
 						creature.Delete();
 
-						Caster.BoltEffect(0);
-						Caster.PlaySound(0x665);
-						Caster.Mana -= SOUL_TRAP_MANA_COST;
-						Caster.AddToBackpack(flaskWithSoul);
-						Caster.SendMessage(Spell.MSG_COLOR_ERROR, $"Você capturou a alma de {creature.Name} em um frasco de electrum!");
+					Caster.BoltEffect(0);
+					Caster.PlaySound(0x665);
+					Caster.Mana -= SOUL_TRAP_MANA_COST;
+					Caster.AddToBackpack(flaskWithSoul);
+					Caster.SendMessage(Spell.MSG_COLOR_ERROR, String.Format("Você capturou a alma de {0} em um frasco de electrum!", creature.Name));
 					}
 					else
 					{
@@ -551,15 +551,35 @@ namespace Server.Items
 
 		public override void OnDoubleClick( Mobile from )
 		{
-			int nFollowers = from.FollowersMax - from.Followers;
+		int nFollowers = from.FollowersMax - from.Followers;
+		const int TRAPPED_SOUL_CONTROL_SLOTS = 4;
+		const int MAX_TRAPPED_SOULS = 3;
+
+			// Count existing trapped souls
+			int existingTrappedSouls = 0;
+			if (from is PlayerMobile)
+			{
+				PlayerMobile pm = (PlayerMobile)from;
+				foreach (Mobile follower in pm.AllFollowers)
+				{
+					if (follower is LockedCreature)
+					{
+						existingTrappedSouls++;
+					}
+				}
+			}
 
 			if ( !IsChildOf( from.Backpack ) )
 			{
 				from.SendMessage(95, "Isso deve estar em sua mochila para usar.");
 			}
-			else if ( nFollowers < 1 )
+			else if ( existingTrappedSouls >= MAX_TRAPPED_SOULS )
 			{
-				from.SendMessage(55, "Você já está controlando muitos capangas.");
+				from.SendMessage(55, String.Format("Você já está controlando o máximo de {0} almas presas!", MAX_TRAPPED_SOULS));
+			}
+			else if ( nFollowers < TRAPPED_SOUL_CONTROL_SLOTS )
+			{
+				from.SendMessage(55, String.Format("Você precisa de pelo menos {0} slots de controle livres para liberar uma alma presa!", TRAPPED_SOUL_CONTROL_SLOTS));
 			}
 			else if ( HenchmanFunctions.IsInRestRegion( from ) == false )
 			{
@@ -875,10 +895,11 @@ namespace Server.Mobiles
 			BCAngerSound = anger+0;
 			BCIdleSound = idle+0;
 			BCDeathSound = death+0;
-			BCAttackSound = attack+0;
-			BCHurtSound = hurt+0;
+		BCAttackSound = attack+0;
+		BCHurtSound = hurt+0;
 
-			Timer.DelayCall( TimeSpan.FromSeconds( (double)(10+(3*time)) ), new TimerCallback( Delete ) );
+		double duration = (double)(10+(3*time)) / 2.0;
+		Timer.DelayCall( TimeSpan.FromSeconds( Math.Max(10.0, duration) ), new TimerCallback( Delete ) );
 
 			Name = "um prisioneiro espiritual";
 			Body = 2;
@@ -907,10 +928,10 @@ namespace Server.Mobiles
 				SetSkill( SkillName.Wrestling, (double)skills );
 			}
 
-			Fame = 0;
-			Karma = 0;
+		Fame = 0;
+		Karma = 0;
 
-			ControlSlots = 3;
+		ControlSlots = 4; // 4 slots per soul allows max 3 souls (requires 12 FollowersMax for max)
 		}
 
 		public override bool IsScaredOfScaryThings{ get{ return false; } }

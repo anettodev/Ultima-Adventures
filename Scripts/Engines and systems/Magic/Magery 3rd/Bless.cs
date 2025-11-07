@@ -73,8 +73,8 @@ namespace Server.Spells.Third
 				int percentage = CalculateBuffPercentage(target);
 				TimeSpan duration = CalculateDuration(target);
 
-				PlayEffects(target);
-				BuffInfo.AddBuff(target, new BuffInfo(BuffIcon.Bless, 1075847, 1075848, duration, target, $"{percentage}\t{percentage}\t{percentage}"));
+			PlayEffects(target);
+			BuffInfo.AddBuff(target, new BuffInfo(BuffIcon.Bless, 1075847, 1075848, duration, target, String.Format("{0}\t{0}\t{0}", percentage)));
 			}
 
 			FinishSequence();
@@ -85,13 +85,17 @@ namespace Server.Spells.Third
 		/// </summary>
 		/// <param name="target">The target mobile</param>
 		/// <returns>True if target is valid for blessing</returns>
-		private bool IsValidBlessTarget(Mobile target)
+	private bool IsValidBlessTarget(Mobile target)
+	{
+		if (target is BaseCreature)
 		{
-			if (target is BaseCreature creature && creature.IsBlessed)
+			BaseCreature creature = (BaseCreature)target;
+			if (creature.IsBlessed)
 			{
 				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ALREADY_BLESSED);
 				return false;
 			}
+		}
 
 			return true;
 		}
@@ -133,12 +137,13 @@ namespace Server.Spells.Third
 		/// Applies permanent blessing to BaseCreature
 		/// </summary>
 		/// <param name="target">The target mobile</param>
-		private void ApplyCreatureBlessing(Mobile target)
+	private void ApplyCreatureBlessing(Mobile target)
+	{
+		if (target is BaseCreature)
 		{
-			if (target is BaseCreature creature)
-			{
-				creature.IsBlessed = true;
-			}
+			BaseCreature creature = (BaseCreature)target;
+			creature.IsBlessed = true;
+		}
 		}
 
 		/// <summary>
@@ -150,12 +155,16 @@ namespace Server.Spells.Third
 		{
 			int percentage = (int)(SpellHelper.GetOffsetScalar(Caster, target, false) * 100);
 
-			// Apply sorcerer bonus
-			if (Caster is PlayerMobile playerMobile && playerMobile.Sorcerer())
+		// Apply sorcerer bonus
+		if (Caster is PlayerMobile)
+		{
+			PlayerMobile playerMobile = (PlayerMobile)Caster;
+			if (playerMobile.Sorcerer())
 			{
 				double bonus = (Caster.Skills[SkillName.Magery].Value + Caster.Skills[SkillName.EvalInt].Value) / SORCERER_SKILL_DIVISOR;
 				percentage = (int)((double)percentage * (1.0 + bonus));
 			}
+		}
 
 			return percentage;
 		}
@@ -169,11 +178,15 @@ namespace Server.Spells.Third
 		{
 			TimeSpan duration = SpellHelper.NMSGetDuration(Caster, target, true);
 
-			// Apply sorcerer bonus
-			if (Caster is PlayerMobile playerMobile && playerMobile.Sorcerer())
+		// Apply sorcerer bonus
+		if (Caster is PlayerMobile)
+		{
+			PlayerMobile playerMobile = (PlayerMobile)Caster;
+			if (playerMobile.Sorcerer())
 			{
 				duration += TimeSpan.FromSeconds(SORCERER_DURATION_BONUS_SECONDS);
 			}
+		}
 
 			return duration;
 		}
@@ -198,12 +211,12 @@ namespace Server.Spells.Third
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget(Mobile from, object o)
+		protected override void OnTarget(Mobile from, object o)
+		{
+			if (o is Mobile)
 			{
-				if (o is Mobile mobile)
-				{
-					m_Owner.Target(mobile);
-				}
+				m_Owner.Target((Mobile)o);
+			}
 			}
 
 			protected override void OnTargetFinish(Mobile from)

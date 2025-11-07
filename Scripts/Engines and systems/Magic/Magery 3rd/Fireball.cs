@@ -106,12 +106,12 @@ namespace Server.Spells.Third
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget(Mobile from, object o)
+		protected override void OnTarget(Mobile from, object o)
+		{
+			if (o is Mobile)
 			{
-				if (o is Mobile mobile)
-				{
-					m_Owner.Target(mobile);
-				}
+				m_Owner.Target((Mobile)o);
+			}
 			}
 
 			protected override void OnTargetFinish(Mobile from)

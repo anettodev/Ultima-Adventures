@@ -194,17 +194,17 @@ namespace Server.Spells.Third
 
             protected override void OnTarget(Mobile from, object o)
             {
-                if (o is ITelekinesisable telekinesisable)
+                if (o is ITelekinesisable)
                 {
-                    this.m_Owner.Target(telekinesisable);
+                    this.m_Owner.Target((ITelekinesisable)o);
                 }
-                else if (o is Container container)
+                else if (o is Container)
                 {
-                    this.m_Owner.Target(container);
+                    this.m_Owner.Target((Container)o);
                 }
-                else if (o is Item item)
+                else if (o is Item)
                 {
-                    this.m_Owner.Target(item);
+                    this.m_Owner.Target((Item)o);
                 }
                 else
                 {
