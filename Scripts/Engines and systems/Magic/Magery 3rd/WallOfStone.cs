@@ -4,8 +4,6 @@ using Server.Network;
 using Server.Misc;
 using Server.Items;
 using Server.Mobiles;
-using Server.Regions;
-using System.Collections.Generic;
 
 namespace Server.Spells.Third
 {
@@ -28,7 +26,6 @@ namespace Server.Spells.Third
 
 		#region Constants
 		// Wall Geometry
-		private const int WALL_LENGTH = 5; // -2 to +2 = 5 segments
 		private const int WALL_MIN_OFFSET = -2;
 		private const int WALL_MAX_OFFSET = 2;
 		private const int ORIENTATION_MULTIPLIER = 44;
@@ -39,7 +36,7 @@ namespace Server.Spells.Third
 
 		// Duration Constants
 		private const double BASE_DURATION_SECONDS = 5.0;
-		private const double DURATION_BONUS_SECONDS = 10.0; // Version 0 fallback
+		private const double DURATION_BONUS_SECONDS = 10.0;
 		private const double INSCRIBE_DURATION_DIVISOR = 4.0;
 
 		// Effect Constants
@@ -50,12 +47,9 @@ namespace Server.Spells.Third
 		private const int EFFECT_DURATION = 5025;
 		private const int DEFAULT_HUE = 0;
 
-		// Item Constants
-		// Orientation-based wall IDs:
-		// 87 (0x57) = East-West orientation wall
-		// 88 (0x58) = North-South orientation wall
-		private const int WALL_ITEM_ID_EAST_WEST = 0x58;  // 87 decimal
-		private const int WALL_ITEM_ID_NORTH_SOUTH = 0x57; // 88 decimal
+		// Item Constants - Orientation-based wall IDs
+		private const int WALL_ITEM_ID_EAST_WEST = 0x58;
+		private const int WALL_ITEM_ID_NORTH_SOUTH = 0x57;
 
 		// Target Constants
 		private const int TARGET_RANGE_ML = 10;
@@ -76,17 +70,28 @@ namespace Server.Spells.Third
 			if (!Caster.CanSee(targetPoint))
 			{
 				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+				FinishSequence();
+				return;
 			}
-			else if (SpellHelper.CheckTown(targetPoint, Caster) && CheckSequence())
+
+			if (!SpellHelper.CheckTown(targetPoint, Caster) || !CheckSequence())
 			{
-				SpellHelper.Turn(Caster, targetPoint);
-				SpellHelper.GetSurfaceTop(ref targetPoint);
-
-				bool eastToWest = DetermineWallOrientation(targetPoint);
-				PlaySound(targetPoint);
-
-				CreateWallSegments(targetPoint, eastToWest);
+				FinishSequence();
+				return;
 			}
+
+			if (Caster.Map == null)
+			{
+				FinishSequence();
+				return;
+			}
+
+			SpellHelper.Turn(Caster, targetPoint);
+			SpellHelper.GetSurfaceTop(ref targetPoint);
+
+			bool eastToWest = DetermineWallOrientation(targetPoint);
+			PlaySound(targetPoint);
+			CreateWallSegments(targetPoint, eastToWest);
 
 			FinishSequence();
 		}
@@ -96,34 +101,6 @@ namespace Server.Spells.Third
 		/// </summary>
 		/// <param name="targetPoint">The target point for the wall</param>
 		/// <returns>True if wall should be east-to-west, false for north-to-south</returns>
-		/// 
-		/// TODO: FUTURE REFACTOR - WALL ORIENTATION ISSUE
-		/// ================================================
-		/// Current Problem:
-		/// - The orientation calculation is not working correctly
-		/// - Wrong wall ItemID is being rendered (87 vs 88 are swapped or logic is inverted)
-		/// - Walls appear in incorrect orientation relative to casting direction
-		/// 
-		/// Expected Behavior:
-		/// - When casting East or West: Wall should be East-West (horizontal) - ItemID 87 (0x57)
-		/// - When casting North or South: Wall should be North-South (vertical) - ItemID 88 (0x58)
-		/// - Wall should be aligned parallel to the casting direction
-		/// - The wall orientation should match the direction the caster is facing after SpellHelper.Turn()
-		/// 
-		/// Possible Solutions to Investigate:
-		/// 1. Use caster's Direction property after SpellHelper.Turn() instead of position-based calculation
-		/// 2. Invert the return values (swap true/false logic)
-		/// 3. Swap the ItemID constants (currently swapped as workaround: 0x58 for EW, 0x57 for NS)
-		/// 4. Check if wall should be parallel vs perpendicular to casting direction
-		/// 5. Compare with working field spells (EnergyField, FireField) for correct orientation logic
-		/// 6. Test with different casting angles (cardinal vs diagonal directions)
-		/// 
-		/// Current Workaround:
-		/// - ItemID constants are swapped: WALL_ITEM_ID_EAST_WEST = 0x58, WALL_ITEM_ID_NORTH_SOUTH = 0x57
-		/// - This is a temporary fix but the underlying orientation logic still needs correction
-		/// - Correct mapping should be:
-		///   * WALL_ITEM_ID_EAST_WEST = 0x57 (87) for East/West casting
-		///   * WALL_ITEM_ID_NORTH_SOUTH = 0x58 (88) for North/South casting
 		private bool DetermineWallOrientation(IPoint3D targetPoint)
 		{
 			int dx = Caster.Location.X - targetPoint.X;
@@ -132,21 +109,12 @@ namespace Server.Spells.Third
 			int ry = (dx + dy) * ORIENTATION_MULTIPLIER;
 
 			if (rx >= 0 && ry >= 0)
-			{
-				return false; // North-to-South
-			}
-			else if (rx >= 0)
-			{
-				return true; // East-to-West
-			}
-			else if (ry >= 0)
-			{
-				return true; // East-to-West
-			}
-			else
-			{
-				return false; // North-to-South
-			}
+				return false;
+
+			if (rx >= 0 || ry >= 0)
+				return true;
+
+			return false;
 		}
 
 		/// <summary>
@@ -155,7 +123,8 @@ namespace Server.Spells.Third
 		/// <param name="targetPoint">Location to play sound</param>
 		private void PlaySound(IPoint3D targetPoint)
 		{
-			Effects.PlaySound(targetPoint, Caster.Map, SOUND_ID);
+			if (Caster.Map != null)
+				Effects.PlaySound(targetPoint, Caster.Map, SOUND_ID);
 		}
 
 		/// <summary>
@@ -173,7 +142,7 @@ namespace Server.Spells.Third
 					targetPoint.Z
 				);
 
-				if (CanPlaceWallSegment(segmentLocation))
+				if (SpellHelper.AdjustField(ref segmentLocation, Caster.Map, 12, false) && CanPlaceWallSegment(segmentLocation))
 				{
 					RemoveExistingWalls(segmentLocation);
 					CreateWallSegment(segmentLocation, eastToWest);
@@ -188,23 +157,28 @@ namespace Server.Spells.Third
 		/// <returns>True if segment can be placed</returns>
 		private bool CanPlaceWallSegment(Point3D location)
 		{
+			if (Caster.Map == null)
+				return false;
+
 			IPooledEnumerable mobiles = Caster.Map.GetMobilesInRange(location, 0);
 
-			foreach (Mobile mobile in mobiles)
+			try
 			{
-				if (mobile.AccessLevel != AccessLevel.Player || !mobile.Alive)
-					continue;
-
-				int zDifference = mobile.Location.Z - location.Z;
-				if (zDifference < Z_DIFFERENCE_MAX && zDifference > Z_DIFFERENCE_MIN)
+				foreach (Mobile mobile in mobiles)
 				{
-					// Mobile is in the way, cannot place wall segment
-					mobiles.Free();
-					return false;
+					if (mobile.AccessLevel != AccessLevel.Player || !mobile.Alive)
+						continue;
+
+					int zDifference = mobile.Location.Z - location.Z;
+					if (zDifference < Z_DIFFERENCE_MAX && zDifference > Z_DIFFERENCE_MIN)
+						return false;
 				}
 			}
+			finally
+			{
+				mobiles.Free();
+			}
 
-			mobiles.Free();
 			return true;
 		}
 
@@ -214,17 +188,22 @@ namespace Server.Spells.Third
 		/// <param name="location">Location to clear</param>
 		private void RemoveExistingWalls(Point3D location)
 		{
-			List<Item> existingWalls = new List<Item>();
+			if (Caster.Map == null)
+				return;
 
-			foreach (Item item in Caster.Map.GetItemsInRange(location, 0))
+			IPooledEnumerable items = Caster.Map.GetItemsInRange(location, 0);
+
+			try
 			{
-				if (item is InternalItem)
-					existingWalls.Add(item);
+				foreach (Item item in items)
+				{
+					if (item is InternalItem)
+						item.Delete();
+				}
 			}
-
-			for (int j = existingWalls.Count - 1; j >= 0; --j)
+			finally
 			{
-				existingWalls[j].Delete();
+				items.Free();
 			}
 		}
 
@@ -235,7 +214,9 @@ namespace Server.Spells.Third
 		/// <param name="eastToWest">Wall orientation - true for East-West, false for North-South</param>
 		private void CreateWallSegment(Point3D location, bool eastToWest)
 		{
-			// Select ItemID based on orientation
+			if (Caster.Map == null)
+				return;
+
 			int itemID = eastToWest ? WALL_ITEM_ID_EAST_WEST : WALL_ITEM_ID_NORTH_SOUTH;
 			Item wall = new InternalItem(location, Caster.Map, Caster, itemID);
 			int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
@@ -289,7 +270,7 @@ namespace Server.Spells.Third
 				m_Timer = new InternalTimer(this, duration);
 				m_Timer.Start();
 
-				m_End = DateTime.Now + duration;
+				m_End = DateTime.UtcNow + duration;
 			}
 
 			public InternalItem( Serial serial ) : base( serial )
@@ -383,12 +364,10 @@ namespace Server.Spells.Third
 				m_Owner = owner;
 			}
 
-		protected override void OnTarget(Mobile from, object o)
-		{
-			if (o is IPoint3D)
+			protected override void OnTarget(Mobile from, object o)
 			{
-				m_Owner.Target((IPoint3D)o);
-			}
+				if (o is IPoint3D)
+					m_Owner.Target((IPoint3D)o);
 			}
 
 			protected override void OnTargetFinish(Mobile from)
