@@ -22,22 +22,45 @@ namespace Server.Spells.Third
 
 		#region Constants
 		// Damage Constants
+		/// <summary>Base damage bonus added to dice roll (1d6+4 = 5-10 base)</summary>
 		private const int DAMAGE_BONUS = 4;
+		/// <summary>Number of dice to roll</summary>
 		private const int DAMAGE_DICE = 1;
+		/// <summary>Number of sides per die</summary>
 		private const int DAMAGE_SIDES = 6;
 
+		// Minimum Damage Floor Constants (based on EvalInt skill)
+		/// <summary>Minimum damage guaranteed at 120+ EvalInt skill</summary>
+		private const int MIN_DAMAGE_EVAL_120 = 9;
+		/// <summary>Minimum damage guaranteed at 100+ EvalInt skill</summary>
+		private const int MIN_DAMAGE_EVAL_100 = 8;
+		/// <summary>Minimum damage guaranteed at 80+ EvalInt skill</summary>
+		private const int MIN_DAMAGE_EVAL_80 = 7;
+		/// <summary>Base minimum damage for lower skill levels</summary>
+		private const int MIN_DAMAGE_BASE = 5;
+
 		// Effect Constants
+		/// <summary>Particle effect ID for fireball projectile animation</summary>
 		private const int EFFECT_ID = 0x36D4;
+		/// <summary>Speed of particle effect animation</summary>
 		private const int EFFECT_SPEED = 7;
+		/// <summary>Duration of particle effect in milliseconds</summary>
 		private const int EFFECT_DURATION = 9502;
+		/// <summary>Item ID used for particle effect rendering</summary>
 		private const int EFFECT_ITEM_ID = 4019;
+		/// <summary>Effect layer for particle rendering</summary>
 		private const int EFFECT_LAYER = 0x160;
+		/// <summary>Sound ID for Age of Shadows client</summary>
 		private const int SOUND_ID_AOS = 0x15E;
+		/// <summary>Sound ID for Legacy client</summary>
 		private const int SOUND_ID_LEGACY = 0x44B;
+		/// <summary>Default hue for spell effects (0 = use character's custom hue)</summary>
 		private const int DEFAULT_HUE = 0;
 
 		// Target Constants
+		/// <summary>Maximum targeting range for Mondain's Legacy client</summary>
 		private const int TARGET_RANGE_ML = 10;
+		/// <summary>Maximum targeting range for Legacy client</summary>
 		private const int TARGET_RANGE_LEGACY = 12;
 		#endregion
 
@@ -57,8 +80,11 @@ namespace Server.Spells.Third
 			if ( !Caster.CanSee( target ) )
 			{
 				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+				FinishSequence();
+				return;
 			}
-			else if ( CheckHSequence( target ) )
+
+			if ( CheckHSequence( target ) )
 			{
 				Mobile source = Caster;
 
@@ -76,13 +102,34 @@ namespace Server.Spells.Third
 		}
 
 		/// <summary>
-		/// Calculates spell damage using NMS system
+		/// Calculates spell damage using NMS system with skill-based minimum damage floor
 		/// </summary>
 		/// <param name="target">The target mobile</param>
-		/// <returns>Calculated damage amount</returns>
+		/// <returns>Calculated damage amount (guaranteed minimum based on EvalInt skill)</returns>
 		private double CalculateDamage(Mobile target)
 		{
-			return GetNMSDamage(DAMAGE_BONUS, DAMAGE_DICE, DAMAGE_SIDES, target);
+			double damage = GetNMSDamage(DAMAGE_BONUS, DAMAGE_DICE, DAMAGE_SIDES, target);
+			int minDamage = GetMinimumDamageForSkill();
+			return Math.Max(damage, minDamage);
+		}
+
+		/// <summary>
+		/// Gets the minimum damage floor based on caster's EvalInt skill
+		/// Ensures high-skill casters have a guaranteed damage baseline
+		/// </summary>
+		/// <returns>Minimum damage value based on skill level</returns>
+		private int GetMinimumDamageForSkill()
+		{
+			double evalInt = Caster.Skills[SkillName.EvalInt].Value;
+			
+			if (evalInt >= 120.0)
+				return MIN_DAMAGE_EVAL_120; // 9 minimum at 120+ EvalInt
+			else if (evalInt >= 100.0)
+				return MIN_DAMAGE_EVAL_100; // 8 minimum at 100+ EvalInt
+			else if (evalInt >= 80.0)
+				return MIN_DAMAGE_EVAL_80;  // 7 minimum at 80+ EvalInt
+			else
+				return MIN_DAMAGE_BASE;     // 5 base minimum
 		}
 
 		/// <summary>

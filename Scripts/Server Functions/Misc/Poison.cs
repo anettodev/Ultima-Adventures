@@ -16,11 +16,11 @@ namespace Server
 		{
 			if ( Core.AOS )
 			{
-				Register( new PoisonImpl("Lesser",	0,  1, 6,  7.5, 3.0, 2.25, 10, 5 ) );
-				Register( new PoisonImpl("Regular",	1,  2, 10, 10.0, 3.0, 3.25, 10, 5 ) );
-				Register( new PoisonImpl("Greater",	2, 4, 14, 15.0, 3.0, 4.25, 10, 3 ) );
-				Register( new PoisonImpl("Deadly",	3, 6, 18, 30.0, 3.0, 5.25, 15, 3 ) );
-				Register( new PoisonImpl("Lethal",	4, 8, 22, 35.0, 3.0, 5.25, 20, 3 ) );
+				Register( new PoisonImpl("Lesser",	0,  1, 6,  7.5, 3.0, 2.25, 7, 5 ) );
+				Register( new PoisonImpl("Regular",	1,  2, 10, 10.0, 3.0, 3.25, 7, 5 ) );
+				Register( new PoisonImpl("Greater",	2, 4, 14, 15.0, 3.0, 4.25, 8, 3 ) );
+				Register( new PoisonImpl("Deadly",	3, 6, 18, 30.0, 3.0, 5.25, 10, 3 ) );
+				Register( new PoisonImpl("Lethal",	4, 8, 22, 35.0, 3.0, 5.25, 14, 3 ) );
 			}
 			else
 			{
@@ -94,7 +94,7 @@ namespace Server
 					if ( m_Mobile.CurePoison( m_Mobile ) )
 					{
 						m_Mobile.LocalOverheadMessage( MessageType.Emote, 0x3F, true,
-                            "* Você se sente resistindo aos efeitos do veneno *");
+                            "* Vocï¿½ se sente resistindo aos efeitos do veneno *");
 
 						m_Mobile.NonlocalOverheadMessage( MessageType.Emote, 0x3F, true,
 							String.Format("* {0} parece resistente ao veneno *", m_Mobile.Name ) );

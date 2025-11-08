@@ -49,6 +49,22 @@ namespace Server.Spells.Third
 		private const double PET_TELEPORT_CHANCE = 0.5; // 50%
 		#endregion
 
+		#region Validation Result
+		/// <summary>
+		/// Represents the result of teleport validation
+		/// </summary>
+		private enum ValidationResult
+		{
+			Success,
+			CursedCreaturesNearby,
+			Overloaded,
+			InvalidMap,
+			CannotTravelFrom,
+			CannotTravelTo,
+			LocationBlocked
+		}
+		#endregion
+
 		public TeleportSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -76,48 +92,109 @@ namespace Server.Spells.Third
 
 			SpellHelper.GetSurfaceTop(ref targetPoint);
 
-			if (HasNearbyCursedCreatures())
+			ValidationResult validation = ValidateTeleport(targetPoint, map);
+
+			if (validation != ValidationResult.Success)
 			{
-				Caster.SendMessage(Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ERROR_CURSED_PREVENTS_TELEPORT);
-				DoFizzle();
+				HandleValidationFailure(validation);
+				FinishSequence();
+				return;
 			}
-			else if (IsOverloaded())
+
+			if (CheckSequence())
 			{
-				DoFizzle();
-				Caster.SendMessage(Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ERROR_TOO_HEAVY_TELEPORT);
-			}
-			else if (!SpellHelper.CheckTravel(Caster, TravelCheckType.TeleportFrom))
-			{
-				// Travel check failed - error handled by SpellHelper
-			}
-			else if (!SpellHelper.CheckTravel(Caster, map, new Point3D(targetPoint), TravelCheckType.TeleportTo))
-			{
-				// Travel check failed - error handled by SpellHelper
-			}
-			else if (map == null)
-			{
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_LOCATION_BLOCKED);
-			}
-			else if (SpellHelper.CheckMulti(new Point3D(targetPoint), map))
-			{
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_LOCATION_BLOCKED);
-			}
-			else if (CheckSequence())
-			{
+				Point3D destination = new Point3D(targetPoint);
 				TryTeleportPets(targetPoint, map);
 				SpellHelper.Turn(Caster, originalTarget);
 
 				Point3D from = Caster.Location;
-				Point3D to = new Point3D(targetPoint);
-
-				Caster.Location = to;
+				Caster.Location = destination;
 				Caster.ProcessDelta();
 
-				PlayTeleportEffects(from, to);
+				PlayTeleportEffects(from, destination);
 				TriggerFieldItems();
 			}
 
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Validates all teleport conditions in optimal order for performance
+		/// Fast checks are performed first, expensive checks last
+		/// </summary>
+		/// <param name="targetPoint">Destination point to validate</param>
+		/// <param name="map">Map to validate against</param>
+		/// <returns>ValidationResult indicating success or specific failure reason</returns>
+		private ValidationResult ValidateTeleport(IPoint3D targetPoint, Map map)
+		{
+			// Optimization 3: Early map validation before expensive operations
+			if (map == null)
+			{
+				return ValidationResult.InvalidMap;
+			}
+
+			// Fast checks first - no expensive operations
+			if (HasNearbyCursedCreatures())
+			{
+				return ValidationResult.CursedCreaturesNearby;
+			}
+
+			if (IsOverloaded())
+			{
+				return ValidationResult.Overloaded;
+			}
+
+			// Expensive travel checks - performed after fast validations
+			if (!SpellHelper.CheckTravel(Caster, TravelCheckType.TeleportFrom))
+			{
+				return ValidationResult.CannotTravelFrom;
+			}
+
+			if (!SpellHelper.CheckTravel(Caster, map, new Point3D(targetPoint), TravelCheckType.TeleportTo))
+			{
+				return ValidationResult.CannotTravelTo;
+			}
+
+			// Multi check - performed last as it's moderately expensive
+			if (SpellHelper.CheckMulti(new Point3D(targetPoint), map))
+			{
+				return ValidationResult.LocationBlocked;
+			}
+
+			return ValidationResult.Success;
+		}
+
+		/// <summary>
+		/// Handles validation failure by sending appropriate error messages and fizzling the spell
+		/// </summary>
+		/// <param name="result">The validation result that failed</param>
+		private void HandleValidationFailure(ValidationResult result)
+		{
+			switch (result)
+			{
+				case ValidationResult.CursedCreaturesNearby:
+					Caster.SendMessage(Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ERROR_CURSED_PREVENTS_TELEPORT);
+					DoFizzle();
+					break;
+
+				case ValidationResult.Overloaded:
+					DoFizzle();
+					Caster.SendMessage(Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ERROR_TOO_HEAVY_TELEPORT);
+					break;
+
+				case ValidationResult.InvalidMap:
+					Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_LOCATION_BLOCKED);
+					break;
+
+				case ValidationResult.CannotTravelFrom:
+				case ValidationResult.CannotTravelTo:
+					// Error messages handled by SpellHelper.CheckTravel
+					break;
+
+				case ValidationResult.LocationBlocked:
+					Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_LOCATION_BLOCKED);
+					break;
+			}
 		}
 
 		/// <summary>
@@ -131,13 +208,20 @@ namespace Server.Spells.Third
 
 		/// <summary>
 		/// Checks for cursed creatures nearby that would prevent teleportation
+		/// Optimization 1: Only scans if caster karma is above threshold (avoids expensive scan for evil players)
 		/// </summary>
 		/// <returns>True if cursed creatures are nearby and caster has high karma</returns>
 		private bool HasNearbyCursedCreatures()
 		{
+			// Optimization 1: Early exit if karma is too low - no need to scan
+			if (Caster.Karma <= KARMA_THRESHOLD_FOR_CURSED_CHECK)
+			{
+				return false;
+			}
+
 			foreach (Mobile mob in Caster.GetMobilesInRange(CURSED_CREATURE_SCAN_RANGE))
 			{
-				if (mob is BaseCursed && Caster.Karma > KARMA_THRESHOLD_FOR_CURSED_CHECK)
+				if (mob is BaseCursed)
 				{
 					return true;
 				}

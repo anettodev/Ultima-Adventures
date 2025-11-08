@@ -23,26 +23,45 @@ namespace Server.Spells.Third
 
 		#region Constants
 		// Poison Level Skill Requirements
-		private const int POISON_LEVEL_4_MIN_SKILLS = 240; // Magery + Poisoning >= 240
+		/// <summary>Minimum combined Magery + Poisoning skill for Level 4 (Lethal) poison</summary>
+		private const int POISON_LEVEL_4_MIN_SKILLS = 240;
+		/// <summary>Minimum Magery skill required for Level 3 (Deadly) poison</summary>
 		private const int POISON_LEVEL_3_MAGERY_MIN = 120;
+		/// <summary>Minimum Poisoning skill required for Level 3 (Deadly) poison</summary>
 		private const int POISON_LEVEL_3_POISONING_MIN = 100;
+		/// <summary>Minimum Magery skill required for Level 2 (Greater) poison</summary>
 		private const int POISON_LEVEL_2_MAGERY_MIN = 100;
+		/// <summary>Minimum Poisoning skill required for Level 2 (Greater) poison (alternative to EvalInt)</summary>
 		private const int POISON_LEVEL_2_POISONING_MIN = 80;
+		/// <summary>Minimum EvalInt skill required for Level 2 (Greater) poison (alternative to Poisoning)</summary>
 		private const int POISON_LEVEL_2_EVAL_INT_MIN = 100;
+		/// <summary>Minimum Magery skill required for Level 1 (Regular) poison</summary>
 		private const int POISON_LEVEL_1_MAGERY_MIN = 80;
+		/// <summary>Minimum Poisoning skill required for Level 1 (Regular) poison (alternative to EvalInt)</summary>
 		private const int POISON_LEVEL_1_POISONING_MIN = 60;
+		/// <summary>Minimum EvalInt skill required for Level 1 (Regular) poison (alternative to Poisoning)</summary>
 		private const int POISON_LEVEL_1_EVAL_INT_MIN = 80;
 
 		// Effect Constants
+		/// <summary>Particle effect ID for poison spell visual effect</summary>
 		private const int EFFECT_ID = 0x374A;
+		/// <summary>Speed of particle effect animation</summary>
 		private const int EFFECT_SPEED = 10;
+		/// <summary>Render mode for particle effect</summary>
 		private const int EFFECT_RENDER = 15;
+		/// <summary>Duration of particle effect in milliseconds</summary>
 		private const int EFFECT_DURATION = 5021;
+		/// <summary>Sound ID played when poison spell is cast</summary>
 		private const int SOUND_ID = 0x205;
+		/// <summary>Sound ID played when Deadly or Lethal poison (Level 3-4) is successfully applied (audible to nearby players)</summary>
+		private const int SOUND_HIGH_LEVEL_POISON = 0x1F5;
+		/// <summary>Default hue for spell effects (0 = use character's custom hue)</summary>
 		private const int DEFAULT_HUE = 0;
 
 		// Target Constants
+		/// <summary>Maximum targeting range for Mondain's Legacy client</summary>
 		private const int TARGET_RANGE_ML = 10;
+		/// <summary>Maximum targeting range for Legacy client</summary>
 		private const int TARGET_RANGE_LEGACY = 12;
 		#endregion
 
@@ -60,11 +79,15 @@ namespace Server.Spells.Third
 			if (!Caster.CanSee(target))
 			{
 				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+				FinishSequence();
+				return;
 			}
-			else if (CheckHSequence(target))
+
+			if (CheckHSequence(target))
 			{
-				SpellHelper.Turn(Caster, target);
-				SpellHelper.CheckReflect((int)this.Circle, Caster, ref target);
+				Mobile source = Caster;
+				SpellHelper.Turn(source, target);
+				SpellHelper.NMSCheckReflect((int)this.Circle, ref source, ref target);
 
 				PrepareTargetForPoison(target);
 
@@ -74,8 +97,16 @@ namespace Server.Spells.Third
 				}
 				else
 				{
-					int poisonLevel = CalculatePoisonLevel(target);
-					target.ApplyPoison(Caster, Poison.GetPoison(poisonLevel));
+					int poisonLevel = CalculatePoisonLevel();
+					Poison poison = Poison.GetPoison(poisonLevel);
+					ApplyPoisonResult result = target.ApplyPoison(Caster, poison);
+					
+					// Play sound feedback for high-level poison (Deadly/Lethal) - audible to nearby players
+					if (result == ApplyPoisonResult.Poisoned && poisonLevel >= 3)
+					{
+						Effects.PlaySound(target.Location, target.Map, SOUND_HIGH_LEVEL_POISON);
+					}
+					// Edge cases (immunity, higher poison active) handled silently - no feedback needed
 				}
 
 				PlayEffects(target);
@@ -100,10 +131,10 @@ namespace Server.Spells.Third
 		/// <summary>
 		/// Calculates poison level based on caster skills
 		/// </summary>
-		/// <param name="target">The target mobile (unused in calculation)</param>
 		/// <returns>Poison level (0-4)</returns>
-		private int CalculatePoisonLevel(Mobile target)
+		private int CalculatePoisonLevel()
 		{
+			// Cache skill values for performance and clarity
 			int magery = (int)Caster.Skills[SkillName.Magery].Value;
 			int poisoning = (int)Caster.Skills[SkillName.Poisoning].Value;
 			int evalInt = (int)Caster.Skills[SkillName.EvalInt].Value;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Server;
 using Server.Items;
 using Server.Guilds;
@@ -57,6 +57,37 @@ namespace Server.Spells
 		Mark,
 		TeleportFrom,
 		TeleportTo
+	}
+
+	/// <summary>
+	/// Centralized PT-BR user messages for SpellHelper-related communications
+	/// </summary>
+	public static class SpellHelperMessages
+	{
+		#region Stat Bonus Messages
+		public const string ERROR_TARGET_ALREADY_UNDER_EFFECT = "O alvo já está sob efeito deste feitiço.";
+		#endregion
+
+		#region Duration Messages
+		public const string INFO_SPELL_DURATION_FORMAT = "O feitiço terá a duração de aproximadamente {0} segundos";
+		#endregion
+
+		#region Travel/Teleport Messages
+		public const string ERROR_NO_PERMISSION_TELEPORT = "Você não tem permissão para se teletransportar para lá.";
+		public const string ERROR_CANNOT_TELEPORT_DESTINATION = "Você não pode se teletransportar para o destino.";
+		public const string ERROR_SPELL_DOES_NOT_WORK = "Seu feitiço parece não funcionar.";
+		public const string ERROR_LOCATION_PROTECTED = "Este local possui proteção anti-magia de teletransporte.";
+		public const string ERROR_LOCATION_NOT_DISCOVERED = "Você não conhece ou descobriu este local ainda.";
+		#endregion
+
+		#region Transformation Messages
+		public const string ERROR_POLYMORPH_ALREADY_ACTIVE = "O Polimorfismo já está utilizando bastante de sua magia.";
+		public const string ERROR_TRANSFORMATION_ALREADY_ACTIVE = "A transmutação já está utilizando bastante de sua magia.";
+		#endregion
+
+		#region Alchemist Messages
+		public const string ERROR_ALCHEMIST_CANNOT_CAST = "Você não consegue entender as forças mágicas!";
+		#endregion
 	}
 
 	public class SpellHelper
@@ -240,7 +271,7 @@ namespace Server.Spells
 			// If target already has a positive buff active, prevent stacking (no cumulative buffs)
 			if( mod != null && mod.Offset > 0 )
 			{
-				caster.SendMessage(55, "O alvo já está sob efeito deste feitiço.");
+				caster.SendMessage(55, SpellHelperMessages.ERROR_TARGET_ALREADY_UNDER_EFFECT);
 				return false;
 			}
 
@@ -345,16 +376,16 @@ namespace Server.Spells
 			{
 				total = (int)(total * 0.70); // 30% reduction
 				
-				// Apply caps: minimum 15 seconds, maximum 60 seconds
+				// Apply caps: minimum 15 seconds, maximum 90 seconds
 				if (total < 15)
 					total = 15;
-				else if (total > 60)
-					total = 60;
+				else if (total > 90)
+					total = 90;
 			}
 
 			if (flag == 0)
 			{
-                caster.SendMessage(95, "O feiti�o ter� a dura��o de aproximadamente " + total + " segundos");
+                caster.SendMessage(95, String.Format(SpellHelperMessages.INFO_SPELL_DURATION_FORMAT, total));
 				flag = 1;
 			}
 
@@ -712,11 +743,11 @@ namespace Server.Spells
 		public static void SendInvalidMessage( Mobile caster, TravelCheckType type )
 		{
 			if( type == TravelCheckType.RecallTo || type == TravelCheckType.GateTo )
-                caster.SendMessage(55, "Voc� n�o tem permiss�o para se teletransportar para l�."); //caster.SendLocalizedMessage( 1019004 ); // You are not allowed to travel there.
+                caster.SendMessage(55, SpellHelperMessages.ERROR_NO_PERMISSION_TELEPORT); //caster.SendLocalizedMessage( 1019004 ); // You are not allowed to travel there.
 			else if( type == TravelCheckType.TeleportTo )
-                caster.SendMessage(55, "Voc� n�o pode se teletransportar para o destino."); //caster.SendLocalizedMessage( 501035 ); // You cannot teleport from here to the destination.
+                caster.SendMessage(55, SpellHelperMessages.ERROR_CANNOT_TELEPORT_DESTINATION); //caster.SendLocalizedMessage( 501035 ); // You cannot teleport from here to the destination.
 			else
-                caster.SendMessage(55, "Seu feiti�o parece n�o funcionar."); //caster.SendLocalizedMessage( 501802 ); // Thy spell doth not appear to work...
+                caster.SendMessage(55, SpellHelperMessages.ERROR_SPELL_DOES_NOT_WORK); //caster.SendLocalizedMessage( 501802 ); // Thy spell doth not appear to work...
 		}
 
 		public static bool CheckTravel( Map map, Point3D loc, TravelCheckType type )
@@ -745,7 +776,7 @@ namespace Server.Spells
 			if ( map != null && (type == TravelCheckType.RecallTo || type == TravelCheckType.GateTo) )
 			{
 				if (reg.IsPartOf(typeof(DungeonRegion)) || reg.IsPartOf(typeof(HouseRegion))) {
-                    caster.SendMessage("Este local possui prote��o anti-magia de teletransporte.");
+                    caster.SendMessage(SpellHelperMessages.ERROR_LOCATION_PROTECTED);
                     return false;
                 }	
 			}
@@ -753,7 +784,7 @@ namespace Server.Spells
 
 			if( caster != null && caster.AccessLevel == AccessLevel.Player && caster.Region.IsPartOf( typeof( Regions.Jail ) ) )
 			{
-                caster.SendMessage("Este local possui prote��o anti-magia de teletransporte.");
+                caster.SendMessage(SpellHelperMessages.ERROR_LOCATION_PROTECTED);
                 //caster.SendLocalizedMessage( 1042632 ); // You'll need a better jailbreak plan then that!
 				return false;
 			}
@@ -762,7 +793,7 @@ namespace Server.Spells
 
 /*			if (caster is PlayerMobile && !CharacterDatabase.GetDiscovered(caster, world))
 			{
-				caster.SendMessage("Voc� n�o conhece ou descobriu este local ainda.");
+				caster.SendMessage(SpellHelperMessages.ERROR_LOCATION_NOT_DISCOVERED);
 				return false;
 			}*/
 
@@ -990,7 +1021,7 @@ namespace Server.Spells
 		public static void NMSCheckReflect(int circle, ref Mobile caster, ref Mobile target)
 		{
             ++circle;
-            target.MagicDamageAbsorb -= (caster.MagicDamageAbsorb + circle); // first&second impact in the magic shield, subtract caster and target magicReflect value
+            target.MagicDamageAbsorb -= (caster.MagicDamageAbsorb + circle); // first&second impact in the magic shield, subtract casterá and target magicReflect value
             bool reflect = (target.MagicDamageAbsorb > 0);
             if (target is BaseCreature)
                 ((BaseCreature)target).CheckReflect(caster, ref reflect); // deprected?
@@ -1474,7 +1505,7 @@ namespace Server.Spells
 			
 			if (caster is PlayerMobile && ((PlayerMobile)caster).Alchemist())
 			{
-				caster.SendMessage("Voc� n�o consegue entender as for�as m�gicas!"); 
+				caster.SendMessage(SpellHelperMessages.ERROR_ALCHEMIST_CANNOT_CAST); 
 				return false;
 			}
 			
@@ -1483,13 +1514,13 @@ namespace Server.Spells
 
 			if( !caster.CanBeginAction( typeof( PolymorphSpell ) ) )
 			{
-                caster.SendMessage("O Polimorfismo j� est� utilizando bastante de sua magia.");
+                caster.SendMessage(SpellHelperMessages.ERROR_POLYMORPH_ALREADY_ACTIVE);
                 // caster.SendLocalizedMessage( 1061628 ); // You can't do that while polymorphed.
 				return false;
 			}
 			else if( AnimalForm.UnderTransformation( caster ) )
 			{
-                caster.SendMessage("A transmuta��o j� est� utilizando bastante de sua magia.");
+                caster.SendMessage(SpellHelperMessages.ERROR_TRANSFORMATION_ALREADY_ACTIVE);
                 // caster.SendLocalizedMessage( 1061091 ); // You cannot cast that spell in this form.
 				return false;
 			}
@@ -1506,7 +1537,7 @@ namespace Server.Spells
 			
 			if( !caster.CanBeginAction( typeof( PolymorphSpell ) ) )
 			{
-                caster.SendMessage("O Polimorfismo j� est� utilizando bastante de sua magia.");
+                caster.SendMessage(SpellHelperMessages.ERROR_POLYMORPH_ALREADY_ACTIVE);
                 // caster.SendLocalizedMessage( 1061628 ); // You can't do that while polymorphed.
 			}
 /*			else if ( DisguiseTimers.IsDisguised( caster ) )
@@ -1517,7 +1548,7 @@ namespace Server.Spells
 			}*/
 			else if( AnimalForm.UnderTransformation( caster ) )
 			{
-                caster.SendMessage("A transmuta��o j� est� utilizando bastante de sua magia.");
+                caster.SendMessage(SpellHelperMessages.ERROR_TRANSFORMATION_ALREADY_ACTIVE);
                 // caster.SendLocalizedMessage( 1061091 ); // You cannot cast that spell in this form.
 			}
 			else if( !caster.CanBeginAction( typeof( IncognitoSpell ) ) || (caster.IsBodyMod && GetContext( caster ) == null) )

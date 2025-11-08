@@ -40,6 +40,35 @@ namespace Server.Spells.Third
         private const int TARGET_RANGE_LEGACY = 12;
         #endregion
 
+        #region Validation Result
+        /// <summary>
+        /// Represents the result of a validation check
+        /// </summary>
+        private class ValidationResult
+        {
+            public bool IsValid { get; private set; }
+            public string ErrorMessage { get; private set; }
+            public int ErrorColor { get; private set; }
+
+            private ValidationResult(bool isValid, string errorMessage = null, int errorColor = 0)
+            {
+                IsValid = isValid;
+                ErrorMessage = errorMessage;
+                ErrorColor = errorColor;
+            }
+
+            public static ValidationResult Success()
+            {
+                return new ValidationResult(true);
+            }
+
+            public static ValidationResult Failure(string message, int color)
+            {
+                return new ValidationResult(false, message, color);
+            }
+        }
+        #endregion
+
         public override SpellCircle Circle
         {
             get
@@ -53,134 +82,236 @@ namespace Server.Spells.Third
             this.Caster.Target = new InternalTarget(this);
         }
 
-        public void Target(ITelekinesisable obj)
+        /// <summary>
+        /// Unified target handler that processes all target types efficiently
+        /// </summary>
+        /// <param name="target">The target object</param>
+        public void Target(object target)
         {
-            if (this.CheckSequence())
+            // Validate target exists and is in range
+            if (!ValidateTarget(target))
             {
-                SpellHelper.Turn(this.Caster, obj);
-
-                obj.OnTelekinesis(this.Caster);
+                FinishSequence();
+                return;
             }
 
-            this.FinishSequence();
-        }
-
-        public void Target(Container item)
-        {
-            if (this.CheckSequence())
+            // Check spell sequence (mana, reagents, fizzle, etc.)
+            if (!CheckSequence())
             {
-                SpellHelper.Turn(this.Caster, item);
-
-                if (CanAccessContainer(item))
-                {
-                    PlayEffects(item);
-                    item.OnItemUsed(this.Caster, item);
-                }
+                FinishSequence();
+                return;
             }
 
-            this.FinishSequence();
+            // Turn caster toward target
+            SpellHelper.Turn(Caster, target);
+
+            // Process target based on type (optimized order: interface first, then specific types)
+            if (target is ITelekinesisable)
+            {
+                HandleTelekinesisable((ITelekinesisable)target);
+            }
+            else if (target is Container)
+            {
+                HandleContainer((Container)target);
+            }
+            else if (target is Item)
+            {
+                HandleItem((Item)target);
+            }
+            else
+            {
+                Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
+            }
+
+            FinishSequence();
         }
 
         /// <summary>
-        /// Handles telekinetic grabbing of movable items
+        /// Validates that target exists, is not deleted, and is within range
         /// </summary>
-        /// <param name="item">The item to grab</param>
-        public void Target(Item item)
+        private bool ValidateTarget(object target)
         {
-            if (this.CheckSequence())
-            {
-                SpellHelper.Turn(this.Caster, item);
+            if (target == null)
+                return false;
 
-                if (!CanGrabItem(item))
+            // Check if target is an item and validate it
+            if (target is Item)
+            {
+                Item item = (Item)target;
+                if (item.Deleted)
+                    return false;
+
+                // Verify item is still in range (safety check - Target system also validates)
+                int range = Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY;
+                if (!Caster.InRange(item.GetWorldLocation(), range))
                 {
-                    // Error messages handled in CanGrabItem
+                    Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
+                    return false;
                 }
-                else
+            }
+            // Check if target is a mobile and validate it
+            else if (target is Mobile)
+            {
+                Mobile mobile = (Mobile)target;
+                if (mobile.Deleted)
+                    return false;
+
+                int range = Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY;
+                if (!Caster.InRange(mobile.Location, range))
                 {
-                    PlayEffects(item);
-                    Caster.AddToBackpack(item);
-                    Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.SUCCESS_ITEM_MOVED_TO_BACKPACK);
+                    Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
+                    return false;
                 }
             }
-
-            this.FinishSequence();
-        }
-
-        /// <summary>
-        /// Checks if caster can access the container
-        /// </summary>
-        /// <param name="item">The container to check</param>
-        /// <returns>True if container can be accessed</returns>
-        private bool CanAccessContainer(Container item)
-        {
-            object root = item.RootParent;
-
-            if (!item.IsAccessibleTo(this.Caster))
+            // For IPoint3D targets, check range
+            else if (target is IPoint3D)
             {
-                item.OnDoubleClickNotAccessible(this.Caster);
-                return false;
-            }
-            else if (!item.CheckItemUse(this.Caster, item))
-            {
-                return false;
-            }
-            else if (root != null && root is Mobile && root != this.Caster)
-            {
-                item.OnSnoop(this.Caster);
-                return false;
-            }
-            else if (item is Corpse && !((Corpse)item).CheckLoot(this.Caster, null))
-            {
-                return false;
-            }
-            else if (!this.Caster.Region.OnDoubleClick(this.Caster, item))
-            {
-                return false;
+                IPoint3D point = (IPoint3D)target;
+                int range = Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY;
+                if (!Caster.InRange(new Point3D(point), range))
+                {
+                    Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
+                    return false;
+                }
             }
 
             return true;
         }
 
         /// <summary>
-        /// Checks if an item can be grabbed with telekinesis
+        /// Handles ITelekinesisable objects (dice, doors, trapped containers)
         /// </summary>
-        /// <param name="item">The item to check</param>
-        /// <returns>True if item can be grabbed</returns>
-        private bool CanGrabItem(Item item)
+        private void HandleTelekinesisable(ITelekinesisable obj)
         {
+            PlayEffects(obj);
+            obj.OnTelekinesis(Caster);
+        }
+
+        /// <summary>
+        /// Handles container targets
+        /// </summary>
+        private void HandleContainer(Container container)
+        {
+            ValidationResult validation = ValidateContainerAccess(container);
+            
+            if (!validation.IsValid)
+            {
+                if (!string.IsNullOrEmpty(validation.ErrorMessage))
+                {
+                    Caster.SendMessage(validation.ErrorColor, validation.ErrorMessage);
+                }
+                return;
+            }
+
+            PlayEffects(container);
+            container.OnItemUsed(Caster, container);
+        }
+
+        /// <summary>
+        /// Handles item grabbing
+        /// </summary>
+        private void HandleItem(Item item)
+        {
+            ValidationResult validation = ValidateItemGrab(item);
+            
+            if (!validation.IsValid)
+            {
+                Caster.SendMessage(validation.ErrorColor, validation.ErrorMessage);
+                return;
+            }
+
+            PlayEffects(item);
+            Caster.AddToBackpack(item);
+            Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.SUCCESS_ITEM_MOVED_TO_BACKPACK);
+        }
+
+        /// <summary>
+        /// Validates if caster can access the container
+        /// </summary>
+        private ValidationResult ValidateContainerAccess(Container container)
+        {
+            if (container == null || container.Deleted)
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_SPELL_WONT_WORK, Spell.MSG_COLOR_ERROR);
+
+            if (!container.IsAccessibleTo(Caster))
+            {
+                container.OnDoubleClickNotAccessible(Caster);
+                return ValidationResult.Failure(null, 0); // Error handled by OnDoubleClickNotAccessible
+            }
+
+            if (!container.CheckItemUse(Caster, container))
+                return ValidationResult.Failure(null, 0); // Error handled by CheckItemUse
+
+            object root = container.RootParent;
+            if (root != null && root is Mobile && root != Caster)
+            {
+                container.OnSnoop(Caster);
+                return ValidationResult.Failure(null, 0); // Error handled by OnSnoop
+            }
+
+            Corpse corpse = container as Corpse;
+            if (corpse != null && !corpse.CheckLoot(Caster, null))
+                return ValidationResult.Failure(null, 0); // Error handled by CheckLoot
+
+            if (!Caster.Region.OnDoubleClick(Caster, container))
+                return ValidationResult.Failure(null, 0); // Error handled by region
+
+            return ValidationResult.Success();
+        }
+
+        /// <summary>
+        /// Validates if an item can be grabbed with telekinesis
+        /// </summary>
+        private ValidationResult ValidateItemGrab(Item item)
+        {
+            if (item == null || item.Deleted)
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_SPELL_WONT_WORK, Spell.MSG_COLOR_ERROR);
+
             if (!item.Movable)
-            {
-                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ITEM_NOT_MOVABLE);
-                return false;
-            }
-            else if (item.Amount > 1)
-            {
-                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TOO_MANY_ITEMS_STACKED);
-                return false;
-            }
-            else if (item.Weight > (Caster.Int / WEIGHT_DIVISOR))
-            {
-                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ITEM_TOO_HEAVY);
-                return false;
-            }
-            else if (item.RootParentEntity != null)
-            {
-                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CANNOT_MOVE_WORN_ITEMS);
-                return false;
-            }
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_ITEM_NOT_MOVABLE, Spell.MSG_COLOR_ERROR);
 
-            return true;
+            if (item.Amount > 1)
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_TOO_MANY_ITEMS_STACKED, Spell.MSG_COLOR_ERROR);
+
+            int maxWeight = Caster.Int / WEIGHT_DIVISOR;
+            if (item.Weight > maxWeight)
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_ITEM_TOO_HEAVY, Spell.MSG_COLOR_ERROR);
+
+            if (item.RootParentEntity != null)
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_CANNOT_MOVE_WORN_ITEMS, Spell.MSG_COLOR_ERROR);
+
+            return ValidationResult.Success();
         }
 
         /// <summary>
-        /// Plays visual and sound effects for the spell
+        /// Plays visual and sound effects for the spell at target location
         /// </summary>
-        /// <param name="item">The item location for effects</param>
-        private void PlayEffects(Item item)
+        private void PlayEffects(IPoint3D target)
         {
+            if (target == null)
+                return;
+
+            Point3D location = new Point3D(target);
+            Map map = null;
+
+            // Get map from target if it's an item or mobile
+            if (target is Item)
+            {
+                Item item = (Item)target;
+                map = item.Map;
+            }
+            else if (target is Mobile)
+            {
+                Mobile mobile = (Mobile)target;
+                map = mobile.Map;
+            }
+
+            if (map == null || map == Map.Internal)
+                return;
+
             int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, DEFAULT_HUE);
-            Effects.SendLocationParticles(EffectItem.Create(item.Location, item.Map, EffectItem.DefaultDuration), EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
-            Effects.PlaySound(item.Location, item.Map, SOUND_ID);
+            Effects.SendLocationParticles(EffectItem.Create(location, map, EffectItem.DefaultDuration), EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, hue, 0, EFFECT_DURATION, 0);
+            Effects.PlaySound(location, map, SOUND_ID);
         }
 
         public class InternalTarget : Target
@@ -194,27 +325,13 @@ namespace Server.Spells.Third
 
             protected override void OnTarget(Mobile from, object o)
             {
-                if (o is ITelekinesisable)
-                {
-                    this.m_Owner.Target((ITelekinesisable)o);
-                }
-                else if (o is Container)
-                {
-                    this.m_Owner.Target((Container)o);
-                }
-                else if (o is Item)
-                {
-                    this.m_Owner.Target((Item)o);
-                }
-                else
-                {
-                    from.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.ERROR_SPELL_WONT_WORK);
-                }
+                // Unified target handler processes all types
+                m_Owner.Target(o);
             }
 
             protected override void OnTargetFinish(Mobile from)
             {
-                this.m_Owner.FinishSequence();
+                // FinishSequence is now handled in unified Target method
             }
         }
     }

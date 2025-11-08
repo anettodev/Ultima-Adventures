@@ -4512,6 +4512,59 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				base.OnPoisonImmunity( from, poison );
 		}
 
+		/// <summary>
+		/// Override to provide Portuguese translations for poison messages
+		/// </summary>
+		public override void OnPoisoned( Mobile from, Poison poison, Poison oldPoison )
+		{
+			if ( poison != null )
+			{
+				string localMessage = GetPoisonMessage( poison.Level, true );
+				string nonLocalMessage = GetPoisonMessage( poison.Level, false );
+				
+				this.LocalOverheadMessage( MessageType.Regular, 0x21, true, localMessage );
+				this.NonlocalOverheadMessage( MessageType.Regular, 0x21, true, String.Format( nonLocalMessage, Name ) );
+			}
+		}
+
+		/// <summary>
+		/// Gets Portuguese poison message based on poison level
+		/// </summary>
+		/// <param name="level">Poison level (0-4)</param>
+		/// <param name="isLocal">True for local message (you), false for non-local (target name)</param>
+		/// <returns>Translated message string</returns>
+		private string GetPoisonMessage( int level, bool isLocal )
+		{
+			switch ( level )
+			{
+				case 0: // Lesser
+					return isLocal 
+						? "Você sente uma leve dor." 
+						: "{0} parece estar com dor.";
+						
+				case 1: // Regular
+					return isLocal 
+						? "Você sente uma dor moderada." 
+						: "{0} parece estar com dor moderada.";
+						
+				case 2: // Greater
+					return isLocal 
+						? "Você sente uma dor intensa." 
+						: "{0} parece estar com dor intensa.";
+						
+				case 3: // Deadly
+				case 4: // Lethal
+					return isLocal 
+						? "Você tropeça em confusão e dor." 
+						: "{0} tropeça em confusão e dor.";
+						
+				default:
+					return isLocal 
+						? "Você sente dor." 
+						: "{0} parece estar com dor.";
+			}
+		}
+
 		#endregion
 
 		public PlayerMobile( Serial s ) : base( s )

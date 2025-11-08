@@ -756,6 +756,7 @@ namespace Server
 		private Timer m_LogoutTimer;
 		private Timer m_CombatTimer;
 		private Timer m_ManaTimer, m_HitsTimer, m_StamTimer;
+		private Timer m_StatModCheckTimer;
 		private long m_NextSkillTime;
 		private long m_NextActionTime;
 		private long m_NextActionMessage;
@@ -5868,6 +5869,9 @@ namespace Server
 			if( m_Deleted )
 				return;
 
+			// Note: We don't call CheckExpiredStatMods() here to avoid recursion
+			// The timer handles periodic checks independently
+
 			if( Hits < HitsMax )
 			{
 				if( CanRegenHits )
@@ -7340,6 +7344,9 @@ namespace Server
 			m_StatMods.Add( mod );
 			Delta( MobileDelta.Stat | GetStatDelta( mod.Type ) );
 			CheckStatTimers();
+			
+			// Start periodic check timer if this is a timed mod
+			CheckExpiredStatMods();
 		}
 
 		private MobileDelta GetStatDelta( StatType type )
@@ -7356,6 +7363,94 @@ namespace Server
 				delta |= MobileDelta.Mana;
 
 			return delta;
+		}
+
+		/// <summary>
+		/// Checks for and removes expired stat mods. This should be called periodically to ensure expired buffs are removed even when the player is idle.
+		/// </summary>
+		public void CheckExpiredStatMods()
+		{
+			if( m_StatMods == null || m_StatMods.Count == 0 )
+			{
+				// Stop timer if no stat mods exist
+				if( m_StatModCheckTimer != null )
+				{
+					m_StatModCheckTimer.Stop();
+					m_StatModCheckTimer = null;
+				}
+				return;
+			}
+
+			bool anyRemoved = false;
+			MobileDelta delta = 0;
+			bool hasTimedMods = false;
+
+			// First pass: remove expired mods and check for timed mods
+			for( int i = m_StatMods.Count - 1; i >= 0; --i )
+			{
+				StatMod mod = m_StatMods[i];
+
+				if( mod.HasElapsed() )
+				{
+					m_StatMods.RemoveAt( i );
+					delta |= MobileDelta.Stat | GetStatDelta( mod.Type );
+					anyRemoved = true;
+				}
+				else
+				{
+					// All non-expired mods are considered timed (they will eventually expire or are permanent)
+					// Permanent mods (TimeSpan.Zero) will never expire, but we still need to check them
+					// The timer will stop automatically when all mods are removed
+					hasTimedMods = true;
+				}
+			}
+
+			if( anyRemoved )
+			{
+				Delta( delta );
+				// Don't call CheckStatTimers() here to avoid recursion
+				// CheckStatTimers() already calls CheckExpiredStatMods()
+			}
+
+			// Start timer if we have timed mods and timer isn't running
+			if( hasTimedMods && m_StatModCheckTimer == null )
+			{
+				m_StatModCheckTimer = new StatModCheckTimer( this );
+				m_StatModCheckTimer.Start();
+			}
+			// Stop timer if no timed mods remain
+			else if( !hasTimedMods && m_StatModCheckTimer != null )
+			{
+				m_StatModCheckTimer.Stop();
+				m_StatModCheckTimer = null;
+			}
+		}
+
+		private class StatModCheckTimer : Timer
+		{
+			private Mobile m_Mobile;
+
+			// Use 2-second interval instead of 1 second for better performance
+			// This reduces CPU usage by 50% while still maintaining good accuracy (within 2 seconds)
+			// First parameter (delay) = 0 means start immediately, second (interval) = 2 seconds between ticks
+			public StatModCheckTimer( Mobile m ) : base( TimeSpan.Zero, TimeSpan.FromSeconds( 2.0 ) )
+			{
+				m_Mobile = m;
+				Priority = TimerPriority.OneSecond;
+			}
+
+			protected override void OnTick()
+			{
+				if( m_Mobile != null && !m_Mobile.Deleted )
+				{
+					m_Mobile.CheckExpiredStatMods();
+				}
+				else
+				{
+					// Mobile was deleted, stop the timer
+					Stop();
+				}
+			}
 		}
 
 		/// <summary>
@@ -8661,7 +8756,7 @@ namespace Server
 		/// </summary>
 		public virtual void OnPoisonImmunity( Mobile from, Poison poison )
 		{
-			this.PrivateOverheadMessage( MessageType.Emote, 11, "* Eba! O veneno parece não fazer efeito em mim. *" ); // 1005534 * The poison seems to have no effect. *
+			this.PrivateOverheadMessage( MessageType.Emote, 11, "* Eba! O veneno parece nï¿½o fazer efeito em mim. *" ); // 1005534 * The poison seems to have no effect. *
         }
 
 		/// <summary>

@@ -37,9 +37,9 @@ namespace Server.Spells.Third
 		private const int DEFAULT_HUE = 0;
 
 		// Door Locking Constants
-		private const int DOOR_LOCK_DURATION_SECONDS = 30;
-		private const int DOOR_LOCK_DURATION_MIN = 10;
-		private const int DOOR_LOCK_DURATION_MAX = 60;
+		private const int DOOR_LOCK_DURATION_MIN = 10; // Minimum duration in seconds
+		private const int DOOR_LOCK_DURATION_MAX = 90; // Maximum duration in seconds
+		private const int DOOR_LOCK_SKILL_MAX = 120; // Maximum skill level for calculation
 
 		// Soul Trapping Requirements
 		private const int SOUL_TRAP_MAGERY_MIN = 100;
@@ -47,10 +47,11 @@ namespace Server.Spells.Third
 		private const int SOUL_TRAP_INT_MIN = 100;
 		private const int SOUL_TRAP_MANA_COST = 80;
 
-		// Soul Trap Success Rates
-		private const double SOUL_TRAP_SUCCESS_HIGH = 20.0; // 20% for Magery/EvalInt >= 120
-		private const double SOUL_TRAP_SUCCESS_MEDIUM = 10.0; // 10% for Magery/EvalInt >= 110
-		private const double SOUL_TRAP_SUCCESS_LOW = 5.0; // 5% minimum
+		// Soul Trap Success Rates (Linear scaling)
+		private const double SOUL_TRAP_SUCCESS_BASE = 5.0; // 5% base at skill 100
+		private const double SOUL_TRAP_SUCCESS_MAX = 15.0; // 15% maximum
+		private const double SOUL_TRAP_SUCCESS_MULTIPLIER = 0.5; // 0.5% per skill point above 100 (10% range over 20 skill points)
+		private const int SOUL_TRAP_SKILL_BASE = 100; // Base skill level for calculations
 
 		// Karma/Fame Penalties
 		private const int HUMAN_SOUL_KILLS = 1;
@@ -75,6 +76,14 @@ namespace Server.Spells.Third
 		private const int LOCKED_CREATURE_CONTROL_SLOTS = 3;
 		private const int LOCKED_CREATURE_FAME = 0;
 		private const int LOCKED_CREATURE_KARMA = 0;
+
+		// Humanoid Body IDs
+		private const int BODY_HUMAN_MALE = 400;
+		private const int BODY_HUMAN_FEMALE = 401;
+		private const int BODY_ELF_MALE = 605;
+		private const int BODY_ELF_FEMALE = 606;
+		private const int BODY_GHOST = 0x3CA;
+		private const int SOUND_GHOST = 0x482;
 		#endregion
 
 		public MagicLockSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
@@ -86,20 +95,20 @@ namespace Server.Spells.Third
 			Caster.Target = new InternalTarget( this );
 		}
 
-	public void Target(object target)
-	{
-		if (target is LockableContainer)
+		public void Target(object target)
 		{
-			TryLockContainer((LockableContainer)target);
-		}
-		else if (target is BaseDoor)
-		{
-			TryLockDoor((BaseDoor)target);
-		}
-		else if (target is BaseCreature)
-		{
-			TryCaptureSoul((BaseCreature)target);
-		}
+			if (target is LockableContainer)
+			{
+				TryLockContainer((LockableContainer)target);
+			}
+			else if (target is BaseDoor)
+			{
+				TryLockDoor((BaseDoor)target);
+			}
+			else if (target is BaseCreature)
+			{
+				TryCaptureSoul((BaseCreature)target);
+			}
 			else if (target is PlayerMobile)
 			{
 				HandleSoulCaptureFailure("Esta alma é forte demais para ficar presa no frasco!");
@@ -120,31 +129,60 @@ namespace Server.Spells.Third
 		/// <param name="container">The container to lock</param>
 		private void TryLockContainer(LockableContainer container)
 		{
+			string failureReason;
+			if (!CanLockContainer(container, out failureReason))
+			{
+				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, failureReason);
+				PlayErrorEmote();
+				return;
+			}
+
+			if (!CheckSequence())
+				return;
+
+			SpellHelper.Turn(Caster, container);
+			PlayLockEffects(container.GetWorldLocation());
+
+			Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "O baú foi trancado com magia!");
+			PlaySuccessEmote();
+
+			int magerySkill = (int)Caster.Skills[SkillName.Magery].Value;
+			container.LockLevel = magerySkill >= 75 ? 75 : magerySkill;
+			if (container.LockLevel <= 0) container.LockLevel = 0;
+			container.RequiredSkill = container.LockLevel;
+			container.MaxLockLevel = 120;
+			container.Locked = true;
+		}
+
+		/// <summary>
+		/// Validates if a container can be locked
+		/// </summary>
+		/// <param name="container">The container to validate</param>
+		/// <param name="failureReason">Output parameter for failure reason</param>
+		/// <returns>True if container can be locked, false otherwise</returns>
+		private bool CanLockContainer(LockableContainer container, out string failureReason)
+		{
+			failureReason = null;
+
 			if (Multis.BaseHouse.CheckLockedDownOrSecured(container))
 			{
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Você não pode lançar um feitiço em um baú seguro!");
-				PlayErrorEmote();
+				failureReason = "Você não pode lançar um feitiço em um baú seguro!";
+				return false;
 			}
-			else if (container.Locked || container is ParagonChest || container is TreasureMapChest || container is PirateChest)
-			{
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Você não pode lançar um feitiço em um baú já trancado.");
-				PlayErrorEmote();
-			}
-			else if (CheckSequence())
-			{
-				SpellHelper.Turn(Caster, container);
-				PlayLockEffects(container.GetWorldLocation());
 
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "O baú foi trancado com magia!");
-				PlaySuccessEmote();
-
-				int magerySkill = (int)Caster.Skills[SkillName.Magery].Value;
-				container.LockLevel = magerySkill >= 75 ? 75 : magerySkill;
-				if (container.LockLevel <= 0) container.LockLevel = 0;
-				container.RequiredSkill = container.LockLevel;
-				container.MaxLockLevel = 120;
-				container.Locked = true;
+			if (container.Locked)
+			{
+				failureReason = "Você não pode lançar um feitiço em um baú já trancado.";
+				return false;
 			}
+
+			if (container is ParagonChest || container is TreasureMapChest || container is PirateChest)
+			{
+				failureReason = "Você não pode lançar um feitiço em um baú já trancado.";
+				return false;
+			}
+
+			return true;
 		}
 
 		/// <summary>
@@ -153,30 +191,71 @@ namespace Server.Spells.Third
 		/// <param name="door">The door to lock</param>
 		private void TryLockDoor(BaseDoor door)
 		{
-			if (Server.Items.DoorType.IsDungeonDoor(door))
+			string failureReason;
+			if (!CanLockDoor(door, out failureReason))
 			{
-				if (door.Locked)
-				{
-					Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Essa porta já está trancada!");
-					PlayErrorEmote();
-				}
-				else
-				{
-					SpellHelper.Turn(Caster, door);
-					PlayLockEffects(door.GetWorldLocation());
-
-					Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Essa porta agora foi trancada com magia!");
-					door.Locked = true;
-					Server.Items.DoorType.LockDoors(door);
-
-					new InternalTimer(door, Caster).Start();
-				}
-			}
-			else
-			{
-				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Este feitiço não tem efeito sobre essa porta!");
+				Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, failureReason);
 				PlayErrorEmote();
+				return;
 			}
+
+			SpellHelper.Turn(Caster, door);
+			PlayLockEffects(door.GetWorldLocation());
+
+			// Calculate and display duration
+			double duration = CalculateDoorLockDuration(Caster);
+			int durationSeconds = (int)Math.Round(duration);
+			Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, String.Format("Essa porta agora foi trancada com magia! A porta ficará trancada por aproximadamente {0} segundo{1}.", durationSeconds, durationSeconds != 1 ? "s" : ""));
+
+			door.Locked = true;
+			Server.Items.DoorType.LockDoors(door);
+
+			new InternalTimer(door, Caster, this).Start();
+		}
+
+		/// <summary>
+		/// Calculates the door lock duration based on caster's Magery skill
+		/// Linear progression: 10 seconds at skill 0, 90 seconds at skill 120
+		/// </summary>
+		/// <param name="caster">The caster to calculate duration for</param>
+		/// <returns>Duration in seconds (10-90)</returns>
+		private double CalculateDoorLockDuration(Mobile caster)
+		{
+			double magery = caster.Skills[SkillName.Magery].Value;
+			double duration = DOOR_LOCK_DURATION_MIN + (magery * (DOOR_LOCK_DURATION_MAX - DOOR_LOCK_DURATION_MIN)) / DOOR_LOCK_SKILL_MAX;
+			
+			// Clamp between min and max
+			if (duration < DOOR_LOCK_DURATION_MIN)
+				duration = DOOR_LOCK_DURATION_MIN;
+			else if (duration > DOOR_LOCK_DURATION_MAX)
+				duration = DOOR_LOCK_DURATION_MAX;
+
+			return duration;
+		}
+
+		/// <summary>
+		/// Validates if a door can be locked
+		/// </summary>
+		/// <param name="door">The door to validate</param>
+		/// <param name="failureReason">Output parameter for failure reason</param>
+		/// <returns>True if door can be locked, false otherwise</returns>
+		private bool CanLockDoor(BaseDoor door, out string failureReason)
+		{
+			failureReason = null;
+
+			if (!Server.Items.DoorType.IsDungeonDoor(door))
+			{
+				failureReason = "Este feitiço não tem efeito sobre essa porta!";
+				return false;
+			}
+
+			if (door.Locked)
+			{
+				failureReason = "Essa porta já está trancada!";
+				return false;
+			}
+
+			return true;
 		}
 
 		/// <summary>
@@ -185,46 +264,133 @@ namespace Server.Spells.Third
 		/// <param name="creature">The creature to capture</param>
 		private void TryCaptureSoul(BaseCreature creature)
 		{
+			string failureReason;
+			if (!CanCaptureSoul(creature, out failureReason))
+			{
+				if (failureReason != null)
+				{
+					HandleSoulCaptureFailure(failureReason);
+				}
+				return;
+			}
+
+			// Check for epic creatures that fight back
+			if (IsEpicCreature(creature))
+			{
+				HandleEpicCreatureReaction(creature);
+				return;
+			}
+
+			PerformSoulCapture(creature);
+		}
+
+		/// <summary>
+		/// Validates if a creature's soul can be captured
+		/// </summary>
+		/// <param name="creature">The creature to validate</param>
+		/// <param name="failureReason">Output parameter for failure reason</param>
+		/// <returns>True if creature can be captured, false otherwise</returns>
+		private bool CanCaptureSoul(BaseCreature creature, out string failureReason)
+		{
+			failureReason = null;
+
 			if (Caster.Backpack.FindItemByType(typeof(ElectrumFlask)) == null)
 			{
 				Caster.SendMessage(Spell.MSG_COLOR_ERROR, "Você precisa de um frasco de electrum vazio!");
+				return false;
 			}
-			else if (!creature.Alive)
-			{
-				HandleSoulCaptureFailure("Você não pode capturar algo que está morto!");
-			}
-			else if (creature is LockedCreature)
-			{
-				HandleSoulCaptureFailure("Este ser já foi preso uma vez e não se deixará ser subjugado novamente!");
-			}
-			else if (creature.Controlled)
-			{
-				HandleSoulCaptureFailure("Este ser já está sob o controle de outro!");
-			}
-			else if (creature.Blessed || creature is CloneCharacterOnLogout.CharacterClone ||
-					(creature is BaseVendor && ((BaseVendor)creature).IsInvulnerable) || creature.IsHitchStabled)
-			{
-				HandleSoulCaptureFailure("Este ser é protegido por uma aura misteriosa.");
-			}
-			else if (creature.EmoteHue == 505 || creature.ControlSlots >= 100)
-			{
-				HandleSoulCaptureFailure("Você não é capaz o suficiente para captura-lo!");
-			}
-			else if (creature is EpicCharacter || creature is TimeLord || creature is TownGuards)
-			{
-				// Epic creatures fight back
-				creature.Say("Você acha que pode capturar minha alma?");
-				creature.Say("Deixe-me mostrar o que posso fazer com você, seu inseto!");
-				Caster.PlaySound(Caster.Female ? 799 : 1071);
-				Caster.Say("*huh?*");
-				HandleSoulCaptureFailure("Você sente uma força poderosa bater em você!");
 
-				Timer.DelayCall(TimeSpan.FromSeconds(2), () => Caster.Kill());
-			}
-			else
+			if (!creature.Alive)
 			{
-				PerformSoulCapture(creature);
+				failureReason = "Você não pode capturar algo que está morto!";
+				return false;
 			}
+
+			if (creature is LockedCreature)
+			{
+				failureReason = "Este ser já foi preso uma vez e não se deixará ser subjugado novamente!";
+				return false;
+			}
+
+			if (creature.Controlled)
+			{
+				failureReason = "Este ser já está sob o controle de outro!";
+				return false;
+			}
+
+			if (IsProtectedCreature(creature))
+			{
+				failureReason = "Este ser é protegido por uma aura misteriosa.";
+				return false;
+			}
+
+			if (creature.EmoteHue == 505 || creature.ControlSlots >= 100)
+			{
+				failureReason = "Você não é capaz o suficiente para captura-lo!";
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Checks if a creature is protected from soul capture
+		/// </summary>
+		/// <param name="creature">The creature to check</param>
+		/// <returns>True if creature is protected, false otherwise</returns>
+		private bool IsProtectedCreature(BaseCreature creature)
+		{
+			if (creature.Blessed)
+				return true;
+
+			if (creature is CloneCharacterOnLogout.CharacterClone)
+				return true;
+
+			if (creature is BaseVendor)
+			{
+				BaseVendor vendor = (BaseVendor)creature;
+				if (vendor.IsInvulnerable)
+					return true;
+			}
+
+			if (creature.IsHitchStabled)
+				return true;
+
+			return false;
+		}
+
+		/// <summary>
+		/// Checks if a creature is an epic creature that fights back
+		/// </summary>
+		/// <param name="creature">The creature to check</param>
+		/// <returns>True if creature is epic, false otherwise</returns>
+		private bool IsEpicCreature(BaseCreature creature)
+		{
+			if (creature is EpicCharacter)
+				return true;
+
+			if (creature is TimeLord)
+				return true;
+
+			if (creature is TownGuards)
+				return true;
+
+			return false;
+		}
+
+		/// <summary>
+		/// Handles epic creature reaction to soul capture attempt
+		/// </summary>
+		/// <param name="creature">The epic creature</param>
+		private void HandleEpicCreatureReaction(BaseCreature creature)
+		{
+			creature.Say("Você acha que pode capturar minha alma?");
+			creature.Say("Deixe-me mostrar o que posso fazer com você, seu inseto!");
+			Caster.PlaySound(Caster.Female ? 799 : 1071);
+			Caster.Say("*huh?*");
+			HandleSoulCaptureFailure("Você sente uma força poderosa bater em você!");
+
+			Timer.DelayCall(TimeSpan.FromSeconds(2), () => Caster.Kill());
 		}
 
 		/// <summary>
@@ -233,70 +399,114 @@ namespace Server.Spells.Third
 		/// <param name="creature">The creature to capture</param>
 		private void PerformSoulCapture(BaseCreature creature)
 		{
+			// Cache skill values for performance
 			int playerMagery = (int)Caster.Skills[SkillName.Magery].Value;
 			int playerEval = (int)Caster.Skills[SkillName.EvalInt].Value;
 			int playerInt = (int)Caster.RawInt;
 
+			// Cache flask lookup
+			Item flask = Caster.Backpack.FindItemByType(typeof(ElectrumFlask));
+
 			Caster.CriminalAction(true); // This is a criminal action
 
-			if (playerMagery >= SOUL_TRAP_MAGERY_MIN && playerEval >= SOUL_TRAP_EVAL_INT_MIN && playerInt >= SOUL_TRAP_INT_MIN)
+			if (!MeetsSkillRequirements(playerMagery, playerEval, playerInt))
 			{
-				if (Caster.Mana > SOUL_TRAP_MANA_COST)
-				{
-					// Calculate success chance
-					double successPercentage = SOUL_TRAP_SUCCESS_LOW;
-					if (playerMagery >= 120 && playerEval >= 120)
-						successPercentage = SOUL_TRAP_SUCCESS_HIGH;
-					else if (playerMagery >= 110 && playerEval >= 110)
-						successPercentage = SOUL_TRAP_SUCCESS_MEDIUM;
+				HandleSoulCaptureFailure("Você não possui habilidades o suficiente para capturar essa alma.");
+				return;
+			}
 
-					int random = Utility.RandomMinMax(1, 100);
+			if (Caster.Mana <= SOUL_TRAP_MANA_COST)
+			{
+				HandleSoulCaptureFailure("Você não possui mana o suficiente!");
+				return;
+			}
 
-					if (successPercentage >= random)
-					{
-						// Success!
-						Misc.Titles.AwardFame(Caster, FAME_AWARDED, true);
+			// Calculate linear success chance based on skills
+			double successPercentage = CalculateSoulCaptureSuccessRate(playerMagery, playerEval);
+			int random = Utility.RandomMinMax(1, 100);
 
-						// Consume empty flask
-						Item flask = Caster.Backpack.FindItemByType(typeof(ElectrumFlask));
-						if (flask != null) flask.Consume();
-
-						// Human soul capture means murder
-						if (creature.Body == 400 || creature.Body == 401 || creature.Body == 605 || creature.Body == 606)
-						{
-							Caster.Kills += HUMAN_SOUL_KILLS;
-							Caster.SendMessage(Spell.MSG_COLOR_WARNING, "Aprisionar uma alma humana significa assassinato!");
-							Misc.Titles.AwardKarma(Caster, KARMA_PENALTY, true);
-						}
-
-						// Create the captured soul flask
-						ElectrumFlaskFilled flaskWithSoul = CreateCapturedSoulInAFlask(creature);
-
-						// Effects and cleanup
-						creature.BoltEffect(0);
-						creature.PlaySound(0x665);
-						creature.Delete();
-
-					Caster.BoltEffect(0);
-					Caster.PlaySound(0x665);
-					Caster.Mana -= SOUL_TRAP_MANA_COST;
-					Caster.AddToBackpack(flaskWithSoul);
-					Caster.SendMessage(Spell.MSG_COLOR_ERROR, String.Format("Você capturou a alma de {0} em um frasco de electrum!", creature.Name));
-					}
-					else
-					{
-						HandleSoulCaptureFailure("Você falha na tentativa de capturar a alma deste ser!");
-					}
-				}
-				else
-				{
-					HandleSoulCaptureFailure("Você não possui mana o suficiente!");
-				}
+			if (successPercentage >= random)
+			{
+				ExecuteSuccessfulSoulCapture(creature, flask);
 			}
 			else
 			{
-				HandleSoulCaptureFailure("Você não possui habilidades o suficiente para capturar essa alma.");
+				HandleSoulCaptureFailure("Você falha na tentativa de capturar a alma deste ser!");
 			}
+		}
+
+		/// <summary>
+		/// Checks if caster meets minimum skill requirements for soul capture
+		/// </summary>
+		/// <param name="magery">Caster's Magery skill</param>
+		/// <param name="evalInt">Caster's EvalInt skill</param>
+		/// <param name="intelligence">Caster's Intelligence stat</param>
+		/// <returns>True if requirements are met, false otherwise</returns>
+		private bool MeetsSkillRequirements(int magery, int evalInt, int intelligence)
+		{
+			return magery >= SOUL_TRAP_MAGERY_MIN && 
+			       evalInt >= SOUL_TRAP_EVAL_INT_MIN && 
+			       intelligence >= SOUL_TRAP_INT_MIN;
+		}
+
+		/// <summary>
+		/// Calculates linear success rate for soul capture based on Magery and EvalInt
+		/// Formula: Base (5%) + (average skill - 100) * 0.5%, capped at 15%
+		/// Examples: Skill 100 = 5%, Skill 110 = 10%, Skill 120+ = 15%
+		/// </summary>
+		/// <param name="magery">Caster's Magery skill</param>
+		/// <param name="evalInt">Caster's EvalInt skill</param>
+		/// <returns>Success percentage (5.0 to 15.0)</returns>
+		private double CalculateSoulCaptureSuccessRate(int magery, int evalInt)
+		{
+			double averageSkill = (magery + evalInt) / 2.0;
+			double skillBonus = (averageSkill - SOUL_TRAP_SKILL_BASE) * SOUL_TRAP_SUCCESS_MULTIPLIER;
+			double successRate = SOUL_TRAP_SUCCESS_BASE + skillBonus;
+
+			// Clamp between base and max
+			if (successRate < SOUL_TRAP_SUCCESS_BASE)
+				successRate = SOUL_TRAP_SUCCESS_BASE;
+			if (successRate > SOUL_TRAP_SUCCESS_MAX)
+				successRate = SOUL_TRAP_SUCCESS_MAX;
+
+			return successRate;
+		}
+
+		/// <summary>
+		/// Executes successful soul capture sequence
+		/// </summary>
+		/// <param name="creature">The creature being captured</param>
+		/// <param name="flask">The empty flask to consume</param>
+		private void ExecuteSuccessfulSoulCapture(BaseCreature creature, Item flask)
+		{
+			// Award fame
+			Misc.Titles.AwardFame(Caster, FAME_AWARDED, true);
+
+			// Consume empty flask
+			if (flask != null)
+				flask.Consume();
+
+			// Handle human soul capture (murder)
+			if (IsHumanoidBody(creature.Body))
+			{
+				Caster.Kills += HUMAN_SOUL_KILLS;
+				Caster.SendMessage(Spell.MSG_COLOR_WARNING, "Aprisionar uma alma humana significa assassinato!");
+				Misc.Titles.AwardKarma(Caster, KARMA_PENALTY, true);
+			}
+
+			// Create the captured soul flask
+			ElectrumFlaskFilled flaskWithSoul = CreateCapturedSoulInAFlask(creature);
+
+			// Effects and cleanup
+			creature.BoltEffect(0);
+			creature.PlaySound(0x665);
+			creature.Delete();
+
+			Caster.BoltEffect(0);
+			Caster.PlaySound(0x665);
+			Caster.Mana -= SOUL_TRAP_MANA_COST;
+			Caster.AddToBackpack(flaskWithSoul);
+			Caster.SendMessage(Spell.MSG_COLOR_ERROR, String.Format("Você capturou a alma de {0} em um frasco de electrum!", creature.Name));
 		}
 
 		/// <summary>
@@ -349,39 +559,77 @@ namespace Server.Spells.Third
 			int creatureLevel = Server.Misc.IntelligentAction.GetCreatureLevel(creature);
 			ElectrumFlaskFilled flask = new ElectrumFlaskFilled();
 
-			// Poison levels
-			int hitPoisonLevel = 0;
-			if (creature.HitPoison == Poison.Lesser) hitPoisonLevel = 1;
-			else if (creature.HitPoison == Poison.Regular) hitPoisonLevel = 2;
-			else if (creature.HitPoison == Poison.Greater) hitPoisonLevel = 3;
-			else if (creature.HitPoison == Poison.Deadly) hitPoisonLevel = 4;
-			else if (creature.HitPoison == Poison.Lethal) hitPoisonLevel = 5;
-
-			int immuneLevel = 0;
-			if (creature.PoisonImmune == Poison.Lesser) immuneLevel = 1;
-			else if (creature.PoisonImmune == Poison.Regular) immuneLevel = 2;
-			else if (creature.PoisonImmune == Poison.Greater) immuneLevel = 3;
-			else if (creature.PoisonImmune == Poison.Deadly) immuneLevel = 4;
-			else if (creature.PoisonImmune == Poison.Lethal) immuneLevel = 5;
-
-			// Set flask properties
+			// Set basic properties
 			flask.TrappedName = creature.Name;
 			flask.TrappedTitle = creature.Title;
 			flask.TrappedHue = FLASK_HUE;
 			flask.TrappedSkills = creatureLevel;
 			flask.TrappedAI = (creature.AI == AIType.AI_Mage) ? 1 : 2;
-			flask.TrappedPoison = hitPoisonLevel;
-			flask.TrappedImmune = immuneLevel;
+			flask.TrappedPoison = GetPoisonLevel(creature.HitPoison);
+			flask.TrappedImmune = GetPoisonLevel(creature.PoisonImmune);
 			flask.TrappedCanSwim = creature.CanSwim;
 			flask.TrappedCantWalk = creature.CantWalk;
 
+			// Set sound properties
 			flask.TrappedAngerSound = creature.GetAngerSound();
 			flask.TrappedIdleSound = creature.GetIdleSound();
 			flask.TrappedDeathSound = creature.GetDeathSound();
 			flask.TrappedAttackSound = creature.GetAttackSound();
 			flask.TrappedHurtSound = creature.GetHurtSound();
 
-			// Reduced stats (80% of original)
+			// Set reduced stats (80% of original)
+			SetReducedStats(flask, creature);
+
+			// Handle body and sound (humanoids become ghosts)
+			if (IsHumanoidBody(creature.Body))
+			{
+				flask.TrappedBody = BODY_GHOST;
+				flask.TrappedBaseSoundID = SOUND_GHOST;
+			}
+			else
+			{
+				flask.TrappedBody = creature.Body;
+				flask.TrappedBaseSoundID = creature.BaseSoundID;
+			}
+
+			return flask;
+		}
+
+		/// <summary>
+		/// Converts Poison enum to numeric level
+		/// </summary>
+		/// <param name="poison">The poison to convert</param>
+		/// <returns>Poison level (0-5, 0 = none)</returns>
+		private int GetPoisonLevel(Poison poison)
+		{
+			if (poison == Poison.Lesser) return 1;
+			if (poison == Poison.Regular) return 2;
+			if (poison == Poison.Greater) return 3;
+			if (poison == Poison.Deadly) return 4;
+			if (poison == Poison.Lethal) return 5;
+			return 0;
+		}
+
+		/// <summary>
+		/// Checks if a body ID represents a humanoid
+		/// </summary>
+		/// <param name="bodyID">The body ID to check</param>
+		/// <returns>True if humanoid, false otherwise</returns>
+		private bool IsHumanoidBody(int bodyID)
+		{
+			return bodyID == BODY_HUMAN_MALE || 
+			       bodyID == BODY_HUMAN_FEMALE || 
+			       bodyID == BODY_ELF_MALE || 
+			       bodyID == BODY_ELF_FEMALE;
+		}
+
+		/// <summary>
+		/// Sets reduced stats on flask (80% of creature's original stats)
+		/// </summary>
+		/// <param name="flask">The flask to set stats on</param>
+		/// <param name="creature">The creature to get stats from</param>
+		private void SetReducedStats(ElectrumFlaskFilled flask, BaseCreature creature)
+		{
 			flask.TrappedStr = (int)Math.Round(creature.RawStr * STATS_REDUCTION_MULTIPLIER);
 			flask.TrappedDex = (int)Math.Round(creature.RawDex * STATS_REDUCTION_MULTIPLIER);
 			flask.TrappedInt = (int)Math.Round(creature.RawInt * STATS_REDUCTION_MULTIPLIER);
@@ -401,36 +649,8 @@ namespace Server.Spells.Third
 			flask.TrappedPhysicalRst = (int)Math.Round(creature.PhysicalResistanceSeed * STATS_REDUCTION_MULTIPLIER);
 			flask.TrappedPoisonRst = (int)Math.Round(creature.PoisonResistSeed * STATS_REDUCTION_MULTIPLIER);
 			flask.TrappedVirtualArmor = (int)Math.Round(creature.VirtualArmor * STATS_REDUCTION_MULTIPLIER);
-
-			// Handle humanoid bodies (turn to ghosts)
-			if (creature.Body == 400 || creature.Body == 401 || creature.Body == 605 || creature.Body == 606)
-			{
-				flask.TrappedBody = 0x3CA; // Ghost body
-				flask.TrappedBaseSoundID = 0x482; // Ghost sound
-			}
-			else
-			{
-				flask.TrappedBody = creature.Body;
-				flask.TrappedBaseSoundID = creature.BaseSoundID;
-			}
-
-			return flask;
 		}
 
-		// DEPRECATED - Old fame/karma adjustment method (kept for reference)
-		private void IncreaseOrDecreaseFameKarma(BaseCreature bc)
-		{
-			int fameWonLost = ((int)bc.Fame / 10); // + 10% of creature fame
-			int karmaWonLost = ((int)bc.Karma / 10); // + 10% of creature Karma
-
-			Caster.Fame += fameWonLost;
-			Caster.Karma += karmaWonLost * -1;
-
-			if (fameWonLost >= 0) { Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Você ganhou " + fameWonLost + " pontos de fama!"); }
-			else { Caster.SendMessage(Spell.MSG_COLOR_WARNING, "Você perdeu " + fameWonLost + " pontos de fama!"); }
-			if (karmaWonLost >= 0) { Caster.SendMessage(Spell.MSG_COLOR_WARNING, "Você ganhou " + karmaWonLost + " pontos de karma!"); }
-			else { Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, "Você perdeu " + (karmaWonLost * -1) + " pontos de karma!"); }
-		}
 
 		private class InternalTarget : Target
 		{
@@ -456,16 +676,14 @@ namespace Server.Spells.Third
 		{
 			private BaseDoor m_Door;
 
-			public InternalTimer( BaseDoor door, Mobile caster ) : base( TimeSpan.FromSeconds( 0 ) )
+			public InternalTimer( BaseDoor door, Mobile caster, MagicLockSpell spell ) : base( TimeSpan.FromSeconds( 0 ) )
 			{
-				double val = caster.Skills[SkillName.Magery].Value / 2.0;
-				if ( val < 10 )
-					val = 10;
-				else if ( val > 60 )
-					val = 60;
-
 				m_Door = door;
-				Delay = TimeSpan.FromSeconds( val );
+				
+				// Calculate duration using the same method as the spell
+				double duration = spell.CalculateDoorLockDuration(caster);
+				
+				Delay = TimeSpan.FromSeconds( duration );
 				Priority = TimerPriority.OneSecond;
 			}
 
