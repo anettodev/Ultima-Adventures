@@ -5212,16 +5212,27 @@ namespace Server
 
 		public virtual void Damage( int amount, Mobile from, bool informMount )
 		{
+			Console.WriteLine( "[DEBUG] Mobile.Damage() called - Mobile: {0}, Amount: {1}, From: {2}, Hidden: {3}", 
+				this != null ? this.Name : "null", amount, from != null ? from.Name : "null", m_Hidden );
+
 			if( !CanBeDamaged() || m_Deleted )
+			{
+				Console.WriteLine( "[DEBUG] Mobile.Damage() - Early return: CanBeDamaged={0}, Deleted={1}", CanBeDamaged(), m_Deleted );
 				return;
+			}
 
 			if( !this.Region.OnDamage( this, ref amount ) )
+			{
+				Console.WriteLine( "[DEBUG] Mobile.Damage() - Early return: Region.OnDamage returned false" );
 				return;
+			}
 
 			if( amount > 0 )
 			{
 				int oldHits = Hits;
 				int newHits = oldHits - amount;
+
+				Console.WriteLine( "[DEBUG] Mobile.Damage() - Processing damage: OldHits={0}, NewHits={1}, Hidden={2}", oldHits, newHits, m_Hidden );
 
 				if( m_Spell != null )
 					m_Spell.OnCasterHurt();
@@ -5231,6 +5242,72 @@ namespace Server
 
 				if( from != null )
 					RegisterDamage( amount, from );
+
+				// Reveal hidden players instantly when they take any damage
+				// Remove Invisibility spell timer first to prevent it from re-hiding the player
+				if( this is PlayerMobile )
+				{
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - Checking for InvisibilitySpell timer" );
+					Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - After RemoveTimer, HasTimer: {0}", Spells.Sixth.InvisibilitySpell.HasTimer( this ) );
+				}
+				
+				// Call RevealingAction() first, then directly set Hidden = false as backup
+				Console.WriteLine( "[DEBUG] Mobile.Damage() - Calling RevealingAction(), Current Hidden={0}", m_Hidden );
+				RevealingAction();
+				Console.WriteLine( "[DEBUG] Mobile.Damage() - After RevealingAction(), Hidden={0}, AccessLevel={1}", m_Hidden, m_AccessLevel );
+				
+				// Always force unhide on damage, regardless of current Hidden state
+				// This ensures client gets the update even if server thinks player is already visible
+				if( m_AccessLevel == AccessLevel.Player )
+				{
+					bool wasHidden = m_Hidden;
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - Forcing visibility update, WasHidden={0}, Will set Hidden=false", wasHidden );
+					Hidden = false;
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - After setting Hidden=false, Hidden={0}", m_Hidden );
+					
+					// Force client update by sending Delta and ensuring all nearby clients see the change
+					Delta( MobileDelta.Flags );
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - Sent Delta(MobileDelta.Flags)" );
+					
+					// ALWAYS force update to all nearby clients when player takes damage
+					// This ensures client sees the player even if server already thinks they're visible
+					if( m_Map != null )
+					{
+						Console.WriteLine( "[DEBUG] Mobile.Damage() - Sending visibility packets to nearby clients, Map={0}, Location={1}", m_Map, m_Location );
+						IPooledEnumerable<NetState> eable = m_Map.GetClientsInRange( m_Location );
+						int clientCount = 0;
+						foreach( NetState state in eable )
+						{
+							if( state.Mobile != null && state.Mobile != this )
+							{
+								clientCount++;
+								Console.WriteLine( "[DEBUG] Mobile.Damage() - Sending MobileIncoming to client: {0} (CanSee={1})", 
+									state.Mobile != null ? state.Mobile.Name : "null", state.Mobile != null ? state.Mobile.CanSee( this ) : false );
+								
+								// ALWAYS send MobileIncoming packet to force client to show player
+								// Don't check CanSee() - force the update
+								state.Send( MobileIncoming.Create( state, state.Mobile, this ) );
+								
+								if( IsDeadBondedPet )
+									state.Send( new BondedStatus( 0, m_Serial, 1 ) );
+								
+								if( ObjectPropertyList.Enabled )
+									state.Send( OPLPacket );
+							}
+						}
+						Console.WriteLine( "[DEBUG] Mobile.Damage() - Sent visibility packets to {0} clients", clientCount );
+						eable.Free();
+					}
+					else
+					{
+						Console.WriteLine( "[DEBUG] Mobile.Damage() - Map is null, cannot send visibility packets" );
+					}
+				}
+				else
+				{
+					Console.WriteLine( "[DEBUG] Mobile.Damage() - Skipping visibility update: AccessLevel={0} (not Player)", m_AccessLevel );
+				}
 
 				DisruptiveAction();
 
@@ -6569,8 +6646,19 @@ namespace Server
 		// Mobile did something which should unhide him
 		public virtual void RevealingAction()
 		{
+			Console.WriteLine( "[DEBUG] Mobile.RevealingAction() called - Mobile: {0}, Hidden: {1}, AccessLevel: {2}", 
+				this != null ? this.Name : "null", m_Hidden, m_AccessLevel );
+
 			if( m_Hidden && m_AccessLevel == AccessLevel.Player )
+			{
+				Console.WriteLine( "[DEBUG] Mobile.RevealingAction() - Setting Hidden=false" );
 				Hidden = false;
+				Console.WriteLine( "[DEBUG] Mobile.RevealingAction() - After setting Hidden=false, Hidden={0}", m_Hidden );
+			}
+			else
+			{
+				Console.WriteLine( "[DEBUG] Mobile.RevealingAction() - Skipping: Hidden={0}, AccessLevel={1}", m_Hidden, m_AccessLevel );
+			}
 
 			DisruptiveAction(); // Anything that unhides you will also distrupt meditation
 		}
@@ -8206,16 +8294,26 @@ namespace Server
 
 		public virtual void OnHiddenChanged()
 						{
+			Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() called - Mobile: {0}, Hidden: {1}, Map: {2}, Location: {3}", 
+				this != null ? this.Name : "null", m_Hidden, m_Map != null ? m_Map.ToString() : "null", m_Location );
+
 			m_AllowedStealthSteps = 0;
 
 			if (m_Map != null)
 							{
+				Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() - Getting clients in range" );
 				IPooledEnumerable<NetState> eable = m_Map.GetClientsInRange(m_Location);
+				int removeCount = 0;
+				int incomingCount = 0;
 
 				foreach (NetState state in eable) {
 					if (!state.Mobile.CanSee(this)) {
+						removeCount++;
+						Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() - Sending RemovePacket to {0} (cannot see)", state.Mobile != null ? state.Mobile.Name : "null" );
 						state.Send(this.RemovePacket);
 					} else {
+						incomingCount++;
+						Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() - Sending MobileIncoming to {0} (can see)", state.Mobile != null ? state.Mobile.Name : "null" );
 						state.Send(MobileIncoming.Create(state, state.Mobile, this));
 
 								if( IsDeadBondedPet )
@@ -8230,9 +8328,14 @@ namespace Server
 							}
 						}
 
-						eable.Free();
-					}
-				}
+				Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() - Sent RemovePacket to {0} clients, MobileIncoming to {1} clients", removeCount, incomingCount );
+				eable.Free();
+			}
+			else
+			{
+				Console.WriteLine( "[DEBUG] Mobile.OnHiddenChanged() - Map is null, cannot send packets" );
+			}
+		}
 
 		public virtual void OnConnected()
 		{

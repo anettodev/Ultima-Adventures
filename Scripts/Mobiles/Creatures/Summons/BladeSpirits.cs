@@ -23,7 +23,7 @@ namespace Server.Mobiles
 		public BladeSpirits()
 			: base( AIType.AI_Melee, FightMode.Closest, 10, 1, 0.3, 0.6 )
 		{
-			Name = "espirito de lâminas";
+			Name = "espirito de laminas";
 			Body = 574;
 
 			SetStr( 80 );

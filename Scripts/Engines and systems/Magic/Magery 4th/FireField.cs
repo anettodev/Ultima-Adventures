@@ -7,6 +7,7 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Guilds;
 using Server.Engines.PartySystem;
+using Server.Spells;
 
 namespace Server.Spells.Fourth
 {
@@ -24,84 +25,57 @@ namespace Server.Spells.Fourth
 
 		public override SpellCircle Circle { get { return SpellCircle.Fourth; } }
 
-		public FireFieldSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
+		private const int FIRE_SOUND = 0x20C;
+		private const int DAMAGE_DELAY_CHANCE = 50; // 50% chance for delayed damage tick
+
+		public FireFieldSpell(Mobile caster, Item scroll) : base(caster, scroll, m_Info)
 		{
 		}
 
 		public override void OnCast()
 		{
-			Caster.Target = new InternalTarget( this );
+			Caster.Target = new InternalTarget(this);
 		}
 
-		public void Target( IPoint3D p )
+		public void Target(IPoint3D p)
 		{
-			if ( !Caster.CanSee( p ) )
+			if (!Caster.CanSee(p))
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
-			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+			}
+			else if (SpellHelper.CheckTown(p, Caster) && CheckSequence())
 			{
-				SpellHelper.Turn( Caster, p );
+				SpellHelper.Turn(Caster, p);
+				SpellHelper.GetSurfaceTop(ref p);
 
-				SpellHelper.GetSurfaceTop( ref p );
+				// Use centralized field orientation calculation
+				bool eastToWest = FieldSpellHelper.GetFieldOrientation(Caster.Location, p);
 
-				int dx = Caster.Location.X - p.X;
-				int dy = Caster.Location.Y - p.Y;
-				int rx = (dx - dy) * 44;
-				int ry = (dx + dy) * 44;
-
-				bool eastToWest;
-
-				if ( rx >= 0 && ry >= 0 )
-				{
-					eastToWest = false;
-				}
-				else if ( rx >= 0 )
-				{
-					eastToWest = true;
-				}
-				else if ( ry >= 0 )
-				{
-					eastToWest = true;
-				}
-				else
-				{
-					eastToWest = false;
-				}
-
-				Effects.PlaySound( p, Caster.Map, 0x20C );
+				Effects.PlaySound(p, Caster.Map, FIRE_SOUND);
 
 				int itemID = eastToWest ? 0x398C : 0x3996;
 
-				TimeSpan duration;
-                int nBenefit = 0;
-                int damage = GetNMSDamage(1, 2, 6, Caster) + nBenefit; //(int)(Caster.Skills[SkillName.Magery].Value / 35 );
-                duration = SpellHelper.NMSGetDuration(Caster, Caster, false);
-                /*				if (Caster is PlayerMobile && ((PlayerMobile)Caster).Sorcerer() )
-                                    damage *= 7;*/
+				// Calculate damage using NMS system
+				int bonus, dice, sides;
+				SpellDamageCalculator.GetCircleDamageParams(Circle, out bonus, out dice, out sides);
+				int damage = GetNMSDamage(bonus, dice, sides, Caster);
 
-                /*				if ( Caster is PlayerMobile ) // WIZARD
-                                {
-                                    nBenefit = (int)(Caster.Skills[SkillName.Magery].Value / 3);
-                                }*/
+				// Use NMS duration system for consistency
+				// This automatically sends the duration message to the caster
+				TimeSpan duration = FieldSpellHelper.GetFieldDuration(Caster);
 
-/*                if ( Core.AOS )
-					duration = TimeSpan.FromSeconds( ((15 + (Caster.Skills.Magery.Fixed / 5)) / 4) + nBenefit );
-				else
-					duration = TimeSpan.FromSeconds( 4.0 + (Caster.Skills[SkillName.Magery].Value * 0.5) + nBenefit );*/
-
-				for ( int i = -2; i <= 2; ++i )
+				// Create field items in a line (-2 to +2 range)
+				for (int i = -2; i <= 2; ++i)
 				{
-					Point3D loc = new Point3D( eastToWest ? p.X + i : p.X, eastToWest ? p.Y : p.Y + i, p.Z );
-
-					new FireFieldItem( itemID, loc, Caster, Caster.Map, duration, i, damage );
+					Point3D loc = new Point3D(eastToWest ? p.X + i : p.X, eastToWest ? p.Y : p.Y + i, p.Z);
+					new FireFieldItem(itemID, loc, Caster, Caster.Map, duration, i, damage);
 				}
 			}
 
 			FinishSequence();
 		}
 
-        [DispellableField]
+		[DispellableField]
 		public class FireFieldItem : Item
 		{
 			private Timer m_Timer;
@@ -109,36 +83,32 @@ namespace Server.Spells.Fourth
 			private Mobile m_Caster;
 			private int m_Damage;
 
-			public override bool BlocksFit{ get{ return true; } }
+			public override bool BlocksFit { get { return true; } }
 
-			public FireFieldItem( int itemID, Point3D loc, Mobile caster, Map map, TimeSpan duration, int val ) : this( itemID, loc, caster, map, duration, val, 2 )
+			public FireFieldItem(int itemID, Point3D loc, Mobile caster, Map map, TimeSpan duration, int val) : this(itemID, loc, caster, map, duration, val, 2)
 			{
 			}
 
-			public FireFieldItem( int itemID, Point3D loc, Mobile caster, Map map, TimeSpan duration, int val, int damage ) : base( itemID )
+			public FireFieldItem(int itemID, Point3D loc, Mobile caster, Map map, TimeSpan duration, int val, int damage) : base(itemID)
 			{
-				bool canFit = SpellHelper.AdjustField( ref loc, map, 12, false );
+				bool canFit = SpellHelper.AdjustField(ref loc, map, 12, false);
 
 				Visible = false;
 				Movable = false;
 				Light = LightType.Circle300;
-				Hue = 0; if ( Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 ) >= 0 ){ Hue = Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 )+1; }
+				Hue = 0;
+				if (Server.Items.CharacterDatabase.GetMySpellHue(caster, 0) >= 0)
+				{
+					Hue = Server.Items.CharacterDatabase.GetMySpellHue(caster, 0) + 1;
+				}
 
-				MoveToWorld( loc, map );
+				MoveToWorld(loc, map);
 
 				m_Caster = caster;
-
-				int nBenefit = 0;
-                /*				if ( caster is PlayerMobile ) // WIZARD
-                                {
-                                    nBenefit = (int)(caster.Skills[SkillName.Magery].Value / 15);
-                                }*/
-
-                m_Damage = damage + nBenefit;
-
+				m_Damage = damage;
 				m_End = DateTime.UtcNow + duration;
 
-				m_Timer = new InternalTimer( this, TimeSpan.FromSeconds( Math.Abs( val ) * 0.2 ), caster.InLOS( this ), canFit );
+				m_Timer = new InternalTimer(this, TimeSpan.FromSeconds(Math.Abs(val) * 0.2), caster.InLOS(this), canFit);
 				m_Timer.Start();
 			}
 
@@ -146,32 +116,32 @@ namespace Server.Spells.Fourth
 			{
 				base.OnAfterDelete();
 
-				if ( m_Timer != null )
+				if (m_Timer != null)
 					m_Timer.Stop();
 			}
 
-			public FireFieldItem( Serial serial ) : base( serial )
+			public FireFieldItem(Serial serial) : base(serial)
 			{
 			}
 
-			public override void Serialize( GenericWriter writer )
+			public override void Serialize(GenericWriter writer)
 			{
-				base.Serialize( writer );
+				base.Serialize(writer);
 
-				writer.Write( (int) 2 ); // version
+				writer.Write((int)2); // version
 
-				writer.Write( m_Damage );
-				writer.Write( m_Caster );
-				writer.WriteDeltaTime( m_End );
+				writer.Write(m_Damage);
+				writer.Write(m_Caster);
+				writer.WriteDeltaTime(m_End);
 			}
 
-			public override void Deserialize( GenericReader reader )
+			public override void Deserialize(GenericReader reader)
 			{
-				base.Deserialize( reader );
+				base.Deserialize(reader);
 
 				int version = reader.ReadInt();
 
-				switch ( version )
+				switch (version)
 				{
 					case 2:
 					{
@@ -188,70 +158,60 @@ namespace Server.Spells.Fourth
 					{
 						m_End = reader.ReadDeltaTime();
 
-						m_Timer = new InternalTimer( this, TimeSpan.Zero, true, true );
+						m_Timer = new InternalTimer(this, TimeSpan.Zero, true, true);
 						m_Timer.Start();
 
 						break;
 					}
 				}
 
-				if( version < 2 )
+				if (version < 2)
 					m_Damage = 2;
 			}
 
-            private void doFireDamage(Mobile m)
-            {
-                int damage = m_Damage;
-                Mobile to = m;
-                Mobile from = m_Caster;
-                Guild fromGuild = SpellHelper.GetGuildFor(from);
-                Guild toGuild = SpellHelper.GetGuildFor(to);
-                Party p = Party.Get(from);
-
-                if (SpellHelper.ValidIndirectTarget(m_Caster, m) && m_Caster.CanBeHarmful(m, false))
-                {
-                    if (SpellHelper.CanRevealCaster(m))
-                        m_Caster.RevealingAction();
-
-                    m_Caster.DoHarmful(m);
-
-                    // o proprio player OU players da mesma guilda/aliados OU membros em party, tem no maximo metade do dano esperado.
-                    if (to == from ||
-                        (fromGuild != null && toGuild != null && (fromGuild == toGuild || fromGuild.IsAlly(toGuild))) ||
-                        (p != null && p.Contains(to))
-                        )
-                    {
-                        damage = Utility.RandomMinMax(1, damage / 2);
-                    }
-                    else if (m is BaseCreature)
-                    {
-                        BaseCreature c = (BaseCreature)m;
-                        if ((c.Controlled || c.Summoned) && (c.ControlMaster == from || c.SummonMaster == from)) // proprio summon / pet
-                        {
-                            damage = Utility.RandomMinMax(damage / 2, damage);
-                        }
-                        else
-                        {
-                            damage -= Utility.RandomMinMax(0, 1); // just to create a fake-random damage
-                        }
-                        ((BaseCreature)m).OnHarmfulSpell(m_Caster);
-                    }
-                    if (damage < 1) { damage = 1; }
-
-                    if (Utility.RandomMinMax(0, 1) > 0) // 50% delay
-                    {
-                        AOS.Damage(to, from, damage, 0, 100, 0, 0, 0);
-                        m.PlaySound(0x208);
-                        if (m is PlayerMobile)
-                            m.PlaySound(m.Female ? 0x32E : 0x440);
-                    }
-                }
-            }
-
-            public override bool OnMoveOver( Mobile m )
+			/// <summary>
+			/// Applies fire damage to a mobile
+			/// Consolidates damage logic for both OnMoveOver and timer ticks
+			/// </summary>
+			private void ApplyFireDamage(Mobile target)
 			{
-				doFireDamage(m);
-                return true;
+				if (m_Caster == null)
+					return;
+
+				int damage = m_Damage;
+
+				// Apply friendly fire reduction using centralized helper
+				damage = FieldSpellHelper.ApplyFriendlyFireReduction(damage, m_Caster, target);
+
+				// Ensure minimum damage
+				damage = FieldSpellHelper.EnsureMinimumDamage(damage);
+
+				// 50% chance for delayed damage (creates variety in tick timing)
+				if (Utility.RandomMinMax(0, 1) > 0)
+				{
+					AOS.Damage(target, m_Caster, damage, 0, 100, 0, 0, 0);
+					target.PlaySound(0x208);
+					
+					if (target is PlayerMobile)
+						target.PlaySound(target.Female ? 0x32E : 0x440);
+				}
+			}
+
+			public override bool OnMoveOver(Mobile m)
+			{
+				if (Visible && m_Caster != null && SpellHelper.ValidIndirectTarget(m_Caster, m) && m_Caster.CanBeHarmful(m, false))
+				{
+					if (SpellHelper.CanRevealCaster(m))
+						m_Caster.RevealingAction();
+
+					m_Caster.DoHarmful(m);
+					ApplyFireDamage(m);
+
+					if (m is BaseCreature)
+						((BaseCreature)m).OnHarmfulSpell(m_Caster);
+				}
+
+				return true;
 			}
 
 			private class InternalTimer : Timer
@@ -261,7 +221,7 @@ namespace Server.Spells.Fourth
 
 				private static Queue m_Queue = new Queue();
 
-				public InternalTimer( FireFieldItem item, TimeSpan delay, bool inLOS, bool canFit ) : base( delay, TimeSpan.FromSeconds( 1.0 ) )
+				public InternalTimer(FireFieldItem item, TimeSpan delay, bool inLOS, bool canFit) : base(delay, TimeSpan.FromSeconds(1.0))
 				{
 					m_Item = item;
 					m_InLOS = inLOS;
@@ -270,75 +230,25 @@ namespace Server.Spells.Fourth
 					Priority = TimerPriority.FiftyMS;
 				}
 
-                private void doDamage(Mobile m)
-                {
-                    int damage = m_Item.m_Damage;
-                    Mobile caster = m_Item.m_Caster;
-                    Mobile to = m;
-                    Mobile from = caster;
-                    Guild fromGuild = SpellHelper.GetGuildFor(from);
-                    Guild toGuild = SpellHelper.GetGuildFor(to);
-                    Party p = Party.Get(from);
-
-                    if (SpellHelper.ValidIndirectTarget(caster, m) && caster.CanBeHarmful(m, false))
-                    {
-                        if (SpellHelper.CanRevealCaster(m))
-                            caster.RevealingAction();
-
-                        caster.DoHarmful(m);
-
-                        // o proprio player OU players da mesma guilda/aliados OU membros em party, tem no maximo metade do dano esperado.
-                        if (to == from ||
-                            (fromGuild != null && toGuild != null && (fromGuild == toGuild || fromGuild.IsAlly(toGuild))) ||
-                            (p != null && p.Contains(to))
-                            )
-                        {
-                            damage = Utility.RandomMinMax(1, damage/2);
-                        }
-                        else if (m is BaseCreature)
-                        {
-                            BaseCreature c = (BaseCreature)m;
-                            if ((c.Controlled || c.Summoned) && (c.ControlMaster == from || c.SummonMaster == from)) // proprio summon / pet
-                            {
-                                damage = Utility.RandomMinMax(damage/2, damage);
-                            }
-							else {
-                                damage -= Utility.RandomMinMax(0, 1); // just to create a fake-random damage
-                            }
-                            ((BaseCreature)m).OnHarmfulSpell(caster);
-                        }
-
-                        if (damage < 1) { damage = 1; }
-
-                        if (Utility.RandomMinMax(0, 1) > 0) // 50% delay
-                        {
-                            AOS.Damage(to, from, damage, 0, 100, 0, 0, 0);
-                            m.PlaySound(0x208);
-							if (m is PlayerMobile)
-								m.PlaySound(m.Female ? 0x32E : 0x440);
-                        }
-                    }
-                }
-
-                protected override void OnTick()
+				protected override void OnTick()
 				{
-					if ( m_Item.Deleted )
+					if (m_Item.Deleted)
 						return;
 
-					if ( !m_Item.Visible )
+					if (!m_Item.Visible)
 					{
-						if ( m_InLOS && m_CanFit )
+						if (m_InLOS && m_CanFit)
 							m_Item.Visible = true;
 						else
 							m_Item.Delete();
 
-						if ( !m_Item.Deleted )
+						if (!m_Item.Deleted)
 						{
 							m_Item.ProcessDelta();
-							Effects.SendLocationParticles( EffectItem.Create( m_Item.Location, m_Item.Map, EffectItem.DefaultDuration ), 0x376A, 9, 10, Server.Items.CharacterDatabase.GetMySpellHue( m_Item.m_Caster, 0 ), 0, 5029, 0 );
+							Effects.SendLocationParticles(EffectItem.Create(m_Item.Location, m_Item.Map, EffectItem.DefaultDuration), 0x376A, 9, 10, Server.Items.CharacterDatabase.GetMySpellHue(m_Item.m_Caster, 0), 0, 5029, 0);
 						}
 					}
-					else if ( DateTime.UtcNow > m_Item.m_End )
+					else if (DateTime.UtcNow > m_Item.m_End)
 					{
 						m_Item.Delete();
 						Stop();
@@ -348,21 +258,29 @@ namespace Server.Spells.Fourth
 						Map map = m_Item.Map;
 						Mobile caster = m_Item.m_Caster;
 
-						if ( map != null && caster != null )
+						if (map != null && caster != null)
 						{
-							foreach ( Mobile m in m_Item.GetMobilesInRange( 0 ) )
+							foreach (Mobile m in m_Item.GetMobilesInRange(0))
 							{
-								if ( (m.Z + 16) > m_Item.Z && (m_Item.Z + 12) > m.Z && 
-									SpellHelper.ValidIndirectTarget( caster, m ) && 
-									caster.CanBeHarmful( m, false ) )
-									m_Queue.Enqueue( m );
+								if ((m.Z + 16) > m_Item.Z && (m_Item.Z + 12) > m.Z && 
+									SpellHelper.ValidIndirectTarget(caster, m) && 
+									caster.CanBeHarmful(m, false))
+									m_Queue.Enqueue(m);
 							}
 
-							while ( m_Queue.Count > 0 )
+							while (m_Queue.Count > 0)
 							{
 								Mobile m = (Mobile)m_Queue.Dequeue();
-                                doDamage(m);
-                            }
+
+								if (SpellHelper.CanRevealCaster(m))
+									caster.RevealingAction();
+
+								caster.DoHarmful(m);
+								m_Item.ApplyFireDamage(m);
+
+								if (m is BaseCreature)
+									((BaseCreature)m).OnHarmfulSpell(caster);
+							}
 						}
 					}
 				}
@@ -373,18 +291,18 @@ namespace Server.Spells.Fourth
 		{
 			private FireFieldSpell m_Owner;
 
-			public InternalTarget( FireFieldSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget(FireFieldSpell owner) : base(Core.ML ? 10 : 12, true, TargetFlags.None)
 			{
 				m_Owner = owner;
 			}
 
-			protected override void OnTarget( Mobile from, object o )
+			protected override void OnTarget(Mobile from, object o)
 			{
-				if ( o is IPoint3D )
-					m_Owner.Target( (IPoint3D)o );
+				if (o is IPoint3D)
+					m_Owner.Target((IPoint3D)o);
 			}
 
-			protected override void OnTargetFinish( Mobile from )
+			protected override void OnTargetFinish(Mobile from)
 			{
 				m_Owner.FinishSequence();
 			}

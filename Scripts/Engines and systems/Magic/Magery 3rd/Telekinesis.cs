@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server.Targeting;
 using Server.Network;
 using Server.Regions;
@@ -23,22 +24,53 @@ namespace Server.Spells.Third
         {
         }
 
-        #region Constants
-        // Weight Calculation
-        private const int WEIGHT_DIVISOR = 20; // Caster.Int / 20
+    #region Constants
+    // Weight Calculation
+    private const int WEIGHT_DIVISOR = 20; // Caster.Int / 20
 
-        // Effect Constants
-        private const int EFFECT_ID = 0x376A;
-        private const int EFFECT_SPEED = 9;
-        private const int EFFECT_RENDER = 32;
-        private const int EFFECT_DURATION = 5022;
-        private const int SOUND_ID = 0x1F5;
-        private const int DEFAULT_HUE = 0;
+    // Effect Constants
+    private const int EFFECT_ID = 0x376A;
+    private const int EFFECT_SPEED = 9;
+    private const int EFFECT_RENDER = 32;
+    private const int EFFECT_DURATION = 5022;
+    private const int SOUND_ID = 0x1F5;
+    private const int DEFAULT_HUE = 0;
 
-        // Target Constants
-        private const int TARGET_RANGE_ML = 10;
-        private const int TARGET_RANGE_LEGACY = 12;
-        #endregion
+    // Target Constants
+    private const int TARGET_RANGE_ML = 10;
+    private const int TARGET_RANGE_LEGACY = 12;
+    #endregion
+
+    #region Mobile Grab Easter Egg Constants
+    // Chance Calculation
+    private const double MOBILE_GRAB_BASE_CHANCE_PER_MAGERY = 0.3;       // 0.3% per magery point
+    private const double MOBILE_GRAB_BONUS_CHANCE_PER_INSCRIPTION = 0.15; // 0.15% per inscription point
+
+    // Cooldown
+    private const double MOBILE_GRAB_COOLDOWN_SECONDS = 10.0;            // 10 second cooldown
+
+    // Mana Cost Multiplier
+    private const double MOBILE_GRAB_MANA_MULTIPLIER = 2.0;              // 2x mana cost even on fail
+
+    // Placement Distance
+    private const int MOBILE_GRAB_PLACEMENT_DISTANCE = 1;                // Place 1 tile away from caster
+
+    // Effect Constants
+    private const int MOBILE_GRAB_PARTICLE_EFFECT_SUCCESS = 0x3709;      // Whirlwind effect on success
+    private const int MOBILE_GRAB_PARTICLE_EFFECT_FAIL = 0x3735;         // Fizzle effect on fail
+    private const int MOBILE_GRAB_SOUND_SUCCESS = 0x20F;                 // Teleport sound
+    private const int MOBILE_GRAB_SOUND_FAIL = 0x5C;                     // Fizzle sound
+    private const int MOBILE_GRAB_EFFECT_HUE = 1153;                     // Special hue for grab effect
+
+    // Messages (PT-BR)
+    private const string MSG_GRAB_SUCCESS_CASTER = "Você puxou {0} com telecinesia!";
+    private const string MSG_GRAB_SUCCESS_TARGET = "Você foi puxado por {0} com telecinesia!";
+    private const string MSG_GRAB_FAIL_CASTER = "Você não conseguiu puxar {0}.";
+    private const string MSG_GRAB_FAIL_TARGET_PLAYER = "Você sentiu uma leve tontura. Como se algo estivesse lhe puxando.";
+    private const string MSG_GRAB_COOLDOWN = "Você ainda está se recuperando do último uso de telecinesia avançada.";
+    private const string MSG_GRAB_INVALID_TARGET = "Você não pode usar telecinesia avançada neste alvo.";
+    private const string MSG_GRAB_CANNOT_TARGET_SELF = "Você não pode usar telecinesia em si mesmo.";
+    #endregion
 
         #region Validation Result
         /// <summary>
@@ -67,15 +99,20 @@ namespace Server.Spells.Third
                 return new ValidationResult(false, message, color);
             }
         }
-        #endregion
+    #endregion
 
-        public override SpellCircle Circle
+    #region Static Data
+    /// <summary>Tracks cooldowns for mobile grab easter egg feature</summary>
+    private static Dictionary<Mobile, DateTime> m_MobileGrabCooldowns = new Dictionary<Mobile, DateTime>();
+    #endregion
+
+    public override SpellCircle Circle
+    {
+        get
         {
-            get
-            {
-                return SpellCircle.Third;
-            }
+            return SpellCircle.Third;
         }
+    }
 
         public override void OnCast()
         {
@@ -102,11 +139,19 @@ namespace Server.Spells.Third
                 return;
             }
 
-            // Turn caster toward target
-            SpellHelper.Turn(Caster, target);
+        // Turn caster toward target
+        SpellHelper.Turn(Caster, target);
 
-            // Process target based on type (optimized order: interface first, then specific types)
-            if (target is ITelekinesisable)
+        // Easter Egg: Handle mobile grab attempts
+        if (target is Mobile)
+        {
+            HandleMobileGrab((Mobile)target);
+            FinishSequence();
+            return;
+        }
+
+        // Process target based on type (optimized order: interface first, then specific types)
+        if (target is ITelekinesisable)
             {
                 HandleTelekinesisable((ITelekinesisable)target);
             }
@@ -282,6 +327,199 @@ namespace Server.Spells.Third
 
             return ValidationResult.Success();
         }
+
+        #region Mobile Grab Easter Egg Methods
+
+        /// <summary>
+        /// Checks if the caster is on cooldown for mobile grab
+        /// </summary>
+        private bool CheckMobileGrabCooldown()
+        {
+            if (m_MobileGrabCooldowns.ContainsKey(Caster))
+            {
+                DateTime cooldownEnd = m_MobileGrabCooldowns[Caster];
+                if (DateTime.UtcNow < cooldownEnd)
+                {
+                    Caster.SendMessage(Spell.MSG_COLOR_ERROR, MSG_GRAB_COOLDOWN);
+                    return false;
+                }
+                
+                // Remove expired cooldown
+                m_MobileGrabCooldowns.Remove(Caster);
+            }
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Sets the mobile grab cooldown for the caster
+        /// </summary>
+        private void SetMobileGrabCooldown()
+        {
+            m_MobileGrabCooldowns[Caster] = DateTime.UtcNow.AddSeconds(MOBILE_GRAB_COOLDOWN_SECONDS);
+        }
+
+        /// <summary>
+        /// Calculates the success chance for mobile grab based on Magery and Inscription
+        /// </summary>
+        private double CalculateMobileGrabChance()
+        {
+            double mageryChance = Caster.Skills[SkillName.Magery].Value * MOBILE_GRAB_BASE_CHANCE_PER_MAGERY;
+            double inscribeBonus = Caster.Skills[SkillName.Inscribe].Value * MOBILE_GRAB_BONUS_CHANCE_PER_INSCRIPTION;
+            double totalChance = mageryChance + inscribeBonus;
+            
+            return Math.Min(totalChance, 100.0); // Cap at 100%
+        }
+
+        /// <summary>
+        /// Finds a valid location 1 tile away from caster to place the grabbed mobile
+        /// </summary>
+        private Point3D FindValidPlacement()
+        {
+            // Try to find a valid location 1 tile away from caster
+            Point3D casterLoc = Caster.Location;
+            
+            for (int xOffset = -MOBILE_GRAB_PLACEMENT_DISTANCE; xOffset <= MOBILE_GRAB_PLACEMENT_DISTANCE; xOffset++)
+            {
+                for (int yOffset = -MOBILE_GRAB_PLACEMENT_DISTANCE; yOffset <= MOBILE_GRAB_PLACEMENT_DISTANCE; yOffset++)
+                {
+                    // Skip center (caster's position) and positions further than 1 tile
+                    if (xOffset == 0 && yOffset == 0)
+                        continue;
+                    if (Math.Abs(xOffset) + Math.Abs(yOffset) > MOBILE_GRAB_PLACEMENT_DISTANCE)
+                        continue;
+                    
+                    Point3D testLoc = new Point3D(casterLoc.X + xOffset, casterLoc.Y + yOffset, casterLoc.Z);
+                    
+                    if (Caster.Map.CanSpawnMobile(testLoc))
+                        return testLoc;
+                }
+            }
+            
+            // No valid location found, return caster location as fallback
+            return casterLoc;
+        }
+
+        /// <summary>
+        /// Validates that a mobile can be grabbed with telekinesis
+        /// </summary>
+        private ValidationResult ValidateMobileGrab(Mobile target)
+        {
+            // Check if target is deleted
+            if (target == null || target.Deleted)
+                return ValidationResult.Failure(MSG_GRAB_INVALID_TARGET, Spell.MSG_COLOR_ERROR);
+
+            // Check if targeting self
+            if (target == Caster)
+                return ValidationResult.Failure(MSG_GRAB_CANNOT_TARGET_SELF, Spell.MSG_COLOR_ERROR);
+
+            // Check if target is alive
+            if (!target.Alive)
+                return ValidationResult.Failure(MSG_GRAB_INVALID_TARGET, Spell.MSG_COLOR_ERROR);
+
+            // Check if target is hidden
+            if (target.Hidden)
+                return ValidationResult.Failure(MSG_GRAB_INVALID_TARGET, Spell.MSG_COLOR_ERROR);
+
+            // Check if target is blessed
+            if (target.Blessed)
+                return ValidationResult.Failure(MSG_GRAB_INVALID_TARGET, Spell.MSG_COLOR_ERROR);
+
+            // Check AccessLevel (must be Player)
+            if (target.AccessLevel != AccessLevel.Player)
+                return ValidationResult.Failure(MSG_GRAB_INVALID_TARGET, Spell.MSG_COLOR_ERROR);
+
+            // Check if in safe zone / anti-magic region
+            if (!SpellHelper.CheckTravel(Caster, Caster.Map, Caster.Location, TravelCheckType.TeleportFrom))
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_SPELL_WONT_WORK, Spell.MSG_COLOR_ERROR);
+
+            if (!SpellHelper.CheckTravel(Caster, target.Map, target.Location, TravelCheckType.TeleportTo))
+                return ValidationResult.Failure(Spell.SpellMessages.ERROR_SPELL_WONT_WORK, Spell.MSG_COLOR_ERROR);
+
+            return ValidationResult.Success();
+        }
+
+        /// <summary>
+        /// Plays success effects for mobile grab
+        /// </summary>
+        private void PlayGrabSuccessEffects(Mobile target)
+        {
+            // Whirlwind effect on target
+            target.FixedParticles(MOBILE_GRAB_PARTICLE_EFFECT_SUCCESS, 10, 30, 5052, MOBILE_GRAB_EFFECT_HUE, 0, EffectLayer.Waist);
+            target.PlaySound(MOBILE_GRAB_SOUND_SUCCESS);
+            
+            // Effect at destination
+            Effects.SendLocationParticles(EffectItem.Create(target.Location, target.Map, EffectItem.DefaultDuration), 
+                EFFECT_ID, EFFECT_SPEED, EFFECT_RENDER, MOBILE_GRAB_EFFECT_HUE, 0, EFFECT_DURATION, 0);
+        }
+
+        /// <summary>
+        /// Plays failure effects for mobile grab
+        /// </summary>
+        private void PlayGrabFailEffects(Mobile target)
+        {
+            // Fizzle effect
+            target.FixedParticles(MOBILE_GRAB_PARTICLE_EFFECT_FAIL, 1, 30, 9503, EffectLayer.Waist);
+            target.PlaySound(MOBILE_GRAB_SOUND_FAIL);
+        }
+
+        /// <summary>
+        /// Easter Egg: Attempts to grab and teleport a mobile to the caster
+        /// Costs 2x mana even on failure, has a cooldown, and success based on Magery/Inscription
+        /// </summary>
+        private void HandleMobileGrab(Mobile target)
+        {
+            // Check cooldown first
+            if (!CheckMobileGrabCooldown())
+                return;
+
+            // Validate target
+            ValidationResult validation = ValidateMobileGrab(target);
+            if (!validation.IsValid)
+            {
+                Caster.SendMessage(validation.ErrorColor, validation.ErrorMessage);
+                return;
+            }
+
+            // Deduct 2x mana cost (even if it fails)
+            int manaCost = ScaleMana(GetMana());
+            int doubleCost = (int)(manaCost * MOBILE_GRAB_MANA_MULTIPLIER);
+            Caster.Mana -= doubleCost;
+
+            // Set cooldown
+            SetMobileGrabCooldown();
+
+            // Calculate success chance
+            double successChance = CalculateMobileGrabChance();
+            bool success = Utility.RandomDouble() * 100.0 < successChance;
+
+            if (success)
+            {
+                // SUCCESS - Teleport target to near caster
+                Point3D destination = FindValidPlacement();
+                
+                PlayGrabSuccessEffects(target);
+                target.MoveToWorld(destination, Caster.Map);
+                
+                Caster.SendMessage(Spell.MSG_COLOR_HEAL, string.Format(MSG_GRAB_SUCCESS_CASTER, target.Name));
+                target.SendMessage(Spell.MSG_COLOR_WARNING, string.Format(MSG_GRAB_SUCCESS_TARGET, Caster.Name));
+            }
+            else
+            {
+                // FAILURE - Play effects and send messages
+                PlayGrabFailEffects(target);
+                
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, string.Format(MSG_GRAB_FAIL_CASTER, target.Name));
+                
+                // Only send dizzy message to players, not NPCs
+                if (target.Player)
+                {
+                    target.SendMessage(Spell.MSG_COLOR_WARNING, MSG_GRAB_FAIL_TARGET_PLAYER);
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Plays visual and sound effects for the spell at target location

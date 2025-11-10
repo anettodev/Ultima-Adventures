@@ -3358,31 +3358,43 @@ namespace Server.Mobiles
 					if ( bPlayerOnly && !m.Player && !(m is BaseBlue) && !(m is BaseRed))
 						continue;
 
-					// Can't acquire a target we can't see.
-					if ( !m_Mobile.CanSee( m ) )
+				// Can't acquire a target we can't see.
+				if ( !m_Mobile.CanSee( m ) )
+					continue;
+
+				// Wild summons (like Blade Spirits) attack EVERYONE - no relationship checks
+				if ( m_Mobile is BaseCreature && ((BaseCreature)m_Mobile).IsWildSummon )
+				{
+					// Wild summons ignore ALL protections:
+					// - Can attack summoner
+					// - Can attack players
+					// - Can attack party members
+					// - Can attack guild members
+					// - Ignore karma
+					// - Completely uncontrolled and dangerous
+					// (Still respect blessed, dead, access level checks above)
+				}
+				else if ( m_Mobile.Summoned && m_Mobile.SummonMaster != null ) // WIZARD CHANGED SO BLADE SPIRITS AND EVs ACTUALLY DO SOMETHING
+				{
+					// Normal summons: If this is a summon, it can't target its controller.
+					if ( ( m == m_Mobile.SummonMaster ) || ( m is PlayerMobile ) )
 						continue;
 
-					if ( m_Mobile.Summoned && m_Mobile.SummonMaster != null ) // WIZARD CHANGED SO BLADE SPIRITS AND EVs ACTUALLY DO SOMETHING
+					if (m is BaseCreature)
 					{
-						// If this is a summon, it can't target its controller.
-						if ( ( m == m_Mobile.SummonMaster ) || ( m is PlayerMobile ) )
-							continue;
-
-						if (m is BaseCreature)
-						{
-							BaseCreature c = (BaseCreature)m;
-							if ( ( c.SummonMaster != null ) || ( c.ControlMaster != null ) )
-							continue;
-						}
-
-						// It also must abide by harmful spell rules.
-						//if ( !Server.Spells.SpellHelper.ValidIndirectTarget( m_Mobile.SummonMaster, m ) )
-						//	continue;
-
-						// Animated creatures cannot attack players directly.
-						if ( m is PlayerMobile && m_Mobile.IsAnimatedDead )
-							continue;
+						BaseCreature c = (BaseCreature)m;
+						if ( ( c.SummonMaster != null ) || ( c.ControlMaster != null ) )
+						continue;
 					}
+
+					// It also must abide by harmful spell rules.
+					//if ( !Server.Spells.SpellHelper.ValidIndirectTarget( m_Mobile.SummonMaster, m ) )
+					//	continue;
+
+					// Animated creatures cannot attack players directly.
+					if ( m is PlayerMobile && m_Mobile.IsAnimatedDead )
+						continue;
+				}
 
 					// Ignore players with activated honor
 					if ( m is PlayerMobile && ( (PlayerMobile)m ).HonorActive && !( m_Mobile.Combatant == m ))

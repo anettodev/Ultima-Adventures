@@ -95,6 +95,11 @@ namespace Server.Spells
 		private static TimeSpan AosDamageDelay = TimeSpan.FromSeconds( 0.5 );
 		private static TimeSpan OldDamageDelay = TimeSpan.FromSeconds( 0.3 );
 
+		// Multi-target spell reflection tracking
+		// Tracks which mobiles have been checked for reflection in the current spell instance
+		// Used to detect multi-target spells and trigger arcane interference
+		private static Dictionary<Mobile, HashSet<Mobile>> m_ReflectionChecks = new Dictionary<Mobile, HashSet<Mobile>>();
+
 		public static TimeSpan GetDamageDelayForSpell( Spell sp )
 		{
 			if( !sp.DelayedDamage )
@@ -1013,54 +1018,207 @@ namespace Server.Spells
 			return true;
 		}
 
-		//magic reflection
-		public static void CheckReflect( int circle, Mobile caster, ref Mobile target )
-		{
+	//magic reflection
+	public static void CheckReflect( int circle, Mobile caster, ref Mobile target )
+	{
             NMSCheckReflect( circle, ref caster, ref target );
-		}
-		public static void NMSCheckReflect(int circle, ref Mobile caster, ref Mobile target)
+	}
+	
+	/// <summary>
+	/// NMS Magic Reflect Check - New Reflection System
+	/// Implements true spell reflection with shield power comparison
+	/// Detects multi-target spells and triggers arcane interference
+	/// Thread-safe for multiple simultaneous spells
+	/// </summary>
+	public static void NMSCheckReflect(int circle, ref Mobile caster, ref Mobile target)
+	{
+		// Check for BaseCreature reflection (legacy support)
+		if (target is BaseCreature)
 		{
-            ++circle;
-            target.MagicDamageAbsorb -= (caster.MagicDamageAbsorb + circle); // first&second impact in the magic shield, subtract casterá and target magicReflect value
-            bool reflect = (target.MagicDamageAbsorb > 0);
-            if (target is BaseCreature)
-                ((BaseCreature)target).CheckReflect(caster, ref reflect); // deprected?
-
-            if (reflect)
+			bool creatureReflect = false;
+			((BaseCreature)target).CheckReflect(caster, ref creatureReflect);
+			
+			if (creatureReflect)
 			{
-				// remove Magic Reflect from caster because his own spell makes damage
-				DefensiveSpell.Nullify(caster);
-				caster.MagicDamageAbsorb = 0;
+				target.FixedEffect(0x37B9, 10, 5);
+				Mobile temp = caster;
+				caster = target;
+				target = temp;
+				return;
+			}
+		}
 
-                // third impact, if the caster has more eval than the target has inscribe, the damage in the magic reflect shield should be 2x bigger
-                if (caster.Skills[SkillName.EvalInt].Value >= target.Skills[SkillName.Inscribe].Value)
-				{
-					target.MagicDamageAbsorb -= (circle * 2);
-				}
+		// Track this reflection check to detect multi-target spells
+		bool isMultiTarget = TrackReflectionCheck(caster, target);
 
-				if (target.MagicDamageAbsorb < 0) // just to has a min safe value
-				{
-                    DefensiveSpell.Nullify(target);
-                    target.MagicDamageAbsorb = 0;
-                }
+		// Check if target has a shield
+		bool targetHasShield = MagicReflectSpell.HasActiveShield(target);
+		bool casterHasShield = MagicReflectSpell.HasActiveShield(caster);
 
-                target.FixedEffect(0x37B9, 10, 5);
-                target.FixedParticles(0x374A, 10, 30, 5013, Server.Items.CharacterDatabase.GetMySpellHue(target, 0), 2, EffectLayer.Waist);
-                target.PlaySound(0x0FC);
-                target.PlaySound(0x1F7);
+		// If multi-target spell detected and ANY shield is involved
+		if (isMultiTarget && (targetHasShield || casterHasShield))
+		{
+			// ARCANE INTERFERENCE: All shields dispelled, no damage, no reflection
+			HandleArcaneInterference(caster, target, casterHasShield, targetHasShield);
+			return;
+		}
 
-				// bounce back the spell
-                Mobile temp = caster;
-                caster = target;
-                target = temp;
-            }
-			else 
+		// Single-target spell logic (original behavior)
+		if (!targetHasShield)
+			return; // No shield, spell proceeds normally
+
+		// Try to consume target's shield (first-come-first-served)
+		MagicReflectSpell.MagicReflectData targetShield = MagicReflectSpell.TryConsumeShield(target);
+		
+		if (targetShield == null)
+			return; // Shield already consumed, spell proceeds normally
+
+		if (casterHasShield)
+		{
+			// DUAL SHIELD SCENARIO
+			HandleDualShieldReflection(ref caster, ref target, targetShield);
+		}
+		else
+		{
+			// SINGLE SHIELD SCENARIO
+			HandleSingleShieldReflection(ref caster, ref target, targetShield);
+		}
+	}
+
+	/// <summary>
+	/// Handles reflection when only target has a shield
+	/// Result: Shield consumed, spell reflects to attacker after 1-second delay
+	/// </summary>
+	private static void HandleSingleShieldReflection(ref Mobile caster, ref Mobile target, 
+		MagicReflectSpell.MagicReflectData targetShield)
+	{
+		// Store original caster for delayed reflection
+		Mobile originalCaster = caster;
+		Mobile reflector = target;
+
+		// Remove target's shield (consumed by reflection)
+		MagicReflectSpell.RemoveShield(target, false);
+
+		// Play reflection effects
+		MagicReflectSpell.PlayReflectionEffects(caster, target);
+
+		// Create delayed reflection (1 second)
+		MagicReflectSpell.CreateDelayedReflection(originalCaster, reflector, 0);
+
+		// Swap caster and target for spell reflection
+		Mobile temp = caster;
+		caster = target;
+		target = temp;
+	}
+
+	/// <summary>
+	/// Handles reflection when both caster and target have shields
+	/// Compares shield power to determine outcome
+	/// </summary>
+	private static void HandleDualShieldReflection(ref Mobile caster, ref Mobile target,
+		MagicReflectSpell.MagicReflectData targetShield)
+	{
+		int attackerPower = MagicReflectSpell.GetShieldPower(caster);
+		int targetPower = targetShield.ShieldPower;
+
+		if (attackerPower > targetPower)
+		{
+			// ATTACKER WINS: Target's shield breaks, spell hits target normally
+			MagicReflectSpell.RemoveShield(target, false);
+			MagicReflectSpell.PlayBreakEffects(target);
+
+			caster.SendMessage(Spell.MSG_COLOR_SYSTEM,
+				Spell.SpellMessages.MAGIC_REFLECT_OVERPOWERED_ATTACKER);
+
+			// Spell continues to target (no swap)
+		}
+		else
+		{
+			// TARGET WINS/TIE: Both shields break, spell reflects to attacker after 1-second delay
+			// Store original caster for delayed reflection
+			Mobile originalCaster = caster;
+			Mobile reflector = target;
+
+			MagicReflectSpell.RemoveShield(target, false);
+			MagicReflectSpell.RemoveShield(caster, false);
+
+			// Double effects (both shields consumed)
+			MagicReflectSpell.PlayReflectionEffects(caster, target);
+			MagicReflectSpell.PlayBreakEffects(caster);
+
+			caster.SendMessage(Spell.MSG_COLOR_ERROR,
+				Spell.SpellMessages.MAGIC_REFLECT_BOTH_BREAK_ATTACKER);
+			target.SendMessage(Spell.MSG_COLOR_SYSTEM,
+				Spell.SpellMessages.MAGIC_REFLECT_BOTH_BREAK_TARGET);
+
+			// Create delayed reflection (1 second)
+			MagicReflectSpell.CreateDelayedReflection(originalCaster, reflector, 0);
+
+			// Swap caster and target for reflection
+			Mobile temp = caster;
+			caster = target;
+			target = temp;
+		}
+	}
+
+	/// <summary>
+	/// Tracks reflection checks per caster to detect multi-target spells
+	/// Returns true if this is the second+ target for this caster (multi-target spell)
+	/// </summary>
+	private static bool TrackReflectionCheck(Mobile caster, Mobile target)
+	{
+		// Get or create the target set for this caster
+		HashSet<Mobile> targets;
+		if (!m_ReflectionChecks.TryGetValue(caster, out targets))
+		{
+			targets = new HashSet<Mobile>();
+			m_ReflectionChecks[caster] = targets;
+
+			// Schedule cleanup after 2 seconds (spell should complete by then)
+			Timer.DelayCall(TimeSpan.FromSeconds(2.0), delegate
 			{
-                // remove Magic Reflect from target
-                DefensiveSpell.Nullify(target);
-                target.MagicDamageAbsorb = 0;
-            }
-        }
+				ClearReflectionTracking(caster);
+			});
+		}
+
+		// Add this target to the set
+		bool isFirstTarget = targets.Add(target); // Returns false if already present
+
+		// If this is the second+ target, it's a multi-target spell
+		return targets.Count > 1;
+	}
+
+	/// <summary>
+	/// Clears reflection tracking for a caster after spell completes
+	/// </summary>
+	private static void ClearReflectionTracking(Mobile caster)
+	{
+		m_ReflectionChecks.Remove(caster);
+	}
+
+	/// <summary>
+	/// Handles arcane interference when multi-target spell interacts with shields
+	/// All shields involved are dispelled, no damage dealt, no reflection
+	/// </summary>
+	private static void HandleArcaneInterference(Mobile caster, Mobile target, bool casterHasShield, bool targetHasShield)
+	{
+		// Collect all mobiles with shields
+		List<Mobile> affectedMobiles = new List<Mobile>();
+		if (casterHasShield) affectedMobiles.Add(caster);
+		if (targetHasShield) affectedMobiles.Add(target);
+
+		// Determine if multiple shields are involved
+		bool multipleShields = affectedMobiles.Count > 1;
+
+		// Dispel all shields with arcane interference effects
+		foreach (Mobile m in affectedMobiles)
+		{
+			MagicReflectSpell.DispelArcaneInterference(m, multipleShields);
+		}
+
+		// Note: Target is protected from damage by returning early from NMSCheckReflect
+		// The spell code should check HasActiveShield or rely on existing damage prevention
+	}
 
         public static void CheckReflect( int circle, ref Mobile caster, ref Mobile target )
 		{

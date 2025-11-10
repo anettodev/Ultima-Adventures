@@ -21,6 +21,75 @@ namespace Server.Spells.Fourth
 
 		public override SpellCircle Circle { get { return SpellCircle.Fourth; } }
 
+		#region Consecutive Cast Tracking
+		private const double CONSECUTIVE_CAST_WINDOW = 2.0; // 2 seconds window
+		private static readonly System.Collections.Generic.Dictionary<Mobile, DateTime> LastCastTimes = new System.Collections.Generic.Dictionary<Mobile, DateTime>();
+		
+		/// <summary>
+		/// Checks if this is a consecutive cast within the penalty window
+		/// </summary>
+		private bool IsConsecutiveCast()
+		{
+			if (!LastCastTimes.ContainsKey(Caster))
+				return false;
+
+			DateTime lastCast = LastCastTimes[Caster];
+			TimeSpan timeSinceLastCast = DateTime.UtcNow - lastCast;
+			
+			return timeSinceLastCast.TotalSeconds < CONSECUTIVE_CAST_WINDOW;
+		}
+		
+		/// <summary>
+		/// Updates the last cast time for the caster
+		/// </summary>
+		private void UpdateLastCastTime()
+		{
+			if (LastCastTimes.ContainsKey(Caster))
+				LastCastTimes[Caster] = DateTime.UtcNow;
+			else
+				LastCastTimes.Add(Caster, DateTime.UtcNow);
+		}
+		#endregion
+
+		#region Constants
+		private const int MSG_COLOR_HEAL = 68; // Light blue for healing
+		private const int MSG_COLOR_WARNING = 33;
+		private const int OVERHEAD_MESSAGE_HUE = 0x3B2;
+		#endregion
+
+		/// <summary>
+		/// Displays the amount of hit points healed
+		/// </summary>
+		private void ShowHealAmount(Mobile target, int healAmount, bool wasConsecutiveCast)
+		{
+			// Show overhead message on target
+			string healText = string.Format(Spell.SpellMessages.INFO_HEAL_AMOUNT_FORMAT, healAmount);
+			
+			// Add indicator for consecutive cast penalty
+			if (wasConsecutiveCast)
+			{
+				healText += ""; // Warning indicator
+			}
+			
+			target.PublicOverheadMessage(MessageType.Regular, MSG_COLOR_HEAL, false, healText);
+
+			// Also send system message to caster if healing someone else
+			if (Caster != target)
+			{
+				string message = string.Format("VocÃª curou {0} com {1} pontos de vida.", target.Name, healAmount);
+				if (wasConsecutiveCast)
+				{
+					message += " [Cura enfraquecida por uso consecutivo]";
+				}
+				Caster.SendMessage(MSG_COLOR_HEAL, message);
+			}
+			else if (wasConsecutiveCast)
+			{
+				// Self-heal with penalty warning
+				Caster.SendMessage(MSG_COLOR_WARNING, "Sua cura foi enfraquecida por uso consecutivo!");
+			}
+		}
+
 		public GreaterHealSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -34,51 +103,48 @@ namespace Server.Spells.Fourth
 		{
 			if ( !Caster.CanSee( m ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
+                Caster.SendMessage(55, "O alvo nï¿½o pode ser visto.");
             }
 			else if (m.IsDeadBondedPet || m is BaseCreature && ((BaseCreature)m).IsAnimatedDead )
 			{
-                Caster.SendMessage(55, "Você não pode curar aquilo que já está morto.");
+                Caster.SendMessage(55, "Vocï¿½ nï¿½o pode curar aquilo que jï¿½ estï¿½ morto.");
             }
 			else if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing)
 			{
-                Caster.SendMessage(33, "O UM ANEL desfez o feitiço e te diz para não fazer isso... ");
+                Caster.SendMessage(33, "O UM ANEL desfez o feitiï¿½o e te diz para nï¿½o fazer isso... ");
                 DoFizzle();
                 return;
 			}
 			else if ( m is Golem )
 			{
                 DoFizzle();
-                Caster.LocalOverheadMessage(MessageType.Regular, 0x3B2, false, "* Não sei como curar isso *"); // You cannot heal that.
+                Caster.LocalOverheadMessage(MessageType.Regular, 0x3B2, false, "* Nï¿½o sei como curar isso *"); // You cannot heal that.
             }
             else if ((m.Poisoned && m.Poison.Level >= 4) || Server.Items.MortalStrike.IsWounded(m))
             {
-                Caster.SendMessage(33, ((Caster == m) ? "Você sente o veneno penetrar mais em suas veias." : "O seu alvo está letalmente envenenado e não poderá ser curado com esse feitiço!"));
+                Caster.SendMessage(33, ((Caster == m) ? "Vocï¿½ sente o veneno penetrar mais em suas veias." : "O seu alvo estï¿½ letalmente envenenado e nï¿½o poderï¿½ ser curado com esse feitiï¿½o!"));
                 //Caster.LocalOverheadMessage( MessageType.Regular, 0x22, (Caster == m) ? 1005000 : 1010398 );
             }
             else if ( CheckBSequence( m ) )
 			{
                 SpellHelper.Turn(Caster, m);
 
-                int toHeal = (int)(NMSUtils.getBeneficialMageryInscribePercentage(Caster) / 1.5);
-                if (Caster != m)
-                    toHeal = (int)(toHeal * 1.15); // 15% more heal points if is another person.
+                // Use centralized healing calculator with consecutive cast tracking
+                bool isConsecutiveCast = IsConsecutiveCast();
+                int toHeal = SpellHealingCalculator.CalculateGreaterHeal(Caster, m, isConsecutiveCast);
 
-                // Algorithm: (40% of magery OR 60% for soulshard) + (1-10)
-/*                int toHeal = CalculateMobileBenefit(Caster, 2.5, 1.65);
-				toHeal += Utility.Random( 1, 10 );
-				toHeal = Server.Misc.MyServerSettings.PlayerLevelMod( toHeal, Caster );
-
-				if (Caster is PlayerMobile && ((PlayerMobile)Caster).Sorcerer())
-					toHeal = (int)((double)toHeal * 1.25);*/
-
-				//m.Heal( toHeal, Caster );
 				SpellHelper.Heal( toHeal, m, Caster );
-/*				if (Scroll is SoulShard) {
-					((SoulShard)Scroll).SuccessfulCast = true;
-				}*/
-				m.FixedParticles( 0x376A, 9, 32, 5030, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Waist );
+				
+				// Cache spell hue for performance
+				int spellHue = Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 );
+				m.FixedParticles( 0x376A, 9, 32, 5030, spellHue, 0, EffectLayer.Waist );
 				m.PlaySound( 0x202 );
+				
+				// Show heal amount on target (same as Heal spell)
+				ShowHealAmount(m, toHeal, isConsecutiveCast);
+				
+				// Update last cast time for consecutive cast tracking
+				UpdateLastCastTime();
 			}
 
 			FinishSequence();

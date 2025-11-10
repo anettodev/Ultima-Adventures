@@ -508,56 +508,68 @@ namespace Server.Items
 			Mobile.CreateCorpseHandler += new CreateCorpseHandler( Mobile_CreateCorpseHandler );
 		}
 
-		public static Container Mobile_CreateCorpseHandler( Mobile owner, HairInfo hair, FacialHairInfo facialhair, List<Item> initialContent, List<Item> equipItems )
+	public static Container Mobile_CreateCorpseHandler( Mobile owner, HairInfo hair, FacialHairInfo facialhair, List<Item> initialContent, List<Item> equipItems )
+	{
+		// Get location and map for corpse/effects
+		Point3D loc = owner.Location;
+		Map map = owner.Map;
+
+		if ( map == null || map == Map.Internal )
 		{
-			bool shouldFillCorpse = true;
-
-			//if ( owner is BaseCreature )
-			//	shouldFillCorpse = !((BaseCreature)owner).IsBonded;
-
-			Corpse c = new Corpse( owner, hair, facialhair, shouldFillCorpse ? equipItems : new List<Item>() );
-
-			owner.Corpse = c;
-
-			if ( shouldFillCorpse )
-			{
-				for ( int i = 0; i < initialContent.Count; ++i )
-				{
-					Item item = initialContent[i];
-
-					if ( Core.AOS && owner.Player && item.Parent == owner.Backpack )
-						c.AddItem( item );
-					else
-						c.DropItem( item );
-
-					if ( owner.Player && Core.AOS )
-						c.SetRestoreInfo( item, item.Location );
-				}
-			}
-			else
-			{
-				c.Carved = true; // TODO: Is it needed?
-			}
-
-			Point3D loc = owner.Location;
-			Map map = owner.Map;
-
-			if ( map == null || map == Map.Internal )
-			{
-				loc = owner.LogoutLocation;
-				map = owner.LogoutMap;
-			}
-
-			if (owner is PlayerMobile)
-			{
-				c.m_LootTimer = new Internalloot( c );
-				c.m_LootTimer.Start();
-			}
-
-			c.MoveToWorld( loc, map );
-
-			return c;
+			loc = owner.LogoutLocation;
+			map = owner.LogoutMap;
 		}
+
+		// Summoned creatures evaporate instead of leaving corpses
+		if ( owner is BaseCreature && ((BaseCreature)owner).Summoned )
+		{
+			// Play evaporation effects (sparkling dissipation)
+			Effects.SendLocationEffect( loc, map, 0x3728, 13, 16, 1150, 4 );
+			Effects.PlaySound( loc, map, 0x1FE );
+
+			// Don't create a corpse - return null
+			return null;
+		}
+
+		bool shouldFillCorpse = true;
+
+		//if ( owner is BaseCreature )
+		//	shouldFillCorpse = !((BaseCreature)owner).IsBonded;
+
+		Corpse c = new Corpse( owner, hair, facialhair, shouldFillCorpse ? equipItems : new List<Item>() );
+
+		owner.Corpse = c;
+
+		if ( shouldFillCorpse )
+		{
+			for ( int i = 0; i < initialContent.Count; ++i )
+			{
+				Item item = initialContent[i];
+
+				if ( Core.AOS && owner.Player && item.Parent == owner.Backpack )
+					c.AddItem( item );
+				else
+					c.DropItem( item );
+
+				if ( owner.Player && Core.AOS )
+					c.SetRestoreInfo( item, item.Location );
+			}
+		}
+		else
+		{
+			c.Carved = true; // TODO: Is it needed?
+		}
+
+		if (owner is PlayerMobile)
+		{
+			c.m_LootTimer = new Internalloot( c );
+			c.m_LootTimer.Start();
+		}
+
+		c.MoveToWorld( loc, map );
+
+		return c;
+	}
 
 		public override bool IsPublicContainer{ get{ return true; } }
 

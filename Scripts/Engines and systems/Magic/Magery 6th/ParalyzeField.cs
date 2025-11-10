@@ -4,9 +4,14 @@ using Server.Items;
 using Server.Network;
 using Server.Misc;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Sixth
 {
+	/// <summary>
+	/// Paralyze Field - 6th Circle Magery Spell
+	/// Creates a field that paralyzes mobiles walking over it
+	/// </summary>
 	public class ParalyzeFieldSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -21,6 +26,61 @@ namespace Server.Spells.Sixth
 
 		public override SpellCircle Circle { get { return SpellCircle.Sixth; } }
 
+		#region Constants
+
+		/// <summary>Field item ID for East-West orientation</summary>
+		private const int FIELD_ITEM_ID_EAST_WEST = 0x3967;
+
+		/// <summary>Field item ID for North-South orientation</summary>
+		private const int FIELD_ITEM_ID_NORTH_SOUTH = 0x3979;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x20B;
+
+		/// <summary>Magery benefit multiplier for field duration</summary>
+		private const double MAGERY_BENEFIT_MULTIPLIER = 0.25;
+
+		/// <summary>Base paralyze duration in seconds</summary>
+		private const double PARALYZE_BASE_DURATION = 3.0;
+
+		/// <summary>Magery skill multiplier for paralyze duration</summary>
+		private const double PARALYZE_MAGERY_MULTIPLIER = 0.1;
+
+		/// <summary>EvalInt benefit multiplier for paralyze duration</summary>
+		private const double PARALYZE_EVALINT_BENEFIT_MULTIPLIER = 0.1;
+
+		/// <summary>Non-player duration multiplier</summary>
+		private const double PARALYZE_NON_PLAYER_MULTIPLIER = 2.0;
+
+		/// <summary>Field adjustment range</summary>
+		private const int FIELD_ADJUSTMENT_RANGE = 12;
+
+		/// <summary>Particle effect ID</summary>
+		private const int PARTICLE_EFFECT_ID = 0x376A;
+
+		/// <summary>Particle effect count</summary>
+		private const int PARTICLE_COUNT = 9;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_SPEED = 10;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_DURATION = 5048;
+
+		/// <summary>Paralyze sound effect ID</summary>
+		private const int PARALYZE_SOUND_EFFECT = 0x204;
+
+		/// <summary>Paralyze effect ID</summary>
+		private const int PARALYZE_EFFECT_ID = 0x376A;
+
+		/// <summary>Paralyze effect count</summary>
+		private const int PARALYZE_EFFECT_COUNT = 10;
+
+		/// <summary>Paralyze effect duration</summary>
+		private const int PARALYZE_EFFECT_DURATION = 16;
+
+		#endregion
+
 		public ParalyzeFieldSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -34,47 +94,35 @@ namespace Server.Spells.Sixth
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
 			{
 				SpellHelper.Turn( Caster, p );
 
 				SpellHelper.GetSurfaceTop( ref p );
 
-				int dx = Caster.Location.X - p.X;
-				int dy = Caster.Location.Y - p.Y;
-				int rx = (dx - dy) * 44;
-				int ry = (dx + dy) * 44;
+				// Use centralized field orientation calculation
+				bool eastToWest = FieldSpellHelper.GetFieldOrientation( Caster.Location, p );
 
-				bool eastToWest;
+				Effects.PlaySound( p, Caster.Map, SOUND_EFFECT );
 
-				if ( rx >= 0 && ry >= 0 )
-					eastToWest = false;
-				else if ( rx >= 0 )
-					eastToWest = true;
-				else if ( ry >= 0 )
-					eastToWest = true;
-				else
-					eastToWest = false;
+				int itemID = eastToWest ? FIELD_ITEM_ID_EAST_WEST : FIELD_ITEM_ID_NORTH_SOUTH;
 
-				Effects.PlaySound( p, Caster.Map, 0x20B );
+				int nBenefit = 0;
+				if ( Caster is PlayerMobile )
+				{
+					nBenefit = (int)(Caster.Skills[SkillName.Magery].Value * MAGERY_BENEFIT_MULTIPLIER);
+				}
 
-				int itemID = eastToWest ? 0x3967 : 0x3979;
+				// Use FieldSpellHelper for consistent duration calculation
+				TimeSpan duration = FieldSpellHelper.GetFieldDuration( Caster );
 
-                int nBenefit = 0;
-                if (Caster is PlayerMobile) // WIZARD
-                {
-                    nBenefit = (int)(Caster.Skills[SkillName.Magery].Value * 0.25);
-                }
-
-                TimeSpan duration = TimeSpan.FromSeconds(3 + (Caster.Skills.EvalInt.Fixed * 0.1) + nBenefit);
-                Caster.SendMessage(55, "O seu feitiço terá a duração de aproximadamente " + duration + "s.");
-
-                for ( int i = -2; i <= 2; ++i )
+				// Create field items in a line (-2 to +2 range)
+				for ( int i = -FieldSpellHelper.FIELD_RANGE; i <= FieldSpellHelper.FIELD_RANGE; ++i )
 				{
 					Point3D loc = new Point3D( eastToWest ? p.X + i : p.X, eastToWest ? p.Y : p.Y + i, p.Z );
-					bool canFit = SpellHelper.AdjustField( ref loc, Caster.Map, 12, false );
+					bool canFit = SpellHelper.AdjustField( ref loc, Caster.Map, FIELD_ADJUSTMENT_RANGE, false );
 
 					if ( !canFit )
 						continue;
@@ -82,12 +130,14 @@ namespace Server.Spells.Sixth
 					Item item = new InternalItem( Caster, itemID, loc, Caster.Map, duration );
 					item.ProcessDelta();
 
-					Effects.SendLocationParticles( EffectItem.Create( loc, Caster.Map, EffectItem.DefaultDuration ), 0x376A, 9, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5048, 0 );
+					Effects.SendLocationParticles( EffectItem.Create( loc, Caster.Map, EffectItem.DefaultDuration ), PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
 				}
 			}
 
 			FinishSequence();
 		}
+
+		#region Internal Classes
 
 		[DispellableField]
 		public class InternalItem : Item
@@ -103,7 +153,11 @@ namespace Server.Spells.Sixth
 				Visible = false;
 				Movable = false;
 				Light = LightType.Circle300;
-				Hue = 0; if ( Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 ) >= 0 ){ Hue = Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 )+1; }
+				Hue = 0; 
+				if ( Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 ) >= 0 )
+				{ 
+					Hue = Server.Items.CharacterDatabase.GetMySpellHue( caster, 0 ) + 1; 
+				}
 
 				MoveToWorld( loc, map );
 
@@ -168,7 +222,8 @@ namespace Server.Spells.Sixth
 
 			public override bool OnMoveOver( Mobile m )
 			{
-				if ( Visible && m_Caster != null && (!Core.AOS || m != m_Caster) && SpellHelper.ValidIndirectTarget( m_Caster, m ) && m_Caster.CanBeHarmful( m, false ) )
+				// Caster can be paralyzed by their own field - no special exclusion
+				if ( Visible && m_Caster != null && SpellHelper.ValidIndirectTarget( m_Caster, m ) && m_Caster.CanBeHarmful( m, false ) )
 				{
 					if ( SpellHelper.CanRevealCaster( m ) )
 						m_Caster.RevealingAction();
@@ -178,19 +233,18 @@ namespace Server.Spells.Sixth
 					double duration;
 
 					int nBenefit = 0;
-                    if (m_Caster is PlayerMobile) // WIZARD
-                    {
-                        nBenefit = (int)(m_Caster.Skills[SkillName.EvalInt].Value * 0.1);
-                    }
+					if ( m_Caster is PlayerMobile )
+					{
+						nBenefit = (int)(m_Caster.Skills[SkillName.EvalInt].Value * PARALYZE_EVALINT_BENEFIT_MULTIPLIER);
+					}
 
-                    duration = 3.0 + (m_Caster.Skills[SkillName.Magery].Value * 0.1) + nBenefit;
-                    if (!m.Player)
-                        duration *= 2.0;
+					duration = PARALYZE_BASE_DURATION + (m_Caster.Skills[SkillName.Magery].Value * PARALYZE_MAGERY_MULTIPLIER) + nBenefit;
+					if ( !m.Player )
+						duration *= PARALYZE_NON_PLAYER_MULTIPLIER;
 
-                    m.Paralyze( TimeSpan.FromSeconds( duration ) );
-                    //m_Caster.SendMessage(55, "O alvo ficará paralizado por aproximadamente " + duration + "s.");
-                    m.PlaySound( 0x204 );
-					m.FixedEffect( 0x376A, 10, 16, Server.Items.CharacterDatabase.GetMySpellHue( m_Caster, 0 ), 0 );
+					m.Paralyze( TimeSpan.FromSeconds( duration ) );
+					m.PlaySound( PARALYZE_SOUND_EFFECT );
+					m.FixedEffect( PARALYZE_EFFECT_ID, PARALYZE_EFFECT_COUNT, PARALYZE_EFFECT_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( m_Caster, 0 ), 0 );
 					
 					if ( m is BaseCreature )
 						((BaseCreature) m).OnHarmfulSpell( m_Caster );
@@ -220,7 +274,7 @@ namespace Server.Spells.Sixth
 		{
 			private ParalyzeFieldSpell m_Owner;
 
-			public InternalTarget( ParalyzeFieldSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget( ParalyzeFieldSpell owner ) : base( SpellConstants.GetSpellRange(), true, TargetFlags.None )
 			{
 				m_Owner = owner;
 			}
@@ -236,5 +290,7 @@ namespace Server.Spells.Sixth
 				m_Owner.FinishSequence();
 			}
 		}
+
+		#endregion
 	}
 }

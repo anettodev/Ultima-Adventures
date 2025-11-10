@@ -23,6 +23,22 @@ namespace Server.Spells.Fourth
 
 		public override SpellCircle Circle { get { return SpellCircle.Fourth; } }
 
+		#region Constants
+		// Effect Constants
+		private const int SOUND_ID = 0x1FC;
+		private const int EFFECT_ID = 0x376A;
+		private const int EFFECT_COUNT = 9;
+		private const int EFFECT_SPEED = 32;
+		private const int EFFECT_DURATION = 5024;
+		private const int DEFAULT_HUE = 0;
+		
+		// Target Constants
+		private const int TARGET_RANGE_ML = 10;
+		private const int TARGET_RANGE_LEGACY = 12;
+		private const int TARGET_MESSAGE_HUE = 0x3B2;
+		private const int TARGET_MESSAGE_CLILOC = 501029; // Select Marked item.
+		#endregion
+
 		private RunebookEntry m_Entry;
 		private Runebook m_Book;
 
@@ -59,8 +75,7 @@ namespace Server.Spells.Fourth
 			if ( Server.Misc.WeightOverloading.IsOverloaded( Caster ) )
 			{
                 DoFizzle();
-                Caster.SendMessage(55, "Você está muito pesado para se teletransportar.");
-                //Caster.SendLocalizedMessage( 502359, "", 0x22 ); // Thou art too encumbered to move.
+                Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TOO_HEAVY_TELEPORT);
 				return false;
 			}
 
@@ -69,91 +84,159 @@ namespace Server.Spells.Fourth
 
 		public void Effect( Point3D loc, Map map, bool checkMulti )
 		{
-			string world = Worlds.GetMyWorld( map, loc, loc.X, loc.Y );
-				
-			if ( Caster.AccessLevel > AccessLevel.Player )  // Staff recall is never blocked
-			{            
-				BaseCreature.TeleportPets( Caster, loc, map, true );
-
-				if ( m_Book != null )
-					--m_Book.CurCharges;
-
-				Caster.PlaySound( 0x1FC );
-				Caster.MoveToWorld( loc, map );
-				Caster.PlaySound( 0x1FC );
+			// Staff recall bypasses all validations
+			if ( Caster.AccessLevel > AccessLevel.Player )
+			{
+				ExecuteRecall( loc, map, true );
+				return;
 			}
-			else if ( !SpellHelper.CheckTravel( Caster, TravelCheckType.RecallFrom ) || !SpellHelper.CheckTravel(Caster, map, loc, TravelCheckType.RecallTo))
-			{
-                DoFizzle();
-            }
-			else if ( Worlds.AllowEscape( Caster, Caster.Map, Caster.Location, Caster.X, Caster.Y ) == false || 
-				Worlds.RegionAllowedRecall(Caster.Map, Caster.Location, Caster.X, Caster.Y) == false)
-			{
-                DoFizzle();
-                Caster.SendMessage(55, "Esse feitiço parece não funcionar neste lugar.");
-			}
-			else if ( Worlds.RegionAllowedTeleport( map, loc, loc.X, loc.Y ) == false )
-			{
-                DoFizzle();
-                Caster.SendMessage(55, "O destino parece magicamente inacessível.");
-			}
-			else if ( Caster is PlayerMobile && !CharacterDatabase.GetDiscovered( Caster, world ))
-			{
-                DoFizzle();
-                Caster.SendMessage(55, "Você não conhece esse local e não têm ideia de como mentaliza-lo!");
-			}
-			else if ( Server.Misc.WeightOverloading.IsOverloaded( Caster ) )
-			{
-                DoFizzle();
-                Caster.SendMessage(55, "Você está muito pesado para se teletransportar.");
-            }
-			else if ( (checkMulti && SpellHelper.CheckMulti( loc, map )) )
-			{
-                Caster.SendMessage(55, "Esse local está bloqueado para o uso de teletransporte!");
-                //Caster.SendLocalizedMessage( 501942 ); // That location is blocked.
-            }
-			else if ( m_Book != null && m_Book.CurCharges <= 0 )
-			{
-                DoFizzle();
-                Caster.SendMessage(55, "Não há mais cargas nesse item!");
-                //Caster.SendLocalizedMessage( 502412 ); // There are no charges left on that item.
-			}
-			else if ( CheckSequence() )
-			{
-				BaseCreature.TeleportPets( Caster, loc, map, false );
 
-				if ( m_Book != null )
-					--m_Book.CurCharges;
+			// Validate recall destination
+			if ( !ValidateRecallDestination( loc, map, checkMulti ) )
+			{
+				FinishSequence();
+				return;
+			}
 
-				if (Caster is PlayerMobile && Caster.Karma < -500 && ((PlayerMobile)Caster).Criminal && 
-					( (Server.Misc.Worlds.GetRegionName( map, loc ) == "DarkMoor") || 
-					(Server.Misc.Worlds.GetRegionName( map, loc ) == "the Temple of Praetoria") ) 
-					&& map == Map.Ilshenar)
-				{
-                    ((PlayerMobile)Caster).Criminal = false; // doing that to not causes insta-kill in a RED/CRIMINAL allowed places. PS: Need to check!
-                }
-
-				Caster.PlaySound( 0x1FC );
-				Effects.SendLocationParticles( EffectItem.Create( Caster.Location, Caster.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-				Caster.MoveToWorld( loc, map );
-				Caster.PlaySound( 0x1FC );
-				Effects.SendLocationParticles( EffectItem.Create( Caster.Location, Caster.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-				
-				//AetherGlobe.ApplyCurse( Caster, Caster.Map, map, 1); Isso fará o player ficar enfraquecido devido a viagem magica.
+			// Execute recall if sequence check passes
+			if ( CheckSequence() )
+			{
+				ExecuteRecall( loc, map, false );
 			}
 
 			FinishSequence();
+		}
+
+		/// <summary>
+		/// Validates if the recall destination is accessible
+		/// Returns false if validation fails (error message already sent)
+		/// </summary>
+		private bool ValidateRecallDestination( Point3D loc, Map map, bool checkMulti )
+		{
+			// Check travel restrictions
+			if ( !SpellHelper.CheckTravel( Caster, TravelCheckType.RecallFrom ) || 
+				 !SpellHelper.CheckTravel( Caster, map, loc, TravelCheckType.RecallTo ) )
+			{
+				DoFizzle();
+				return false;
+			}
+
+			// Check escape/recall region restrictions
+			if ( !Worlds.AllowEscape( Caster, Caster.Map, Caster.Location, Caster.X, Caster.Y ) || 
+				 !Worlds.RegionAllowedRecall( Caster.Map, Caster.Location, Caster.X, Caster.Y ) )
+			{
+				SendError( Spell.SpellMessages.ERROR_SPELL_DOES_NOT_WORK_HERE );
+				return false;
+			}
+
+			// Check destination teleport region restrictions
+			if ( !Worlds.RegionAllowedTeleport( map, loc, loc.X, loc.Y ) )
+			{
+				SendError( Spell.SpellMessages.ERROR_DESTINATION_MAGICALLY_INACCESSIBLE );
+				return false;
+			}
+
+			// Check if location is discovered (only for PlayerMobile)
+			string world = Worlds.GetMyWorld( map, loc, loc.X, loc.Y );
+			if ( Caster is PlayerMobile && !CharacterDatabase.GetDiscovered( Caster, world ) )
+			{
+				SendError( Spell.SpellMessages.ERROR_LOCATION_NOT_DISCOVERED );
+				return false;
+			}
+
+			// Check if location is blocked by multi
+			if ( checkMulti && SpellHelper.CheckMulti( loc, map ) )
+			{
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_LOCATION_BLOCKED_TELEPORT );
+				return false;
+			}
+
+			// Check runebook charges
+			if ( m_Book != null && m_Book.CurCharges <= 0 )
+			{
+				SendError( Spell.SpellMessages.ERROR_NO_CHARGES_LEFT );
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Sends error message and fizzles the spell
+		/// </summary>
+		private void SendError( string message )
+		{
+			DoFizzle();
+			Caster.SendMessage( Spell.MSG_COLOR_ERROR, message );
+		}
+
+		/// <summary>
+		/// Executes the recall teleportation
+		/// </summary>
+		private void ExecuteRecall( Point3D loc, Map map, bool isStaffRecall )
+		{
+			// Teleport pets
+			BaseCreature.TeleportPets( Caster, loc, map, isStaffRecall );
+
+			// Consume runebook charge
+			if ( m_Book != null )
+				--m_Book.CurCharges;
+
+			// Handle criminal status for specific regions
+			HandleCriminalStatus( loc, map );
+
+			// Play effects and sounds
+			PlayRecallEffects( loc, map );
+		}
+
+		/// <summary>
+		/// Handles criminal status changes for specific regions
+		/// </summary>
+		private void HandleCriminalStatus( Point3D loc, Map map )
+		{
+			if ( Caster is PlayerMobile && Caster.Karma < -500 && ((PlayerMobile)Caster).Criminal && 
+				 map == Map.Ilshenar )
+			{
+				string regionName = Server.Misc.Worlds.GetRegionName( map, loc );
+				if ( regionName == "DarkMoor" || regionName == "the Temple of Praetoria" )
+				{
+					((PlayerMobile)Caster).Criminal = false; // Prevent insta-kill in RED/CRIMINAL allowed places
+				}
+			}
+		}
+
+		/// <summary>
+		/// Plays visual and sound effects for recall
+		/// </summary>
+		private void PlayRecallEffects( Point3D loc, Map map )
+		{
+			int spellHue = Server.Items.CharacterDatabase.GetMySpellHue( Caster, DEFAULT_HUE );
+
+			// Play sound and particles at source location
+			Caster.PlaySound( SOUND_ID );
+			Effects.SendLocationParticles( 
+				EffectItem.Create( Caster.Location, Caster.Map, EffectItem.DefaultDuration ), 
+				EFFECT_ID, EFFECT_COUNT, EFFECT_SPEED, spellHue, 0, EFFECT_DURATION, 0 );
+
+			// Move to destination
+			Caster.MoveToWorld( loc, map );
+
+			// Play sound and particles at destination location
+			Caster.PlaySound( SOUND_ID );
+			Effects.SendLocationParticles( 
+				EffectItem.Create( Caster.Location, Caster.Map, EffectItem.DefaultDuration ), 
+				EFFECT_ID, EFFECT_COUNT, EFFECT_SPEED, spellHue, 0, EFFECT_DURATION, 0 );
 		}
 
 		private class InternalTarget : Target
 		{
 			private RecallSpell m_Owner;
 
-			public InternalTarget( RecallSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.None )
+			public InternalTarget( RecallSpell owner ) : base( Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.None )
 			{
 				m_Owner = owner;
 
-				owner.Caster.LocalOverheadMessage( MessageType.Regular, 0x3B2, 501029 ); // Select Marked item.
+				owner.Caster.LocalOverheadMessage( MessageType.Regular, TARGET_MESSAGE_HUE, TARGET_MESSAGE_CLILOC );
 			}
 
 			protected override void OnTarget( Mobile from, object o )
@@ -165,7 +248,7 @@ namespace Server.Spells.Fourth
 					if ( rune.Marked )
 						m_Owner.Effect( rune.Target, rune.TargetMap, true );
 					else
-						from.SendLocalizedMessage( 501805 ); // That rune is not yet marked.
+						from.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_RUNE_NOT_MARKED );
 				}
 				else if ( o is Runebook )
 				{
@@ -174,7 +257,7 @@ namespace Server.Spells.Fourth
 					if ( e != null )
 						m_Owner.Effect( e.Location, e.Map, true );
 					else
-						from.SendLocalizedMessage( 502354 ); // Target is not marked.
+						from.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_MARKED );
 				}
 				else if ( o is Key && ((Key)o).KeyValue != 0 && ((Key)o).Link is BaseBoat )
 				{
@@ -183,7 +266,7 @@ namespace Server.Spells.Fourth
 					if ( !boat.Deleted && boat.CheckKey( ((Key)o).KeyValue ) )
 						m_Owner.Effect( boat.GetMarkedLocation(), boat.Map, false );
 					else
-						from.Send( new MessageLocalized( from.Serial, from.Body, MessageType.Regular, 0x3B2, 3, 502357, from.Name, "" ) ); // I can not recall from that object.
+						from.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CANNOT_RECALL_FROM_OBJECT );
 				}
 				else if ( o is HouseRaffleDeed && ((HouseRaffleDeed)o).ValidLocation() )
 				{
@@ -193,7 +276,7 @@ namespace Server.Spells.Fourth
 				}
 				else
 				{
-					from.Send( new MessageLocalized( from.Serial, from.Body, MessageType.Regular, 0x3B2, 3, 502357, from.Name, "" ) ); // I can not recall from that object.
+					from.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_CANNOT_RECALL_FROM_OBJECT );
 				}
 			}
 			

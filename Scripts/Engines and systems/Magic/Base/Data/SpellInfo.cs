@@ -3,6 +3,9 @@ using Server;
 
 namespace Server.Spells
 {
+	/// <summary>
+	/// Contains metadata for a spell including name, mantra, reagents, and visual effects
+	/// </summary>
 	public class SpellInfo
 	{
 		private string m_Name;
@@ -11,7 +14,8 @@ namespace Server.Spells
 		private int[] m_Amounts;
 		private int m_Action;
 		private bool m_AllowTown;
-		private int m_LeftHandEffect, m_RightHandEffect;
+		private int m_LeftHandEffect;
+		private int m_RightHandEffect;
 
 		public SpellInfo( string name, string mantra, params Type[] regs ) : this( name, mantra, 16, 0, 0, true, regs )
 		{
@@ -37,6 +41,16 @@ namespace Server.Spells
 		{
 		}
 
+		/// <summary>
+		/// Main constructor for SpellInfo with all parameters
+		/// </summary>
+		/// <param name="name">Spell name</param>
+		/// <param name="mantra">Spell mantra (words spoken during casting)</param>
+		/// <param name="action">Animation action ID</param>
+		/// <param name="leftHandEffect">Left hand particle effect ID</param>
+		/// <param name="rightHandEffect">Right hand particle effect ID</param>
+		/// <param name="allowTown">Whether spell can be cast in towns</param>
+		/// <param name="regs">Reagent types required for the spell</param>
 		public SpellInfo( string name, string mantra, int action, int leftHandEffect, int rightHandEffect, bool allowTown, params Type[] regs )
 		{
 			m_Name = name;
@@ -48,10 +62,12 @@ namespace Server.Spells
 			m_LeftHandEffect = leftHandEffect;
 			m_RightHandEffect = rightHandEffect;
 
+			// Initialize reagent amounts array - defaults to 1 for each reagent
 			m_Amounts = new int[regs.Length];
-
 			for ( int i = 0; i < regs.Length; ++i )
+			{
 				m_Amounts[i] = 1;
+			}
 		}
 
 		public int Action{ get{ return m_Action; } set{ m_Action = value; } }

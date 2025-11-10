@@ -26,72 +26,30 @@ namespace Server.Spells
 	{
 		#region Constants
 
-		// Timing Constants
-		private const double NEXT_SPELL_DELAY_SECONDS = 0.75;
-		private const double ANIMATE_DELAY_SECONDS = 1.5;
-		private const int DEFAULT_CAST_RECOVERY_BASE = 6;
-		private const int CAST_RECOVERY_PER_SECOND = 4;
+		// Message Colors (kept here for backward compatibility)
+		public const int MSG_COLOR_SYSTEM = SpellConstants.MSG_COLOR_SYSTEM;
+		public const int MSG_COLOR_ERROR = SpellConstants.MSG_COLOR_ERROR;
+		public const int MSG_COLOR_WARNING = SpellConstants.MSG_COLOR_WARNING;
+		public const int MSG_COLOR_HEAL = SpellConstants.MSG_COLOR_HEAL;
 
-		// Damage Calculation Constants
-		private const int BASE_DAMAGE_MULTIPLIER = 100;
-		private const int INSCRIBE_DAMAGE_DIVISOR = 200;
-		private const int INT_BONUS_DIVISOR = 10;
-		private const int EVAL_SCALE_BASE = 30;
-		private const int EVAL_SCALE_MULTIPLIER = 9;
-		private const int EVAL_SCALE_DIVISOR = 100;
+		#if DEBUG
+		public const int MSG_COLOR_DEBUG_1 = SpellConstants.MSG_COLOR_DEBUG_1;
+		public const int MSG_COLOR_DEBUG_2 = SpellConstants.MSG_COLOR_DEBUG_2;
+		public const int MSG_COLOR_DEBUG_3 = SpellConstants.MSG_COLOR_DEBUG_3;
+		#endif
 
-		// Skill Thresholds for Movement
-		private const double MAGERY_SKILL_40 = 40.0;
-		private const double MAGERY_SKILL_50 = 50.0;
-		private const double MAGERY_SKILL_60 = 60.0;
-		private const double MAGERY_SKILL_70 = 70.0;
-		private const double MAGERY_SKILL_80 = 80.0;
-		private const double MAGERY_SKILL_90 = 90.0;
-		private const double MAGERY_SKILL_100 = 100.0;
-		private const double MAGERY_SKILL_110 = 110.0;
-		private const double MAGERY_SKILL_120 = 120.0;
-
-		// Steps Allowed Constants
-		private const int BASE_STEPS_ALLOWED = 2;
-		private const int STEPS_PER_TIER = 2;
-		private const int RUNNING_STEP_COST = 2;
-		private const int WALKING_STEP_COST = 1;
-
-		// Drunk Mantra Constants
-		private const double DRUNK_MANTRA_CHANCE_THRESHOLD = 0.85;
-		private const int BAC_DIVISOR = 200;
-
-	// Message Colors
-	public const int MSG_COLOR_SYSTEM = 95;
-	public const int MSG_COLOR_ERROR = 55;
-	public const int MSG_COLOR_WARNING = 33;
-	public const int MSG_COLOR_HEAL = 68; // Light blue for healing
-
-	#if DEBUG
-	public const int MSG_COLOR_DEBUG_1 = 20;
-	public const int MSG_COLOR_DEBUG_2 = 21;
-	public const int MSG_COLOR_DEBUG_3 = 22;
-	#endif
-
-		// Midland Lucidity Thresholds
-		private const double MIDLAND_LUCIDITY_THRESHOLD_LOW = 0.50;
-		private const double MIDLAND_LUCIDITY_THRESHOLD_MED = 0.70;
-		private const double MIDLAND_LUCIDITY_THRESHOLD_HIGH = 0.90;
-		private const double MIDLAND_LUCIDITY_DAMAGE_MULTIPLIER = 1.25;
-
-		// Time Constants
-		private const double SPELL_HOLD_MAX_BASE = 6.0;
-		private const double SPELL_HOLD_CIRCLE_FACTOR = 0.25;
-
-		// Mana/Reagent Caps
-		private const int MIN_MANA_SCALAR = 10; // 10% minimum
-		private const int MANA_SCALAR_DIVISOR = 100;
-		private const double LRC_MANA_INCREASE_DIVISOR = 200.0;
-		private const double LMC_MANA_DECREASE_DIVISOR = 100.0;
+		// Mana/Reagent Caps (kept here as they're spell-specific)
+		private const int MIN_MANA_SCALAR = SpellConstants.MIN_MANA_SCALAR;
+		private const int MANA_SCALAR_DIVISOR = SpellConstants.MANA_SCALAR_DIVISOR;
+		private const double LRC_MANA_INCREASE_DIVISOR = SpellConstants.LRC_MANA_INCREASE_DIVISOR;
+		private const double LMC_MANA_DECREASE_DIVISOR = SpellConstants.LMC_MANA_DECREASE_DIVISOR;
 
 		// Stat Mod Constants
-		private const int INSCRIBE_MULTIPLIER = 1000;
-		private const int PHYLACTERY_MULTIPLIER = 10;
+		private const int PHYLACTERY_MULTIPLIER = SpellConstants.PHYLACTERY_MULTIPLIER;
+
+		// Drunk Mantra Constants
+		private const double DRUNK_MANTRA_CHANCE_THRESHOLD = SpellConstants.DRUNK_MANTRA_CHANCE_THRESHOLD;
+		private const int BAC_DIVISOR = SpellConstants.BAC_DIVISOR;
 
 		#endregion
 
@@ -108,6 +66,7 @@ namespace Server.Spells
 		public const string ERROR_TARGET_ALREADY_DEAD = "O alvo já está morto!";
 		public const string ERROR_SOMETHING_PREVENTED_CAST = "Algo de estranho aconteceu e não permitiu usar o feitiço.";
 		public const string ERROR_LOST_CONCENTRATION_FORMAT = "Você perdeu a concentração após ter segurado o feitiço por aproximadamente: {0} segundos";
+		public const string ERROR_CONCENTRATION_DISTURBED = "Sua concentração foi perturbada, arruinando o feitiço.";
 		
 		// Target Errors
 		public const string ERROR_TARGET_NOT_VISIBLE = "O alvo não pode ser visto.";
@@ -170,6 +129,7 @@ namespace Server.Spells
 	// Remove Trap Spell
 	public const string REMOVE_TRAP_INSTRUCTION = "Selecione uma armadilha ou você mesmo para invocar um amuleto de proteção.";
 	public const string REMOVE_TRAP_SUCCESS = "Todas as armadilhas aqui foram desativadas.";
+	public const string REMOVE_TRAP_SUCCESS_WITH_PERCENT = "Todas as armadilhas aqui foram desativadas. (Chance de sucesso: {0}%)";
 	public const string REMOVE_TRAP_FAILED = "Essa armadilha parece complicada demais para ser desfeita por sua magia.";
 	public const string REMOVE_TRAP_INVALID = "Este feitiço não tem efeito sobre isso!";
 	public const string REMOVE_TRAP_WAND_CREATED = "Você invoca um orbe mágico em sua mochila.";
@@ -197,6 +157,16 @@ namespace Server.Spells
 	public const string ERROR_LOCATION_BLOCKED = "Esse local está bloqueado com aura anti-magia.";
 	public const string ERROR_CURSED_PREVENTS_TELEPORT = "Você falhou em se teletransportar para longe desta criatura!";
 
+	// Recall Spell
+	public const string ERROR_RUNE_NOT_MARKED = "Essa runa ainda não foi marcada.";
+	public const string ERROR_TARGET_NOT_MARKED = "O alvo não está marcado.";
+	public const string ERROR_CANNOT_RECALL_FROM_OBJECT = "Você não pode se teletransportar a partir desse objeto.";
+	public const string ERROR_SPELL_DOES_NOT_WORK_HERE = "Esse feitiço parece não funcionar neste lugar.";
+	public const string ERROR_DESTINATION_MAGICALLY_INACCESSIBLE = "O destino parece magicamente inacessível.";
+	public const string ERROR_LOCATION_NOT_DISCOVERED = "Você não conhece esse local e não tem ideia de como mentalizá-lo!";
+	public const string ERROR_LOCATION_BLOCKED_TELEPORT = "Esse local está bloqueado para o uso de teletransporte!";
+	public const string ERROR_NO_CHARGES_LEFT = "Não há mais cargas nesse item!";
+
 	// Unlock Spell
 	public const string SUCCESS_UNLOCKED = "Você ouve a fechadura abrir.";
 	public const string ERROR_LOCK_TOO_COMPLEX = "A fechadura é muito complexa para este feitiço.";
@@ -210,6 +180,65 @@ namespace Server.Spells
 	public const string ERROR_CHEST_NOT_LOCKED = "Este baú não parece estar trancado ou não possuir um nível de trava.";
 	public const string ERROR_MAGIC_AURA_PREVENTS_UNLOCK = "Uma forte aura mágica neste baú impede o funcionamento do seu feitiço mas talvez um ladrão possa abri-lo.";
 	public const string ERROR_LOCK_TOO_COMPLEX_FOR_SPELL = "Esta fechadura parece ser muito complexa para o seu feitiço.";
+	#endregion
+
+	#region 5th Circle Spell Messages
+	// Summon Creature
+	public const string ERROR_TOO_MANY_FOLLOWERS = "Você já possui muitos seguidores para usar essa magia.";
+	public const string INFO_SUMMON_DURATION_FORMAT = "O seu feitiço terá a duração de aproximadamente {0}s.";
+	public const string INFO_PREVIOUS_SUMMON_DISMISSED = "Sua invocação anterior foi dissipada.";
+
+	// Paralyze
+	public const string ERROR_TARGET_ALREADY_FROZEN = "O alvo já está congelado.";
+	public const string PARALYZE_RESIST_VICTIM = "Sua aura mágica lhe ajudou a resistir ao feitiço pela metade. ({0}s)";
+	public const string PARALYZE_RESIST_ATTACKER = "O oponente resistiu ao feitiço pela metade. ({0}s)";
+
+	// Mind Blast
+	public const string MIND_BLAST_RESIST = "Você resiste aos efeitos da magia.";
+
+	// Magic Reflect - Reflection Shield System
+	public const string ERROR_MAGIC_REFLECT_ALREADY_ACTIVE = "Esse feitiço já está fazendo efeito em você.";
+	public const string ERROR_MAGIC_REFLECT_COOLDOWN = "Você precisa aguardar para usar novamente esse feitiço.";
+	public const string MAGIC_REFLECT_ACTIVATED = "Seu escudo de reflexão está ativo.";
+	public const string MAGIC_REFLECT_EXPIRED = "Seu escudo de reflexão se dissipou.";
+	public const string MAGIC_REFLECT_COOLDOWN_FORMAT = "Você precisa aguardar {0:F0}s para usar esse feitiço novamente.";
+	public const string MAGIC_REFLECT_DURATION_FORMAT = "Seu escudo de reflexão durará {0:F0} segundos.";
+	
+	// Reflection success
+	public const string MAGIC_REFLECT_SUCCESS_CASTER = "Seu feitiço foi refletido de volta!";
+	public const string MAGIC_REFLECT_SUCCESS_TARGET = "Seu escudo refletiu o feitiço!";
+	
+	// Power comparison - Target wins/tie (both shields consumed)
+	public const string MAGIC_REFLECT_BOTH_BREAK_ATTACKER = "O escudo do alvo refletiu seu feitiço e destruiu ambos os escudos!";
+	public const string MAGIC_REFLECT_BOTH_BREAK_TARGET = "Seu escudo refletiu o feitiço! (Ambos os escudos foram destruídos)";
+	
+	// Power comparison - Attacker wins (target shield broken)
+	public const string MAGIC_REFLECT_OVERPOWERED_ATTACKER = "Seu escudo superior atravessou a reflexão do alvo!";
+	public const string MAGIC_REFLECT_OVERPOWERED_TARGET = "Seu escudo foi destruído por um feitiço mais poderoso!";
+	
+	// Reflection failure - Target state
+	public const string MAGIC_REFLECT_TARGET_DEAD = "O feitiço refletido se dissipou - o alvo não existe mais.";
+	public const string MAGIC_REFLECT_TARGET_SAFE_ZONE = "O feitiço refletido se dissipou - o alvo está em área protegida.";
+	public const string MAGIC_REFLECT_TARGET_UNAVAILABLE = "O feitiço refletido se dissipou - o alvo não está mais disponível.";
+	
+	// Arcane Interference - Multi-target spell shield interaction
+	public const string MAGIC_REFLECT_ARCANE_INTERFERENCE_CASTER = "As energias arcanas se repelem! Todos os escudos foram dissipados.";
+	public const string MAGIC_REFLECT_ARCANE_INTERFERENCE_TARGET = "Seu escudo foi dissipado pela interferência arcana do feitiço!";
+	public const string MAGIC_REFLECT_ARCANE_INTERFERENCE_PROTECTED = "A interferência arcana protegeu você do dano!";
+
+	// Incognito
+	public const string ERROR_INCOGNITO_ALREADY_ACTIVE = "Este feitiço já atua sobre você!";
+	public const string ERROR_INCOGNITO_BODY_PAINT = "Você não pode usar esse feitiço enquanto veste uma pintura corporal.";
+	public const string ERROR_INCOGNITO_ALREADY_DISGUISED = "Você não pode usar esse feitiço quando já está disfarçado.";
+	public const string ERROR_INCOGNITO_INVALID_TARGET = "Não é possível usar este feitiço neste alvo!";
+	public const string INFO_INCOGNITO_SELECT_TARGET = "Quem você deseja usar como disfarce?";
+
+	// Blade Spirits
+	// (Uses ERROR_LOCATION_BLOCKED from general messages section)
+
+	// Dispel Field
+	public const string ERROR_CANNOT_DISPEL = "Isso não pode ser dissipado.";
+	public const string ERROR_MAGIC_TOO_CHAOTIC = "Essa magia é muito caótica para o seu feitiço.";
 	#endregion
 
 		#region Drunk Messages
@@ -286,8 +315,8 @@ namespace Server.Spells
 		private SpellState m_State;
 		private DateTime m_StartCastTime;
 
-		private static TimeSpan NextSpellDelay = TimeSpan.FromSeconds(NEXT_SPELL_DELAY_SECONDS);
-		private static TimeSpan AnimateDelay = TimeSpan.FromSeconds(ANIMATE_DELAY_SECONDS);
+		private static TimeSpan NextSpellDelay = SpellConstants.NextSpellDelay;
+		private static TimeSpan AnimateDelay = SpellConstants.AnimateDelay;
 
 		private CastTimer m_CastTimer;
 		private AnimTimer m_AnimTimer;
@@ -330,9 +359,9 @@ namespace Server.Spells
 
 		public virtual bool IsCasting { get { return m_State == SpellState.Casting; } }
 
-		public virtual int CastRecoveryBase { get { return DEFAULT_CAST_RECOVERY_BASE; } }
+		public virtual int CastRecoveryBase { get { return SpellConstants.DEFAULT_CAST_RECOVERY_BASE; } }
 		public virtual int CastRecoveryFastScalar { get { return 1; } }
-		public virtual int CastRecoveryPerSecond { get { return CAST_RECOVERY_PER_SECOND; } }
+		public virtual int CastRecoveryPerSecond { get { return SpellConstants.CAST_RECOVERY_PER_SECOND; } }
 		public virtual int CastRecoveryMinimum { get { return 0; } }
 
 		public abstract TimeSpan CastDelayBase { get; }
@@ -413,7 +442,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual int GetNMSDamage(int bonus, int dice, int sides, Mobile singleTarget)
 		{
-			return GetNMSDamage(bonus, dice, sides, (Caster.Player && singleTarget.Player));
+			return SpellDamageCalculator.GetNMSDamage(this, bonus, dice, sides, singleTarget);
 		}
 
 		/// <summary>
@@ -421,28 +450,8 @@ namespace Server.Spells
 		/// </summary>
 		public virtual int GetNMSDamage(int bonus, int dice, int sides, bool playerVsPlayer)
 		{
-			int realDamage = Utility.Dice(dice, sides, bonus);
-			double evalBenefit = NMSUtils.getDamageEvalBenefit(Caster);
-			int finalDamage = (int)Math.Floor(realDamage * evalBenefit);
-
-			#if DEBUG
-			SendDebugDamageInfo(realDamage, evalBenefit, finalDamage);
-			#endif
-
-			return finalDamage;
+			return SpellDamageCalculator.GetNMSDamage(this, bonus, dice, sides, playerVsPlayer);
 		}
-
-		#if DEBUG
-		/// <summary>
-		/// Sends debug damage calculation information to caster (DEBUG only)
-		/// </summary>
-		private void SendDebugDamageInfo(int realDamage, double evalBenefit, int finalDamage)
-		{
-			Caster.SendMessage(MSG_COLOR_DEBUG_1, string.Format(UserMessages.DEBUG_REAL_DAMAGE_FORMAT, realDamage));
-			Caster.SendMessage(MSG_COLOR_DEBUG_2, string.Format(UserMessages.DEBUG_EVAL_BENEFIT_FORMAT, evalBenefit));
-			Caster.SendMessage(MSG_COLOR_DEBUG_3, string.Format(UserMessages.DEBUG_FINAL_DAMAGE_FORMAT, finalDamage));
-		}
-		#endif
 
 		#endregion
 
@@ -453,14 +462,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual int GetNewAosDamage(int bonus, int dice, int sides, Mobile singleTarget)
 		{
-			if (singleTarget != null)
-			{
-				return GetNewAosDamage(bonus, dice, sides, (Caster.Player && singleTarget.Player), GetDamageScalar(singleTarget));
-			}
-			else
-			{
-				return GetNewAosDamage(bonus, dice, sides, false);
-			}
+			return SpellDamageCalculator.GetNewAosDamage(this, bonus, dice, sides, singleTarget);
 		}
 
 		/// <summary>
@@ -468,7 +470,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer)
 		{
-			return GetNewAosDamage(bonus, dice, sides, playerVsPlayer, 1.0);
+			return SpellDamageCalculator.GetNewAosDamage(this, bonus, dice, sides, playerVsPlayer);
 		}
 
 		/// <summary>
@@ -476,111 +478,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer, double scalar)
 		{
-			int damage = Utility.Dice(dice, sides, bonus) * BASE_DAMAGE_MULTIPLIER;
-			int damageBonus = CalculateTotalDamageBonus(playerVsPlayer);
-
-			damage = AOS.Scale(damage, BASE_DAMAGE_MULTIPLIER + damageBonus);
-			damage = ApplyEvalIntScaling(damage);
-			damage = AOS.Scale(damage, (int)(scalar * BASE_DAMAGE_MULTIPLIER));
-
-			return damage / BASE_DAMAGE_MULTIPLIER;
-		}
-
-		/// <summary>
-		/// Calculates total damage bonus from Inscribe, Int, and SDI
-		/// </summary>
-		private int CalculateTotalDamageBonus(bool playerVsPlayer)
-		{
-			int inscribeBonus = CalculateInscribeBonus();
-			int intBonus = CalculateIntBonus();
-			int sdiBonus = CalculateSDIBonus(playerVsPlayer);
-
-			int totalBonus = inscribeBonus + intBonus + sdiBonus;
-
-			// Apply Midland modifications if applicable
-			if (IsInMidland())
-			{
-				totalBonus = ApplyMidlandDamageModifications(totalBonus);
-			}
-
-			return totalBonus;
-		}
-
-		/// <summary>
-		/// Calculates Inscription skill bonus for damage
-		/// </summary>
-		private int CalculateInscribeBonus()
-		{
-			int inscribeSkill = GetInscribeFixed(m_Caster);
-			return (inscribeSkill + (INSCRIBE_MULTIPLIER * (inscribeSkill / INSCRIBE_MULTIPLIER))) / INSCRIBE_DAMAGE_DIVISOR;
-		}
-
-		/// <summary>
-		/// Calculates Intelligence bonus for damage
-		/// </summary>
-		private int CalculateIntBonus()
-		{
-			return Caster.Int / INT_BONUS_DIVISOR;
-		}
-
-		/// <summary>
-		/// Calculates Spell Damage Increase bonus with caps
-		/// </summary>
-		private int CalculateSDIBonus(bool playerVsPlayer)
-		{
-			int sdiBonus = AosAttributes.GetValue(m_Caster, AosAttribute.SpellDamage);
-			int sdiCap = MyServerSettings.RealSpellDamageCap();
-
-			if (IsInMidland())
-			{
-				return 0; // SDI disabled in Midland
-			}
-
-			if (sdiBonus > sdiCap)
-			{
-				sdiBonus = sdiCap;
-			}
-
-			// PvP specific cap
-			if (playerVsPlayer && Server.Misc.MyServerSettings.SpellDamageIncreaseVsPlayers() > 0)
-			{
-				int pvpCap = Server.Misc.MyServerSettings.SpellDamageIncreaseVsPlayers();
-				if (sdiBonus > pvpCap)
-				{
-					sdiBonus = pvpCap;
-				}
-			}
-
-			return sdiBonus;
-		}
-
-	/// <summary>
-	/// Applies Midland-specific damage modifications
-	/// </summary>
-	private int ApplyMidlandDamageModifications(int currentBonus)
-	{
-		if (!(m_Caster is PlayerMobile))
-			return currentBonus;
-
-		PlayerMobile playerMobile = (PlayerMobile)m_Caster;
-
-		// Apply Lucidity multiplier
-		int modifiedBonus = (int)((double)currentBonus * (playerMobile.Lucidity() * MIDLAND_LUCIDITY_DAMAGE_MULTIPLIER));
-
-		// Add extra int emphasis in Midland
-		modifiedBonus += CalculateIntBonus();
-
-		return modifiedBonus;
-	}
-
-		/// <summary>
-		/// Applies EvalInt scaling to damage
-		/// </summary>
-		private int ApplyEvalIntScaling(int damage)
-		{
-			int evalSkill = GetDamageFixed(m_Caster);
-			int evalScale = EVAL_SCALE_BASE + ((EVAL_SCALE_MULTIPLIER * evalSkill) / EVAL_SCALE_DIVISOR);
-			return AOS.Scale(damage, evalScale);
+			return SpellDamageCalculator.GetNewAosDamage(this, bonus, dice, sides, playerVsPlayer, scalar);
 		}
 
 		#endregion
@@ -611,44 +509,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual double GetDamageScalar(Mobile target)
 		{
-			double scalar = 1.0;
-
-			if (!Core.AOS) // Pre-AOS EvalInt mechanics
-			{
-				double casterEI = m_Caster.Skills[DamageSkill].Value;
-				double targetRS = target.Skills[SkillName.MagicResist].Value;
-
-				if (casterEI > targetRS)
-					scalar = (1.0 + ((casterEI - targetRS) / 500.0));
-				else
-					scalar = (1.0 + ((casterEI - targetRS) / 200.0));
-
-				// Magery damage bonus: -25% at 0 skill, +0% at 100 skill, +5% at 120 skill
-				scalar += (m_Caster.Skills[CastSkill].Value - 100.0) / 400.0;
-
-				if (!target.Player && !target.Body.IsHuman)
-					scalar *= 2.0; // Double magery damage to monsters/animals if not AOS
-			}
-
-			// Creature alterations
-			if (target is BaseCreature)
-				((BaseCreature)target).AlterDamageScalarFrom(m_Caster, ref scalar);
-
-			if (m_Caster is BaseCreature)
-				((BaseCreature)m_Caster).AlterDamageScalarTo(target, ref scalar);
-
-			// Slayer damage
-			if (Core.SE)
-				scalar *= GetSlayerDamageScalar(target);
-
-			// Region modifications
-			target.Region.SpellDamageScalar(m_Caster, target, ref scalar);
-
-			// Evasion check
-			if (Evasion.CheckSpellEvasion(target))
-				scalar = 0;
-
-			return scalar;
+			return SpellDamageCalculator.GetDamageScalar(this, target);
 		}
 
 		/// <summary>
@@ -656,45 +517,7 @@ namespace Server.Spells
 		/// </summary>
 		public virtual double GetSlayerDamageScalar(Mobile defender)
 		{
-			Spellbook atkBook = Spellbook.FindEquippedSpellbook(m_Caster);
-			double scalar = 1.0;
-
-			if (atkBook != null)
-			{
-				SlayerEntry atkSlayer = SlayerGroup.GetEntryByName(atkBook.Slayer);
-				SlayerEntry atkSlayer2 = SlayerGroup.GetEntryByName(atkBook.Slayer2);
-
-				if (atkSlayer != null && atkSlayer.Slays(defender) || atkSlayer2 != null && atkSlayer2.Slays(defender))
-				{
-					defender.FixedEffect(0x37B9, 10, 5);
-					scalar = 2.0;
-				}
-
-				TransformContext context = TransformationSpellHelper.GetContext(defender);
-
-				if ((atkBook.Slayer == SlayerName.Silver || atkBook.Slayer2 == SlayerName.Silver) && context != null && context.Type != typeof(HorrificBeastSpell))
-					scalar += .25; // Every necromancer transformation other than horrific beast takes an additional 25% damage
-
-				if (scalar != 1.0)
-					return scalar;
-			}
-
-			// Check defender's slayer
-			ISlayer defISlayer = Spellbook.FindEquippedSpellbook(defender);
-
-			if (defISlayer == null)
-				defISlayer = defender.Weapon as ISlayer;
-
-			if (defISlayer != null)
-			{
-				SlayerEntry defSlayer = SlayerGroup.GetEntryByName(defISlayer.Slayer);
-				SlayerEntry defSlayer2 = SlayerGroup.GetEntryByName(defISlayer.Slayer2);
-
-				if (defSlayer != null && defSlayer.Group.OppositionSuperSlays(m_Caster) || defSlayer2 != null && defSlayer2.Group.OppositionSuperSlays(m_Caster))
-					scalar = 2.0;
-			}
-
-			return scalar;
+			return SpellDamageCalculator.GetSlayerDamageScalar(this, defender);
 		}
 
 		#endregion
@@ -801,10 +624,10 @@ namespace Server.Spells
 
 		if (playerMobile.StepsAllowedForCastingSpells >= 0)
 		{
-			return ProcessRemainingSteps(playerMobile, isRunning);
+			return SpellMovementHandler.ProcessRemainingSteps(playerMobile, isRunning);
 		}
 
-		return ValidateSpellHoldTime();
+		return SpellMovementHandler.ValidateSpellHoldTime(this, m_StartCastTime);
 	}
 
 		public virtual bool OnCasterEquiping(Item item)
@@ -831,58 +654,7 @@ namespace Server.Spells
 		#endregion
 
 		#region Movement and Step Processing
-
-		/// <summary>
-		/// Processes and deducts remaining steps allowed during casting
-		/// </summary>
-		private bool ProcessRemainingSteps(PlayerMobile player, bool isRunning)
-		{
-			int stepCost = isRunning ? RUNNING_STEP_COST : WALKING_STEP_COST;
-			player.StepsAllowedForCastingSpells -= stepCost;
-			return true;
-		}
-
-	/// <summary>
-	/// Validates if the spell has been held too long
-	/// </summary>
-	private bool ValidateSpellHoldTime()
-	{
-		if (!(this is MagerySpell))
-			return true;
-
-		MagerySpell magerySpell = (MagerySpell)this;
-		TimeSpan castDelay = GetCastDelay();
-		double maxHoldSeconds = CalculateMaxHoldSeconds(magerySpell.Circle, castDelay);
-		double elapsedSeconds = (DateTime.UtcNow - m_StartCastTime).TotalSeconds;
-
-		if (elapsedSeconds > maxHoldSeconds)
-		{
-			NotifySpellLostConcentration(elapsedSeconds);
-			DoFizzle();
-			Disturb(DisturbType.UseRequest);
-			return false;
-		}
-
-		return true;
-	}
-
-		/// <summary>
-		/// Calculates maximum seconds a spell can be held before losing concentration
-		/// </summary>
-		private double CalculateMaxHoldSeconds(SpellCircle circle, TimeSpan castDelay)
-		{
-			return SPELL_HOLD_MAX_BASE - ((SPELL_HOLD_CIRCLE_FACTOR * (int)circle) + castDelay.TotalSeconds);
-		}
-
-		/// <summary>
-		/// Notifies caster they lost concentration
-		/// </summary>
-		private void NotifySpellLostConcentration(double elapsedSeconds)
-		{
-			string message = string.Format(UserMessages.ERROR_LOST_CONCENTRATION_FORMAT, Math.Truncate(elapsedSeconds));
-			m_Caster.SendMessage(message);
-		}
-
+		// Movement logic has been moved to SpellMovementHandler
 		#endregion
 
 		#region Reagent Consumption
@@ -1014,51 +786,10 @@ namespace Server.Spells
 
 		#region Cast Validation
 
-		public virtual bool CheckCast(Mobile caster)
-		{
-		if (caster.Blessed)
-		{
-			caster.SendMessage(MSG_COLOR_ERROR, UserMessages.ERROR_CANNOT_CAST_IN_STATE);
-			return false;
-		}
-
-		PlayerMobile playerMobile = caster as PlayerMobile;
-		if (playerMobile != null)
-		{
-			ConfigureAllowedSteps(playerMobile);
-		}
-
-		return true;
-		}
-
-		/// <summary>
-		/// Calculates the number of steps allowed based on caster's Magery skill
-		/// </summary>
-		private int CalculateAllowedStepsByMagery(double mageryValue)
-		{
-			if (mageryValue >= MAGERY_SKILL_120) return 20;
-			if (mageryValue >= MAGERY_SKILL_110) return 18;
-			if (mageryValue >= MAGERY_SKILL_100) return 16;
-			if (mageryValue >= MAGERY_SKILL_90) return 14;
-			if (mageryValue >= MAGERY_SKILL_80) return 12;
-			if (mageryValue >= MAGERY_SKILL_70) return 10;
-			if (mageryValue >= MAGERY_SKILL_60) return 8;
-			if (mageryValue >= MAGERY_SKILL_50) return 6;
-			if (mageryValue >= MAGERY_SKILL_40) return 4;
-			return BASE_STEPS_ALLOWED;
-		}
-
-		/// <summary>
-		/// Configures step tracking for PlayerMobile during casting
-		/// </summary>
-		private void ConfigureAllowedSteps(PlayerMobile player)
-		{
-			int maxSteps = CalculateAllowedStepsByMagery(player.Skills[SkillName.Magery].Value);
-			player.StepsAllowedForCastingSpells = maxSteps;
-
-			string message = string.Format(UserMessages.INFO_SPELL_UNSTABLE_AFTER_STEPS_FORMAT, maxSteps);
-			player.SendMessage(MSG_COLOR_SYSTEM, message);
-		}
+	public virtual bool CheckCast(Mobile caster)
+	{
+		return SpellCastingValidator.CheckCast(this, caster);
+	}
 
 		#endregion
 
@@ -1229,24 +960,29 @@ namespace Server.Spells
 						return false;
 					}
 
-					TimeSpan castDelay = GetCastDelay();
+				TimeSpan castDelay = GetCastDelay();
 
-					if (ShowHandMovement && m_Caster.Body.IsHuman)
+				// Animate casting for all human-bodied casters (mounted or not)
+				if (ShowHandMovement && m_Caster.Body.IsHuman)
+				{
+					int count = (int)Math.Ceiling(castDelay.TotalSeconds / AnimateDelay.TotalSeconds);
+
+					if (count != 0)
 					{
-						int count = (int)Math.Ceiling(castDelay.TotalSeconds / AnimateDelay.TotalSeconds);
+						m_AnimTimer = new AnimTimer(this, count);
+						m_AnimTimer.Start();
+					}
 
-						if (count != 0)
-						{
-							m_AnimTimer = new AnimTimer(this, count);
-							m_AnimTimer.Start();
-						}
-
+					// Hand effects (only visible when not mounted)
+					if (!m_Caster.Mounted)
+					{
 						if (m_Info.LeftHandEffect > 0)
 							Caster.FixedParticles(0, 10, 5, m_Info.LeftHandEffect, EffectLayer.LeftHand);
 
 						if (m_Info.RightHandEffect > 0)
 							Caster.FixedParticles(0, 10, 5, m_Info.RightHandEffect, EffectLayer.RightHand);
 					}
+				}
 
 					if ((ClearHandsOnCast) && (MagicCastingItem.CastNoSkill(m_Scroll) == false))
 						m_Caster.ClearHands();
@@ -1279,48 +1015,7 @@ namespace Server.Spells
 		/// </summary>
 		private bool ValidateCanCast()
 		{
-			if (m_Caster.Blessed)
-			{
-				m_Caster.SendMessage("You cannot do that while in this state.");
-				return false;
-			}
-			
-			if (!m_Caster.CheckAlive())
-			{
-				return false;
-			}
-			
-			if (m_Caster.Spell != null && m_Caster.Spell.IsCasting)
-			{
-				m_Caster.SendLocalizedMessage(502642); // You are already casting a spell.
-				return false;
-			}
-			
-			if (BlockedByHorrificBeast && TransformationSpellHelper.UnderTransformation(m_Caster, typeof(HorrificBeastSpell)) || (BlockedByAnimalForm && AnimalForm.UnderTransformation(m_Caster)))
-			{
-				m_Caster.SendLocalizedMessage(1061091); // You cannot cast that spell in this form.
-				return false;
-			}
-			
-			if (m_Caster.Paralyzed || m_Caster.Frozen)
-			{
-				m_Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
-				return false;
-			}
-			
-			if (CheckNextSpellTime && Core.TickCount - m_Caster.NextSpellTime < 0)
-			{
-				m_Caster.SendLocalizedMessage(502644); // You have not yet recovered from casting a spell.
-				return false;
-			}
-			
-			if (m_Caster is PlayerMobile && ((PlayerMobile)m_Caster).PeacedUntil > DateTime.UtcNow)
-			{
-				m_Caster.SendLocalizedMessage(1072060); // You cannot cast a spell while calmed.
-				return false;
-			}
-
-			return true;
+			return SpellCastingValidator.ValidateCanCast(this);
 		}
 
 		public abstract void OnCast();
@@ -1440,17 +1135,23 @@ namespace Server.Spells
 		{
 			int fcr = AosAttributes.GetValue(m_Caster, AosAttribute.CastRecovery);
 
-			if (IsInMidland())
+			if (MidlandSpellModifier.IsInMidland(m_Caster))
+			{
 				fcr = 0;
+			}
 
 			if (AnimalForm.UnderTransformation(m_Caster))
+			{
 				fcr = 0;
+			}
 
-			fcr += GetMidlandFCRBonus();
+			fcr += MidlandSpellModifier.GetFastCastRecoveryBonus(m_Caster);
 
 			int fcrCap = MyServerSettings.CastRecoveryCap();
 			if (fcr > fcrCap)
+			{
 				fcr = fcrCap;
+			}
 
 			return fcr;
 		}
@@ -1480,20 +1181,28 @@ namespace Server.Spells
 			int fcMax = MyServerSettings.CastSpeedCap();
 
 			if (IsMageryNecromancyOrChivalryWithMagery())
+			{
 				fcMax = 2;
+			}
 
 			int fc = AosAttributes.GetValue(m_Caster, AosAttribute.CastSpeed);
 
-			if (IsInMidland() || AnimalForm.UnderTransformation(m_Caster))
+			if (MidlandSpellModifier.IsInMidland(m_Caster) || AnimalForm.UnderTransformation(m_Caster))
+			{
 				fc = 0;
+			}
 
 			if (fc > fcMax)
+			{
 				fc = fcMax;
+			}
 
 			if (ProtectionSpell.Registry.Contains(m_Caster))
+			{
 				fc -= 2;
+			}
 
-			fc += GetMidlandFCBonus();
+			fc += MidlandSpellModifier.GetFastCastBonus(m_Caster);
 
 			return fc;
 		}
@@ -1511,52 +1220,7 @@ namespace Server.Spells
 		#endregion
 
 		#region Midland Helpers
-
-		/// <summary>
-		/// Checks if caster is in Midland region
-		/// </summary>
-		private bool IsInMidland()
-		{
-			return AdventuresFunctions.IsInMidland((object)m_Caster);
-		}
-
-	/// <summary>
-	/// Gets Fast Cast Recovery bonus for Midland based on Lucidity
-	/// </summary>
-	private int GetMidlandFCRBonus()
-	{
-		if (!IsInMidland() || !(m_Caster is PlayerMobile))
-			return 0;
-
-		PlayerMobile playerMobile = (PlayerMobile)m_Caster;
-		double lucidity = playerMobile.Lucidity();
-		int bonus = 0;
-
-			if (lucidity > MIDLAND_LUCIDITY_THRESHOLD_LOW) bonus++;
-			if (lucidity > MIDLAND_LUCIDITY_THRESHOLD_MED) bonus++;
-			if (lucidity > MIDLAND_LUCIDITY_THRESHOLD_HIGH) bonus++;
-
-			return bonus;
-		}
-
-	/// <summary>
-	/// Gets Fast Cast bonus for Midland based on Lucidity
-	/// </summary>
-	private int GetMidlandFCBonus()
-	{
-		if (!IsInMidland() || !(m_Caster is PlayerMobile))
-			return 0;
-
-		PlayerMobile playerMobile = (PlayerMobile)m_Caster;
-		double lucidity = playerMobile.Lucidity();
-		int bonus = 0;
-
-			if (lucidity > MIDLAND_LUCIDITY_THRESHOLD_MED) bonus++;
-			if (lucidity > MIDLAND_LUCIDITY_THRESHOLD_HIGH) bonus++;
-
-			return bonus;
-		}
-
+		// Midland logic has been moved to MidlandSpellModifier
 		#endregion
 
 		#region Sequence Validation
@@ -1741,20 +1405,32 @@ namespace Server.Spells
 				Priority = TimerPriority.FiftyMS;
 			}
 
-			protected override void OnTick()
+		protected override void OnTick()
+		{
+			if (m_Spell.State != SpellState.Casting || m_Spell.m_Caster.Spell != m_Spell)
 			{
-				if (m_Spell.State != SpellState.Casting || m_Spell.m_Caster.Spell != m_Spell)
-				{
-					Stop();
-					return;
-				}
-
-				if (!m_Spell.Caster.Mounted && m_Spell.Caster.Body.IsHuman && m_Spell.m_Info.Action >= 0)
-					m_Spell.Caster.Animate(m_Spell.m_Info.Action, 7, 1, true, false, 0);
-
-				if (!Running)
-					m_Spell.m_AnimTimer = null;
+				Stop();
+				return;
 			}
+
+			if (m_Spell.Caster.Body.IsHuman)
+			{
+				if (!m_Spell.Caster.Mounted)
+				{
+					// Standard on-foot casting animation
+					if (m_Spell.m_Info.Action >= 0)
+						m_Spell.Caster.Animate(m_Spell.m_Info.Action, 7, 1, true, false, 0);
+				}
+				else
+				{
+					// Mounted casting animation (27 = mounted spell cast)
+					m_Spell.Caster.Animate(27, 7, 1, true, false, 0);
+				}
+			}
+
+			if (!Running)
+				m_Spell.m_AnimTimer = null;
+		}
 		}
 
 		private class CastTimer : Timer
@@ -1782,7 +1458,7 @@ namespace Server.Spells
 					m_Spell.OnCast();
 
 					if (m_Spell.m_Caster.Player && m_Spell.m_Caster.Target != originalTarget && m_Spell.Caster.Target != null)
-						m_Spell.m_Caster.Target.BeginTimeout(m_Spell.m_Caster, TimeSpan.FromSeconds(30.0));
+						m_Spell.m_Caster.Target.BeginTimeout(m_Spell.m_Caster, TimeSpan.FromSeconds(SpellConstants.SPELL_TARGET_TIMEOUT_SECONDS));
 
 					m_Spell.m_CastTimer = null;
 				}

@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Server;
 using Server.Mobiles;
 using Server.Misc;
@@ -11,6 +11,13 @@ using Server.Targeting;
 
 namespace Server.Spells.Fifth
 {
+	/// <summary>
+	/// Incognito - 5th Circle Utility Spell
+	/// Disguises the caster as another player or creature
+	/// Changes: Name, Gender, Hue, Hair, Facial Hair
+	/// Cannot be used with Polymorph, Disguise Kit, or Body Paint
+	/// Duration based on Magery and Evaluate Intelligence skills
+	/// </summary>
 	public class IncognitoSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -23,220 +30,320 @@ namespace Server.Spells.Fifth
 			);
 
 		public override SpellCircle Circle { get { return SpellCircle.Fifth; } }
-        public static bool originalGenderFemale = false;
-        public static int originalHue = 0;
-        public static int originalHairHue = 0;
-        public static int originalFacialHairHue = 0;
-        public IncognitoSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
+
+		#region Constants
+
+		// Body modification IDs
+		/// <summary>Body paint BodyMod ID (female)</summary>
+		private const int BODY_PAINT_FEMALE = 183;
+
+		/// <summary>Body paint BodyMod ID (male)</summary>
+		private const int BODY_PAINT_MALE = 184;
+
+		// Effect constants - Transform (start)
+		/// <summary>Transform particle effect ID</summary>
+		private const int TRANSFORM_PARTICLE_EFFECT = 0x373A;
+
+		/// <summary>Transform particle speed</summary>
+		private const int TRANSFORM_PARTICLE_SPEED = 10;
+
+		/// <summary>Transform particle duration</summary>
+		private const int TRANSFORM_PARTICLE_DURATION = 15;
+
+		/// <summary>Transform particle hue offset</summary>
+		private const int TRANSFORM_PARTICLE_HUE = 5036;
+
+		/// <summary>Transform sound effect</summary>
+		private const int TRANSFORM_SOUND = 0x3BD;
+
+		// Effect constants - Revert (end)
+		/// <summary>Revert particle effect ID</summary>
+		private const int REVERT_PARTICLE_EFFECT = 0x376A;
+
+		/// <summary>Revert particle speed</summary>
+		private const int REVERT_PARTICLE_SPEED = 9;
+
+		/// <summary>Revert particle duration</summary>
+		private const int REVERT_PARTICLE_DURATION = 32;
+
+		/// <summary>Revert particle hue offset</summary>
+		private const int REVERT_PARTICLE_HUE = 5008;
+
+		/// <summary>Revert initial sound effect</summary>
+		private const int REVERT_SOUND_INITIAL = 0x1EA;
+
+		// Audio constants
+		/// <summary>Female "oops" sound when disguise ends</summary>
+		private const int FEMALE_OOPS_SOUND = 812;
+
+		/// <summary>Male "oops" sound when disguise ends</summary>
+		private const int MALE_OOPS_SOUND = 1086;
+
+		// Buff constants
+		/// <summary>Incognito buff localized message ID</summary>
+		private const int BUFF_CLILOC_ID = 1075819;
+
+		// Hardcoded strings
+		/// <summary>Fake title shown while disguised</summary>
+		private const string FAKE_TITLE = "[fake]";
+
+		/// <summary>Spoken message when disguise ends</summary>
+		private const string OOPS_MESSAGE = "*oops*";
+
+		#endregion
+
+		#region Appearance Data Storage
+
+		/// <summary>
+		/// Stores original appearance data for each disguised mobile
+		/// Thread-safe storage for multiple simultaneous incognito effects
+		/// </summary>
+		private class AppearanceData
+		{
+			public bool OriginalGenderFemale { get; set; }
+			public int OriginalHue { get; set; }
+			public int OriginalHairHue { get; set; }
+			public int OriginalFacialHairHue { get; set; }
+		}
+
+	private static Dictionary<Mobile, AppearanceData> m_AppearanceData = new Dictionary<Mobile, AppearanceData>();
+	
+	/// <summary>
+	/// Backwards-compatible timer dictionary wrapper
+	/// Provides Contains() method for legacy code (was Hashtable, now Dictionary)
+	/// </summary>
+	public class TimerDictionary : Dictionary<Mobile, Timer>
+	{
+		public bool Contains(Mobile key)
+		{
+			return ContainsKey(key);
+		}
+	}
+	
+	public static TimerDictionary m_Timers = new TimerDictionary();
+
+		#endregion
+
+		public IncognitoSpell(Mobile caster, Item scroll) : base(caster, scroll, m_Info)
 		{
 		}
 
-        public override void OnCast()
-        {
-			originalGenderFemale = Caster.Female;
-			originalHairHue = Caster.HairHue;
-            originalFacialHairHue = Caster.FacialHairHue;
-			originalHue = Caster.Hue;
-            Caster.SendMessage(55, "Quem você deseja usar como disfarce?");
-            Caster.Target = new InternalTarget(this);
-        }
+		public override void OnCast()
+		{
+			// Store original appearance data before transformation
+			AppearanceData data = new AppearanceData
+			{
+				OriginalGenderFemale = Caster.Female,
+				OriginalHairHue = Caster.HairHue,
+				OriginalFacialHairHue = Caster.FacialHairHue,
+				OriginalHue = Caster.Hue
+			};
+			m_AppearanceData[Caster] = data;
 
+			Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, Spell.SpellMessages.INFO_INCOGNITO_SELECT_TARGET);
+			Caster.Target = new InternalTarget(this);
+		}
+
+		/// <summary>
+		/// Validates target and applies incognito disguise
+		/// </summary>
+		/// <param name="m">Target mobile to mimic</param>
 		public void Target(Mobile m)
 		{
 			if (!Caster.CanSee(m))
 			{
-				Caster.SendMessage(55, "O alvo não pode ser visto.");
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
 			}
-			else if (!Caster.CanBeginAction(typeof(IncognitoSpell)))
+			else if (!CanActivateIncognito())
 			{
-				Caster.SendMessage(55, "Este feitiço já atua sobre você!");
-			}
-			else if (Caster.BodyMod == 183 || Caster.BodyMod == 184)
-			{
-				Caster.SendMessage(55, "Você não pode usar esse feitiço enquanto veste uma pintura corporal.");
-			}
-			else if (DisguiseTimers.IsDisguised(Caster))
-			{
-				Caster.SendMessage(55, "Você não pode usar esse feitiço quando já está disfarçado.");
+				// Error message already sent by validation method
 			}
 			else if (!Caster.CanBeginAction(typeof(PolymorphSpell)) || Caster.IsBodyMod)
 			{
 				DoFizzle();
 			}
-			else if ((m is PlayerMobile || m is BaseCreature) && (m.Body.Type == Caster.Body.Type) && CheckBSequence(m))
+			else if (IsValidIncognitoTarget(m) && CheckBSequence(m))
 			{
 				if (Caster.BeginAction(typeof(IncognitoSpell)))
 				{
-					DisguiseTimers.StopTimer(Caster);
-					PlayerMobile pm = Caster as PlayerMobile;
-
-					if (pm != null && pm.Race != null)
-					{
-						pm.HueMod = m.HueMod;//Caster.Race.RandomSkinHue();
-						pm.NameMod = m.Name;//Caster.Female ? NameList.RandomName("female") : NameList.RandomName("male");
-						pm.Title = "[fake]";
-                        pm.SetHairMods(m.HairItemID, m.FacialHairItemID);
-                        pm.Female = m.Female;
-                        pm.HairHue = m.HairHue;
-						pm.Hue = m.Hue;
-						pm.FacialHairHue = m.FacialHairHue;
-					}
-
-					Caster.FixedParticles(0x373A, 10, 15, 5036, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Head);
-					Caster.PlaySound(0x3BD);
-
-					BaseArmor.ValidateMobile(Caster);
-					BaseClothing.ValidateMobile(Caster);
-
-					StopTimer(Caster);
-
-					TimeSpan length = SpellHelper.NMSGetDuration(Caster, Caster, false);//TimeSpan.FromSeconds(timeVal);
-
-					Timer t = new InternalTimer(Caster, length);
-
-					m_Timers[Caster] = t;
-
-					t.Start();
-
-					BuffInfo.AddBuff(Caster, new BuffInfo(BuffIcon.Incognito, 1075819, length, Caster));
+					ApplyIncognitoDisguise(m);
 				}
 				else
 				{
-					Caster.SendMessage(55, "Você já está sobre efeito do feitiço!");
+					Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_ALREADY_ACTIVE);
 				}
 			}
-			else 
+			else
 			{
-                DoFizzle();
-                Caster.SendMessage(55, "Não é possível usar este feitiço neste alvo!");
-            }
-            FinishSequence();
-        }
+				DoFizzle();
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_INVALID_TARGET);
+			}
+			FinishSequence();
+		}
 
-		public override bool CheckCast(Mobile caster)
+		/// <summary>
+		/// Validates if caster can activate incognito
+		/// Checks: already active, body paint, existing disguise
+		/// </summary>
+		/// <returns>True if incognito can be activated</returns>
+		private bool CanActivateIncognito()
 		{
-			if ( !Caster.CanBeginAction( typeof( IncognitoSpell ) ) )
+			if (!Caster.CanBeginAction(typeof(IncognitoSpell)))
 			{
-                Caster.SendMessage(55, "Este feitiço já atua sobre você!");
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_ALREADY_ACTIVE);
 				return false;
 			}
-			else if ( Caster.BodyMod == 183 || Caster.BodyMod == 184 )
+
+			if (IsWearingBodyPaint())
 			{
-                Caster.SendMessage(55, "Você não pode usar esse feitiço enquanto veste uma pintura corporal.");
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_BODY_PAINT);
+				return false;
+			}
+
+			if (DisguiseTimers.IsDisguised(Caster))
+			{
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_ALREADY_DISGUISED);
 				return false;
 			}
 
 			return true;
 		}
 
-		/*public override void OnCast()
+		/// <summary>
+		/// Checks if caster is wearing body paint (cannot use incognito)
+		/// </summary>
+		/// <returns>True if wearing body paint</returns>
+		private bool IsWearingBodyPaint()
 		{
-			if ( !Caster.CanBeginAction( typeof( IncognitoSpell ) ) )
-			{
-                Caster.SendMessage(55, "Este feitiço já atua sobre você!");
-            }
-			else if ( Caster.BodyMod == 183 || Caster.BodyMod == 184 )
-			{
-                Caster.SendMessage(55, "Você não pode usar esse feitiço enquanto veste uma pintura corporal.");
-            }
-			else if ( DisguiseTimers.IsDisguised( Caster ) )
-			{
-                Caster.SendMessage(55, "Você não pode usar esse feitiço quando já está disfarçado."); 
-				//Caster.SendLocalizedMessage( 1061631 ); // You can't do that while disguised.
-			}
-			else if ( !Caster.CanBeginAction( typeof( PolymorphSpell ) ) || Caster.IsBodyMod )
-			{
-				DoFizzle();
-			}
-			else if ( CheckSequence() )
-			{
-				if ( Caster.BeginAction( typeof( IncognitoSpell ) ) )
-				{
-					DisguiseTimers.StopTimer( Caster );
-
-					Caster.HueMod = Caster.Race.RandomSkinHue();
-					Caster.NameMod = Caster.Female ? NameList.RandomName( "female" ) : NameList.RandomName( "male" );
-
-					PlayerMobile pm = Caster as PlayerMobile;
-
-					if ( pm != null && pm.Race != null )
-					{
-						pm.SetHairMods( pm.Race.RandomHair( pm.Female ), pm.Race.RandomFacialHair( pm.Female ) );
-						pm.HairHue = pm.Race.RandomHairHue();
-						pm.FacialHairHue = pm.Race.RandomHairHue();
-					}
-
-					Caster.FixedParticles( 0x373A, 10, 15, 5036, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
-					Caster.PlaySound( 0x3BD );
-
-					BaseArmor.ValidateMobile( Caster );
-					BaseClothing.ValidateMobile( Caster );
-
-					StopTimer( Caster );
-
-
-					int timeVal = SpellHelper.NMSGetDuration(Caster, Caster, false);//((6 * Caster.Skills.Magery.Fixed) / 50) + 1;
-
-                    if ( timeVal > 120 )
-						timeVal = 120;
-
-					TimeSpan length = TimeSpan.FromSeconds( timeVal );
-
-					Timer t = new InternalTimer( Caster, length );
-
-					m_Timers[Caster] = t;
-
-					t.Start();
-
-					BuffInfo.AddBuff( Caster, new BuffInfo( BuffIcon.Incognito, 1075819, length, Caster ) );
-
-				}
-				else
-				{
-                    Caster.SendMessage(55, "Você já está disfarçado!");
-                    //Caster.SendLocalizedMessage( 1079022 ); // You're already incognitoed!
-				}
-			}
-
-			FinishSequence();
-		}*/
-
-		public static Hashtable m_Timers = new Hashtable();
-
-		public static bool StopTimer( Mobile m )
-		{
-			Timer t = (Timer)m_Timers[m];
-
-			if ( t != null )
-			{
-				t.Stop();
-				m_Timers.Remove( m );
-				BuffInfo.RemoveBuff( m, BuffIcon.Incognito );
-            }
-
-			return ( t != null );
+			return Caster.BodyMod == BODY_PAINT_FEMALE || Caster.BodyMod == BODY_PAINT_MALE;
 		}
 
-		private static int[] m_HairIDs = new int[]
-			{
-				0x2044, 0x2045, 0x2046,
-				0x203C, 0x203B, 0x203D,
-				0x2047, 0x2048, 0x2049,
-				0x204A, 0x0000
-			};
+		/// <summary>
+		/// Validates if target is valid for incognito
+		/// Must be PlayerMobile or BaseCreature with same body type as caster
+		/// </summary>
+		/// <param name="target">Target mobile</param>
+		/// <returns>True if target is valid</returns>
+		private bool IsValidIncognitoTarget(Mobile target)
+		{
+			return (target is PlayerMobile || target is BaseCreature) && 
+			       (target.Body.Type == Caster.Body.Type);
+		}
 
-		private static int[] m_BeardIDs = new int[]
-			{
-				0x203E, 0x203F, 0x2040,
-				0x2041, 0x204B, 0x204C,
-				0x204D, 0x0000
-			};
+		/// <summary>
+		/// Applies incognito disguise to caster
+		/// Copies appearance from target and starts duration timer
+		/// </summary>
+		/// <param name="target">Target to mimic</param>
+		private void ApplyIncognitoDisguise(Mobile target)
+		{
+			DisguiseTimers.StopTimer(Caster);
+			PlayerMobile pm = Caster as PlayerMobile;
 
+			if (pm != null && pm.Race != null)
+			{
+				// Copy target's appearance
+				pm.HueMod = target.HueMod;
+				pm.NameMod = target.Name;
+				pm.Title = FAKE_TITLE;
+				pm.SetHairMods(target.HairItemID, target.FacialHairItemID);
+				pm.Female = target.Female;
+				pm.HairHue = target.HairHue;
+				pm.Hue = target.Hue;
+				pm.FacialHairHue = target.FacialHairHue;
+			}
+
+			// Play transformation effects
+			PlayTransformEffects();
+
+			// Revalidate equipment appearance
+			BaseArmor.ValidateMobile(Caster);
+			BaseClothing.ValidateMobile(Caster);
+
+			// Start duration timer
+			StopTimer(Caster);
+			TimeSpan length = SpellHelper.NMSGetDuration(Caster, Caster, false);
+			Timer t = new InternalTimer(Caster, length);
+			m_Timers[Caster] = t;
+			t.Start();
+
+			// Add buff icon
+			BuffInfo.AddBuff(Caster, new BuffInfo(BuffIcon.Incognito, BUFF_CLILOC_ID, length, Caster));
+		}
+
+		/// <summary>
+		/// Plays visual and audio effects when transforming into disguise
+		/// </summary>
+		private void PlayTransformEffects()
+		{
+			Caster.FixedParticles(
+				TRANSFORM_PARTICLE_EFFECT, 
+				TRANSFORM_PARTICLE_SPEED, 
+				TRANSFORM_PARTICLE_DURATION, 
+				TRANSFORM_PARTICLE_HUE, 
+				Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 
+				0, 
+				EffectLayer.Head
+			);
+			Caster.PlaySound(TRANSFORM_SOUND);
+		}
+
+		/// <summary>
+		/// Validates if caster can cast incognito
+		/// Checks: already active, body paint
+		/// </summary>
+		/// <param name="caster">Spell caster</param>
+		/// <returns>True if cast can proceed</returns>
+		public override bool CheckCast(Mobile caster)
+		{
+			if (!Caster.CanBeginAction(typeof(IncognitoSpell)))
+			{
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_ALREADY_ACTIVE);
+				return false;
+			}
+
+			if (IsWearingBodyPaint())
+			{
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_INCOGNITO_BODY_PAINT);
+				return false;
+			}
+
+			return true;
+		}
+
+		/// <summary>
+		/// Stops incognito timer and removes buff
+		/// Public static method for external systems to cancel incognito
+		/// </summary>
+		/// <param name="m">Mobile to remove incognito from</param>
+		/// <returns>True if timer was found and stopped</returns>
+		public static bool StopTimer(Mobile m)
+		{
+			Timer t;
+			if (m_Timers.TryGetValue(m, out t))
+			{
+				if (t != null)
+				{
+					t.Stop();
+				}
+				m_Timers.Remove(m);
+				BuffInfo.RemoveBuff(m, BuffIcon.Incognito);
+				return true;
+			}
+
+			return false;
+		}
+
+		#region Timer and Target Classes
+
+		/// <summary>
+		/// Timer that restores original appearance when incognito expires
+		/// </summary>
 		private class InternalTimer : Timer
 		{
 			private Mobile m_Owner;
 
-			public InternalTimer( Mobile owner, TimeSpan length ) : base( length )
+			public InternalTimer(Mobile owner, TimeSpan length) : base(length)
 			{
 				m_Owner = owner;
 				Priority = TimerPriority.OneSecond;
@@ -244,53 +351,85 @@ namespace Server.Spells.Fifth
 
 			protected override void OnTick()
 			{
-				if ( !m_Owner.CanBeginAction( typeof( IncognitoSpell ) ) )
+				if (!m_Owner.CanBeginAction(typeof(IncognitoSpell)))
 				{
-					if ( m_Owner is PlayerMobile )
-						((PlayerMobile)m_Owner).SetHairMods( -1, -1 );
+					RestoreOriginalAppearance();
+					PlayRevertEffects();
+					m_Owner.EndAction(typeof(IncognitoSpell));
+				}
+			}
+
+			/// <summary>
+			/// Restores caster's original appearance from stored data
+			/// </summary>
+			private void RestoreOriginalAppearance()
+			{
+				AppearanceData data;
+				if (m_AppearanceData.TryGetValue(m_Owner, out data))
+				{
+					if (m_Owner is PlayerMobile)
+						((PlayerMobile)m_Owner).SetHairMods(-1, -1);
 
 					m_Owner.BodyMod = 0;
 					m_Owner.HueMod = -1;
 					m_Owner.NameMod = null;
-                    m_Owner.Title = null;
-                    m_Owner.HairHue = originalHairHue;
-                    m_Owner.FacialHairHue = originalFacialHairHue;
-                    m_Owner.Female = originalGenderFemale;
-					m_Owner.Hue = originalHue;
-                    m_Owner.EndAction( typeof( IncognitoSpell ) );
+					m_Owner.Title = null;
+					m_Owner.HairHue = data.OriginalHairHue;
+					m_Owner.FacialHairHue = data.OriginalFacialHairHue;
+					m_Owner.Female = data.OriginalGenderFemale;
+					m_Owner.Hue = data.OriginalHue;
 
-					BaseArmor.ValidateMobile( m_Owner );
-					BaseClothing.ValidateMobile( m_Owner );
+					m_AppearanceData.Remove(m_Owner);
+				}
 
-                    m_Owner.PlaySound(0x1EA);
-                    m_Owner.FixedParticles(0x376A, 9, 32, 5008, Server.Items.CharacterDatabase.GetMySpellHue(m_Owner, 0), 0, EffectLayer.Waist);
+				BaseArmor.ValidateMobile(m_Owner);
+				BaseClothing.ValidateMobile(m_Owner);
+			}
 
-                    m_Owner.PlaySound(m_Owner.Female ? 812 : 1086);
-                    m_Owner.Say("*oops*");
-                }
+			/// <summary>
+			/// Plays visual and audio effects when disguise ends
+			/// </summary>
+			private void PlayRevertEffects()
+			{
+				m_Owner.PlaySound(REVERT_SOUND_INITIAL);
+				m_Owner.FixedParticles(
+					REVERT_PARTICLE_EFFECT, 
+					REVERT_PARTICLE_SPEED, 
+					REVERT_PARTICLE_DURATION, 
+					REVERT_PARTICLE_HUE, 
+					Server.Items.CharacterDatabase.GetMySpellHue(m_Owner, 0), 
+					0, 
+					EffectLayer.Waist
+				);
+
+				m_Owner.PlaySound(m_Owner.Female ? FEMALE_OOPS_SOUND : MALE_OOPS_SOUND);
+				m_Owner.Say(OOPS_MESSAGE);
 			}
 		}
 
-        private class InternalTarget : Target
-        {
-            private IncognitoSpell m_Owner;
-            public InternalTarget(IncognitoSpell owner) : base(Core.ML ? 10 : 12, false, TargetFlags.None)
-            {
-                m_Owner = owner;
-            }
+		private class InternalTarget : Target
+		{
+			private IncognitoSpell m_Owner;
 
-            protected override void OnTarget(Mobile from, object o)
-            {
-                if (o is Mobile)
-                {
-                    m_Owner.Target((Mobile)o);
-                }
-            }
+			public InternalTarget(IncognitoSpell owner) : base(SpellConstants.GetSpellRange(), false, TargetFlags.None)
+			{
+				m_Owner = owner;
+			}
 
-            protected override void OnTargetFinish(Mobile from)
-            {
-                m_Owner.FinishSequence();
-            }
-        }
-    }
+			protected override void OnTarget(Mobile from, object o)
+			{
+				if (o is Mobile)
+				{
+					m_Owner.Target((Mobile)o);
+				}
+			}
+
+			protected override void OnTargetFinish(Mobile from)
+			{
+				m_Owner.FinishSequence();
+			}
+		}
+
+		#endregion
+	}
 }

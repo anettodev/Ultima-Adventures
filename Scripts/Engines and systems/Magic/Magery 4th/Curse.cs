@@ -65,7 +65,7 @@ namespace Server.Spells.Fourth
 
 			if ( !Caster.CanSee( m ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
+                Caster.SendMessage(55, "O alvo nï¿½o pode ser visto.");
             }
 			else if ( CheckHSequence( m ) )
 			{
@@ -73,15 +73,21 @@ namespace Server.Spells.Fourth
 
 				SpellHelper.CheckReflect( (int)this.Circle, Caster, ref m );
 
-				SpellHelper.AddStatCurse( Caster, m, StatType.Str ); SpellHelper.DisableSkillCheck = true;
-				SpellHelper.AddStatCurse( Caster, m, StatType.Dex );
-				SpellHelper.AddStatCurse( Caster, m, StatType.Int ); SpellHelper.DisableSkillCheck = false;
+				// Calculate duration once to avoid duplicate messages from NMSGetDuration
+				TimeSpan duration = SpellHelper.NMSGetDuration( Caster, m, false );
+
+				// Use 5-parameter overload to pass pre-calculated duration
+				// This prevents NMSGetDuration from being called 3 times and sending duplicate messages
+				SpellHelper.AddStatCurse( Caster, m, StatType.Str, SpellHelper.GetOffset( Caster, m, StatType.Str, true ), duration );
+				SpellHelper.DisableSkillCheck = true;
+				SpellHelper.AddStatCurse( Caster, m, StatType.Dex, SpellHelper.GetOffset( Caster, m, StatType.Dex, true ), duration );
+				SpellHelper.AddStatCurse( Caster, m, StatType.Int, SpellHelper.GetOffset( Caster, m, StatType.Int, true ), duration );
+				SpellHelper.DisableSkillCheck = false;
 
 				Timer t = (Timer)m_UnderEffect[m];
 
 				if ( Caster.Player && m.Player /*&& Caster != m */ && t == null )	//On OSI you CAN curse yourself and get this effect.
 				{
-					TimeSpan duration = SpellHelper.NMSGetDuration( Caster, m, false );
 					m_UnderEffect[m] = t = Timer.DelayCall( duration, new TimerStateCallback( RemoveEffect ), m );
 				}
 
@@ -98,11 +104,11 @@ namespace Server.Spells.Fourth
 				m.UpdateResistances();
 
 				int percentage = (int)(SpellHelper.GetOffsetScalar(Caster, m, true) * 100);
-				TimeSpan length = SpellHelper.NMSGetDuration(Caster, m, false);
 
 				string args = String.Format("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", percentage, percentage, percentage, 10, 10, 10, 10);
 
-				BuffInfo.AddBuff( m, new BuffInfo( BuffIcon.Curse, 1075835, 1075836, length, m, args.ToString() ) );
+				// Reuse the same duration calculated above instead of calling NMSGetDuration again
+				BuffInfo.AddBuff( m, new BuffInfo( BuffIcon.Curse, 1075835, 1075836, duration, m, args.ToString() ) );
 
 				HarmfulSpell( m );
 			}

@@ -69,22 +69,22 @@ namespace Server.Spells.Second
 
 				if (poison != null)
 				{
-					if (IsTargetMortallyPoisoned(target))
+					// Check if can cure this poison (lethal poison cannot be cured)
+					if (!SpellCureCalculator.CanCurePoison(poison) || IsTargetMortallyPoisoned(target))
 					{
 						HandleMortalPoison(target);
 					}
 					else
 					{
-						int cureChance = CalculateCureChance(poison);
-						int successThreshold = Utility.RandomMinMax(poison.Level * 2, 100);
-
-						if (cureChance <= successThreshold)
+						int cureChance = SpellCureCalculator.CalculateCureChance(Caster, poison);
+						
+						if (SpellCureCalculator.CheckCureSuccess(cureChance, poison))
 						{
-							HandleCureFailed(target);
+							HandleCureSuccess(target);
 						}
 						else
 						{
-							HandleCureSuccess(target);
+							HandleCureFailed(target);
 						}
 					}
 				}
@@ -102,19 +102,6 @@ namespace Server.Spells.Second
 			       || Server.Items.MortalStrike.IsWounded(target);
 		}
 
-		/// <summary>
-		/// Calculates cure success chance based on caster skill and poison level
-		/// </summary>
-		private int CalculateCureChance(Poison poison)
-		{
-			int chanceToCure = (int)NMSUtils.getBeneficialMageryInscribePercentage(Caster);
-			chanceToCure -= poison.Level;
-
-			if (chanceToCure < 0)
-				chanceToCure = 0;
-
-			return chanceToCure;
-		}
 
 		/// <summary>
 		/// Handles mortal poison case (cannot cure with this spell)

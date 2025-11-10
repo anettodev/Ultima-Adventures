@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Server.Misc;
 using Server.Targeting;
@@ -8,9 +7,14 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Multis;
 using Server.Regions;
+using Server.Spells;
 
 namespace Server.Spells.Sixth
 {
+	/// <summary>
+	/// Reveal - 6th Circle Magery Spell
+	/// Reveals hidden mobiles, traps, and hidden containers in area
+	/// </summary>
 	public class RevealSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -22,6 +26,96 @@ namespace Server.Spells.Sixth
 			);
 
 		public override SpellCircle Circle { get { return SpellCircle.Sixth; } }
+
+		#region Constants
+
+		/// <summary>Base detection range</summary>
+		private const int BASE_DETECTION_RANGE = 1;
+
+		/// <summary>Magery skill divisor for detection range</summary>
+		private const double MAGERY_RANGE_DIVISOR = 50.0;
+
+		/// <summary>Magery skill divisor for level calculation</summary>
+		private const double MAGERY_LEVEL_DIVISOR = 16.0;
+
+		/// <summary>Minimum level</summary>
+		private const int MIN_LEVEL = 1;
+
+		/// <summary>Maximum level</summary>
+		private const int MAX_LEVEL = 6;
+
+		/// <summary>Minimum money amount</summary>
+		private const int MONEY_MIN = 300;
+
+		/// <summary>Maximum money amount</summary>
+		private const int MONEY_MAX = 1000;
+
+		/// <summary>Hidden chest reveal chance denominator</summary>
+		private const int HIDDEN_CHEST_CHANCE_DENOMINATOR = 3;
+
+		/// <summary>High level threshold</summary>
+		private const int HIGH_LEVEL_THRESHOLD = 4;
+
+		/// <summary>Level 5 converted to level</summary>
+		private const int LEVEL_5_CONVERTED = 1;
+
+		/// <summary>Level 6 converted to level</summary>
+		private const int LEVEL_6_CONVERTED = 2;
+
+		/// <summary>Particle effect ID</summary>
+		private const int PARTICLE_EFFECT_ID = 0x376A;
+
+		/// <summary>Particle effect count</summary>
+		private const int PARTICLE_COUNT = 9;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_SPEED = 32;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_DURATION = 5024;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x1FA;
+
+		/// <summary>Mobile reveal particle effect ID</summary>
+		private const int MOBILE_PARTICLE_EFFECT_ID = 0x375A;
+
+		/// <summary>Mobile reveal particle count</summary>
+		private const int MOBILE_PARTICLE_COUNT = 9;
+
+		/// <summary>Mobile reveal particle speed</summary>
+		private const int MOBILE_PARTICLE_SPEED = 20;
+
+		/// <summary>Mobile reveal particle duration</summary>
+		private const int MOBILE_PARTICLE_DURATION = 5049;
+
+		/// <summary>Mobile reveal sound effect ID</summary>
+		private const int MOBILE_SOUND_EFFECT = 0x1FD;
+
+	/// <summary>Reveal chance base multiplier (reduced to reward Hiding/Stealth investment)</summary>
+	private const int REVEAL_CHANCE_MULTIPLIER = 20;
+
+	/// <summary>Reveal chance maximum</summary>
+	private const int REVEAL_CHANCE_MAX = 100;
+
+		#endregion
+
+		#region Data Structures
+
+		/// <summary>Trap type names mapping</summary>
+		private static Dictionary<Type, string> m_TrapTypeNames = new Dictionary<Type, string>
+		{
+			{ typeof(FireColumnTrap), "(fire column trap)" },
+			{ typeof(FlameSpurtTrap), "(fire spurt trap)" },
+			{ typeof(GasTrap), "(poison gas trap)" },
+			{ typeof(GiantSpikeTrap), "(giant spike trap)" },
+			{ typeof(MushroomTrap), "(mushroom trap)" },
+			{ typeof(SawTrap), "(saw blade trap)" },
+			{ typeof(SpikeTrap), "(spike trap)" },
+			{ typeof(StoneFaceTrap), "(stone face trap)" }
+		};
+
+		#endregion
 
 		public RevealSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
@@ -36,130 +130,182 @@ namespace Server.Spells.Sixth
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( CheckSequence() )
 			{
-				/// WIZARD WANTS THIS TO WORK FOR NORMAL TRAPS, HIDDEN TRAPS, & HIDDEN CONTAINERS ///
-				IPooledEnumerable TitemsInRange = Caster.Map.GetItemsInRange( new Point3D( p ), 1 + (int)(Caster.Skills[SkillName.Magery].Value / 50.0) );
-				string sTrap;
-				foreach ( Item item in TitemsInRange )
-				{
-					if ( item is BaseTrap )
-					{
-						BaseTrap trap = (BaseTrap) item;
+				// Reveal traps and hidden containers
+				RevealItems( p );
 
-						if ( trap is FireColumnTrap ){ sTrap = "(fire column trap)"; }
-						else if ( trap is FlameSpurtTrap ){ sTrap = "(fire spurt trap)"; }
-						else if ( trap is GasTrap ){ sTrap = "(poison gas trap)"; }
-						else if ( trap is GiantSpikeTrap ){ sTrap = "(giant spike trap)"; }
-						else if ( trap is MushroomTrap ){ sTrap = "(mushroom trap)"; }
-						else if ( trap is SawTrap ){ sTrap = "(saw blade trap)"; }
-						else if ( trap is SpikeTrap ){ sTrap = "(spike trap)"; }
-						else if ( trap is StoneFaceTrap ){ sTrap = "(stone face trap)"; }
-						else { sTrap = ""; }
-
-						Effects.SendLocationParticles( EffectItem.Create( item.Location, item.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-						Effects.PlaySound( item.Location, item.Map, 0x1FA );
-						Caster.SendMessage( 55, "Existe uma(s) armadilha(s) próxima a você! " + sTrap + "" );
-					}
-					else if ( item is HiddenTrap )
-					{
-						Effects.SendLocationParticles( EffectItem.Create( item.Location, item.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-						Effects.PlaySound( item.Location, item.Map, 0x1FA );
-						Caster.SendMessage( 55, "Existe uma armadilha escondida no chão próxima a você!" );
-					}
-					else if ( item is HiddenChest )
-					{
-						Caster.SendMessage( "Sua intuição mágica percebe que há algo escondido ao seu redor!" );
-						string where = Server.Misc.Worlds.GetRegionName( Caster.Map, Caster.Location );
-
-						int money = Utility.RandomMinMax( 300, 1000 );
-
-						int level = (int)(Caster.Skills[SkillName.Magery].Value / 16);
-							if (level < 1){level = 1;}
-							if (level > 6){level = 6;}
-
-						switch( Utility.RandomMinMax( 1, level ) )
-						{
-							case 1: level = 1; break;
-							case 2: level = 2; break;
-							case 3: level = 3; break;
-							case 4: level = 4; break;
-							case 5: level = 5; break;
-							case 6: level = 6; break;
-						}
-
-						if ( Utility.RandomMinMax( 1, 3 ) > 1 )
-						{
-							// DO NOTHING BECAUSE THE DETECT HIDDEN SKILL IS MUCH BETTER
-						}
-						else if ( level > 4 )
-						{
-							if ( level == 5 ){ level = 1; }
-							else { level = 2; }
-
-							HiddenBox mBox = new HiddenBox( level, where, Caster );
-
-							Point3D loc = item.Location;
-							mBox.MoveToWorld( loc, Caster.Map );
-							Effects.SendLocationParticles( EffectItem.Create( mBox.Location, mBox.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-							Effects.PlaySound( mBox.Location, mBox.Map, 0x1FA );
-						}
-						else
-						{
-							Gold coins = new Gold( ( money * level ) );
-
-							Point3D loc = item.Location;
-							coins.MoveToWorld( loc, Caster.Map );
-							Effects.SendLocationParticles( EffectItem.Create( coins.Location, coins.Map, EffectItem.DefaultDuration ), 0x376A, 9, 32, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, 5024, 0 );
-							Effects.PlaySound( coins.Location, coins.Map, 0x1FA );
-						}
-
-						item.Delete();
-					}
-				}
-				TitemsInRange.Free(); /////////////////////////////////////////////////////////////////////////////
-
-				SpellHelper.Turn( Caster, p );
-
-				SpellHelper.GetSurfaceTop( ref p );
-
-				List<Mobile> targets = new List<Mobile>();
-
-				Map map = Caster.Map;
-
-				if ( map != null )
-				{
-					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), 1 + (int)(Caster.Skills[SkillName.Magery].Value / 50.0) );
-
-					foreach ( Mobile m in eable )
-					{
-						if ( m.Hidden && (m.AccessLevel == AccessLevel.Player || Caster.AccessLevel > m.AccessLevel) && CheckDifficulty( Caster, m ) )
-							targets.Add( m );
-					}
-
-					eable.Free();
-				}
-
-				for ( int i = 0; i < targets.Count; ++i )
-				{
-					Mobile m = targets[i];
-
-					m.RevealingAction();
-
-					m.FixedParticles( 0x375A, 9, 20, 5049, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
-					m.PlaySound( 0x1FD );
-				}
+				// Reveal hidden mobiles
+				RevealMobiles( p );
 			}
 
 			FinishSequence();
 		}
 
-		// Reveal uses magery and detect hidden vs. hide and stealth 
+		#region Helper Methods
+
+		/// <summary>
+		/// Reveals traps and hidden containers in range
+		/// </summary>
+		private void RevealItems( IPoint3D p )
+		{
+			int range = BASE_DETECTION_RANGE + (int)(Caster.Skills[SkillName.Magery].Value / MAGERY_RANGE_DIVISOR);
+			IPooledEnumerable itemsInRange = Caster.Map.GetItemsInRange( new Point3D( p ), range );
+
+			foreach ( Item item in itemsInRange )
+			{
+				if ( item is BaseTrap )
+				{
+					RevealTrap( (BaseTrap)item );
+				}
+				else if ( item is HiddenTrap )
+				{
+					RevealHiddenTrap( item );
+				}
+				else if ( item is HiddenChest )
+				{
+					RevealHiddenChest( (HiddenChest)item );
+				}
+			}
+
+			itemsInRange.Free();
+		}
+
+		/// <summary>
+		/// Reveals a trap and displays its type
+		/// </summary>
+		private void RevealTrap( BaseTrap trap )
+		{
+			string trapName = GetTrapTypeName( trap.GetType() );
+
+			Effects.SendLocationParticles( EffectItem.Create( trap.Location, trap.Map, EffectItem.DefaultDuration ), PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
+			Effects.PlaySound( trap.Location, trap.Map, SOUND_EFFECT );
+			Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Existe uma(s) armadilha(s) prÃ³xima a vocÃª! " + trapName );
+		}
+
+		/// <summary>
+		/// Reveals a hidden trap
+		/// </summary>
+		private void RevealHiddenTrap( Item item )
+		{
+			Effects.SendLocationParticles( EffectItem.Create( item.Location, item.Map, EffectItem.DefaultDuration ), PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
+			Effects.PlaySound( item.Location, item.Map, SOUND_EFFECT );
+			Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Existe uma armadilha escondida no chÃ£o prÃ³xima a vocÃª!" );
+		}
+
+		/// <summary>
+		/// Reveals a hidden chest and potentially creates rewards
+		/// </summary>
+		private void RevealHiddenChest( HiddenChest chest )
+		{
+			Caster.SendMessage( "Sua intuiÃ§Ã£o mÃ¡gica percebe que hÃ¡ algo escondido ao seu redor!" );
+			string where = Server.Misc.Worlds.GetRegionName( Caster.Map, Caster.Location );
+
+			int money = Utility.RandomMinMax( MONEY_MIN, MONEY_MAX );
+			int level = CalculateLevel();
+
+			// Random chance to reveal (33% chance)
+			if ( Utility.RandomMinMax( 1, HIDDEN_CHEST_CHANCE_DENOMINATOR ) == 1 )
+			{
+				if ( level > HIGH_LEVEL_THRESHOLD )
+				{
+					// Create HiddenBox for high level
+					int boxLevel = ( level == 5 ) ? LEVEL_5_CONVERTED : LEVEL_6_CONVERTED;
+					HiddenBox mBox = new HiddenBox( boxLevel, where, Caster );
+
+					Point3D loc = chest.Location;
+					mBox.MoveToWorld( loc, Caster.Map );
+					Effects.SendLocationParticles( EffectItem.Create( mBox.Location, mBox.Map, EffectItem.DefaultDuration ), PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
+					Effects.PlaySound( mBox.Location, mBox.Map, SOUND_EFFECT );
+				}
+				else
+				{
+					// Create gold for lower levels
+					Gold coins = new Gold( money * level );
+
+					Point3D loc = chest.Location;
+					coins.MoveToWorld( loc, Caster.Map );
+					Effects.SendLocationParticles( EffectItem.Create( coins.Location, coins.Map, EffectItem.DefaultDuration ), PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
+					Effects.PlaySound( coins.Location, coins.Map, SOUND_EFFECT );
+				}
+			}
+
+			chest.Delete();
+		}
+
+		/// <summary>
+		/// Calculates the level based on Magery skill
+		/// </summary>
+		private int CalculateLevel()
+		{
+			int level = (int)(Caster.Skills[SkillName.Magery].Value / MAGERY_LEVEL_DIVISOR);
+			
+			// Clamp level between min and max
+			if ( level < MIN_LEVEL )
+				level = MIN_LEVEL;
+			if ( level > MAX_LEVEL )
+				level = MAX_LEVEL;
+
+			// Randomize level within calculated range
+			return Utility.RandomMinMax( MIN_LEVEL, level );
+		}
+
+		/// <summary>
+		/// Gets the trap type name from dictionary
+		/// </summary>
+		private string GetTrapTypeName( Type trapType )
+		{
+			string name;
+			if ( m_TrapTypeNames.TryGetValue( trapType, out name ) )
+				return name;
+			return "";
+		}
+
+		/// <summary>
+		/// Reveals hidden mobiles in range
+		/// </summary>
+		private void RevealMobiles( IPoint3D p )
+		{
+			SpellHelper.Turn( Caster, p );
+			SpellHelper.GetSurfaceTop( ref p );
+
+			List<Mobile> targets = new List<Mobile>();
+
+			Map map = Caster.Map;
+
+			if ( map != null )
+			{
+				int range = BASE_DETECTION_RANGE + (int)(Caster.Skills[SkillName.Magery].Value / MAGERY_RANGE_DIVISOR);
+				IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), range );
+
+				foreach ( Mobile m in eable )
+				{
+					if ( m.Hidden && (m.AccessLevel == AccessLevel.Player || Caster.AccessLevel > m.AccessLevel) && CheckDifficulty( Caster, m ) )
+						targets.Add( m );
+				}
+
+				eable.Free();
+			}
+
+			for ( int i = 0; i < targets.Count; ++i )
+			{
+				Mobile m = targets[i];
+
+				m.RevealingAction();
+
+				m.FixedParticles( MOBILE_PARTICLE_EFFECT_ID, MOBILE_PARTICLE_COUNT, MOBILE_PARTICLE_SPEED, MOBILE_PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
+				m.PlaySound( MOBILE_SOUND_EFFECT );
+			}
+		}
+
+		/// <summary>
+		/// Reveal uses magery and detect hidden vs. hide and stealth
+		/// </summary>
 		private static bool CheckDifficulty( Mobile from, Mobile m )
 		{
-			// Reveal always reveals vs. invisibility spell 
+			// Reveal always reveals vs. invisibility spell
 			if ( !Core.AOS || InvisibilitySpell.HasTimer( m ) )
 				return true;
 
@@ -172,18 +318,22 @@ namespace Server.Spells.Sixth
 
 			int chance;
 			if ( divisor > 0 )
-				chance = 40 * (magery + detectHidden) / divisor;
+				chance = REVEAL_CHANCE_MULTIPLIER * (magery + detectHidden) / divisor;
 			else
-				chance = 100;
+				chance = REVEAL_CHANCE_MAX;
 
-			return chance > Utility.Random( 100 );
+			return chance > Utility.Random( REVEAL_CHANCE_MAX );
 		}
+
+		#endregion
+
+		#region Internal Classes
 
 		private class InternalTarget : Target
 		{
 			private RevealSpell m_Owner;
 
-			public InternalTarget( RevealSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget( RevealSpell owner ) : base( SpellConstants.GetSpellRange(), true, TargetFlags.None )
 			{
 				m_Owner = owner;
 			}
@@ -201,5 +351,7 @@ namespace Server.Spells.Sixth
 				m_Owner.FinishSequence();
 			}
 		}
+
+		#endregion
 	}
 }

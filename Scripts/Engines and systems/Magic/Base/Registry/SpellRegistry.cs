@@ -12,29 +12,37 @@ namespace Server.Spells
 	public class SpellRegistry
 	{
 		private static Type[] m_Types = new Type[700];
-		private static int m_Count;
+		private static int m_Count = -1;
+		private static bool m_CountDirty = true;
 
 		public static Type[] Types
 		{
 			get
 			{
-				m_Count = -1;
 				return m_Types;
 			}
 		}
 		
-		//What IS this used for anyways.
+		/// <summary>
+		/// Gets the total number of registered spells
+		/// </summary>
 		public static int Count
 		{
 			get
 			{
-				if ( m_Count == -1 )
+				if ( m_CountDirty )
 				{
 					m_Count = 0;
 
 					for ( int i = 0; i < m_Types.Length; ++i )
+					{
 						if ( m_Types[i] != null )
+						{
 							++m_Count;
+						}
+					}
+
+					m_CountDirty = false;
 				}
 
 				return m_Count;
@@ -45,6 +53,9 @@ namespace Server.Spells
 		
 		private static Dictionary<Int32, SpecialMove> m_SpecialMoves = new Dictionary<Int32, SpecialMove>();
 		public static Dictionary<Int32, SpecialMove> SpecialMoves { get { return m_SpecialMoves; } }
+
+		// Cache for spell name lookups to avoid repeated string searches
+		private static Dictionary<string, Type> m_NameToTypeCache = new Dictionary<string, Type>();
 
 		public static int GetRegistryNumber( ISpell s )
 		{
@@ -58,8 +69,11 @@ namespace Server.Spells
 
 		public static int GetRegistryNumber( Type type )
 		{
-			if( m_IDsFromTypes.ContainsKey( type ) )
-				return m_IDsFromTypes[type];
+			Int32 id;
+			if ( m_IDsFromTypes.TryGetValue( type, out id ) )
+			{
+				return id;
+			}
 
 			return -1;
 		}
@@ -70,14 +84,18 @@ namespace Server.Spells
 				return;
 
 			if ( m_Types[spellID] == null )
-				++m_Count;
+			{
+				m_CountDirty = true;
+			}
 
 			m_Types[spellID] = type;
 
-			if( !m_IDsFromTypes.ContainsKey( type ) )
+			if ( !m_IDsFromTypes.ContainsKey( type ) )
+			{
 				m_IDsFromTypes.Add( type, spellID );
+			}
 
-			if( type.IsSubclassOf( typeof( SpecialMove ) ) )
+			if ( type.IsSubclassOf( typeof( SpecialMove ) ) )
 			{
 				SpecialMove spm = null;
 
@@ -89,8 +107,10 @@ namespace Server.Spells
 				{
 				}
 
-				if( spm != null )
+				if ( spm != null )
+				{
 					m_SpecialMoves.Add( spellID, spm );
+				}
 			}
 		}
 
@@ -163,12 +183,35 @@ namespace Server.Spells
 
 		public static Spell NewSpell( string name, Mobile caster, Item scroll )
 		{
+			// Check cache first
+			Type cachedType;
+			if ( m_NameToTypeCache.TryGetValue( name, out cachedType ) )
+			{
+				if ( cachedType != null && !cachedType.IsSubclassOf( typeof( SpecialMove ) ) )
+				{
+					m_Params[0] = caster;
+					m_Params[1] = scroll;
+
+					try
+					{
+						return (Spell)Activator.CreateInstance( cachedType, m_Params );
+					}
+					catch
+					{
+					}
+				}
+			}
+
+			// Not in cache, search through circles
 			for ( int i = 0; i < m_CircleNames.Length; ++i )
 			{
 				Type t = ScriptCompiler.FindTypeByFullName( String.Format( "Server.Spells.{0}.{1}", m_CircleNames[i], name ) );
 
 				if ( t != null && !t.IsSubclassOf( typeof( SpecialMove ) ) )
 				{
+					// Cache the result for future lookups
+					m_NameToTypeCache[name] = t;
+
 					m_Params[0] = caster;
 					m_Params[1] = scroll;
 
@@ -182,6 +225,8 @@ namespace Server.Spells
 				}
 			}
 
+			// Cache null result to avoid repeated searches
+			m_NameToTypeCache[name] = null;
 			return null;
 		}
 	}

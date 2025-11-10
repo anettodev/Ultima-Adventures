@@ -23,6 +23,12 @@ namespace Server.Spells.Third
 
 		public override SpellCircle Circle { get { return SpellCircle.Third; } }
 
+		/// <summary>
+		/// Reduced cast recovery base for faster teleportation cooldown
+		/// Default: 6 (1.5 seconds), Teleport: 3 (0.75 seconds)
+		/// </summary>
+		public override int CastRecoveryBase { get { return 3; } }
+
 		#region Constants
 		// Detection and Validation
 		private const int CURSED_CREATURE_SCAN_RANGE = 10;

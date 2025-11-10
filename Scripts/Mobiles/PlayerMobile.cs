@@ -1601,21 +1601,22 @@ namespace Server.Mobiles
 			DisguiseTimers.StopTimer( from );
 		}
 
-		public override void RevealingAction()
-		{
-			if ( m_DesignContext != null )
-				return;
+	public override void RevealingAction()
+	{
+		if ( m_DesignContext != null )
+			return;
 
-			Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
+		// Remove invisibility timer and force unhiding
+		Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
 
-			Item ring = this.FindItemOnLayer( Layer.Ring );
-			if (ring != null && ring is OneRing)
-				return;
-				
-			base.RevealingAction();
+		Item ring = this.FindItemOnLayer( Layer.Ring );
+		if (ring != null && ring is OneRing)
+			return;
 
-			m_IsStealthing = false; // IsStealthing should be moved to Server.Mobiles
-		}
+		base.RevealingAction();
+
+		m_IsStealthing = false; // IsStealthing should be moved to Server.Mobiles
+	}
 
 		[CommandProperty( AccessLevel.GameMaster )]
 		public override bool Hidden
@@ -4404,38 +4405,45 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			}
 		}
 
-		public override void Damage( int amount, Mobile from )
+	public override void Damage( int amount, Mobile from )
+	{
+		if ( Spells.Necromancy.EvilOmenSpell.TryEndEffect( this ) )
+			amount = (int)(amount * 1.25);
+
+		Mobile oath = Spells.Necromancy.BloodOathSpell.GetBloodOath( from );
+
+			/* Per EA's UO Herald Pub48 (ML):
+			 * ((resist spellsx10)/20 + 10=percentage of damage resisted)
+			 */
+
+		if ( oath == this )
 		{
-			if ( Spells.Necromancy.EvilOmenSpell.TryEndEffect( this ) )
-				amount = (int)(amount * 1.25);
+			amount = (int)(amount * 1.1);
 
-			Mobile oath = Spells.Necromancy.BloodOathSpell.GetBloodOath( from );
-
-				/* Per EA's UO Herald Pub48 (ML):
-				 * ((resist spellsx10)/20 + 10=percentage of damage resisted)
-				 */
-
-			if ( oath == this )
+			if( amount > 35 && from is PlayerMobile )  /* capped @ 35, seems no expansion */
 			{
-				amount = (int)(amount * 1.1);
-
-				if( amount > 35 && from is PlayerMobile )  /* capped @ 35, seems no expansion */
-				{
-					amount = 35;
-				}
-
-				if( Core.ML )
-				{
-					from.Damage( (int)(amount * ( 1 - ((( from.Skills.MagicResist.Value * .5 ) + 10) / 100 ))), this );
-				}
-				else
-				{
-					from.Damage( amount, this );
-				}
+				amount = 35;
 			}
 
-			base.Damage( amount, from );
+			if( Core.ML )
+			{
+				from.Damage( (int)(amount * ( 1 - ((( from.Skills.MagicResist.Value * .5 ) + 10) / 100 ))), this );
+			}
+			else
+			{
+				from.Damage( amount, this );
+			}
 		}
+
+		// CRITICAL FIX: Since Server.exe won't be recompiled, add RevealingAction here
+		// This ensures hidden players are revealed when taking damage
+		if ( amount > 0 && Hidden && AccessLevel == AccessLevel.Player )
+		{
+			RevealingAction();
+		}
+
+		base.Damage( amount, from );
+	}
 
 		#region Poison
 
@@ -4539,28 +4547,28 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			{
 				case 0: // Lesser
 					return isLocal 
-						? "Você sente uma leve dor." 
+						? "Voce sente uma leve dor." 
 						: "{0} parece estar com dor.";
 						
 				case 1: // Regular
 					return isLocal 
-						? "Você sente uma dor moderada." 
+						? "Voce sente uma dor moderada." 
 						: "{0} parece estar com dor moderada.";
 						
 				case 2: // Greater
 					return isLocal 
-						? "Você sente uma dor intensa." 
+						? "Voce sente uma dor intensa." 
 						: "{0} parece estar com dor intensa.";
 						
 				case 3: // Deadly
 				case 4: // Lethal
 					return isLocal 
-						? "Você tropeça em confusão e dor." 
-						: "{0} tropeça em confusão e dor.";
+						? "Voce tropeca em confusao e dor." 
+						: "{0} tropeca em confusao e dor.";
 						
 				default:
 					return isLocal 
-						? "Você sente dor." 
+						? "Voce sente dor." 
 						: "{0} parece estar com dor.";
 			}
 		}

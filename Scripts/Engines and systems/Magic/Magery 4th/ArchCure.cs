@@ -36,7 +36,7 @@ namespace Server.Spells.Fourth
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
+                Caster.SendMessage(55, "O alvo nï¿½o pode ser visto.");
             }
 			else if ( CheckSequence() )
 			{
@@ -101,22 +101,32 @@ namespace Server.Spells.Fourth
 
 						if ( poison != null )
 						{
-                            int chanceToCure = (int)NMSUtils.getBeneficialMageryInscribePercentage(Caster);
-                            chanceToCure -= (poison.Level >= 4) ? poison.Level * 2 : poison.Level; // lethal poison double the reduce the chance to cure
-                            if (chanceToCure < 0) chanceToCure = 0;
-
-                            //Caster.SendMessage(22, "chanceToCure -> " + chanceToCure);
-                            if (chanceToCure >= Utility.RandomMinMax(poison.Level * 2, 100) && m.CurePoison(Caster)) // success
+							// Check if can cure this poison (lethal poison cannot be cured)
+							if (!SpellCureCalculator.CanArchCurePoison(poison))
 							{
-								++cured;
-                                m.PlaySound(0x1E0);
-                                m.FixedParticles(0x373A, 10, 15, 5012, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
+								// Cannot cure lethal poison - play failure effect
+								m.PlaySound(342);
+								int spellHue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+								m.FixedParticles(0x374A, 10, 15, 5028, spellHue, 0, EffectLayer.Waist);
 							}
-							else 
+							else
 							{
-                                m.PlaySound(342);
-                                m.FixedParticles(0x374A, 10, 15, 5028, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
-                            }
+								int cureChance = SpellCureCalculator.CalculateArchCureChance(Caster, poison);
+								
+								if (SpellCureCalculator.CheckCureSuccess(cureChance, poison) && m.CurePoison(Caster))
+								{
+									++cured;
+									m.PlaySound(0x1E0);
+									int spellHue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+									m.FixedParticles(0x373A, 10, 15, 5012, spellHue, 0, EffectLayer.Waist);
+								}
+								else 
+								{
+									m.PlaySound(342);
+									int spellHue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+									m.FixedParticles(0x374A, 10, 15, 5028, spellHue, 0, EffectLayer.Waist);
+								}
+							}
 						}
 					}
 
@@ -124,16 +134,16 @@ namespace Server.Spells.Fourth
 					{
                         Misc.Titles.AwardKarma(Caster, (10 * cured), true);
                         Caster.PlaySound(Caster.Female ? 783 : 1054); Caster.Say("*woohoo!*");
-                        Caster.SendMessage(2253, "Você curou todos os venenos próximos do alvo!");
+                        Caster.SendMessage(2253, "Vocï¿½ curou todos os venenos prï¿½ximos do alvo!");
                         Caster.FixedParticles(0x376A, 9, 32, 5030, Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0), 0, EffectLayer.Waist);
                     }
 					else if (cured > 0)
 					{
                         Misc.Titles.AwardKarma(Caster, (10 * cured), true);
-                        Caster.SendMessage(55, "Você curou alguns dos venenos próximos do alvo!");
+                        Caster.SendMessage(55, "Vocï¿½ curou alguns dos venenos prï¿½ximos do alvo!");
                     }
                     else
-                        Caster.SendMessage(33, "Você não conseguiu curar nenhum dos venenos próximos do alvo!");
+                        Caster.SendMessage(33, "Vocï¿½ nï¿½o conseguiu curar nenhum dos venenos prï¿½ximos do alvo!");
                     //Caster.SendLocalizedMessage( 1010058 ); // You have cured the target of all poisons!
                 }
 			}

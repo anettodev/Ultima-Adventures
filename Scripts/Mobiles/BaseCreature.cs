@@ -239,9 +239,10 @@ namespace Server.Mobiles
 		private double		m_dMinTameSkill;
 		private bool		m_bTamable;
 
-		private bool		m_bSummoned = false;
-		private DateTime	m_SummonEnd;
-		private int			m_iControlSlots;
+	private bool		m_bSummoned = false;
+	private bool		m_bIsWildSummon = false;  // Wild summons attack anyone, including summoner
+	private DateTime	m_SummonEnd;
+	private int			m_iControlSlots;
 
 		private bool		m_bBardProvoked = false;
 		private bool		m_bBardPacified = false;
@@ -2422,10 +2423,14 @@ namespace Server.Mobiles
 			return GetControlChance( m, false );
 		}
 
-		public virtual double GetControlChance( Mobile m, bool useBaseSkill )
-		{
-			if ( m_dMinTameSkill <= 29.1 || m_bSummoned || m.AccessLevel >= AccessLevel.GameMaster )
-				return 1.0;
+	public virtual double GetControlChance( Mobile m, bool useBaseSkill )
+	{
+		// Wild summons can NEVER be controlled/tamed
+		if ( m_bIsWildSummon )
+			return 0.0;
+
+		if ( m_dMinTameSkill <= 29.1 || m_bSummoned || m.AccessLevel >= AccessLevel.GameMaster )
+			return 1.0;
 
 			double dMinTameSkill = m_dMinTameSkill;
 
@@ -5595,13 +5600,14 @@ namespace Server.Mobiles
 			writer.Write( (double) m_dMinTameSkill );
 			// Removed in version 9
 			//writer.Write( (double) m_dMaxTameSkill );
-			writer.Write( (bool) m_bTamable );
-			writer.Write( (bool) m_bSummoned );
+		writer.Write( (bool) m_bTamable );
+		writer.Write( (bool) m_bSummoned );
 
-			if ( m_bSummoned )
-				writer.WriteDeltaTime( m_SummonEnd );
+		if ( m_bSummoned )
+			writer.WriteDeltaTime( m_SummonEnd );
 
-			writer.Write( (int) m_iControlSlots );
+		writer.Write( (bool) m_bIsWildSummon );  // Version 30: Wild summon flag
+		writer.Write( (int) m_iControlSlots );
 
 			// Version 3
 			writer.Write( (int)m_Loyalty );
@@ -5815,16 +5821,22 @@ namespace Server.Mobiles
 				if ( version < 9 )
 					reader.ReadDouble();
 
-				m_bTamable = reader.ReadBool();
-				m_bSummoned = reader.ReadBool();
+			m_bTamable = reader.ReadBool();
+			m_bSummoned = reader.ReadBool();
 
-				if ( m_bSummoned )
-				{
-					m_SummonEnd = reader.ReadDeltaTime();
-					new UnsummonTimer( m_ControlMaster, this, m_SummonEnd - DateTime.UtcNow ).Start();
-				}
+			if ( m_bSummoned )
+			{
+				m_SummonEnd = reader.ReadDeltaTime();
+				new UnsummonTimer( m_ControlMaster, this, m_SummonEnd - DateTime.UtcNow ).Start();
+			}
 
-				m_iControlSlots = reader.ReadInt();
+			// Version 30: Wild summon flag
+			if ( version >= 30 )
+				m_bIsWildSummon = reader.ReadBool();
+			else
+				m_bIsWildSummon = false;  // Default for older versions
+
+			m_iControlSlots = reader.ReadInt();
 			}
 			else
 			{
@@ -6951,45 +6963,71 @@ namespace Server.Mobiles
 			}
 		}
 
-		[CommandProperty( AccessLevel.GameMaster )]
-		public bool Tamable
+	[CommandProperty( AccessLevel.GameMaster )]
+	public bool Tamable
+	{
+		get
 		{
-			get
-			{
-				if (m_Paragon && m_bControlled)
-					return m_bTamable;
-				
-				return m_bTamable && !m_Paragon;
-			}
-			set
-			{
-				m_bTamable = value;
-			}
-		}
+			// Wild summons can NEVER be tamed (uncontrolled magical creatures)
+			if (m_bIsWildSummon)
+				return false;
 
-		[CommandProperty( AccessLevel.Administrator )]
-		public bool Summoned
+			if (m_Paragon && m_bControlled)
+				return m_bTamable;
+			
+			return m_bTamable && !m_Paragon;
+		}
+		set
 		{
-			get
-			{
-				return m_bSummoned;
-			}
-			set
-			{
-				if ( m_bSummoned == value )
-					return;
-
-				m_NextReacquireTime = DateTime.UtcNow;
-
-				m_bSummoned = value;
-				Delta( MobileDelta.Noto );
-
-				InvalidateProperties();
-			}
+			m_bTamable = value;
 		}
+	}
 
-		[CommandProperty( AccessLevel.Administrator )]
-		public int ControlSlots
+	[CommandProperty( AccessLevel.Administrator )]
+	public bool Summoned
+	{
+		get
+		{
+			return m_bSummoned;
+		}
+		set
+		{
+			if ( m_bSummoned == value )
+				return;
+
+			m_NextReacquireTime = DateTime.UtcNow;
+
+			m_bSummoned = value;
+			Delta( MobileDelta.Noto );
+
+			InvalidateProperties();
+		}
+	}
+
+	/// <summary>
+	/// Wild summons ignore all relationship protections (party, guild, karma, summoner)
+	/// They attack anyone including the caster - completely uncontrolled and dangerous
+	/// Used by spells like Blade Spirits that create hostile uncontrolled creatures
+	/// </summary>
+	[CommandProperty( AccessLevel.Administrator )]
+	public bool IsWildSummon
+	{
+		get
+		{
+			return m_bIsWildSummon;
+		}
+		set
+		{
+			if ( m_bIsWildSummon == value )
+				return;
+
+			m_NextReacquireTime = DateTime.UtcNow;
+			m_bIsWildSummon = value;
+		}
+	}
+
+	[CommandProperty( AccessLevel.Administrator )]
+	public int ControlSlots
 		{
 			get
 			{
@@ -8864,19 +8902,21 @@ namespace Server.Mobiles
 					list.Add( 1080078 ); // guarding
 			}
 
-			if ( this is JediMirage || this is SythProjection || this is Clown || this is Clone ){} // NO WORDS
-			else if ( this is HenchmanFamiliar )
-				list.Add( "(familiar)" );
-			else if ( this is PackBeast )
-				list.Add( "(Pack Animal)" );
-			else if ( this is GolemPorter || this is GolemFighter )
-				list.Add( "(automaton)" );
-			else if ( this is Robot )
-				list.Add( "(robot)" );
-			else if ( this is FrankenPorter || this is FrankenFighter )
-				list.Add( "(reanimation)" );
-			else if ( Summoned && !IsAnimatedDead && !IsNecroFamiliar )
-				list.Add( 1049646 ); // (summoned)
+		if ( this is JediMirage || this is SythProjection || this is Clown || this is Clone ){} // NO WORDS
+		else if ( this is HenchmanFamiliar )
+			list.Add( "(familiar)" );
+		else if ( this is PackBeast )
+			list.Add( "(Pack Animal)" );
+		else if ( this is GolemPorter || this is GolemFighter )
+			list.Add( "(automaton)" );
+		else if ( this is Robot )
+			list.Add( "(robot)" );
+		else if ( this is FrankenPorter || this is FrankenFighter )
+			list.Add( "(reanimation)" );
+		else if ( Summoned && !IsAnimatedDead && !IsNecroFamiliar )
+		{
+			list.Add( "(invocado)" ); // (summoned)
+		}
 			else if ( Controlled && Commandable && !(this is FrankenFighter) && !(this is AerialServant) && !(this is FrankenPorter) && !(this is Robot) && !(this is GolemFighter) && !(this is GolemPorter) && !(this is PackBeast) && !(this is HenchmanMonster) && !(this is HenchmanFighter) && !(this is HenchmanWizard) && !(this is HenchmanArcher) && !(this is HenchmanFamiliar) && !(this is BaseChild))
 			{
 				if (this is Squire)
@@ -10006,15 +10046,20 @@ namespace Server.Mobiles
 
 					}
 
-				}
+			}
 
-				if (Utility.RandomDouble() > 0.97 && !(this is BaseRed) && !(this is BaseBlue) && !(this is BaseVendor) && !(this is BaseChild) && !(this is BaseCursed) && !(this is BaseChampion) && !(this is Zombiex))
-					c.AddItem( new EssenceBones(this.GetType()));
+			// Only add essence bones if corpse exists (not summoned creatures)
+			if ( c != null && Utility.RandomDouble() > 0.97 && !(this is BaseRed) && !(this is BaseBlue) && !(this is BaseVendor) && !(this is BaseChild) && !(this is BaseCursed) && !(this is BaseChampion) && !(this is Zombiex))
+				c.AddItem( new EssenceBones(this.GetType()));
 
-				base.OnDeath( c );
+		base.OnDeath( c );
 
-				if ( DeleteCorpseOnDeath || ( ( this.Name == "a follower" || this.Name == "a sailor" || this.Name == "a pirate" ) && this.EmoteHue > 0 ) )
-					c.Delete();
+			// Handle special NPC corpse deletion (sailors, pirates, followers)
+			// Note: Summoned creatures already handled in Corpse.cs (no corpse created)
+			if ( c != null && ( ( this.Name == "a follower" || this.Name == "a sailor" || this.Name == "a pirate" ) && this.EmoteHue > 0 ) )
+			{
+				c.Delete();
+			}
 			}
 			
 		}

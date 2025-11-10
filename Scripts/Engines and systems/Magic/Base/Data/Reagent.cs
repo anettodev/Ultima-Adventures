@@ -3,9 +3,14 @@ using Server.Items;
 
 namespace Server.Spells
 {
+	/// <summary>
+	/// Static class providing access to reagent types for spell casting
+	/// </summary>
 	public class Reagent
 	{
-		private static Type[] m_Types = new Type[13]
+		private const int REAGENT_COUNT = 13;
+		
+		private static Type[] m_Types = new Type[REAGENT_COUNT]
 			{
 				typeof( BlackPearl ),
 				typeof( Bloodmoss ),
@@ -22,9 +27,17 @@ namespace Server.Spells
 				typeof( PigIron )
 			};
 
-		public Type[] Types
+		/// <summary>
+		/// Gets a copy of the reagent types array to prevent external modification
+		/// </summary>
+		public static Type[] Types
 		{
-			get{ return m_Types; }
+			get
+			{
+				Type[] copy = new Type[m_Types.Length];
+				Array.Copy(m_Types, copy, m_Types.Length);
+				return copy;
+			}
 		}
 
 		public static Type BlackPearl

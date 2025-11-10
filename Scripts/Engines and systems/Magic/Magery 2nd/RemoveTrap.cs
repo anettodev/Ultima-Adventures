@@ -57,14 +57,14 @@ namespace Server.Spells.Second
 		public override void OnCast()
 		{
 			Caster.Target = new InternalTarget(this);
-			Caster.SendMessage(MSG_COLOR_INSTRUCTION, SpellMessages.REMOVE_TRAP_INSTRUCTION);
+			Caster.SendMessage(MSG_COLOR_INSTRUCTION, Spell.SpellMessages.REMOVE_TRAP_INSTRUCTION);
 		}
 
 		public void Target(TrapableContainer container)
 		{
 			if (!Caster.CanSee(container))
 			{
-				Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+				Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
 			}
 			else if (CheckSequence())
 			{
@@ -92,6 +92,66 @@ namespace Server.Spells.Second
 		}
 
 		/// <summary>
+		/// Calculates success percentage for trap removal
+		/// Formula: Effective skill = (Magery / 3) - Random(0-1)
+		/// Success when: Effective skill >= TrapLevel
+		/// 
+		/// Base Calculation:
+		/// - Base skill = Magery / 3
+		/// - Min effective = Base - 1
+		/// - Max effective = Base
+		/// - Success when: Base - random >= TrapLevel, so random <= Base - TrapLevel
+		/// - If Base - 1 >= TrapLevel: 100% success
+		/// - If Base >= TrapLevel: (Base - TrapLevel) * 100%
+		/// - If Base < TrapLevel: (Base / TrapLevel) * 30% * 100% (diminishing returns)
+		/// 
+		/// Remove Trap Skill Bonus:
+		/// - Each 10 points of Remove Trap skill = +1% success chance
+		/// - Maximum bonus: 12% (at 120 skill)
+		/// - Bonus is added to base success percentage
+		/// </summary>
+		private double CalculateSuccessPercentage(int trapLevel)
+		{
+			double mageryValue = Caster.Skills[SkillName.Magery].Value;
+			double baseSkill = mageryValue / MAGERY_LEVEL_DIVISOR;
+			double minEffectiveSkill = baseSkill - SKILL_CHECK_VARIANCE;
+
+			double baseSuccessPercent = 0.0;
+
+			// Calculate base success percentage
+			if (minEffectiveSkill >= trapLevel)
+			{
+				// Guaranteed success: minimum effective skill exceeds trap level
+				baseSuccessPercent = 100.0;
+			}
+			else if (baseSkill > trapLevel)
+			{
+				// Partial success: base skill exceeds trap level
+				// Success % = (Base - TrapLevel) * 100%
+				double successChance = baseSkill - trapLevel;
+				baseSuccessPercent = Math.Max(0.0, Math.Min(100.0, successChance * 100.0));
+			}
+			else
+			{
+				// Base skill <= trap level: use diminishing returns formula
+				// Success % = (Base Skill / TrapLevel) * 30%
+				// This handles both exact equality (Base = TrapLevel) and below (Base < TrapLevel)
+				// Example: Magery 120 (Base 40) vs Trap Level 40 = (40/40) * 30% = 30%
+				// Example: Magery 120 (Base 40) vs Trap Level 50 = (40/50) * 30% = 24%
+				double skillRatio = baseSkill / trapLevel;
+				baseSuccessPercent = skillRatio * 30.0; // 30% scaling factor
+			}
+
+			// Add Remove Trap skill bonus (1% per 10 skill points, max 12% at 120)
+			double removeTrapSkill = Caster.Skills[SkillName.RemoveTrap].Value;
+			double removeTrapBonus = Math.Floor(removeTrapSkill / 10.0); // 1% per 10 points
+			double finalSuccessPercent = baseSuccessPercent + removeTrapBonus;
+
+			// Cap at 100%
+			return Math.Max(0.0, Math.Min(100.0, finalSuccessPercent));
+		}
+
+		/// <summary>
 		/// Attempts to remove trap from container
 		/// </summary>
 		private bool TryRemoveTrap(TrapableContainer container)
@@ -108,7 +168,11 @@ namespace Server.Spells.Second
 			Point3D loc = container.GetWorldLocation();
 
 			PlayRemovalSuccessEffects(loc, container.Map);
-			Caster.SendMessage(MSG_COLOR_ERROR, SpellMessages.REMOVE_TRAP_SUCCESS);
+			
+			// Calculate and display success percentage
+			double successPercent = CalculateSuccessPercentage(container.TrapLevel);
+			string successMessage = string.Format(Spell.SpellMessages.REMOVE_TRAP_SUCCESS_WITH_PERCENT, (int)successPercent);
+			Caster.SendMessage(MSG_COLOR_SUCCESS, successMessage);
 
 			// Clear trap
 			container.TrapType = TrapType.None;
@@ -232,7 +296,7 @@ namespace Server.Spells.Second
 				}
 				else
 				{
-					from.SendMessage(MSG_COLOR_ERROR, SpellMessages.REMOVE_TRAP_INVALID);
+					from.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.REMOVE_TRAP_INVALID);
 				}
 			}
 

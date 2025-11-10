@@ -1,0 +1,246 @@
+---
+description: C# syntax compatibility rules for Ultima Adventures codebase
+globs: **/*.cs
+alwaysApply: true
+---
+
+# C# Syntax Compatibility Rules
+
+## Overview
+
+The Ultima Adventures codebase uses an older version of C# that does **NOT** support C# 7.0+ features. Always use syntax compatible with C# 6.0 and earlier.
+
+## Pattern Matching (C# 7.0+)
+
+### ❌ FORBIDDEN: Pattern Matching with Inline Variable Declaration
+
+**DO NOT USE:**
+```csharp
+// C# 7.0+ syntax - NOT SUPPORTED
+if (target is ITelekinesisable telekinesisable)
+{
+    HandleTelekinesisable(telekinesisable);
+}
+
+if (obj is Container container && container.IsOpen)
+{
+    // ...
+}
+
+if (item is Item item && item.Movable)
+{
+    // ...
+}
+```
+
+### ✅ REQUIRED: Traditional Type Checking with Explicit Cast
+
+**USE INSTEAD:**
+```csharp
+// Traditional C# syntax - REQUIRED
+if (target is ITelekinesisable)
+{
+    ITelekinesisable telekinesisable = (ITelekinesisable)target;
+    HandleTelekinesisable(telekinesisable);
+}
+
+// Or use 'as' operator for nullable types
+Container container = obj as Container;
+if (container != null && container.IsOpen)
+{
+    // ...
+}
+
+// For type checks with conditions
+if (target is Item)
+{
+    Item item = (Item)target;
+    if (item.Movable)
+    {
+        // ...
+    }
+}
+```
+
+## Switch Expressions (C# 8.0+)
+
+### ❌ FORBIDDEN: Switch Expressions
+
+**DO NOT USE:**
+```csharp
+// C# 8.0+ syntax - NOT SUPPORTED
+var result = value switch
+{
+    1 => "One",
+    2 => "Two",
+    _ => "Other"
+};
+```
+
+### ✅ REQUIRED: Traditional Switch Statements
+
+**USE INSTEAD:**
+```csharp
+// Traditional switch - REQUIRED
+string result;
+switch (value)
+{
+    case 1:
+        result = "One";
+        break;
+    case 2:
+        result = "Two";
+        break;
+    default:
+        result = "Other";
+        break;
+}
+```
+
+## Nullable Reference Types (C# 8.0+)
+
+### ❌ FORBIDDEN: Nullable Reference Type Syntax
+
+**DO NOT USE:**
+```csharp
+// C# 8.0+ syntax - NOT SUPPORTED
+string? nullableString;
+```
+
+### ✅ REQUIRED: Traditional Nullable Handling
+
+**USE INSTEAD:**
+```csharp
+// Traditional nullable handling - REQUIRED
+string nullableString = null;
+if (nullableString != null)
+{
+    // Use nullableString
+}
+```
+
+## Local Functions (C# 7.0+)
+
+### ❌ FORBIDDEN: Local Functions
+
+**DO NOT USE:**
+```csharp
+// C# 7.0+ syntax - NOT SUPPORTED
+public void Method()
+{
+    int LocalFunction(int x) => x * 2;
+    var result = LocalFunction(5);
+}
+```
+
+### ✅ REQUIRED: Private Methods or Lambda Expressions
+
+**USE INSTEAD:**
+```csharp
+// Use private method - REQUIRED
+private int CalculateValue(int x)
+{
+    return x * 2;
+}
+
+public void Method()
+{
+    var result = CalculateValue(5);
+}
+
+// Or use lambda if appropriate
+public void Method()
+{
+    Func<int, int> calculate = x => x * 2;
+    var result = calculate(5);
+}
+```
+
+## Tuples (C# 7.0+)
+
+### ❌ FORBIDDEN: Tuple Literals and Deconstruction
+
+**DO NOT USE:**
+```csharp
+// C# 7.0+ syntax - NOT SUPPORTED
+var tuple = (x: 1, y: 2);
+var (x, y) = tuple;
+```
+
+### ✅ REQUIRED: Traditional Tuple or Custom Classes
+
+**USE INSTEAD:**
+```csharp
+// Use Tuple<T1, T2> class - REQUIRED
+Tuple<int, int> tuple = new Tuple<int, int>(1, 2);
+int x = tuple.Item1;
+int y = tuple.Item2;
+
+// Or create a custom class/struct
+public struct Point
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+}
+```
+
+## String Interpolation (C# 6.0)
+
+### ✅ ALLOWED: String Interpolation
+
+String interpolation is supported (C# 6.0 feature):
+```csharp
+string message = $"Hello {name}, you have {count} items.";
+```
+
+## Expression-Bodied Members (C# 6.0)
+
+### ✅ ALLOWED: Expression-Bodied Members
+
+Expression-bodied members are supported (C# 6.0 feature):
+```csharp
+public int GetValue() => 42;
+public string Name => "Test";
+```
+
+## Summary
+
+### Supported C# Features
+- ✅ C# 6.0 and earlier syntax
+- ✅ String interpolation
+- ✅ Expression-bodied members
+- ✅ Auto-properties
+- ✅ Null-conditional operators (`?.`, `??`)
+
+### NOT Supported C# Features
+- ❌ Pattern matching (C# 7.0+)
+- ❌ Switch expressions (C# 8.0+)
+- ❌ Nullable reference types (C# 8.0+)
+- ❌ Local functions (C# 7.0+)
+- ❌ Tuple literals (C# 7.0+)
+- ❌ Deconstruction (C# 7.0+)
+- ❌ `ref` returns (C# 7.0+)
+- ❌ `out` variables (C# 7.0+)
+
+## Quick Reference
+
+When in doubt, use traditional C# syntax:
+
+| Modern Syntax | Traditional Syntax |
+|--------------|-------------------|
+| `if (x is Type t)` | `if (x is Type) { Type t = (Type)x; }` |
+| `var (a, b) = tuple` | `int a = tuple.Item1; int b = tuple.Item2;` |
+| `x switch { ... }` | `switch (x) { ... }` |
+| `int Local() => 5` | `private int Local() { return 5; }` |
+| `string? nullable` | `string nullable = null;` |
+
+## Code Review Checklist
+
+Before submitting code, verify:
+- [ ] No pattern matching with inline variables (`is Type var`)
+- [ ] No switch expressions
+- [ ] No nullable reference type syntax (`string?`)
+- [ ] No local functions
+- [ ] No tuple literals or deconstruction
+- [ ] All type checks use traditional `is` + explicit cast pattern
+- [ ] Code compiles without C# 7.0+ features

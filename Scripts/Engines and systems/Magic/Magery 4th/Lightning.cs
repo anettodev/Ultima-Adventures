@@ -33,7 +33,7 @@ namespace Server.Spells.Fourth
 		{
 			if ( !Caster.CanSee( m ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
+                Caster.SendMessage(55, "O alvo nï¿½o pode ser visto.");
             }
 			else if ( CheckHSequence( m ) )
 			{
@@ -43,13 +43,16 @@ namespace Server.Spells.Fourth
 
 				double damage;
 
-				int nBenefit = 0;
-/*				if ( Caster is PlayerMobile ) // WIZARD
-				{
-					nBenefit = CalculateMobileBenefit(Caster, 25, 4);
-				}*/
-
-                damage = GetNMSDamage(4, 1, 6, m) + nBenefit;
+				// Use circle-based damage params for consistent progression
+				int bonus, dice, sides;
+				SpellDamageCalculator.GetCircleDamageParams(SpellCircle.Fourth, out bonus, out dice, out sides);
+				
+				damage = GetNMSDamage(bonus, dice, sides, m);
+				
+				// Apply minimum damage floor based on EvalInt
+				int baseMinDamage = bonus; // Minimum is the bonus value
+				int minDamage = SpellDamageCalculator.GetMinimumDamageFloor(Caster, baseMinDamage);
+				damage = Math.Max(damage, minDamage);
 
                 if ( Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ) > 0 )
 				{

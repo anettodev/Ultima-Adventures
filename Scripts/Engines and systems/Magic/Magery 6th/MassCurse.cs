@@ -1,13 +1,17 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Server.Misc;
 using Server.Targeting;
 using Server.Network;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Sixth
 {
+	/// <summary>
+	/// Mass Curse - 6th Circle Magery Spell
+	/// Area-effect curse that reduces Str/Dex/Int of all targets in range
+	/// </summary>
 	public class MassCurseSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -23,6 +27,31 @@ namespace Server.Spells.Sixth
 
 		public override SpellCircle Circle { get { return SpellCircle.Sixth; } }
 
+		#region Constants
+
+		/// <summary>Standard area effect range (tiles)</summary>
+		private const int AREA_RANGE_NORMAL = 2;
+
+		/// <summary>Sorcerer area effect range (tiles)</summary>
+		private const int AREA_RANGE_SORCERER = 5;
+
+		/// <summary>Particle effect ID</summary>
+		private const int PARTICLE_EFFECT_ID = 0x374A;
+
+		/// <summary>Particle effect count</summary>
+		private const int PARTICLE_COUNT = 10;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_SPEED = 15;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_DURATION = 5028;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x1FB;
+
+		#endregion
+
 		public MassCurseSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -36,8 +65,8 @@ namespace Server.Spells.Sixth
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo n�o pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
 			{
 				SpellHelper.Turn( Caster, p );
@@ -51,7 +80,7 @@ namespace Server.Spells.Sixth
 				if ( map != null )
 				{
 					// Sorcerers get a larger radius
-					int range = (Caster is PlayerMobile) && ((PlayerMobile)Caster).Sorcerer() ? 5 : 2;
+					int range = (Caster is PlayerMobile) && ((PlayerMobile)Caster).Sorcerer() ? AREA_RANGE_SORCERER : AREA_RANGE_NORMAL;
 					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), range );
 
 					foreach ( Mobile m in eable )
@@ -66,31 +95,50 @@ namespace Server.Spells.Sixth
 					eable.Free();
 				}
 
+				// Calculate duration once to avoid duplicate messages from NMSGetDuration
+				// Use caster as representative target for duration calculation
+				TimeSpan duration = SpellHelper.NMSGetDuration( Caster, Caster, false );
+
+				int affectedCount = 0;
+
 				for ( int i = 0; i < targets.Count; ++i )
 				{
 					Mobile m = targets[i];
 
 					Caster.DoHarmful( m );
 
-					SpellHelper.AddStatCurse( Caster, m, StatType.Str ); SpellHelper.DisableSkillCheck = true;
-					SpellHelper.AddStatCurse( Caster, m, StatType.Dex );
-					SpellHelper.AddStatCurse( Caster, m, StatType.Int ); SpellHelper.DisableSkillCheck = false;
+					// Use 5-parameter overload to pass pre-calculated duration
+					// This prevents NMSGetDuration from being called 3 times per target and sending duplicate messages
+					SpellHelper.AddStatCurse( Caster, m, StatType.Str, SpellHelper.GetOffset( Caster, m, StatType.Str, true ), duration ); 
+					SpellHelper.DisableSkillCheck = true;
+					SpellHelper.AddStatCurse( Caster, m, StatType.Dex, SpellHelper.GetOffset( Caster, m, StatType.Dex, true ), duration );
+					SpellHelper.AddStatCurse( Caster, m, StatType.Int, SpellHelper.GetOffset( Caster, m, StatType.Int, true ), duration ); 
+					SpellHelper.DisableSkillCheck = false;
 
-					m.FixedParticles( 0x374A, 10, 15, 5028, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Waist );
-					m.PlaySound( 0x1FB );
+					m.FixedParticles( PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Waist );
+					m.PlaySound( SOUND_EFFECT );
 					
 					HarmfulSpell( m );
+					affectedCount++;
+				}
+
+				// Send single summary message instead of one per target
+				if ( affectedCount > 0 )
+				{
+					Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Você amaldiçoou " + affectedCount + " alvo(s) com sucesso." );
 				}
 			}
 
 			FinishSequence();
 		}
 
+		#region Internal Classes
+
 		private class InternalTarget : Target
 		{
 			private MassCurseSpell m_Owner;
 
-			public InternalTarget( MassCurseSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget( MassCurseSpell owner ) : base( SpellConstants.GetSpellRange(), true, TargetFlags.None )
 			{
 				m_Owner = owner;
 			}
@@ -108,5 +156,7 @@ namespace Server.Spells.Sixth
 				m_Owner.FinishSequence();
 			}
 		}
+
+		#endregion
 	}
 }

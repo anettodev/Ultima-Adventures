@@ -84,19 +84,11 @@ namespace Server.Spells.First
 		{
 			SpellHelper.Turn(Caster, target);
 
-			bool isConsecutiveCast = IsConsecutiveCast();
 			int healAmount = CalculateHealAmount(target);
-			
-			// Apply consecutive cast penalty if applicable
-			if (isConsecutiveCast)
-			{
-				healAmount = ApplyConsecutiveCastPenalty(healAmount);
-			}
-			
 			SpellHelper.Heal(healAmount, target, Caster);
 
 			PlayEffects(target);
-			ShowHealAmount(target, healAmount, isConsecutiveCast);
+			ShowHealAmount(target, healAmount, IsConsecutiveCast());
 			
 			// Update last cast time for this caster
 			UpdateLastCastTime();
@@ -166,40 +158,12 @@ namespace Server.Spells.First
 		}
 
 	/// <summary>
-	/// Calculates heal amount based on caster's Magery and Inscription
+	/// Calculates heal amount using centralized calculator
 	/// </summary>
 	private int CalculateHealAmount(Mobile target)
 	{
-		int healAmount = (int)NMSUtils.getBeneficialMageryInscribePercentage(Caster) / HEAL_DIVISOR;
-
-		// Bonus when healing others (encourages cooperation)
-		if (Caster != target)
-		{
-			healAmount = (int)(healAmount * OTHER_TARGET_MULTIPLIER);
-		}
-
-		// Apply 30% reduction (70% power)
-		healAmount = (int)(healAmount * HEAL_POWER_MODIFIER);
-
-		// Apply random variance (2-5% reduction, minimum 1 HP)
-		double randomReductionPercent = RANDOM_REDUCTION_MIN + (Utility.RandomDouble() * (RANDOM_REDUCTION_MAX - RANDOM_REDUCTION_MIN));
-		int randomReductionAmount = (int)(healAmount * randomReductionPercent);
-		
-		// Ensure at least 1 HP is reduced
-		if (randomReductionAmount < MINIMUM_REDUCTION_AMOUNT)
-		{
-			randomReductionAmount = MINIMUM_REDUCTION_AMOUNT;
-		}
-		
-		healAmount -= randomReductionAmount;
-
-		// Ensure minimum heal amount
-		if (healAmount < MINIMUM_HEAL_AMOUNT)
-		{
-			healAmount = MINIMUM_HEAL_AMOUNT;
-		}
-
-		return healAmount;
+		bool isConsecutiveCast = IsConsecutiveCast();
+		return SpellHealingCalculator.CalculateHeal(Caster, target, isConsecutiveCast);
 	}
 
 	/// <summary>
@@ -226,19 +190,6 @@ namespace Server.Spells.First
 		return timeSinceLastCast.TotalSeconds < CONSECUTIVE_CAST_WINDOW;
 	}
 
-	/// <summary>
-	/// Applies penalty for consecutive casting
-	/// </summary>
-	private int ApplyConsecutiveCastPenalty(int healAmount)
-	{
-		int penaltyAmount = (int)(healAmount * CONSECUTIVE_CAST_PENALTY);
-		
-		// Ensure at least some reduction
-		if (penaltyAmount < 1)
-			penaltyAmount = 1;
-		
-		return healAmount - penaltyAmount;
-	}
 
 	/// <summary>
 	/// Updates the last cast time for the caster

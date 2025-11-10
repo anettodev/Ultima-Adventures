@@ -2,9 +2,14 @@ using System;
 using Server.Targeting;
 using Server.Network;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Sixth
 {
+	/// <summary>
+	/// Explosion - 6th Circle Magery Spell
+	/// Delayed area damage spell that explodes after a short delay
+	/// </summary>
 	public class ExplosionSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -16,6 +21,58 @@ namespace Server.Spells.Sixth
 			);
 
 		public override SpellCircle Circle { get { return SpellCircle.Sixth; } }
+
+		#region Constants
+
+		/// <summary>Delay before explosion in AOS mode (seconds)</summary>
+		private const double DELAY_AOS_SECONDS = 3.3;
+
+		/// <summary>Delay before explosion in Legacy mode (seconds)</summary>
+		private const double DELAY_LEGACY_SECONDS = 2.8;
+
+		/// <summary>Base damage bonus for NMS damage calculation</summary>
+		private const int DAMAGE_BONUS = 25;
+
+		/// <summary>Number of dice for NMS damage calculation</summary>
+		private const int DAMAGE_DICE = 1;
+
+		/// <summary>Sides per die for NMS damage calculation</summary>
+		private const int DAMAGE_SIDES = 5;
+
+		/// <summary>Legacy mode damage minimum</summary>
+		private const int DAMAGE_LEGACY_MIN = 23;
+
+		/// <summary>Legacy mode damage maximum</summary>
+		private const int DAMAGE_LEGACY_MAX = 44;
+
+		/// <summary>Resistance damage multiplier (AOS)</summary>
+		private const double RESIST_MULTIPLIER_AOS = 0.5;
+
+		/// <summary>Resistance damage multiplier (Legacy)</summary>
+		private const double RESIST_MULTIPLIER_LEGACY = 0.75;
+
+		/// <summary>Particle effect ID (head particles)</summary>
+		private const int PARTICLE_EFFECT_HEAD = 0x36BD;
+
+		/// <summary>Particle effect count</summary>
+		private const int PARTICLE_COUNT = 20;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_SPEED = 10;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_DURATION = 5044;
+
+		/// <summary>Location effect ID</summary>
+		private const int LOCATION_EFFECT_ID = 0x3822;
+
+		/// <summary>Location effect duration</summary>
+		private const int LOCATION_EFFECT_DURATION = 60;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x307;
+
+		#endregion
 
 		public ExplosionSpell( Mobile caster, Item scroll )
 			: base( caster, scroll, m_Info )
@@ -35,7 +92,7 @@ namespace Server.Spells.Sixth
 		{
 			if ( !Caster.CanSee( m ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
+                Caster.SendMessage(55, "O alvo nï¿½o pode ser visto.");
             }
 			else if ( Caster.CanBeHarmful( m ) && CheckSequence() )
 			{
@@ -52,6 +109,8 @@ namespace Server.Spells.Sixth
 			FinishSequence();
 		}
 
+		#region Internal Classes
+
 		private class InternalTimer : Timer
 		{
 			private MagerySpell m_Spell;
@@ -59,7 +118,7 @@ namespace Server.Spells.Sixth
 			private Mobile m_Attacker, m_Defender;
 
 			public InternalTimer( MagerySpell spell, Mobile attacker, Mobile defender, Mobile target )
-				: base( TimeSpan.FromSeconds( Core.AOS ? 3.0 : 2.5 ) )
+				: base( TimeSpan.FromSeconds( Core.AOS ? DELAY_AOS_SECONDS : DELAY_LEGACY_SECONDS ) )
 			{
 				m_Spell = spell;
 				m_Attacker = attacker;
@@ -79,29 +138,24 @@ namespace Server.Spells.Sixth
 					double damage;
 
 					int nBenefit = 0;
-/*					if ( m_Attacker is PlayerMobile ) // WIZARD
-					{
-						nBenefit = (int)(m_Attacker.Skills[SkillName.Magery].Value / 5);
-					}*/
 
 					if ( Core.AOS )
 					{
-						damage = m_Spell.GetNMSDamage( 25, 1, 5, m_Defender ) + nBenefit;
+						damage = m_Spell.GetNMSDamage( DAMAGE_BONUS, DAMAGE_DICE, DAMAGE_SIDES, m_Defender ) + nBenefit;
                         if (m_Spell.CheckResisted(m_Target))
                         {
-                            damage *= 0.5;
-                            m_Target.SendMessage(55, "Sua aura mágica lhe ajudou a resistir metade do dano desse feitiço.");
-                            m_Attacker.SendMessage(55, "O oponente resistiu metade do dano desse feitiço.");
+							damage *= RESIST_MULTIPLIER_AOS;
+                            m_Target.SendMessage(55, "Sua aura mï¿½gica lhe ajudou a resistir metade do dano desse feitiï¿½o.");
+                            m_Attacker.SendMessage(55, "O oponente resistiu metade do dano desse feitiï¿½o.");
                         }
                     }
 					else
 					{
-						damage = Utility.Random( 23, 22 ) + nBenefit;
+						damage = Utility.Random( DAMAGE_LEGACY_MIN, DAMAGE_LEGACY_MAX - DAMAGE_LEGACY_MIN + 1 ) + nBenefit;
 
 						if ( m_Spell.CheckResisted( m_Target ) )
 						{
-							damage *= 0.75;
-
+							damage *= RESIST_MULTIPLIER_LEGACY;
 							m_Target.SendLocalizedMessage( 501783 ); // You feel yourself resisting magical energy.
 						}
 
@@ -110,13 +164,13 @@ namespace Server.Spells.Sixth
 
 					if ( Utility.RandomBool() )
 					{
-						m_Target.FixedParticles( 0x36BD, 20, 10, 5044, Server.Items.CharacterDatabase.GetMySpellHue( m_Attacker, 0 ), 0, EffectLayer.Head );
+						m_Target.FixedParticles( PARTICLE_EFFECT_HEAD, PARTICLE_COUNT, PARTICLE_SPEED, PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( m_Attacker, 0 ), 0, EffectLayer.Head );
 					}
 					else
 					{
-						Effects.SendLocationEffect( m_Target.Location, m_Target.Map, 0x3822, 60, 10, Server.Items.CharacterDatabase.GetMySpellHue( m_Attacker, 0 ), 0 );
+						Effects.SendLocationEffect( m_Target.Location, m_Target.Map, LOCATION_EFFECT_ID, LOCATION_EFFECT_DURATION, PARTICLE_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( m_Attacker, 0 ), 0 );
 					}
-					m_Target.PlaySound( 0x307 );
+					m_Target.PlaySound( SOUND_EFFECT );
 
 					SpellHelper.Damage( m_Spell, m_Target, damage, 0, 100, 0, 0, 0 );
 
@@ -131,7 +185,7 @@ namespace Server.Spells.Sixth
 			private ExplosionSpell m_Owner;
 
 			public InternalTarget( ExplosionSpell owner )
-				: base( Core.ML ? 10 : 12, false, TargetFlags.Harmful )
+				: base( SpellConstants.GetSpellRange(), false, TargetFlags.Harmful )
 			{
 				m_Owner = owner;
 			}
@@ -147,5 +201,7 @@ namespace Server.Spells.Sixth
 				m_Owner.FinishSequence();
 			}
 		}
+
+		#endregion
 	}
 }
