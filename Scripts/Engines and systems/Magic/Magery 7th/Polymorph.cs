@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Server;
 using Server.Items;
 using Server.Gumps;
@@ -8,6 +8,10 @@ using Server.Spells.Fifth;
 
 namespace Server.Spells.Seventh
 {
+	/// <summary>
+	/// Polymorph - 7th Circle Magery Spell
+	/// Transforms caster into selected creature form
+	/// </summary>
 	public class PolymorphSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -21,6 +25,25 @@ namespace Server.Spells.Seventh
 
 		public override SpellCircle Circle { get { return SpellCircle.Seventh; } }
 
+		#region Constants
+
+		/// <summary>Body mod value for paint type 1</summary>
+		private const int BODY_MOD_PAINT_1 = 183;
+
+		/// <summary>Body mod value for paint type 2</summary>
+		private const int BODY_MOD_PAINT_2 = 184;
+
+		/// <summary>Body ID for human male</summary>
+		private const int BODY_HUMAN_MALE = 400;
+
+		/// <summary>Body ID for human female</summary>
+		private const int BODY_HUMAN_FEMALE = 401;
+
+		/// <summary>Maximum Magery skill value for duration calculation</summary>
+		private const int MAX_MAGERY_SKILL = 120;
+
+		#endregion
+
 		private int m_NewBody;
 
 		public PolymorphSpell( Mobile caster, Item scroll, int body ) : base( caster, scroll, m_Info )
@@ -28,7 +51,7 @@ namespace Server.Spells.Seventh
 			m_NewBody = body;
 		}
 
-		public PolymorphSpell( Mobile caster, Item scroll ) : this(caster,scroll,0)
+		public PolymorphSpell( Mobile caster, Item scroll ) : this( caster, scroll, 0 )
 		{
 		}
 
@@ -44,7 +67,7 @@ namespace Server.Spells.Seventh
 				Caster.SendLocalizedMessage( 502167 ); // You cannot polymorph while disguised.
 				return false;
 			}
-			else if ( Caster.BodyMod == 183 || Caster.BodyMod == 184 )
+			else if ( Caster.BodyMod == BODY_MOD_PAINT_1 || Caster.BodyMod == BODY_MOD_PAINT_2 )
 			{
 				Caster.SendLocalizedMessage( 1042512 ); // You cannot polymorph while wearing body paint
 				return false;
@@ -74,11 +97,6 @@ namespace Server.Spells.Seventh
 
 		public override void OnCast()
 		{
-			/*if ( Caster.Mounted )
-			{
-				Caster.SendLocalizedMessage( 1042561 ); //Please dismount first.
-			} 
-			else */
 			if ( !Caster.CanBeginAction( typeof( PolymorphSpell ) ) )
 			{
 				if( Core.ML )
@@ -94,7 +112,7 @@ namespace Server.Spells.Seventh
 			{
 				Caster.SendLocalizedMessage( 502167 ); // You cannot polymorph while disguised.
 			}
-			else if ( Caster.BodyMod == 183 || Caster.BodyMod == 184 )
+			else if ( Caster.BodyMod == BODY_MOD_PAINT_1 || Caster.BodyMod == BODY_MOD_PAINT_2 )
 			{
 				Caster.SendLocalizedMessage( 1042512 ); // You cannot polymorph while wearing body paint
 			}
@@ -118,7 +136,7 @@ namespace Server.Spells.Seventh
 
 						Caster.BodyMod = m_NewBody;
 
-						if ( m_NewBody == 400 || m_NewBody == 401 )
+						if ( m_NewBody == BODY_HUMAN_MALE || m_NewBody == BODY_HUMAN_FEMALE )
 							Caster.HueMod = Server.Misc.RandomThings.GetRandomSkinColor();
 						else
 							Caster.HueMod = 0;
@@ -147,19 +165,19 @@ namespace Server.Spells.Seventh
 			FinishSequence();
 		}
 
-		private static Hashtable m_Timers = new Hashtable();
+		private static Dictionary<Mobile, Timer> m_Timers = new Dictionary<Mobile, Timer>();
 
 		public static bool StopTimer( Mobile m )
 		{
-			Timer t = (Timer)m_Timers[m];
-
-			if ( t != null )
+			Timer t;
+			if ( m_Timers.TryGetValue( m, out t ) )
 			{
 				t.Stop();
 				m_Timers.Remove( m );
+				return true;
 			}
 
-			return ( t != null );
+			return false;
 		}
 
 		private static void EndPolymorph( Mobile m )
@@ -185,8 +203,8 @@ namespace Server.Spells.Seventh
 
 				int val = (int)owner.Skills[SkillName.Magery].Value;
 
-				if ( val > 120 )
-					val = 120;
+				if ( val > MAX_MAGERY_SKILL )
+					val = MAX_MAGERY_SKILL;
 
 				Delay = TimeSpan.FromSeconds( val );
 				Priority = TimerPriority.OneSecond;

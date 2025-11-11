@@ -5,7 +5,7 @@
 The 3rd Circle of Magery introduces more powerful offensive spells, advanced utility magic, and area control. These spells require higher skill (50.0 Magery) and provide significant power increases over lower circles.
 
 **Circle Level:** Advanced  
-**Mana Cost:** 24  
+**Mana Cost:** 11 (base, scaled by LRC/LMC)  
 **Difficulty:** 50-70 skill  
 **Total Spells:** 8
 
@@ -255,7 +255,7 @@ The spell words "Ort Por Ylem" translate to "Move Object" in the magical languag
 ### Requirements
 - **Minimum Magery:** 50.0
 - **Reagents:** Bloodmoss, Mandrake Root
-- **Mana Cost:** 24 (normal) / 48 (mobile grab attempt)
+- **Mana Cost:** 11 (base, scaled by LRC/LMC) / 22 (mobile grab, 2× scaled cost)
 - **Target:** Item, Container, ITelekinesisable object, **or Mobile**
 - **Range:** 10 tiles (ML) / 12 tiles (Legacy)
 
@@ -275,8 +275,8 @@ Example: 100 Intelligence = 5 stones maximum
 - Target must **not be blessed**
 - Target must be **AccessLevel.Player**
 - Must respect **safe zones**
-- **Cooldown:** 10 seconds between attempts
-- **Mana Cost:** 2× normal cost (48 mana total)
+- **Cooldown:** Skill-based (16s at 0 Magery, 3s at 120 Magery)
+- **Mana Cost:** 2× normal cost (always consumed, even on failure)
 - **Cannot target self**
 
 #### Mobile Grab Success Formula
@@ -289,6 +289,20 @@ Example at GM (100/100):
 Base: 100 × 0.3% = 30%
 Bonus: 100 × 0.15% = 15%
 Total: 45% chance
+```
+
+#### Mobile Grab Cooldown Formula
+```
+Cooldown = 16 - (Magery × 13/120) seconds
+Minimum: 3 seconds (at 120+ Magery)
+Maximum: 16 seconds (at 0 Magery)
+
+Examples:
+- 0 Magery: 16 seconds
+- 50 Magery: 16 - (50 × 13/120) = 16 - 5.42 = 10.58 → 11 seconds
+- 75 Magery: 16 - (75 × 13/120) = 16 - 8.13 = 7.87 → 8 seconds
+- 100 Magery: 16 - (100 × 13/120) = 16 - 10.83 = 5.17 → 6 seconds
+- 120 Magery: 16 - (120 × 13/120) = 16 - 13 = 3 seconds
 ```
 
 #### Mobile Grab Effects
@@ -317,13 +331,15 @@ N/A (instant effect)
 
 #### Mobile Grab Success Rates
 
-| Scenario | Magery | Inscription | Success Chance | Mana Cost | Cooldown |
+| Scenario | Magery | Inscription | Success Chance | Mana Cost* | Cooldown |
 |----------|--------|-------------|----------------|-----------|----------|
-| Novice | 50 | 0 | 15% | 48 | 10s |
-| Apprentice | 75 | 50 | 30% | 48 | 10s |
-| Adept | 100 | 80 | 42% | 48 | 10s |
-| Expert | 120 | 100 | 51% | 48 | 10s |
-| Master | 120 | 120 | 54% | 48 | 10s |
+| Novice | 50 | 0 | 15% | 22 | 11s |
+| Apprentice | 75 | 50 | 30% | 22 | 8s |
+| Adept | 100 | 80 | 42% | 22 | 6s |
+| Expert | 120 | 100 | 51% | 22 | 3s |
+| Master | 120 | 120 | 54% | 22 | 3s |
+
+*Mana cost shown is base (11 × 2). Actual cost is scaled by LRC/LMC gear.
 
 ### Curiosities & Easter Eggs
 - **Trap Avoidance:** Can open trapped containers from safe distance
@@ -333,11 +349,12 @@ N/A (instant effect)
 - **Weight Limit:** Intelligence-based weight restriction
 - **Mobile Grab:** Hidden feature to pull mobiles/players (1 tile away)
 - **Double Mana Cost:** Mobile grab costs 2× mana even on failure
-- **Cooldown System:** 10-second cooldown prevents spam
+- **Skill-Based Cooldown:** Cooldown scales from 16s (0 Magery) to 3s (120 Magery)
 - **Target Awareness:** Failed attempts notify the target (subtle "tontura")
 - **Inscription Synergy:** Inscription skill boosts mobile grab chance
 - **Safe Zone Respect:** Cannot grab in protected areas
 - **Validation Messages:** Clear PT-BR feedback for all scenarios
+- **No Refund:** Mana is consumed even if grab fails
 
 ---
 

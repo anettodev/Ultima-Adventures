@@ -4,9 +4,14 @@ using Server.Network;
 using Server.Items;
 using Server.Targeting;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Seventh
 {
+	/// <summary>
+	/// Meteor Swarm - 7th Circle Magery Spell
+	/// Area-of-effect fire damage spell affecting multiple targets
+	/// </summary>
 	public class MeteorSwarmSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -21,6 +26,46 @@ namespace Server.Spells.Seventh
 			);
 
 		public override SpellCircle Circle { get { return SpellCircle.Seventh; } }
+
+		#region Constants
+
+		/// <summary>Area of effect range in tiles</summary>
+		private const int AOE_RANGE = 5;
+
+		/// <summary>Base damage bonus</summary>
+		private const int BASE_DAMAGE_BONUS = 38;
+
+		/// <summary>Damage dice count</summary>
+		private const int DAMAGE_DICE_COUNT = 2;
+
+		/// <summary>Damage dice sides</summary>
+		private const int DAMAGE_DICE_SIDES = 5;
+
+		/// <summary>Minimum damage floor</summary>
+		private const int MIN_DAMAGE_FLOOR = 12;
+
+		/// <summary>Resist damage multiplier</summary>
+		private const double RESIST_DAMAGE_MULTIPLIER = 0.5;
+
+		/// <summary>Sound effect ID for cast</summary>
+		private const int SOUND_EFFECT_CAST = 0x160;
+
+		/// <summary>Sound effect ID for hit</summary>
+		private const int SOUND_EFFECT_HIT = 0x15F;
+
+		/// <summary>Particle effect ID option 1</summary>
+		private const int PARTICLE_EFFECT_ID_1 = 0x33E5;
+
+		/// <summary>Particle effect ID option 2</summary>
+		private const int PARTICLE_EFFECT_ID_2 = 0x33F5;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_EFFECT_DURATION = 85;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_EFFECT_SPEED = 10;
+
+		#endregion
 
 		public MeteorSwarmSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
@@ -37,8 +82,8 @@ namespace Server.Spells.Seventh
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
 			{
 				SpellHelper.Turn( Caster, p );
@@ -54,14 +99,10 @@ namespace Server.Spells.Seventh
 
 				if ( map != null )
 				{
-					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), 5 );
+					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), AOE_RANGE );
 
 					foreach ( Mobile m in eable )
 					{
-						Mobile pet = m;
-						/*if ( m is BaseCreature )
-							pet = ((BaseCreature)m).GetMaster();*/
-
 						if ( Caster.Region == m.Region && Caster != m && Caster.CanBeHarmful( m, true ) )
 						{
 							targets.Add( m );
@@ -76,59 +117,59 @@ namespace Server.Spells.Seventh
 				double damage;
 
 				int nBenefit = 0;
-				if ( Caster is PlayerMobile ) // WIZARD
+				if ( Caster is PlayerMobile )
 				{
-					//nBenefit = (int)(Caster.Skills[SkillName.Magery].Value / 5);
+					// Future benefit calculation can be added here
 				}
-                damage = GetNMSDamage(38, 2, 5, Caster.Player && playerVsPlayer) + nBenefit;
+				damage = GetNMSDamage( BASE_DAMAGE_BONUS, DAMAGE_DICE_COUNT, DAMAGE_DICE_SIDES, Caster.Player && playerVsPlayer ) + nBenefit;
 
 				if ( targets.Count > 0 )
 				{
-					Effects.PlaySound( p, Caster.Map, 0x160 );
+					Effects.PlaySound( p, Caster.Map, SOUND_EFFECT_CAST );
 
-                    if (targets.Count > 1)
-                        damage /= targets.Count;
+					if ( targets.Count > 1 )
+						damage /= targets.Count;
 
-                    if (damage < 12)
-                        damage = 12;
+					if ( damage < MIN_DAMAGE_FLOOR )
+						damage = MIN_DAMAGE_FLOOR;
 
-                    double toDeal;
+					double toDeal;
 					for ( int i = 0; i < targets.Count; ++i )
 					{
 						Mobile m = targets[i];
 
-						toDeal  = damage;
+						toDeal = damage;
 
-                        if (CheckResisted(m))
-                        {
-                            toDeal *= 0.5;
-                            m.SendMessage(55, "Sua aura mágica lhe ajudou a resistir metade do dano desse feitiço.");
-                        }
+						if ( CheckResisted( m ) )
+						{
+							toDeal *= RESIST_DAMAGE_MULTIPLIER;
+							m.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.RESIST_HALF_DAMAGE_VICTIM );
+						}
 
-                        if (m is PlayerMobile && m.FindItemOnLayer(Layer.Ring) != null && m.FindItemOnLayer(Layer.Ring) is OneRing)
-                        {
-                            m.SendMessage(33, "O UM ANEL te protegeu de ser revelado.");
-                        }
-                        else
-                        {
-                            m.RevealingAction();
-                        }
+						if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing )
+						{
+							m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ONE_RING_PROTECTION_REVEAL );
+						}
+						else
+						{
+							m.RevealingAction();
+						}
 
-                        Caster.DoHarmful( m );
+						Caster.DoHarmful( m );
 						SpellHelper.Damage( this, m, toDeal, 0, 100, 0, 0, 0 );
 
-						Point3D blast1 = new Point3D( ( m.X ), ( m.Y ), m.Z );
-						Point3D blast2 = new Point3D( ( m.X-1 ), ( m.Y ), m.Z );
-						Point3D blast3 = new Point3D( ( m.X+1 ), ( m.Y ), m.Z );
-						Point3D blast4 = new Point3D( ( m.X ), ( m.Y-1 ), m.Z );
-						Point3D blast5 = new Point3D( ( m.X ), ( m.Y+1 ), m.Z );
+						Point3D blast1 = new Point3D( m.X, m.Y, m.Z );
+						Point3D blast2 = new Point3D( m.X - 1, m.Y, m.Z );
+						Point3D blast3 = new Point3D( m.X + 1, m.Y, m.Z );
+						Point3D blast4 = new Point3D( m.X, m.Y - 1, m.Z );
+						Point3D blast5 = new Point3D( m.X, m.Y + 1, m.Z );
 
-						Effects.SendLocationEffect( blast1, m.Map, Utility.RandomList( 0x33E5, 0x33F5 ), 85, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-						Effects.SendLocationEffect( blast2, m.Map, Utility.RandomList( 0x33E5, 0x33F5 ), 85, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-						Effects.SendLocationEffect( blast3, m.Map, Utility.RandomList( 0x33E5, 0x33F5 ), 85, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-						Effects.SendLocationEffect( blast4, m.Map, Utility.RandomList( 0x33E5, 0x33F5 ), 85, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-						Effects.SendLocationEffect( blast5, m.Map, Utility.RandomList( 0x33E5, 0x33F5 ), 85, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-						Effects.PlaySound( m.Location, m.Map, 0x15F );
+						Effects.SendLocationEffect( blast1, m.Map, Utility.RandomList( PARTICLE_EFFECT_ID_1, PARTICLE_EFFECT_ID_2 ), PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						Effects.SendLocationEffect( blast2, m.Map, Utility.RandomList( PARTICLE_EFFECT_ID_1, PARTICLE_EFFECT_ID_2 ), PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						Effects.SendLocationEffect( blast3, m.Map, Utility.RandomList( PARTICLE_EFFECT_ID_1, PARTICLE_EFFECT_ID_2 ), PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						Effects.SendLocationEffect( blast4, m.Map, Utility.RandomList( PARTICLE_EFFECT_ID_1, PARTICLE_EFFECT_ID_2 ), PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						Effects.SendLocationEffect( blast5, m.Map, Utility.RandomList( PARTICLE_EFFECT_ID_1, PARTICLE_EFFECT_ID_2 ), PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						Effects.PlaySound( m.Location, m.Map, SOUND_EFFECT_HIT );
 					}
 				}
 			}
@@ -140,7 +181,7 @@ namespace Server.Spells.Seventh
 		{
 			private MeteorSwarmSpell m_Owner;
 
-			public InternalTarget( MeteorSwarmSpell owner ) : base( Core.ML ? 10 : 12, true, TargetFlags.None )
+			public InternalTarget( MeteorSwarmSpell owner ) : base( SpellConstants.GetSpellRange(), true, TargetFlags.None )
 			{
 				m_Owner = owner;
 			}

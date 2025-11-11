@@ -45,11 +45,11 @@ namespace Server.Spells.Fourth
 			}
 			else if (SpellHelper.CheckTown(p, Caster) && CheckSequence())
 			{
-				SpellHelper.Turn(Caster, p);
-				SpellHelper.GetSurfaceTop(ref p);
+			SpellHelper.Turn(Caster, p);
+			SpellHelper.GetSurfaceTop(ref p);
 
-				// Use centralized field orientation calculation
-				bool eastToWest = FieldSpellHelper.GetFieldOrientation(Caster.Location, p);
+			// Use centralized field orientation calculation (includes self-targeting fix)
+			bool eastToWest = FieldSpellHelper.GetFieldOrientation(Caster, p);
 
 				Effects.PlaySound(p, Caster.Map, FIRE_SOUND);
 

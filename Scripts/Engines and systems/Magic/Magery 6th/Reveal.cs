@@ -115,6 +115,15 @@ namespace Server.Spells.Sixth
 			{ typeof(StoneFaceTrap), "(stone face trap)" }
 		};
 
+		/// <summary>Container trap type names mapping</summary>
+		private static Dictionary<TrapType, string> m_ContainerTrapTypeNames = new Dictionary<TrapType, string>
+		{
+			{ TrapType.MagicTrap, "(magic trap)" },
+			{ TrapType.ExplosionTrap, "(explosion trap)" },
+			{ TrapType.DartTrap, "(dart trap)" },
+			{ TrapType.PoisonTrap, "(poison trap)" }
+		};
+
 		#endregion
 
 		public RevealSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
@@ -264,6 +273,41 @@ namespace Server.Spells.Sixth
 		}
 
 		/// <summary>
+		/// Gets the container trap type name from dictionary
+		/// </summary>
+		private string GetContainerTrapTypeName( TrapType trapType )
+		{
+			string name;
+			if ( m_ContainerTrapTypeNames.TryGetValue( trapType, out name ) )
+				return name;
+			return "";
+		}
+
+		/// <summary>
+		/// Reveals a container trap and displays its type
+		/// </summary>
+		private void RevealContainerTrap( TrapableContainer container )
+		{
+			string trapName = GetContainerTrapTypeName( container.TrapType );
+			
+			// Check if container is on ground or in inventory
+			bool isOnGround = ( container.Parent == null );
+			
+			if ( isOnGround )
+			{
+				// Show visual effects and sound at container location
+				Effects.SendLocationParticles( 
+					EffectItem.Create( container.Location, container.Map, EffectItem.DefaultDuration ), 
+					PARTICLE_EFFECT_ID, PARTICLE_COUNT, PARTICLE_SPEED, 
+					Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, PARTICLE_DURATION, 0 );
+				Effects.PlaySound( container.Location, container.Map, SOUND_EFFECT );
+			}
+			// If in backpack/inventory, skip visual effects (just show message)
+			
+			Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Existe uma(s) armadilha(s) próxima a você! " + trapName );
+		}
+
+		/// <summary>
 		/// Reveals hidden mobiles in range
 		/// </summary>
 		private void RevealMobiles( IPoint3D p )
@@ -272,6 +316,7 @@ namespace Server.Spells.Sixth
 			SpellHelper.GetSurfaceTop( ref p );
 
 			List<Mobile> targets = new List<Mobile>();
+			Dictionary<Mobile, int> revealChances = new Dictionary<Mobile, int>();
 
 			Map map = Caster.Map;
 
@@ -282,8 +327,15 @@ namespace Server.Spells.Sixth
 
 				foreach ( Mobile m in eable )
 				{
-					if ( m.Hidden && (m.AccessLevel == AccessLevel.Player || Caster.AccessLevel > m.AccessLevel) && CheckDifficulty( Caster, m ) )
-						targets.Add( m );
+					if ( m.Hidden && (m.AccessLevel == AccessLevel.Player || Caster.AccessLevel > m.AccessLevel) )
+					{
+						int chance;
+						if ( CheckDifficulty( Caster, m, out chance ) )
+						{
+							targets.Add( m );
+							revealChances[m] = chance;
+						}
+					}
 				}
 
 				eable.Free();
@@ -292,37 +344,95 @@ namespace Server.Spells.Sixth
 			for ( int i = 0; i < targets.Count; ++i )
 			{
 				Mobile m = targets[i];
+				int chance = revealChances[m];
 
 				m.RevealingAction();
 
 				m.FixedParticles( MOBILE_PARTICLE_EFFECT_ID, MOBILE_PARTICLE_COUNT, MOBILE_PARTICLE_SPEED, MOBILE_PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
 				m.PlaySound( MOBILE_SOUND_EFFECT );
+
+				// Send success messages to both caster and revealed player
+				SendRevealSuccessMessages( Caster, m, chance );
 			}
 		}
 
 		/// <summary>
-		/// Reveal uses magery and detect hidden vs. hide and stealth
+		/// Sends creative PT-BR messages to caster and revealed player with success rate
 		/// </summary>
-		private static bool CheckDifficulty( Mobile from, Mobile m )
+		private void SendRevealSuccessMessages( Mobile caster, Mobile revealed, int chance )
+		{
+			// Determine message tone based on chance
+			string casterMessage;
+			string revealedMessage;
+
+			if ( chance >= 70 )
+			{
+				// High chance - confident detection
+				casterMessage = String.Format( "Sua magia penetra facilmente através da ilusão! Você revelou {0} com {1}% de precisão mágica.", 
+					revealed.Name, chance );
+				revealedMessage = String.Format( "A magia de {0} rasga sua camuflagem! Você foi revelado com {1}% de chance de detecção.", 
+					caster.Name, chance );
+			}
+			else if ( chance >= 50 )
+			{
+				// Medium-high chance - good detection
+				casterMessage = String.Format( "Sua intuição mágica encontra o alvo! Você revelou {0} com {1}% de eficácia.", 
+					revealed.Name, chance );
+				revealedMessage = String.Format( "A aura mágica de {0} dissipa sua invisibilidade! Você foi detectado com {1}% de probabilidade.", 
+					caster.Name, chance );
+			}
+			else if ( chance >= 30 )
+			{
+				// Medium chance - moderate detection
+				casterMessage = String.Format( "Com esforço, sua magia encontra o alvo oculto! Você revelou {0} com {1}% de sucesso.", 
+					revealed.Name, chance );
+				revealedMessage = String.Format( "A magia de {0} consegue penetrar parcialmente sua camuflagem! Você foi revelado com {1}% de chance.", 
+					caster.Name, chance );
+			}
+			else
+			{
+				// Low chance - lucky detection
+				casterMessage = String.Format( "Por sorte, sua magia encontra o alvo! Você revelou {0} com apenas {1}% de chance de sucesso.", 
+					revealed.Name, chance );
+				revealedMessage = String.Format( "Apesar de sua habilidade, a magia de {0} te encontra! Você foi revelado com {1}% de probabilidade.", 
+					caster.Name, chance );
+			}
+
+			// Send messages
+			caster.SendMessage( Spell.MSG_COLOR_SYSTEM, casterMessage );
+			revealed.SendMessage( Spell.MSG_COLOR_ERROR, revealedMessage );
+		}
+
+		/// <summary>
+		/// Reveal uses DetectHidden vs. Hiding and Stealth skills
+		/// Invisibility spell always reveals (100%)
+		/// Formula: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10), clamped 10-80%
+		/// </summary>
+		private static bool CheckDifficulty( Mobile from, Mobile m, out int chance )
 		{
 			// Reveal always reveals vs. invisibility spell
 			if ( !Core.AOS || InvisibilitySpell.HasTimer( m ) )
+			{
+				chance = 100;
 				return true;
+			}
 
-			int magery = from.Skills[SkillName.Magery].Fixed;
 			int detectHidden = from.Skills[SkillName.DetectHidden].Fixed;
-
 			int hiding = m.Skills[SkillName.Hiding].Fixed;
 			int stealth = m.Skills[SkillName.Stealth].Fixed;
-			int divisor = hiding + stealth;
 
-			int chance;
-			if ( divisor > 0 )
-				chance = REVEAL_CHANCE_MULTIPLIER * (magery + detectHidden) / divisor;
-			else
-				chance = REVEAL_CHANCE_MAX;
+			// Formula: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10)
+			// Hiding impact: each point difference = 0.5%
+			// Stealth impact: each 10 points = -1%
+			chance = 50 - ((hiding - detectHidden) / 2) - (stealth / 10);
 
-			return chance > Utility.Random( REVEAL_CHANCE_MAX );
+			// Clamp between 10% (minimum) and 80% (maximum)
+			if ( chance < 10 )
+				chance = 10;
+			if ( chance > 80 )
+				chance = 80;
+
+			return chance > Utility.Random( 100 );
 		}
 
 		#endregion
@@ -340,8 +450,29 @@ namespace Server.Spells.Sixth
 
 			protected override void OnTarget( Mobile from, object o )
 			{
+				// Check if target is a container (1-to-1 detection)
+				TrapableContainer container = o as TrapableContainer;
+				if ( container != null )
+				{
+					// Check if container has a trap
+					if ( container.TrapType != TrapType.None )
+					{
+						m_Owner.RevealContainerTrap( container );
+					}
+					
+					// Continue with area-based reveal ONLY if container is on ground
+					// (containers in backpacks don't trigger area reveal)
+					if ( container.Parent == null )
+					{
+						IPoint3D containerLocation = container as IPoint3D;
+						if ( containerLocation != null )
+							m_Owner.Target( containerLocation );
+					}
+					return;
+				}
+				
+				// Existing behavior: area-based reveal for ground/location targets
 				IPoint3D p = o as IPoint3D;
-
 				if ( p != null )
 					m_Owner.Target( p );
 			}

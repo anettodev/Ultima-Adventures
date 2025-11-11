@@ -313,8 +313,8 @@ Typically: 25-55 seconds based on Magery + Inscription
 | Feature | Trigger | Success Rate | Skill Bonuses | Description |
 |---------|---------|--------------|---------------|-------------|
 | **Wealth Sense** | Target Container | 0.2% per Magery | +0.1% per Taste ID | Detects gold, jewelry, gems |
-| **Trap Awareness** | Target Container | Always (if trapped) | - | Warns of traps |
-| **Aura Sense** | Target Mobile | 0.3% per Magery | +0.2% per Spirit Speak | Detects active buffs/debuffs |
+| **Trap Awareness** | Target Container | 0.2% per Magery | +0.1% per Remove Trap | Warns of traps (skill-based) |
+| **Aura Sense** | Target Mobile | 0.2% per Magery | +0.1% per Spirit Speak | Detects active buffs/debuffs |
 | **Danger Sense** | Passive (every 5s) | 0.2% per Magery | +0.1% per Forensics | Detects hidden entities within 3 tiles |
 
 #### Sense Mode Visual Feedback
@@ -324,14 +324,20 @@ Typically: 25-55 seconds based on Magery + Inscription
 - **Buff Icon:** Shows "Modo Sensitivo Ativo"
 - **Trap Detection:** Warning sound (0x1F5)
 
-#### Sense Mode Messages
-- **Wealth (Valuable):** Green message + item count
+#### Sense Mode Messages & Colors
+- **Wealth (Valuable):** Yellow message + item count ✨
 - **Wealth (Empty/Nothing):** Gray message
-- **Trap:** Orange warning message
-- **Aura:** Cyan message listing buffs
-- **Danger:** Orange warning of hidden presence
-- **Failed Sense:** Orange "Você falhou em sentir isto."
+- **Trap:** Orange warning message (mysterious) 🔶
+- **Aura:** Purple message listing buffs 💜
+- **Danger:** Red warning of hidden presence 🔴
+- **Failed Sense:** Red "Você falhou em sentir isto."
+- **Spell Cancelled:** Orange "Uma perturbação nas forças místicas confundiu seus sentidos..."
 - **Invalid Target:** Orange "Você não pode sentir este item."
+
+#### Sense Mode Mechanics
+- **Success:** Sense detection succeeds → Spell continues working
+- **Failure:** Sense detection fails → **Night Sight spell is cancelled immediately**
+- **Mystical Forces:** Failed sensing disturbs the magical energies, ending all effects
 
 ### Simulation Scenarios
 
@@ -347,21 +353,27 @@ Typically: 25-55 seconds based on Magery + Inscription
 
 #### Sense Mode Detection Chances
 
-| Magery | Taste ID | Wealth | Forensics | Danger | Spirit Speak | Aura |
-|--------|----------|--------|-----------|--------|--------------|------|
-| 50 | 50 | 15% | 50 | 15% | 50 | 25% |
-| 75 | 75 | 23% | 75 | 23% | 75 | 37% |
-| 100 | 100 | 30% | 100 | 30% | 100 | 50% |
-| 120 | 120 | 36% | 120 | 36% | 120 | 60% |
+| Magery | Taste ID | Wealth | Remove Trap | Trap | Forensics | Danger | Spirit Speak | Aura |
+|--------|----------|--------|-------------|------|-----------|--------|--------------|------|
+| 50 | 50 | 15% | 50 | 15% | 50 | 15% | 50 | 15% |
+| 75 | 75 | 23% | 75 | 23% | 75 | 23% | 75 | 23% |
+| 100 | 100 | 30% | 100 | 30% | 100 | 30% | 100 | 30% |
+| 120 | 120 | 36% | 120 | 36% | 120 | 36% | 120 | 36% |
 
 ### Curiosities & Easter Eggs
 - **Sense Mode Only for Caster:** Friends get light, not sense abilities
 - **Blue Cursor:** Distinctive beneficial targeting in Sense Mode
 - **Periodic Ambient Effects:** Subtle glow shows Sense Mode active
 - **Buff Icon:** Visual indicator in buff bar
-- **Multi-Skill Synergy:** Benefits from 4 different skills
-- **Passive Danger Sense:** Auto-checks every 5 seconds
-- **Trap Warning Sound:** Audio cue for trapped containers
+- **Multi-Skill Synergy:** Benefits from 4 different skills (Taste ID, Remove Trap, Forensics, Spirit Speak)
+- **Passive Danger Sense:** Auto-checks every 5 seconds (doesn't cancel spell on fail)
+- **Trap Warning Sound:** Audio cue for trapped containers (if detected)
+- **Skill-Based Trap Detection:** No longer 100% - rewards Remove Trap investment
+- **Balanced Detection Rates:** All sense features now use consistent 0.2% + 0.1% formula
+- **High Risk/High Reward:** Failed sense attempts cancel the entire spell - choose targets wisely!
+- **Mystical Disruption:** Failure message: "Uma perturbação nas forças místicas confundiu seus sentidos..."
+- **Color-Coded Feedback:** Yellow (wealth), Orange (trap), Purple (aura), Red (danger/fail)
+- **Mysterious Trap Messages:** No longer reveals trap details - only hints at danger
 - **Duration Scaling:** Uses centralized NMSGetDuration
 - **Auto-Dismiss Cursor:** Cursor removed when spell expires
 - **Thread-Safe Timers:** Proper cleanup and tracking

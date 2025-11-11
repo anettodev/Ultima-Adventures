@@ -1,13 +1,18 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Server.Network;
 using Server.Items;
 using Server.Targeting;
 using Server.Regions;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Seventh
 {
+	/// <summary>
+	/// Chain Lightning - 7th Circle Magery Spell
+	/// Area-of-effect lightning damage spell
+	/// </summary>
 	public class ChainLightningSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -22,6 +27,46 @@ namespace Server.Spells.Seventh
 			);
 
 		public override SpellCircle Circle { get { return SpellCircle.Seventh; } }
+
+		#region Constants
+
+		/// <summary>Area of effect range in tiles</summary>
+		private const int AOE_RANGE = 5;
+
+		/// <summary>Base damage bonus</summary>
+		private const int BASE_DAMAGE_BONUS = 38;
+
+		/// <summary>Damage dice count</summary>
+		private const int DAMAGE_DICE_COUNT = 2;
+
+		/// <summary>Damage dice sides</summary>
+		private const int DAMAGE_DICE_SIDES = 5;
+
+		/// <summary>Minimum damage floor</summary>
+		private const int MIN_DAMAGE_FLOOR = 12;
+
+		/// <summary>Resist damage multiplier</summary>
+		private const double RESIST_DAMAGE_MULTIPLIER = 0.5;
+
+		/// <summary>One Ring damage multiplier</summary>
+		private const double ONE_RING_DAMAGE_MULTIPLIER = 0.5;
+
+		/// <summary>Particle effect ID (custom hue)</summary>
+		private const int PARTICLE_EFFECT_ID = 0x2A4E;
+
+		/// <summary>Particle effect duration</summary>
+		private const int PARTICLE_EFFECT_DURATION = 30;
+
+		/// <summary>Particle effect speed</summary>
+		private const int PARTICLE_EFFECT_SPEED = 10;
+
+		/// <summary>Particle Z offset</summary>
+		private const int PARTICLE_Z_OFFSET = 10;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x029;
+
+		#endregion
 
 		public ChainLightningSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
@@ -38,8 +83,8 @@ namespace Server.Spells.Seventh
 		{
 			if ( !Caster.CanSee( p ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( SpellHelper.CheckTown( p, Caster ) && CheckSequence() )
 			{
 				SpellHelper.Turn( Caster, p );
@@ -47,7 +92,7 @@ namespace Server.Spells.Seventh
 				if ( p is Item )
 					p = ((Item)p).GetWorldLocation();
 
-				ArrayList targets = new ArrayList();
+				List<Mobile> targets = new List<Mobile>();
 
 				Map map = Caster.Map;
 
@@ -55,21 +100,16 @@ namespace Server.Spells.Seventh
 
 				if ( map != null )
 				{
-					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), 5 );
+					IPooledEnumerable eable = map.GetMobilesInRange( new Point3D( p ), AOE_RANGE );
 
 					foreach ( Mobile m in eable )
 					{
-						Mobile pet = m;
-
 						if ( Caster.Region == m.Region && Caster != m )
 						{
-							//if ( m is BaseCreature )
-								//petOwner = ((BaseCreature)m).GetMaster();
-
-                            targets.Add(m);
-                            if (m.Player)
-                                playerVsPlayer = true;
-                        }
+							targets.Add( m );
+							if ( m.Player )
+								playerVsPlayer = true;
+						}
 					}
 
 					eable.Free();
@@ -78,24 +118,24 @@ namespace Server.Spells.Seventh
 				double damage;
 
 				int nBenefit = 0;
-				if ( Caster is PlayerMobile ) // WIZARD
+				if ( Caster is PlayerMobile )
 				{
-					//nBenefit = CalculateMobileBenefit(Caster, 6, 3);
+					// Future benefit calculation can be added here
 				}
 
-				damage = GetNMSDamage(38, 2, 5, Caster.Player && playerVsPlayer) + nBenefit;
+				damage = GetNMSDamage( BASE_DAMAGE_BONUS, DAMAGE_DICE_COUNT, DAMAGE_DICE_SIDES, Caster.Player && playerVsPlayer ) + nBenefit;
 
 				if ( targets.Count > 0 )
 				{
 					if ( targets.Count > 1 )
 						damage /= targets.Count;
 
-					if (damage < 12)
-						damage = 12;
+					if ( damage < MIN_DAMAGE_FLOOR )
+						damage = MIN_DAMAGE_FLOOR;
 
-                    for ( int i = 0; i < targets.Count; ++i )
+					for ( int i = 0; i < targets.Count; ++i )
 					{
-						Mobile m = (Mobile)targets[i];
+						Mobile m = targets[i];
 
 						Region house = m.Region;
 
@@ -103,37 +143,36 @@ namespace Server.Spells.Seventh
 
 						if ( CheckResisted( m ) )
 						{
-							toDeal *= 0.5;
-                            m.SendMessage(55, "Sua aura mágica lhe ajudou a resistir metade do dano desse feitiço.");
+							toDeal *= RESIST_DAMAGE_MULTIPLIER;
+							m.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.RESIST_HALF_DAMAGE_VICTIM );
 						}
 
-						if( !(house is Regions.HouseRegion) )
+						if ( !(house is Regions.HouseRegion) )
 						{
-							if (m is PlayerMobile && m.FindItemOnLayer(Layer.Ring) != null && m.FindItemOnLayer(Layer.Ring) is OneRing) 
+							if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing )
 							{
-                                m.SendMessage(33, "O UM ANEL te protegeu de ser revelado e absorveu metade do dano recebido.");
-                                toDeal *= 0.5;
-                            }
+								m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ONE_RING_PROTECTION_REVEAL );
+								toDeal *= ONE_RING_DAMAGE_MULTIPLIER;
+							}
 							else
 							{
 								m.RevealingAction();
-                            }
+							}
 
-                            Caster.DoHarmful(m);
-                            SpellHelper.Damage(this, m, toDeal, 0, 0, 0, 0, 100);
+							Caster.DoHarmful( m );
+							SpellHelper.Damage( this, m, toDeal, 0, 0, 0, 0, 100 );
 
-                            if ( Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ) > 0 )
+							if ( Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ) > 0 )
 							{
-								Point3D blast = new Point3D( ( m.X ), ( m.Y ), m.Z+10 );
-								Effects.SendLocationEffect( blast, m.Map, 0x2A4E, 30, 10, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-								m.PlaySound( 0x029 );
+								Point3D blast = new Point3D( m.X, m.Y, m.Z + PARTICLE_Z_OFFSET );
+								Effects.SendLocationEffect( blast, m.Map, PARTICLE_EFFECT_ID, PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+								m.PlaySound( SOUND_EFFECT );
 							}
 							else
 							{
 								m.BoltEffect( 0 );
 							}
-                                                          
-                        }
+						}
 					}
 				}
 			}
@@ -145,7 +184,7 @@ namespace Server.Spells.Seventh
 		{
 			private ChainLightningSpell m_Owner;
 
-			public InternalTarget( ChainLightningSpell owner ) : base( 12, true, TargetFlags.None )
+			public InternalTarget( ChainLightningSpell owner ) : base( SpellConstants.GetSpellRange(), true, TargetFlags.None )
 			{
 				m_Owner = owner;
 			}

@@ -21,31 +21,40 @@ namespace Server.Spells.First
 
 		public override SpellCircle Circle { get { return SpellCircle.First; } }
 
-		#region Sense Mode Constants
-		// Wealth Sense
-		private const double WEALTH_SENSE_CHANCE_PER_MAGERY = 0.2;
-		private const double WEALTH_SENSE_CHANCE_PER_TASTE_ID = 0.1;
+	#region Sense Mode Constants
+	// Wealth Sense
+	private const double WEALTH_SENSE_CHANCE_PER_MAGERY = 0.2;
+	private const double WEALTH_SENSE_CHANCE_PER_TASTE_ID = 0.1;
 
-		// Danger Sense
-		private const double DANGER_SENSE_CHANCE_PER_MAGERY = 0.2;
-		private const double DANGER_SENSE_CHANCE_PER_FORENSICS = 0.1;
-		private const int DANGER_SENSE_RANGE = 3;
-		private const double DANGER_SENSE_CHECK_INTERVAL_SECONDS = 5.0;
+	// Trap Awareness
+	private const double TRAP_SENSE_CHANCE_PER_MAGERY = 0.2;
+	private const double TRAP_SENSE_CHANCE_PER_REMOVE_TRAP = 0.1;
 
-		// Aura Sense
-		private const double AURA_SENSE_CHANCE_PER_MAGERY = 0.3;
-		private const double AURA_SENSE_CHANCE_PER_SPIRIT_SPEAK = 0.2;
+	// Danger Sense
+	private const double DANGER_SENSE_CHANCE_PER_MAGERY = 0.2;
+	private const double DANGER_SENSE_CHANCE_PER_FORENSICS = 0.1;
+	private const int DANGER_SENSE_RANGE = 3;
+	private const double DANGER_SENSE_CHECK_INTERVAL_SECONDS = 5.0;
 
-		// Messages
-		private const string MSG_WEALTH_VALUABLE = "Você sente {0} itens dentro. Parece conter riquezas valiosas!";
-		private const string MSG_WEALTH_NOTHING = "Você sente {0} itens dentro. Nada de valor aparente.";
-		private const string MSG_WEALTH_EMPTY = "O recipiente parece vazio.";
-		private const string MSG_TRAP_DETECTED = "Sua visão aguçada nota algo suspeito. Talvez tenha uma armadilha.";
-		private const string MSG_DANGER_SENSE = "Você sente algo nas sombras ou no ar...";
-		private const string MSG_AURA_SENSE = "{0} emana uma aura de {1}...";
-		private const string MSG_SENSE_MODE_ACTIVATED = "Seus sentidos estão aguçados. Você pode sentir riquezas, perigos e auras.";
-		private const string MSG_SENSE_FAILED = "Você falhou em sentir isto.";
-		private const string MSG_INVALID_SENSE_TARGET = "Você não pode sentir este item.";
+	// Aura Sense
+	private const double AURA_SENSE_CHANCE_PER_MAGERY = 0.2;
+	private const double AURA_SENSE_CHANCE_PER_SPIRIT_SPEAK = 0.1;
+
+	// Messages
+	private const string MSG_WEALTH_VALUABLE = "Você sente {0} itens dentro. Parece conter riquezas valiosas!";
+	private const string MSG_WEALTH_NOTHING = "Você sente {0} itens dentro. Nada de valor aparente.";
+	private const string MSG_WEALTH_EMPTY = "O recipiente parece vazio.";
+	private const string MSG_TRAP_DETECTED = "Sua visão aguçada nota algo suspeito...";
+	private const string MSG_DANGER_SENSE = "Você sente algo nas sombras ou no ar...";
+	private const string MSG_AURA_SENSE = "{0} emana uma aura de {1}...";
+	private const string MSG_SENSE_MODE_ACTIVATED = "Seus sentidos estão aguçados. Você pode sentir riquezas, perigos e auras.";
+	private const string MSG_SENSE_FAILED = "Você falhou em sentir isto.";
+	private const string MSG_SENSE_DISTURBED = "Uma perturbação nas forças místicas confundiu seus sentidos. A visão noturna se dissipa...";
+	private const string MSG_INVALID_SENSE_TARGET = "Você não pode sentir este item.";
+	
+	// Message Colors
+	private const int MSG_COLOR_YELLOW = 0x35; // Yellow for wealth
+	private const int MSG_COLOR_PURPLE = 0x16; // Purple/Magenta for auras
 		
 		// Visual Effects - Sense Mode
 		private const int SENSE_PARTICLE_EFFECT = 0x375A;
@@ -119,22 +128,35 @@ namespace Server.Spells.First
 		/// <summary>
 		/// Deactivates Sense Mode for a mobile
 		/// </summary>
-		public static void DeactivateSenseMode(Mobile m)
+		/// <param name="m">Mobile to deactivate</param>
+		/// <param name="cancelSpell">If true, also cancels the Night Sight spell effect</param>
+		public static void DeactivateSenseMode(Mobile m, bool cancelSpell = false)
 		{
 			if (m_SenseModeActive.ContainsKey(m))
 			{
 				m_SenseModeActive.Remove(m);
 			}
 			
-			// Cancel active target cursor
+			// Cancel active target cursor - force cancellation
 			if (m_ActiveTargets.ContainsKey(m))
 			{
 				SenseTarget target = m_ActiveTargets[m];
+				// Explicitly cancel the target if it's still active
 				if (m.Target == target)
 				{
+					target.Cancel(m, TargetCancelType.Canceled);
 					m.Target = null;
 				}
 				m_ActiveTargets.Remove(m);
+			}
+			else
+			{
+				// Also check if current target is a SenseTarget (in case dictionary is out of sync)
+				if (m.Target is SenseTarget)
+				{
+					((SenseTarget)m.Target).Cancel(m, TargetCancelType.Canceled);
+					m.Target = null;
+				}
 			}
 			
 			// Stop periodic effect timer
@@ -150,6 +172,13 @@ namespace Server.Spells.First
 			
 			// Remove buff icon
 			BuffInfo.RemoveBuff(m, BuffIcon.NightSight);
+			
+			// Cancel the Night Sight spell if requested
+			if (cancelSpell)
+			{
+				m.EndAction(typeof(LightCycle));
+				m.LightLevel = 0;
+			}
 		}
 
 		private class NightSightTarget : Target
@@ -374,123 +403,139 @@ namespace Server.Spells.First
 				from.Target = newTarget;
 			}
 
-			private void HandleContainerSense(Container container)
+		private void HandleContainerSense(Container container)
+		{
+			bool successfullySensed = false;
+
+			// Calculate Wealth Sense chance
+			double mageryChance = m_Caster.Skills[SkillName.Magery].Value * WEALTH_SENSE_CHANCE_PER_MAGERY;
+			double tasteBonus = m_Caster.Skills[SkillName.TasteID].Value * WEALTH_SENSE_CHANCE_PER_TASTE_ID;
+			double totalChance = mageryChance + tasteBonus;
+
+			if (Utility.RandomDouble() * 100.0 < totalChance)
 			{
-				bool successfullySensed = false;
+				// Wealth Sense success
+				int itemCount = container.Items.Count;
+				bool hasValuables = false;
 
-				// Calculate Wealth Sense chance
-				double mageryChance = m_Caster.Skills[SkillName.Magery].Value * WEALTH_SENSE_CHANCE_PER_MAGERY;
-				double tasteBonus = m_Caster.Skills[SkillName.TasteID].Value * WEALTH_SENSE_CHANCE_PER_TASTE_ID;
-				double totalChance = mageryChance + tasteBonus;
-
-				if (Utility.RandomDouble() * 100.0 < totalChance)
+				foreach (Item item in container.Items)
 				{
-					// Wealth Sense success
-					int itemCount = container.Items.Count;
-					bool hasValuables = false;
-
-					foreach (Item item in container.Items)
+					// Check for gold, jewelry, or any gem types
+					if (item is Gold || item is BaseJewel)
 					{
-						// Check for gold, jewelry, or any gem types
-						if (item is Gold || item is BaseJewel)
-						{
-							hasValuables = true;
-							break;
-						}
-						
-						// Check for common gem types (no base class exists)
-						Type itemType = item.GetType();
-						string typeName = itemType.Name;
-						if (typeName == "Amber" || typeName == "Amethyst" || typeName == "Citrine" || 
-						    typeName == "Diamond" || typeName == "Emerald" || typeName == "Ruby" || 
-						    typeName == "Sapphire" || typeName == "StarSapphire" || typeName == "Tourmaline")
-						{
-							hasValuables = true;
-							break;
-						}
-					}
-
-					if (itemCount == 0)
-					{
-						// Gray for empty
-						m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, MSG_WEALTH_EMPTY);
-					}
-					else if (hasValuables)
-					{
-						// Green for success/valuables
-						m_Caster.SendMessage(Spell.MSG_COLOR_HEAL, string.Format(MSG_WEALTH_VALUABLE, itemCount));
-					}
-					else
-					{
-						// Gray for nothing valuable
-						m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, string.Format(MSG_WEALTH_NOTHING, itemCount));
+						hasValuables = true;
+						break;
 					}
 					
-					successfullySensed = true;
+					// Check for common gem types (no base class exists)
+					Type itemType = item.GetType();
+					string typeName = itemType.Name;
+					if (typeName == "Amber" || typeName == "Amethyst" || typeName == "Citrine" || 
+					    typeName == "Diamond" || typeName == "Emerald" || typeName == "Ruby" || 
+					    typeName == "Sapphire" || typeName == "StarSapphire" || typeName == "Tourmaline")
+					{
+						hasValuables = true;
+						break;
+					}
 				}
 
-				// Trap Awareness (separate check, always works if trap exists)
-				TrapableContainer trapContainer = container as TrapableContainer;
-				if (trapContainer != null && trapContainer.TrapType != TrapType.None)
+				if (itemCount == 0)
 				{
-					// Orange/red warning for trap
+					// Gray for empty
+					m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, MSG_WEALTH_EMPTY);
+				}
+				else if (hasValuables)
+				{
+					// Yellow for success/valuables
+					m_Caster.SendMessage(MSG_COLOR_YELLOW, string.Format(MSG_WEALTH_VALUABLE, itemCount));
+				}
+				else
+				{
+					// Gray for nothing valuable
+					m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, string.Format(MSG_WEALTH_NOTHING, itemCount));
+				}
+				
+				successfullySensed = true;
+			}
+
+			// Trap Awareness (skill-based detection)
+			TrapableContainer trapContainer = container as TrapableContainer;
+			if (trapContainer != null && trapContainer.TrapType != TrapType.None)
+			{
+				// Calculate Trap Sense chance
+				double trapMageryChance = m_Caster.Skills[SkillName.Magery].Value * TRAP_SENSE_CHANCE_PER_MAGERY;
+				double removeTrapBonus = m_Caster.Skills[SkillName.RemoveTrap].Value * TRAP_SENSE_CHANCE_PER_REMOVE_TRAP;
+				double trapTotalChance = trapMageryChance + removeTrapBonus;
+
+				if (Utility.RandomDouble() * 100.0 < trapTotalChance)
+				{
+					// Orange warning for trap
 					m_Caster.SendMessage(Spell.MSG_COLOR_WARNING, MSG_TRAP_DETECTED);
 					m_Caster.PlaySound(0x1F5); // Danger sound
 					successfullySensed = true;
 				}
-
-				// Send failure message if both checks failed
-				if (!successfullySensed)
-				{
-					m_Caster.SendMessage(Spell.MSG_COLOR_WARNING, MSG_SENSE_FAILED);
-				}
 			}
 
-			private void HandleAuraSense(Mobile target)
+			// If any sense failed, cancel the entire spell
+			if (!successfullySensed)
 			{
-				if (target == m_Caster)
-					return;
+				m_Caster.SendMessage(Spell.MSG_COLOR_ERROR, MSG_SENSE_FAILED);
+				m_Caster.SendMessage(Spell.MSG_COLOR_WARNING, MSG_SENSE_DISTURBED);
+				
+				// Cancel Night Sight spell and deactivate Sense Mode
+				NightSightSpell.DeactivateSenseMode(m_Caster, cancelSpell: true);
+			}
+		}
 
-				// Calculate Aura Sense chance
-				double mageryChance = m_Caster.Skills[SkillName.Magery].Value * AURA_SENSE_CHANCE_PER_MAGERY;
-				double spiritBonus = m_Caster.Skills[SkillName.SpiritSpeak].Value * AURA_SENSE_CHANCE_PER_SPIRIT_SPEAK;
-				double totalChance = mageryChance + spiritBonus;
+		private void HandleAuraSense(Mobile target)
+		{
+			if (target == m_Caster)
+				return;
 
-				if (Utility.RandomDouble() * 100.0 < totalChance)
+			// Calculate Aura Sense chance
+			double mageryChance = m_Caster.Skills[SkillName.Magery].Value * AURA_SENSE_CHANCE_PER_MAGERY;
+			double spiritBonus = m_Caster.Skills[SkillName.SpiritSpeak].Value * AURA_SENSE_CHANCE_PER_SPIRIT_SPEAK;
+			double totalChance = mageryChance + spiritBonus;
+
+			if (Utility.RandomDouble() * 100.0 < totalChance)
+			{
+				// Detect active buffs/debuffs
+				List<string> auras = new List<string>();
+
+				// Check for common buffs (this is simplified - expand as needed)
+				if (target.Poisoned)
+					auras.Add("veneno");
+				if (target.Paralyzed)
+					auras.Add("paralisia");
+				if (target.Blessed)
+					auras.Add("proteção divina");
+				
+				// Check for Magic Reflection
+				if (MagicReflectSpell.HasActiveShield(target))
+					auras.Add("reflexão mágica");
+
+				if (auras.Count > 0)
 				{
-					// Detect active buffs/debuffs
-					List<string> auras = new List<string>();
-
-					// Check for common buffs (this is simplified - expand as needed)
-					if (target.Poisoned)
-						auras.Add("veneno");
-					if (target.Paralyzed)
-						auras.Add("paralisia");
-					if (target.Blessed)
-						auras.Add("proteção divina");
-					
-					// Check for Magic Reflection
-					if (MagicReflectSpell.HasActiveShield(target))
-						auras.Add("reflexão mágica");
-
-					if (auras.Count > 0)
-					{
-						string auraList = string.Join(", ", auras.ToArray());
-						// Cyan/blue for aura detection success
-						m_Caster.SendMessage(Spell.MSG_COLOR_HEAL, string.Format(MSG_AURA_SENSE, target.Name, auraList));
-					}
-					else
-					{
-						// Gray for no auras
-						m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, target.Name + " não parece ter auras ativas detectáveis.");
-					}
+					string auraList = string.Join(", ", auras.ToArray());
+					// Purple for aura detection success
+					m_Caster.SendMessage(MSG_COLOR_PURPLE, string.Format(MSG_AURA_SENSE, target.Name, auraList));
 				}
 				else
 				{
-					// Aura sense failed
-					m_Caster.SendMessage(Spell.MSG_COLOR_WARNING, MSG_SENSE_FAILED);
+					// Gray for no auras
+					m_Caster.SendMessage(Spell.MSG_COLOR_SYSTEM, target.Name + " não parece ter auras ativas detectáveis.");
 				}
 			}
+			else
+			{
+				// Aura sense failed - cancel spell
+				m_Caster.SendMessage(Spell.MSG_COLOR_ERROR, MSG_SENSE_FAILED);
+				m_Caster.SendMessage(Spell.MSG_COLOR_WARNING, MSG_SENSE_DISTURBED);
+				
+				// Cancel Night Sight spell and deactivate Sense Mode
+				NightSightSpell.DeactivateSenseMode(m_Caster, cancelSpell: true);
+			}
+		}
 
 			protected override void OnTargetCancel(Mobile from, TargetCancelType cancelType)
 			{

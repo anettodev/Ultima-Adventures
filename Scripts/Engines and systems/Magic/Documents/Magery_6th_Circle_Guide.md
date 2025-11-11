@@ -411,7 +411,7 @@ NPCs: Total × 2.0
 ## 8. Reveal (`Wis Quas`)
 
 ### Description
-Reveals hidden mobiles, traps, and hidden containers in an area around a target location. Detection range scales with Magery. Can detect Hiding/Stealth users with skill-based chance. Trap detection shows chest location and generates loot. Reduced detection chance (20% multiplier) rewards Hiding/Stealth investment.
+Reveals hidden mobiles, traps, and hidden containers in an area around a target location. Can also detect container traps when directly targeting a container (1-to-1 detection). Detection range scales with Magery. Can detect Hiding/Stealth users with skill-based chance. Trap detection shows chest location and generates loot. Success messages display the exact detection chance percentage to both caster and revealed player.
 
 ### Meaning
 The spell words "Wis Quas" translate to "Know Illusion" in the magical language.
@@ -420,7 +420,7 @@ The spell words "Wis Quas" translate to "Know Illusion" in the magical language.
 - **Minimum Magery:** 90.0
 - **Reagents:** Bloodmoss, Sulfurous Ash
 - **Mana Cost:** 40
-- **Target:** Ground location
+- **Target:** Ground location OR Container (for trap detection)
 - **Range:** 10 tiles (ML) / 12 tiles (Legacy)
 - **Detection Range:** 1 + (Magery / 50) tiles
 
@@ -438,31 +438,55 @@ Detection Range = 1 + (Magery / 50) tiles
 
 ### Hiding/Stealth Detection Formula
 ```
-Caster Power = (Magery + DetectHidden) × 20%
-Target Defense = Hiding + Stealth
-Chance = Caster Power - Target Defense
+Base Chance = 50%
+Hiding Impact = (Hiding - DetectHidden) / 2
+Stealth Impact = Stealth / 10
+Final Chance = 50 - Hiding Impact - Stealth Impact
 
-If Chance > 0: Reveal target
-Else: Target remains hidden
+Clamped between 10% (minimum) and 80% (maximum)
+
+Note: Magery skill is NOT used in detection calculation (only required for casting)
 ```
 
+**Formula Details:**
+- **Base Chance:** 50% when skills are equal
+- **Hiding Impact:** Each point difference = 0.5% impact
+- **Stealth Impact:** Each 10 points = -1% to reveal chance
+- **Invisibility Spell:** Always 100% detection (bypasses formula)
+
 ### Detection Types
-1. **Invisibility Spell:** 100% detection
-2. **Hiding Skill:** Skill-based chance (reduced 50%)
-3. **Hidden Traps:** Level-based detection
-4. **Hidden Containers:** 1-in-3 chance, generates loot
+1. **Invisibility Spell:** 100% detection (always succeeds)
+2. **Hiding Skill:** Skill-based chance using DetectHidden vs Hiding
+3. **Stealth Skill:** Additional penalty (-1% per 10 points)
+4. **Ground Traps:** Level-based detection (area effect)
+5. **Container Traps:** Direct detection when targeting container (1-to-1)
+6. **Hidden Containers:** 1-in-3 chance, generates loot
+
+### Container Trap Detection
+When directly targeting a container (chest, box, etc.):
+- **1-to-1 Detection:** Only the targeted container is checked
+- **Works Everywhere:** Detects traps on containers both on ground and in backpacks
+- **Visual Effects:** Only shown for ground containers (backpack containers show message only)
+- **Trap Types:** Magic Trap, Explosion Trap, Dart Trap, Poison Trap
 
 ### Simulation Scenarios
 
 #### Mobile Detection
 
-| Caster Skills | Target Skills | Detection Chance | Notes |
-|---------------|---------------|------------------|-------|
-| 100 Mag + 0 DH | 100 Hiding | 0% | Pure hider safe |
-| 100 Mag + 50 DH | 100 Hiding | 10% | Slight chance |
-| 100 Mag + 100 DH | 100 Hiding | 40% | Moderate |
-| 120 Mag + 100 DH | 100/100 Hide/Stealth | 4% | Skilled stealth |
-| 120 Mag + 100 DH | 120/120 Hide/Stealth | 0% | Master stealth safe |
+| Caster Skills | Target Skills | Calculation | Detection Chance | Notes |
+|---------------|---------------|-------------|------------------|-------|
+| 0 DH | 0 Hiding, 0 Stealth | 50 - (0/2) - (0/10) = 50 | **50%** | Equal skills |
+| 0 DH | 50 Hiding, 0 Stealth | 50 - (50/2) - (0/10) = 25 | **25%** | Hider advantage |
+| 0 DH | 100 Hiding, 0 Stealth | 50 - (100/2) - (0/10) = 0 → 10 | **10%** | Floor applied |
+| 50 DH | 0 Hiding, 0 Stealth | 50 - (-50/2) - (0/10) = 75 → 80 | **80%** | Capped at max |
+| 50 DH | 50 Hiding, 0 Stealth | 50 - (0/2) - (0/10) = 50 | **50%** | Equal Hiding/DH |
+| 50 DH | 100 Hiding, 0 Stealth | 50 - (50/2) - (0/10) = 25 | **25%** | Hider advantage |
+| 50 DH | 50 Hiding, 50 Stealth | 50 - (0/2) - (50/10) = 45 | **45%** | Stealth penalty |
+| 50 DH | 50 Hiding, 100 Stealth | 50 - (0/2) - (100/10) = 40 | **40%** | High stealth |
+| 50 DH | 100 Hiding, 100 Stealth | 50 - (50/2) - (100/10) = 15 | **15%** | Combined penalty |
+| 100 DH | 0 Hiding, 0 Stealth | 50 - (-100/2) - (0/10) = 100 → 80 | **80%** | Capped at max |
+| 100 DH | 100 Hiding, 0 Stealth | 50 - (0/2) - (0/10) = 50 | **50%** | Equal skills |
+| 100 DH | 100 Hiding, 100 Stealth | 50 - (0/2) - (100/10) = 40 | **40%** | Stealth penalty |
 
 #### Trap Detection
 
@@ -473,15 +497,39 @@ Else: Target remains hidden
 | 110 | 1-5 | Very High | 300-1000 gold |
 | 120 | 1-6 | Very High | 300-1000 gold |
 
+#### Container Trap Detection
+
+| Target | Trap Type | Detection | Visual Effects |
+|--------|-----------|-----------|----------------|
+| Ground Container | Any | 100% (if trapped) | Yes |
+| Backpack Container | Any | 100% (if trapped) | No (message only) |
+
+### Success Messages
+When a hidden player is successfully revealed, both players receive messages with the exact detection chance:
+
+**High Chance (70%+):**
+- Caster: "Sua magia penetra facilmente através da ilusão! Você revelou [Nome] com [X]% de precisão mágica."
+- Revealed: "A magia de [Nome] rasga sua camuflagem! Você foi revelado com [X]% de chance de detecção."
+
+**Medium Chance (30-69%):**
+- Caster: "Sua intuição mágica encontra o alvo! Você revelou [Nome] com [X]% de eficácia."
+- Revealed: "A aura mágica de [Nome] dissipa sua invisibilidade! Você foi detectado com [X]% de probabilidade."
+
+**Low Chance (10-29%):**
+- Caster: "Por sorte, sua magia encontra o alvo! Você revelou [Nome] com apenas [X]% de chance de sucesso."
+- Revealed: "Apesar de sua habilidade, a magia de [Nome] te encontra! Você foi revelado com [X]% de probabilidade."
+
 ### Curiosities & Easter Eggs
-- **Reduced Detection:** 20% multiplier (was 40%) rewards stealth
-- **Trap Loot:** Reveals hidden chests with gold
-- **Hiding Investment:** High Hiding/Stealth hard to detect
-- **DetectHidden Synergy:** Bonus from DH skill
-- **Invisibility Spell:** Always 100% reveal
-- **Visual Feedback:** Different effects for mobile vs trap
-- **Area Effect:** Scales with caster's Magery skill
-- **Stealth Advantage:** Stealth adds full value to defense
+- **Container Trap Detection:** Can detect traps on containers when directly targeted (1-to-1)
+- **Backpack Support:** Works on containers in backpacks (message only, no visual effects)
+- **Balanced Formula:** 10-80% range prevents extremes while rewarding skill
+- **Stealth Penalty:** Each 10 points of Stealth reduces detection by 1%
+- **Magery Not Used:** Magery skill only required for casting, not in detection calculation
+- **Success Feedback:** Both players see the exact detection chance percentage
+- **Invisibility Spell:** Always 100% reveal (bypasses skill calculation)
+- **Visual Feedback:** Different effects for mobile vs trap vs container
+- **Area Effect:** Ground trap detection scales with caster's Magery skill
+- **Skill Investment:** High Hiding/Stealth provides meaningful protection
 
 ---
 

@@ -46,8 +46,10 @@ namespace Server.Spells.Third
     private const double MOBILE_GRAB_BASE_CHANCE_PER_MAGERY = 0.3;       // 0.3% per magery point
     private const double MOBILE_GRAB_BONUS_CHANCE_PER_INSCRIPTION = 0.15; // 0.15% per inscription point
 
-    // Cooldown
-    private const double MOBILE_GRAB_COOLDOWN_SECONDS = 10.0;            // 10 second cooldown
+    // Cooldown (skill-based: 16s at 0 magery, 3s at 120 magery)
+    private const double MOBILE_GRAB_COOLDOWN_BASE = 16.0;               // Base cooldown at 0 magery
+    private const double MOBILE_GRAB_COOLDOWN_MIN = 3.0;                // Minimum cooldown at 120 magery
+    private const double MOBILE_GRAB_COOLDOWN_REDUCTION_PER_POINT = 13.0 / 120.0; // Reduction per magery point
 
     // Mana Cost Multiplier
     private const double MOBILE_GRAB_MANA_MULTIPLIER = 2.0;              // 2x mana cost even on fail
@@ -352,11 +354,30 @@ namespace Server.Spells.Third
         }
 
         /// <summary>
-        /// Sets the mobile grab cooldown for the caster
+        /// Calculates the mobile grab cooldown based on caster's Magery skill
+        /// Formula: 16s at 0 magery, decreases to 3s at 120 magery
+        /// Returns integer seconds using Math.Ceiling
+        /// </summary>
+        private int CalculateMobileGrabCooldown()
+        {
+            double magery = Caster.Skills[SkillName.Magery].Value;
+            double cooldown = MOBILE_GRAB_COOLDOWN_BASE - (magery * MOBILE_GRAB_COOLDOWN_REDUCTION_PER_POINT);
+            
+            // Ensure cooldown doesn't go below minimum
+            if (cooldown < MOBILE_GRAB_COOLDOWN_MIN)
+                cooldown = MOBILE_GRAB_COOLDOWN_MIN;
+            
+            // Round up to nearest integer (always use ceiling for cooldown)
+            return (int)Math.Ceiling(cooldown);
+        }
+
+        /// <summary>
+        /// Sets the mobile grab cooldown for the caster (skill-based)
         /// </summary>
         private void SetMobileGrabCooldown()
         {
-            m_MobileGrabCooldowns[Caster] = DateTime.UtcNow.AddSeconds(MOBILE_GRAB_COOLDOWN_SECONDS);
+            int cooldown = CalculateMobileGrabCooldown();
+            m_MobileGrabCooldowns[Caster] = DateTime.UtcNow.AddSeconds(cooldown);
         }
 
         /// <summary>

@@ -241,6 +241,31 @@ namespace Server.Spells
 	public const string ERROR_MAGIC_TOO_CHAOTIC = "Essa magia é muito caótica para o seu feitiço.";
 	#endregion
 
+	#region 7th Circle Spell Messages
+	// Energy Field
+	public const string INFO_FIELD_DURATION_FORMAT = "O seu feitiço funcionará por aproximadamente {0}.";
+
+	// Gate Travel
+	public const string ERROR_TRAVEL_BLOCKED = "Algo de estranho aconteceu e bloqueou o uso deste feitiço.";
+	public const string ERROR_TRAVEL_LOCATION_BLOCKED = "Esse feitiço parece não funcionar neste lugar.";
+	public const string ERROR_TRAVEL_DESTINATION_BLOCKED = "O destino parece magicamente inacessível.";
+	public const string ERROR_TRAVEL_LOCATION_OCCUPIED = "Esse local está bloqueado para o uso de teletransporte!";
+	public const string ERROR_GATE_ALREADY_EXISTS = "Já existe um portal neste local.";
+	public const string INFO_GATE_CREATED = "Você abriu um portal mágico para outro lugar.";
+	public const string INFO_SELECT_VALID_DESTINATION = "Selecione um destino válido.";
+	public const string ERROR_DESTINATION_NOT_MARKED = "O destino não está marcado corretamente.";
+
+	// Mana Vampire
+	public const string INFO_MANA_DRAINED_FORMAT = "Você sugou {0} pontos de mana do oponente.";
+	public const string INFO_MANA_LOST = "Você sente que perdeu uma parte de sua mana!";
+
+	// Mass Dispel
+	public const string ERROR_CANNOT_DISPEL_FORMAT = "Não é possível dissipar {0}";
+	public const string INFO_CREATURE_DISPELED_FORMAT = "{0} foi dissipado!";
+	public const string INFO_CREATURE_DISPELED_LOW_HEALTH_FORMAT = "{0} já estava sem forças e foi dissipado!";
+	public const string INFO_CREATURE_ANGRY_FORMAT = "Você conseguiu irritar {0}";
+	#endregion
+
 		#region Drunk Messages
 		// Drunk Messages - Easter Eggs (Cheese references)
 		public const string DRUNK_CHEESE_1 = "Llhc";  // Leo liked his cheese

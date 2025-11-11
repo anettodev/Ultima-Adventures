@@ -46,34 +46,55 @@ namespace Server.Spells
 
 		#endregion
 
-		#region Field Orientation
+	#region Field Orientation
 
-		/// <summary>
-		/// Determines field orientation (East-West vs North-South) based on caster and target positions
-		/// This matches the UO client's field rendering logic
-		/// </summary>
-		/// <param name="casterLoc">Caster's location</param>
-		/// <param name="targetLoc">Target location for field placement</param>
-		/// <returns>True for East-West orientation, False for North-South</returns>
-		public static bool GetFieldOrientation(Point3D casterLoc, IPoint3D targetLoc)
+	/// <summary>
+	/// Determines field orientation (East-West vs North-South) based on caster and target positions
+	/// When targeting self, uses caster's facing direction to create perpendicular field
+	/// This matches the UO client's field rendering logic
+	/// </summary>
+	/// <param name="caster">The spell caster (used for direction when self-targeting)</param>
+	/// <param name="targetLoc">Target location for field placement</param>
+	/// <returns>True for East-West orientation, False for North-South</returns>
+	public static bool GetFieldOrientation(Mobile caster, IPoint3D targetLoc)
+	{
+		int dx = caster.Location.X - targetLoc.X;
+		int dy = caster.Location.Y - targetLoc.Y;
+
+		// If targeting self (dx=0, dy=0), use caster's facing direction
+		// This fixes orientation when casting on yourself while moving
+		if (dx == 0 && dy == 0)
 		{
-			int dx = casterLoc.X - targetLoc.X;
-			int dy = casterLoc.Y - targetLoc.Y;
-			int rx = (dx - dy) * ORIENTATION_MULTIPLIER;
-			int ry = (dx + dy) * ORIENTATION_MULTIPLIER;
+			Direction facing = caster.Direction & Direction.Mask;
 
-			// Determine orientation based on relative position
-			if (rx >= 0 && ry >= 0)
-				return false; // North-South
-			else if (rx >= 0)
+			// If facing North/South (vertical), create East-West field (horizontal/perpendicular)
+			if (facing == Direction.North || facing == Direction.South)
 				return true;  // East-West
-			else if (ry >= 0)
-				return true;  // East-West
-			else
+
+			// If facing East/West (horizontal), create North-South field (vertical/perpendicular)
+			if (facing == Direction.East || facing == Direction.West)
 				return false; // North-South
+
+			// Diagonal directions: use geometric calculation
+			// This will fall through to the original logic below
 		}
 
-		#endregion
+		// Original geometric calculation for non-self targeting
+		int rx = (dx - dy) * ORIENTATION_MULTIPLIER;
+		int ry = (dx + dy) * ORIENTATION_MULTIPLIER;
+
+		// Determine orientation based on relative position
+		if (rx >= 0 && ry >= 0)
+			return false; // North-South
+		else if (rx >= 0)
+			return true;  // East-West
+		else if (ry >= 0)
+			return true;  // East-West
+		else
+			return false; // North-South
+	}
+
+	#endregion
 
 		#region Friendly Fire Detection
 

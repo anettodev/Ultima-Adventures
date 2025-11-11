@@ -2,9 +2,14 @@ using System;
 using Server.Targeting;
 using Server.Network;
 using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Spells.Seventh
 {
+	/// <summary>
+	/// Mana Vampire - 7th Circle Magery Spell
+	/// Drains mana from target and transfers it to the caster
+	/// </summary>
 	public class ManaVampireSpell : MagerySpell
 	{
 		private static SpellInfo m_Info = new SpellInfo(
@@ -19,6 +24,46 @@ namespace Server.Spells.Seventh
 
 		public override SpellCircle Circle { get { return SpellCircle.Seventh; } }
 
+		#region Constants
+
+		/// <summary>Mana drain multiplier based on Magery skill</summary>
+		private const double MANA_DRAIN_MULTIPLIER = 0.20;
+
+		/// <summary>Resist percent for this spell</summary>
+		private const double RESIST_PERCENT = 98.0;
+
+		/// <summary>Particle effect ID for target</summary>
+		private const int PARTICLE_EFFECT_TARGET = 0x374A;
+
+		/// <summary>Particle count for target</summary>
+		private const int PARTICLE_COUNT_TARGET = 1;
+
+		/// <summary>Particle speed for target</summary>
+		private const int PARTICLE_SPEED_TARGET = 15;
+
+		/// <summary>Particle duration for target</summary>
+		private const int PARTICLE_DURATION_TARGET = 5054;
+
+		/// <summary>Particle effect ID for caster</summary>
+		private const int PARTICLE_EFFECT_CASTER = 0x0000;
+
+		/// <summary>Particle count for caster</summary>
+		private const int PARTICLE_COUNT_CASTER = 10;
+
+		/// <summary>Particle speed for caster</summary>
+		private const int PARTICLE_SPEED_CASTER = 5;
+
+		/// <summary>Particle duration for caster</summary>
+		private const int PARTICLE_DURATION_CASTER = 2054;
+
+		/// <summary>Sound effect ID</summary>
+		private const int SOUND_EFFECT = 0x1F9;
+
+		/// <summary>Spell hue index</summary>
+		private const int SPELL_HUE_INDEX = 23;
+
+		#endregion
+
 		public ManaVampireSpell( Mobile caster, Item scroll ) : base( caster, scroll, m_Info )
 		{
 		}
@@ -32,8 +77,8 @@ namespace Server.Spells.Seventh
 		{
 			if ( !Caster.CanSee( m ) )
 			{
-                Caster.SendMessage(55, "O alvo não pode ser visto.");
-            }
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE );
+			}
 			else if ( CheckHSequence( m ) )
 			{
 				SpellHelper.Turn( Caster, m );
@@ -46,12 +91,7 @@ namespace Server.Spells.Seventh
 				m.Paralyzed = false;
 
 				int toDrain = 0;
-                toDrain = (int)((Caster.Skills[SkillName.Magery].Value * 0.20) * NMSUtils.getDamageEvalBenefit(Caster));
-
-/*                if (Caster is PlayerMobile && ((PlayerMobile)Caster).Sorcerer() )
-						toDrain = (int)((GetDamageSkill( Caster )*1.5) - GetResistSkill( m ));
-					else
-						toDrain = (int)(GetDamageSkill( Caster ) - GetResistSkill( m ));*/
+				toDrain = (int)((Caster.Skills[SkillName.Magery].Value * MANA_DRAIN_MULTIPLIER) * NMSUtils.getDamageEvalBenefit(Caster));
 
 				if ( toDrain < 0 )
 					toDrain = 0;
@@ -63,12 +103,12 @@ namespace Server.Spells.Seventh
 
 				m.Mana -= toDrain;
 				Caster.Mana += Server.Misc.MyServerSettings.PlayerLevelMod( toDrain, Caster );
-                Caster.SendMessage(55, "Você sugou " + toDrain  + " pontos de mana do oponente.");
-                m.SendMessage(33, "Você sente que perdeu uma parte de sua mana!");
-                m.FixedParticles( 0x374A, 1, 15, 5054, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 23 ), 7, EffectLayer.Head );
-				m.PlaySound( 0x1F9 );
+				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, string.Format( Spell.SpellMessages.INFO_MANA_DRAINED_FORMAT, toDrain ) );
+				m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.INFO_MANA_LOST );
+				m.FixedParticles( PARTICLE_EFFECT_TARGET, PARTICLE_COUNT_TARGET, PARTICLE_SPEED_TARGET, PARTICLE_DURATION_TARGET, Server.Items.CharacterDatabase.GetMySpellHue( Caster, SPELL_HUE_INDEX ), 7, EffectLayer.Head );
+				m.PlaySound( SOUND_EFFECT );
 
-				Caster.FixedParticles( 0x0000, 10, 5, 2054, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 23 ), 7, EffectLayer.Head );
+				Caster.FixedParticles( PARTICLE_EFFECT_CASTER, PARTICLE_COUNT_CASTER, PARTICLE_SPEED_CASTER, PARTICLE_DURATION_CASTER, Server.Items.CharacterDatabase.GetMySpellHue( Caster, SPELL_HUE_INDEX ), 7, EffectLayer.Head );
 
 				HarmfulSpell( m );
 			}
@@ -78,14 +118,14 @@ namespace Server.Spells.Seventh
 
 		public override double GetResistPercent( Mobile target )
 		{
-			return 98.0;
+			return RESIST_PERCENT;
 		}
 
 		private class InternalTarget : Target
 		{
 			private ManaVampireSpell m_Owner;
 
-			public InternalTarget( ManaVampireSpell owner ) : base( Core.ML ? 10 : 12, false, TargetFlags.Harmful )
+			public InternalTarget( ManaVampireSpell owner ) : base( SpellConstants.GetSpellRange(), false, TargetFlags.Harmful )
 			{
 				m_Owner = owner;
 			}
