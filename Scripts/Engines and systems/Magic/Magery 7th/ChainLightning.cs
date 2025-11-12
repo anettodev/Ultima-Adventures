@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Server.Network;
 using Server.Items;
 using Server.Targeting;
-using Server.Regions;
 using Server.Mobiles;
 using Server.Spells;
 
@@ -33,8 +32,8 @@ namespace Server.Spells.Seventh
 		/// <summary>Area of effect range in tiles</summary>
 		private const int AOE_RANGE = 5;
 
-		/// <summary>Base damage bonus</summary>
-		private const int BASE_DAMAGE_BONUS = 38;
+		/// <summary>Base damage bonus (reduced by 25% for balance)</summary>
+		private const int BASE_DAMAGE_BONUS = 28;
 
 		/// <summary>Damage dice count</summary>
 		private const int DAMAGE_DICE_COUNT = 2;
@@ -104,7 +103,8 @@ namespace Server.Spells.Seventh
 
 					foreach ( Mobile m in eable )
 					{
-						if ( Caster.Region == m.Region && Caster != m )
+						// Include caster in targets (caster can also receive damage)
+						if ( Caster.Region == m.Region )
 						{
 							targets.Add( m );
 							if ( m.Player )
@@ -133,47 +133,50 @@ namespace Server.Spells.Seventh
 					if ( damage < MIN_DAMAGE_FLOOR )
 						damage = MIN_DAMAGE_FLOOR;
 
-					for ( int i = 0; i < targets.Count; ++i )
+				for ( int i = 0; i < targets.Count; ++i )
+				{
+					Mobile m = targets[i];
+
+					double toDeal = damage;
+
+					// Check resistance
+					if ( CheckResisted( m ) )
 					{
-						Mobile m = targets[i];
-
-						Region house = m.Region;
-
-						double toDeal = damage;
-
-						if ( CheckResisted( m ) )
-						{
-							toDeal *= RESIST_DAMAGE_MULTIPLIER;
-							m.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.RESIST_HALF_DAMAGE_VICTIM );
-						}
-
-						if ( !(house is Regions.HouseRegion) )
-						{
-							if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing )
-							{
-								m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ONE_RING_PROTECTION_REVEAL );
-								toDeal *= ONE_RING_DAMAGE_MULTIPLIER;
-							}
-							else
-							{
-								m.RevealingAction();
-							}
-
-							Caster.DoHarmful( m );
-							SpellHelper.Damage( this, m, toDeal, 0, 0, 0, 0, 100 );
-
-							if ( Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ) > 0 )
-							{
-								Point3D blast = new Point3D( m.X, m.Y, m.Z + PARTICLE_Z_OFFSET );
-								Effects.SendLocationEffect( blast, m.Map, PARTICLE_EFFECT_ID, PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
-								m.PlaySound( SOUND_EFFECT );
-							}
-							else
-							{
-								m.BoltEffect( 0 );
-							}
-						}
+						toDeal *= RESIST_DAMAGE_MULTIPLIER;
+						m.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.RESIST_HALF_DAMAGE_VICTIM );
 					}
+
+					// Check One Ring protection (prevents reveal and reduces damage)
+					bool hasOneRing = false;
+					if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing )
+					{
+						hasOneRing = true;
+						m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ONE_RING_PROTECTION_REVEAL );
+						toDeal *= ONE_RING_DAMAGE_MULTIPLIER;
+					}
+
+					// Always reveal hidden targets (except One Ring protection)
+					if ( !hasOneRing )
+					{
+						m.RevealingAction();
+					}
+
+					// Always apply damage (no house protection)
+					Caster.DoHarmful( m );
+					SpellHelper.Damage( this, m, toDeal, 0, 0, 0, 0, 100 );
+
+					// Visual and sound effects
+					if ( Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ) > 0 )
+					{
+						Point3D blast = new Point3D( m.X, m.Y, m.Z + PARTICLE_Z_OFFSET );
+						Effects.SendLocationEffect( blast, m.Map, PARTICLE_EFFECT_ID, PARTICLE_EFFECT_DURATION, PARTICLE_EFFECT_SPEED, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0 );
+						m.PlaySound( SOUND_EFFECT );
+					}
+					else
+					{
+						m.BoltEffect( 0 );
+					}
+				}
 				}
 			}
 

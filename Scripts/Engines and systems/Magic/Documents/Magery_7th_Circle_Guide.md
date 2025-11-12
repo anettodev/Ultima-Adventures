@@ -27,7 +27,7 @@ The 7th Circle of Magery represents mastery-level magic, introducing devastating
 ## 1. Chain Lightning (`Vas Ort Grav`)
 
 ### Description
-Area-of-effect lightning damage spell that chains between multiple targets in range. Damage is divided among all targets, with a minimum damage floor. Can be resisted, and has special interactions with the One Ring (Lord of the Rings easter egg). Does not reveal targets inside house regions.
+Area-of-effect lightning damage spell that chains between multiple targets in range. Damage is divided among all targets, with a minimum damage floor. Can be resisted, and has special interactions with the One Ring (Lord of the Rings easter egg). Always reveals hidden targets (except One Ring protection). No house protection - damage applies everywhere.
 
 ### Meaning
 The spell words "Vas Ort Grav" translate to "Great Summon Energy" in the magical language.
@@ -37,16 +37,16 @@ The spell words "Vas Ort Grav" translate to "Great Summon Energy" in the magical
 - **Reagents:** Black Pearl, Bloodmoss, Mandrake Root, Sulfurous Ash
 - **Mana Cost:** 40
 - **Target:** Ground location (IPoint3D)
-- **Range:** 10 tiles (ML) / 12 tiles (Legacy)
+- **Range:** 12 tiles (ML) / 14 tiles (Legacy)
 - **AoE Range:** 5 tiles radius
 - **Line of Sight:** Required
 
 ### Damage Formula
 ```
-Base Damage = GetNMSDamage(38, 2, 5, target)
-= 38 + 2d5 = 40-48 base damage
-+ Magery/EvalInt scaling
-+ Inscription bonus
+Base Damage = GetNMSDamage(28, 2, 5, target)
+= 28 + 2d5 = 30-38 base damage (reduced by 25% for balance)
++ EvalInt scaling (Magery does not affect damage)
++ Inscription bonus (currently not implemented)
 
 If Multiple Targets: Damage / Target Count
 Minimum Damage Floor: 12 (even after division)
@@ -57,7 +57,9 @@ One Ring Protection: × 0.5 (damage reduction)
 ### Special Mechanics
 - **Damage Splitting:** Total damage divided by number of targets
 - **Minimum Floor:** Each target receives at least 12 damage
-- **House Protection:** Targets in house regions are not revealed
+- **Always Reveals:** Hidden targets are always revealed (except One Ring protection)
+- **No House Protection:** Damage applies everywhere, regardless of region
+- **Caster Damage:** Caster can also receive damage (respects all rules)
 - **One Ring:** Reduces damage by 50% and prevents reveal
 - **Resistance:** Can reduce damage by 50%
 
@@ -66,18 +68,19 @@ N/A (instant damage)
 
 ### Simulation Scenarios
 
-| Scenario | Magery | EvalInt | Targets | Base Damage | Per Target | Resisted | Final Range | Notes |
-|----------|--------|---------|---------|-------------|------------|----------|-------------|-------|
-| Novice | 100 | 90 | 1 | 40-48 | 40-48 | 50% | 40-48 | Single target |
-| Apprentice | 110 | 100 | 3 | 45-53 | 15-18 | 50% | 15-18 | Split damage |
-| Adept | 120 | 110 | 5 | 50-58 | 12-12 | 50% | 12 | Floor applied |
-| Expert | 120 | 120 | 2 | 55-63 | 28-32 | 50% | 28-32 | Good split |
-| Master | 120 | 120 | 1 | 60-68 | 60-68 | 50% | 60-68 | Maximum single |
+| Scenario | Magery | EvalInt | Targets | Base Dice | Per Target | Resisted | Final Range | Notes |
+|----------|--------|---------|---------|-----------|------------|----------|-------------|-------|
+| Novice | 100 | 90 | 1 | 30-38 | 41-52 | 50% | 21-26 | Single target |
+| Apprentice | 110 | 100 | 3 | 30-38 | 14-18 | 50% | 12-12 | Floor applied |
+| Adept | 120 | 110 | 5 | 30-38 | 9-11 | 50% | 12-12 | Floor applied |
+| Expert | 120 | 120 | 2 | 30-38 | 22-28 | 50% | 11-14 | Good split |
+| Master | 120 | 120 | 1 | 30-38 | 44-55 | 50% | 22-28 | Maximum single |
 
 ### Curiosities & Easter Eggs
 - **One Ring Protection:** Reduces damage and prevents reveal (Lord of the Rings reference)
-- **House Region Safety:** Targets in houses not revealed (privacy protection)
+- **Always Reveals:** No house protection - hidden targets always revealed (except One Ring)
 - **Damage Floor:** Ensures minimum 12 damage even with many targets
+- **Reduced Damage:** Base damage reduced by 25% for balance (28+2d5 instead of 38+2d5)
 - **Visual Effect:** Custom particle effect (0x2A4E) when caster has spell hue
 - **Bolt Effect:** Standard lightning bolt when no custom hue
 - **Sound:** Distinctive lightning crack (0x029)
@@ -186,8 +189,8 @@ The spell words "Kal Vas Flam" translate to "Summon Great Flame" in the magical 
 
 ### Damage Formula
 ```
-Damage = GetNMSDamage(40, 1, 6, target)
-Base: 40 + 1d6 = 41-46 base damage
+Damage = GetNMSDamage(32, 1, 6, target)
+Base: 32 + 1d6 = 33-38 base damage (reduced by 20% for balance)
 + Magery/EvalInt scaling
 + Inscription bonus
 ```
@@ -199,11 +202,11 @@ N/A (instant damage)
 
 | Scenario | Magery | EvalInt | Inscription | Base Damage | Final Range | Notes |
 |----------|--------|---------|-------------|-------------|-------------|-------|
-| Novice | 100 | 90 | 80 | 41-46 | 45-55 | Basic |
-| Apprentice | 110 | 100 | 100 | 41-46 | 50-60 | Improved |
-| Adept | 120 | 110 | 110 | 41-46 | 55-65 | Good |
-| Expert | 120 | 120 | 120 | 41-46 | 60-70 | Strong |
-| Master | 120 | 120 | 120 | 41-46 | 65-75 | Maximum |
+| Novice | 100 | 90 | 80 | 33-38 | 37-47 | Basic |
+| Apprentice | 110 | 100 | 100 | 33-38 | 42-52 | Improved |
+| Adept | 120 | 110 | 110 | 33-38 | 47-57 | Good |
+| Expert | 120 | 120 | 120 | 33-38 | 52-62 | Strong |
+| Master | 120 | 120 | 120 | 33-38 | 57-67 | Maximum |
 
 ### Curiosities & Easter Eggs
 - **High Base Damage:** One of strongest single-target spells
@@ -249,6 +252,7 @@ The spell words "Vas Rel Por" translate to "Great Portal Stone" in the magical l
 ### Travel Restrictions
 - Cannot gate from blocked regions (prisons, no-recall zones)
 - Cannot gate to blocked regions
+- Cannot open gates inside houses (both origin and destination)
 - Destination must allow teleport
 - Cannot stack gates (SE mode)
 - Destination must be spawnable location
@@ -272,21 +276,21 @@ The spell words "Vas Rel Por" translate to "Great Portal Stone" in the magical l
 
 | Scenario | Tracking | Base Chance | Skill Bonus | Total Chance | Notes |
 |----------|----------|-------------|-------------|--------------|-------|
-| Novice | 80.0 | 30.0% | 0.0% | 30.0% | Minimum requirement |
-| Apprentice | 90.0 | 30.0% | 5.0% | 35.0% | +10 skill points |
-| Adept | 100.0 | 30.0% | 10.0% | 40.0% | +20 skill points |
-| Expert | 110.0 | 30.0% | 15.0% | 45.0% | +30 skill points |
-| Master | 120.0+ | 30.0% | 20.0% | 50.0% | Maximum chance |
+| Novice | 80.0 | 15.0% | 0.0% | 15.0% | Minimum requirement |
+| Apprentice | 90.0 | 15.0% | 5.0% | 20.0% | +10 skill points |
+| Adept | 100.0 | 15.0% | 10.0% | 25.0% | +20 skill points |
+| Expert | 110.0 | 15.0% | 15.0% | 30.0% | +30 skill points |
+| Master | 120.0+ | 15.0% | 20.0% | 35.0% | Maximum chance |
 
 ### Origin Gate Chance Scenarios
 
 | Scenario | Cartography | Base Chance | Skill Bonus | Total Chance | Notes |
 |----------|------------|-------------|-------------|--------------|-------|
-| Novice | 80.0 | 10.0% | 0.0% | 10.0% | Minimum requirement |
-| Apprentice | 90.0 | 10.0% | 5.0% | 15.0% | +10 skill points |
-| Adept | 100.0 | 10.0% | 10.0% | 20.0% | +20 skill points |
-| Expert | 110.0 | 10.0% | 15.0% | 25.0% | +30 skill points |
-| Master | 120.0+ | 10.0% | 20.0% | 30.0% | Maximum chance (capped) |
+| Novice | 80.0 | 5.0% | 0.0% | 5.0% | Minimum requirement |
+| Apprentice | 90.0 | 5.0% | 5.0% | 10.0% | +10 skill points |
+| Adept | 100.0 | 5.0% | 10.0% | 15.0% | +20 skill points |
+| Expert | 110.0 | 5.0% | 15.0% | 20.0% | +30 skill points |
+| Master | 120.0+ | 5.0% | 20.0% | 25.0% | Maximum chance (capped at 30%) |
 
 ### Safety Detection
 Gates automatically detect safe regions:
@@ -301,9 +305,9 @@ Gates automatically detect safe regions:
 #### Scrying Gate (Tracking Skill)
 - **Skill Requirement:** Tracking 80.0+ to unlock
 - **Chance System:**
-  - Base: 30% chance at 80.0 Tracking
+  - Base: 15% chance at 80.0 Tracking
   - Increase: +5% per 10 skill points above 80.0
-  - Maximum: 50% chance at 120+ Tracking
+  - Maximum: 35% chance at 120+ Tracking
 - **Effect:** When activated, provides destination intelligence before travel:
   - Shows destination region name and safety status
   - Detects nearby hostile creatures (within 10 tiles)
@@ -318,9 +322,9 @@ Gates automatically detect safe regions:
 #### Origin Gate (Cartography Skill)
 - **Skill Requirement:** Cartography 80.0+ to unlock
 - **Chance System:**
-  - Base: 10% chance
+  - Base: 5% chance
   - Increase: +0.5% per skill point above 80.0
-  - Maximum: 20% at 120 skill (capped at 30% total)
+  - Maximum: 25% at 120 skill (capped at 30% total)
 - **Effect:** When triggered, creates a "Gate Marker" item:
   - **Marker Properties:**
     - Item ID: 0x1F14 (small rune appearance)
@@ -329,9 +333,11 @@ Gates automatically detect safe regions:
     - Duration: 1 hour or until manually deleted
     - Location: Created in caster's backpack (falls to ground if backpack full)
     - Movable: Yes (can be picked up, moved, traded)
+    - Cannot be added to Runebooks
     - One-time use: Deleted after activation
   - **Marker Activation:**
     - Double-click to create one-way gate back to origin location
+    - Cannot be activated inside houses (marker not consumed if blocked)
     - Gate color follows safety pattern (blue for safe, red for unsafe)
     - Does NOT have Scrying Gate benefits
     - Extensive validation ensures destination is travel-allowed
@@ -351,6 +357,8 @@ Gates automatically detect safe regions:
 - **Origin Gate:** Cartography skill creates return markers (see Special Features above)
 - **Marker Storage:** Origin Gate markers created in backpack for easy access
 - **Zoom Prevention:** Origin Gate uses InternalItem (custom Moongate) to prevent camera zoom issues
+- **House Restrictions:** Gates cannot be opened inside houses (both regular gates and Origin Gate markers)
+- **Runebook Restriction:** Origin Gate markers cannot be added to Runebooks
 
 ---
 
@@ -368,11 +376,12 @@ The spell words "Ort Sanct" translate to "Energy Sacred" in the magical language
 - **Mana Cost:** 40
 - **Target:** Single target (Mobile)
 - **Range:** 10 tiles (ML) / 12 tiles (Legacy)
-- **Resist Percent:** 98.0% (very high)
+- **Resistance:** Dynamic check (Pareto principle: 80/20 balance)
 
 ### Mana Drain Formula
 ```
-Mana Drain = (Magery × 0.20) × EvalInt Benefit
+Mana Drain = (Magery × 0.16) × EvalInt Benefit (reduced by 20% for balance)
+If Resisted: × 0.5 (halved drain on resistance)
 Capped at: Target's current mana
 Capped at: (Caster ManaMax - Caster Mana) - 1
 
@@ -383,7 +392,8 @@ Transfer: Caster receives mana with level modifier
 - **Paralysis Removal:** Removes paralysis from target
 - **Spell Interruption:** Interrupts target's current spell
 - **Reflectable:** Can be reflected with Magic Reflection
-- **High Resistance:** 98% resist chance (very difficult to resist)
+- **Resistance:** Uses standard dynamic resistance check (Pareto principle: 80/20 balance)
+- **Resist Penalty:** If target resists, mana drain is halved (50% reduction)
 - **Mana Cap:** Cannot exceed caster's mana capacity
 
 ### Duration
@@ -391,16 +401,17 @@ N/A (instant effect)
 
 ### Simulation Scenarios
 
-| Scenario | Magery | EvalInt | Target Mana | Drain Amount | Transfer | Notes |
-|----------|--------|---------|-------------|--------------|----------|-------|
-| Novice | 100 | 90 | 100 | 18-22 | 18-22 | Basic |
-| Apprentice | 110 | 100 | 100 | 22-26 | 22-26 | Improved |
-| Adept | 120 | 110 | 100 | 26-30 | 26-30 | Good |
-| Expert | 120 | 120 | 100 | 28-32 | 28-32 | Strong |
-| Master | 120 | 120 | 200 | 28-32 | 28-32 | Capped by target |
+| Scenario | Magery | EvalInt | Target Mana | Drain Amount | Resisted | Notes |
+|----------|--------|---------|-------------|--------------|--------|-------|
+| Novice | 100 | 90 | 100 | 14-18 | 7-9 | Basic |
+| Apprentice | 110 | 100 | 100 | 18-22 | 9-11 | Improved |
+| Adept | 120 | 110 | 100 | 21-26 | 11-13 | Good |
+| Expert | 120 | 120 | 100 | 23-28 | 12-14 | Strong |
+| Master | 120 | 120 | 200 | 23-28 | 12-14 | Capped by target |
 
 ### Curiosities & Easter Eggs
-- **Very High Resist:** 98% resist chance (almost unblockable)
+- **Dynamic Resistance:** Uses standard resistance check (Pareto principle balance)
+- **Resist Penalty:** Halved drain on resistance (50% reduction)
 - **Paralysis Cure:** Side effect removes paralysis
 - **Spell Disruption:** Interrupts enemy spellcasting
 - **Visual Effects:** Different particles for caster and target
@@ -501,7 +512,10 @@ If Resisted: × 0.5
 ### Special Mechanics
 - **Damage Splitting:** Total damage divided by number of targets
 - **Minimum Floor:** Each target receives at least 12 damage
-- **Reveal Effect:** Reveals hidden targets (except One Ring)
+- **Always Reveals:** Hidden targets are always revealed (except One Ring protection)
+- **No House Protection:** Damage applies everywhere, regardless of region
+- **Caster Damage:** Caster can also receive damage (respects all rules)
+- **One Ring:** Reduces damage by 50% and prevents reveal
 - **Resistance:** Can reduce damage by 50%
 - **Visual Effects:** 5 impact locations per target (center + 4 directions)
 
@@ -520,7 +534,8 @@ N/A (instant damage)
 
 ### Curiosities & Easter Eggs
 - **Spectacular Effects:** 5 impact locations per target create impressive visuals
-- **One Ring Protection:** Prevents reveal (Lord of the Rings reference)
+- **One Ring Protection:** Reduces damage by 50% and prevents reveal (Lord of the Rings reference)
+- **Always Reveals:** No house protection - hidden targets always revealed (except One Ring)
 - **Damage Floor:** Ensures minimum 12 damage even with many targets
 - **Random Particles:** Uses random selection between two particle types
 - **Sound Effects:** Distinctive cast sound (0x160) and impact sound (0x15F)
@@ -532,7 +547,7 @@ N/A (instant damage)
 ## 8. Polymorph (`Vas Ylem Rel`)
 
 ### Description
-Transforms the caster into a selected creature form. Duration equals caster's Magery skill in seconds (max 120 seconds). Cannot be used while transformed, disguised, or wearing body paint. Human forms get random skin color. Non-human forms dismount the caster. In ML mode, duration is indefinite until manually ended.
+Transforms the caster into a selected creature form. Duration is 50% of Magery skill in seconds (max 120 seconds), with Animal Lore bonus for animal forms. Always expires after duration. Cannot be used while transformed, disguised, or wearing body paint. Human forms get random skin color. Non-human forms dismount the caster.
 
 ### Meaning
 The spell words "Vas Ylem Rel" translate to "Great Matter Change" in the magical language.
@@ -542,51 +557,60 @@ The spell words "Vas Ylem Rel" translate to "Great Matter Change" in the magical
 - **Reagents:** Bloodmoss, Spider's Silk, Mandrake Root
 - **Mana Cost:** 40
 - **Target:** Self (with body selection gump)
-- **Duration:** Magery skill value in seconds (max 120s, Legacy mode)
-- **ML Mode:** Indefinite duration (until manually ended)
+- **Duration:** 50% of Magery skill in seconds (max 120s) + Animal Lore bonus for animal forms
 
 ### Duration Formula
 ```
-Legacy Mode:
-Duration = Magery skill (seconds)
-Capped at: 120 seconds
+Base Duration = (Magery skill × 0.5) seconds (50% reduction)
+Animal Lore Bonus = +1 second per 10 skill points (only for animal forms)
+Total Duration = Base + Animal Lore Bonus
+Capped at: 120 seconds maximum
 
-ML Mode:
-Duration = Indefinite (until EndPolymorph called)
+Always expires after duration (timer always created)
 ```
 
 ### Transformation Restrictions
 - Cannot polymorph while under transformation spell
 - Cannot polymorph while disguised
 - Cannot polymorph while wearing body paint (183 or 184)
-- Cannot polymorph if already polymorphed (unless ML mode)
+- Cannot polymorph if already polymorphed
 - Human forms: Get random skin color
+- Animal forms: Receive Animal Lore duration bonus (1s per 10 skill points)
 - Non-human forms: Automatically dismount
 
 ### Duration
-**Legacy Mode:** 1-120 seconds (based on Magery)  
-**ML Mode:** Indefinite (until manually ended)
+**Base:** 1-60 seconds (50% of Magery skill)  
+**With Animal Lore (Animal Forms):** +1-12 seconds bonus  
+**Maximum:** 120 seconds (always capped)
 
 ### Simulation Scenarios
 
-| Scenario | Magery | Duration (s) | Notes |
-|----------|--------|--------------|-------|
-| Novice | 100 | 100 | Basic |
-| Apprentice | 110 | 110 | Improved |
-| Adept | 120 | 120 | Maximum |
-| Expert | 120 | 120 | Maximum |
-| Master | 120 | 120 | Maximum |
+| Scenario | Magery | Animal Lore | Base Duration | Animal Bonus | Total Duration | Notes |
+|----------|--------|-------------|---------------|--------------|----------------|-------|
+| Novice | 100 | 80 | 50 | +8 | 58 | Animal form |
+| Apprentice | 110 | 100 | 55 | +10 | 65 | Animal form |
+| Adept | 120 | 120 | 60 | +12 | 72 | Animal form |
+| Expert | 120 | 0 | 60 | 0 | 60 | Monster/Human form |
+| Master | 120 | 120 | 60 | +12 | 72 | Animal form (capped) |
 
-*ML Mode: Indefinite duration regardless of skill*
+### Available Forms
+- **Skill-Based Filtering:** Forms are cumulative based on Magery skill (0-40, 40-50, 50-60, 60-70, 70-80, 80-90, 90-100, 100-110, 110-120)
+- **Total Forms:** 26 forms available (Cerberus removed from menu)
+- **Form Categories:** Animals and Monsters
+- **Visual Tiers:** Color-coded by skill requirement (Beginner to Mythic)
 
 ### Curiosities & Easter Eggs
-- **Body Selection:** Gump interface for choosing form
+- **Body Selection:** Gump interface for choosing form (skill-based cumulative filtering)
 - **Human Forms:** Random skin color applied (400/401)
+- **Animal Lore Bonus:** +1 second per 10 skill points (animal forms only)
+- **Duration Reduction:** Base duration reduced by 50% for balance
+- **Always Expires:** Timer always created, spell always expires
+- **Transformation Messages:** Start message (with duration) and end message in pt-br
 - **Dismount:** Non-human forms automatically dismount
-- **ML Mode:** Indefinite duration (different from Legacy)
 - **Thread-Safe:** Uses Dictionary<Mobile, Timer> for storage
 - **Armor Validation:** Automatically validates armor/clothing fit
 - **Gump System:** SE uses NewPolymorphGump, Legacy uses PolymorphGump
+- **Cerberus Removed:** Cerberus form has been removed from the available forms list
 
 ---
 

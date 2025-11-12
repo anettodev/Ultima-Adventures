@@ -369,6 +369,13 @@ namespace Server.Items
 
 		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
+			// Prevent GateMarker from being added to Runebooks
+			if ( dropped != null && dropped.GetType().Name == "GateMarker" )
+			{
+				from.SendMessage( 55, "Marcadores de portal não podem ser adicionados a livros de runas." );
+				return false;
+			}
+
 			if ( dropped is RecallRune )
 			{
 				if ( IsLockedDown && from.AccessLevel < AccessLevel.GameMaster )

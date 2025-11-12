@@ -47,6 +47,9 @@ namespace Server.Spells.Seventh
 		/// <summary>Resist damage multiplier</summary>
 		private const double RESIST_DAMAGE_MULTIPLIER = 0.5;
 
+		/// <summary>One Ring damage multiplier</summary>
+		private const double ONE_RING_DAMAGE_MULTIPLIER = 0.5;
+
 		/// <summary>Sound effect ID for cast</summary>
 		private const int SOUND_EFFECT_CAST = 0x160;
 
@@ -103,7 +106,8 @@ namespace Server.Spells.Seventh
 
 					foreach ( Mobile m in eable )
 					{
-						if ( Caster.Region == m.Region && Caster != m && Caster.CanBeHarmful( m, true ) )
+						// Include caster in targets (caster can also receive damage)
+						if ( Caster.Region == m.Region )
 						{
 							targets.Add( m );
 							if ( m.Player )
@@ -133,28 +137,35 @@ namespace Server.Spells.Seventh
 					if ( damage < MIN_DAMAGE_FLOOR )
 						damage = MIN_DAMAGE_FLOOR;
 
-					double toDeal;
 					for ( int i = 0; i < targets.Count; ++i )
 					{
 						Mobile m = targets[i];
 
-						toDeal = damage;
+						double toDeal = damage;
 
+						// Check resistance
 						if ( CheckResisted( m ) )
 						{
 							toDeal *= RESIST_DAMAGE_MULTIPLIER;
 							m.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.RESIST_HALF_DAMAGE_VICTIM );
 						}
 
+						// Check One Ring protection (prevents reveal and reduces damage)
+						bool hasOneRing = false;
 						if ( m is PlayerMobile && m.FindItemOnLayer( Layer.Ring ) != null && m.FindItemOnLayer( Layer.Ring ) is OneRing )
 						{
+							hasOneRing = true;
 							m.SendMessage( Spell.MSG_COLOR_WARNING, Spell.SpellMessages.ONE_RING_PROTECTION_REVEAL );
+							toDeal *= ONE_RING_DAMAGE_MULTIPLIER;
 						}
-						else
+
+						// Always reveal hidden targets (except One Ring protection)
+						if ( !hasOneRing )
 						{
 							m.RevealingAction();
 						}
 
+						// Always apply damage (no house protection)
 						Caster.DoHarmful( m );
 						SpellHelper.Damage( this, m, toDeal, 0, 100, 0, 0, 0 );
 

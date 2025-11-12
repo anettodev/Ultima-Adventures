@@ -25,8 +25,8 @@ namespace Server.Spells.Seventh
 
 		#region Constants
 
-		/// <summary>Base damage bonus</summary>
-		private const int BASE_DAMAGE_BONUS = 40;
+		/// <summary>Base damage bonus (reduced by 20% for balance)</summary>
+		private const int BASE_DAMAGE_BONUS = 32;
 
 		/// <summary>Damage dice count</summary>
 		private const int DAMAGE_DICE_COUNT = 1;

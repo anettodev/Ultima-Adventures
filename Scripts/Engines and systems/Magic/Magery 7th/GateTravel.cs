@@ -48,8 +48,8 @@ namespace Server.Spells.Seventh
 		/// <summary>Minimum Tracking skill required for Scrying Gate feature</summary>
 		private const double SCRYING_GATE_MIN_TRACKING = 80.0;
 
-		/// <summary>Base chance for Scrying Gate at minimum skill (80.0) - 30%</summary>
-		private const double SCRYING_GATE_BASE_CHANCE = 0.30;
+		/// <summary>Base chance for Scrying Gate at minimum skill (80.0) - 15%</summary>
+		private const double SCRYING_GATE_BASE_CHANCE = 0.15;
 
 		/// <summary>Chance increase per 10 Tracking skill points above minimum - 5%</summary>
 		private const double SCRYING_GATE_CHANCE_INCREASE = 0.05;
@@ -81,8 +81,8 @@ namespace Server.Spells.Seventh
 		/// <summary>Minimum Cartography skill required for Origin Gate feature</summary>
 		private const double ORIGIN_GATE_MIN_CARTOGRAPHY = 80.0;
 
-		/// <summary>Base chance for Origin Gate at minimum skill (80.0) - 10%</summary>
-		private const double ORIGIN_GATE_BASE_CHANCE = 0.10;
+		/// <summary>Base chance for Origin Gate at minimum skill (80.0) - 5%</summary>
+		private const double ORIGIN_GATE_BASE_CHANCE = 0.05;
 
 		/// <summary>Chance increase per Cartography skill point above minimum - 0.5%</summary>
 		private const double ORIGIN_GATE_CHANCE_PER_POINT = 0.005;
@@ -250,25 +250,21 @@ namespace Server.Spells.Seventh
 			if ( cartographySkill < ORIGIN_GATE_MIN_CARTOGRAPHY )
 				return 0.0;
 
-			// TEMPORARY: 100% chance for validation/testing
-			return 1.0;
-
-			// Original calculation (commented for validation):
-			// Base chance at minimum skill (80.0) = 10%
-			// double chance = ORIGIN_GATE_BASE_CHANCE;
-			// 
-			// // Calculate bonus: +0.5% per skill point above 80.0
-			// double skillAboveMinimum = cartographySkill - ORIGIN_GATE_MIN_CARTOGRAPHY;
-			// double bonus = skillAboveMinimum * ORIGIN_GATE_CHANCE_PER_POINT;
-			// 
-			// // Add bonus to base chance
-			// chance += bonus;
-			// 
-			// // Cap at maximum chance (30%)
-			// if ( chance > ORIGIN_GATE_MAX_CHANCE )
-			// 	chance = ORIGIN_GATE_MAX_CHANCE;
-			// 
-			// return chance;
+			// Base chance at minimum skill (80.0) = 5%
+			double chance = ORIGIN_GATE_BASE_CHANCE;
+			
+			// Calculate bonus: +0.5% per skill point above 80.0
+			double skillAboveMinimum = cartographySkill - ORIGIN_GATE_MIN_CARTOGRAPHY;
+			double bonus = skillAboveMinimum * ORIGIN_GATE_CHANCE_PER_POINT;
+			
+			// Add bonus to base chance
+			chance += bonus;
+			
+			// Cap at maximum chance (30%)
+			if ( chance > ORIGIN_GATE_MAX_CHANCE )
+				chance = ORIGIN_GATE_MAX_CHANCE;
+			
+			return chance;
 		}
 
 		/// <summary>
@@ -285,31 +281,19 @@ namespace Server.Spells.Seventh
 
 			// Check if Cartography skill is high enough
 			if ( cartographySkill < ORIGIN_GATE_MIN_CARTOGRAPHY )
-			{
-				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, String.Format( "[DEBUG] Cartography skill {0:F1} < {1:F1}", cartographySkill, ORIGIN_GATE_MIN_CARTOGRAPHY ) );
 				return;
-			}
 
 			// Validate that origin location allows travel/recall (marker must be usable)
 			// Note: We check GateTo because the marker allows travel TO the origin location
 			if ( !SpellHelper.CheckTravel( Caster, originMap, originLocation, TravelCheckType.GateTo ) )
-			{
-				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, "[DEBUG] Origin doesn't allow GateTo" );
 				return; // Origin doesn't allow travel - don't create marker
-			}
 
 			if ( Worlds.RegionAllowedTeleport( originMap, originLocation, originLocation.X, originLocation.Y ) == false )
-			{
-				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, "[DEBUG] Origin doesn't allow teleport" );
 				return; // Origin doesn't allow teleport - don't create marker
-			}
 
 			if ( Worlds.AllowEscape( Caster, originMap, originLocation, originLocation.X, originLocation.Y ) == false ||
 				 Worlds.RegionAllowedRecall( originMap, originLocation, originLocation.X, originLocation.Y ) == false )
-			{
-				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, "[DEBUG] Origin doesn't allow recall" );
 				return; // Origin doesn't allow recall - don't create marker
-			}
 
 			// Note: CanSpawnMobile check removed - it's too restrictive
 			// The marker allows travel TO the origin, not spawning there
@@ -318,17 +302,9 @@ namespace Server.Spells.Seventh
 			// Calculate chance based on skill level
 			double originGateChance = CalculateOriginGateChance( cartographySkill );
 
-			// Debug: Show calculated chance
-			Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, String.Format( "[DEBUG] Origin Gate chance: {0:P2}", originGateChance ) );
-
 			// Roll for Origin Gate success
-			double roll = Utility.RandomDouble();
-			Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, String.Format( "[DEBUG] Roll: {0:F4} >= {1:F4}? {2}", roll, originGateChance, roll >= originGateChance ) );
-			if ( roll >= originGateChance )
-			{
-				Caster.SendMessage( Spell.MSG_COLOR_SYSTEM, "[DEBUG] Origin Gate roll failed" );
+			if ( Utility.RandomDouble() >= originGateChance )
 				return;
-			}
 
 			// Create the gate marker
 			GateMarker marker = new GateMarker( originLocation, originMap, Caster );
@@ -380,6 +356,24 @@ namespace Server.Spells.Seventh
 
 		public void Effect( Point3D loc, Map map, bool checkMulti )
 		{
+			// Check if caster is inside a house (gates cannot be opened inside houses)
+			Region casterRegion = Region.Find( Caster.Location, Caster.Map );
+			if ( casterRegion != null && casterRegion.IsPartOf( typeof( HouseRegion ) ) )
+			{
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Você não pode abrir portais dentro de casas. Portais só podem ser criados em áreas abertas." );
+				FinishSequence();
+				return;
+			}
+
+			// Check if destination is inside a house (gates cannot be opened inside houses)
+			Region destRegion = Region.Find( loc, map );
+			if ( destRegion != null && destRegion.IsPartOf( typeof( HouseRegion ) ) )
+			{
+				Caster.SendMessage( Spell.MSG_COLOR_ERROR, "Você não pode abrir portais dentro de casas. O destino deve estar em uma área aberta." );
+				FinishSequence();
+				return;
+			}
+
 			if ( !SpellHelper.CheckTravel( Caster, TravelCheckType.GateFrom ) || !SpellHelper.CheckTravel(Caster, map, loc, TravelCheckType.GateTo))
 			{
 				Caster.SendMessage( Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TRAVEL_BLOCKED );
@@ -631,6 +625,36 @@ namespace Server.Spells.Seventh
 			{
 			}
 
+			/// <summary>
+			/// Prevents GateMarker from being added to Runebooks
+			/// </summary>
+			public override bool OnDragDrop( Mobile from, Item dropped )
+			{
+				// Prevent adding GateMarker to Runebooks
+				if ( dropped is Runebook )
+				{
+					from.SendMessage( Spell.MSG_COLOR_ERROR, "Marcadores de portal não podem ser adicionados a livros de runas." );
+					return false;
+				}
+
+				return base.OnDragDrop( from, dropped );
+			}
+
+			/// <summary>
+			/// Prevents GateMarker from being added to Runebooks when dragged into them
+			/// </summary>
+			public override bool OnDroppedInto( Mobile from, Container target, Point3D p )
+			{
+				// Prevent adding GateMarker to Runebooks
+				if ( target is Runebook )
+				{
+					from.SendMessage( Spell.MSG_COLOR_ERROR, "Marcadores de portal não podem ser adicionados a livros de runas." );
+					return false;
+				}
+
+				return base.OnDroppedInto( from, target, p );
+			}
+
 			public override void Serialize( GenericWriter writer )
 			{
 				base.Serialize( writer );
@@ -706,6 +730,14 @@ namespace Server.Spells.Seventh
 				{
 					from.SendLocalizedMessage( 500446 ); // That is too far away.
 					return;
+				}
+
+				// Check if user is inside a house (Origin Gate cannot be opened inside houses)
+				Region fromRegion = Region.Find( from.Location, from.Map );
+				if ( fromRegion != null && fromRegion.IsPartOf( typeof( HouseRegion ) ) )
+				{
+					from.SendMessage( Spell.MSG_COLOR_ERROR, "Você não pode abrir portais dentro de casas. Portais só podem ser criados em áreas abertas. O marcador não foi consumido." );
+					return; // Don't delete marker - return early
 				}
 
 				if ( m_OriginMap == null || m_OriginMap == Map.Internal )

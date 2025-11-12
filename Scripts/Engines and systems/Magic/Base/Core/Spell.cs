@@ -264,6 +264,10 @@ namespace Server.Spells
 	public const string INFO_CREATURE_DISPELED_FORMAT = "{0} foi dissipado!";
 	public const string INFO_CREATURE_DISPELED_LOW_HEALTH_FORMAT = "{0} já estava sem forças e foi dissipado!";
 	public const string INFO_CREATURE_ANGRY_FORMAT = "Você conseguiu irritar {0}";
+
+	// Polymorph
+	public const string INFO_POLYMORPH_TRANSFORM_START_FORMAT = "Você sente sua forma se transformando! A transmutação durará aproximadamente {0} segundos.";
+	public const string INFO_POLYMORPH_TRANSFORM_END = "A transmutação se dissipa, e você retorna à sua aparência original.";
 	#endregion
 
 		#region Drunk Messages

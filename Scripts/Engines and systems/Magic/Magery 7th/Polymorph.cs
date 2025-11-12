@@ -42,6 +42,18 @@ namespace Server.Spells.Seventh
 		/// <summary>Maximum Magery skill value for duration calculation</summary>
 		private const int MAX_MAGERY_SKILL = 120;
 
+		/// <summary>Maximum duration in seconds (always limited)</summary>
+		private const int MAX_DURATION_SECONDS = 120;
+
+		/// <summary>Animal Lore skill points per second bonus (10 points = 1 second)</summary>
+		private const int ANIMAL_LORE_DIVISOR = 10;
+
+		/// <summary>Duration reduction multiplier (50% reduction)</summary>
+		private const double DURATION_REDUCTION_MULTIPLIER = 0.5;
+
+		/// <summary>Purple hue for monster forms (to distinguish from regular mobs)</summary>
+		private const int MONSTER_FORM_PURPLE_HUE = 0x10;
+
 		#endregion
 
 		private int m_NewBody;
@@ -136,24 +148,58 @@ namespace Server.Spells.Seventh
 
 						Caster.BodyMod = m_NewBody;
 
+						Body body = (Body)m_NewBody;
 						if ( m_NewBody == BODY_HUMAN_MALE || m_NewBody == BODY_HUMAN_FEMALE )
+						{
 							Caster.HueMod = Server.Misc.RandomThings.GetRandomSkinColor();
+						}
+						else if ( body.IsMonster )
+						{
+							// Monster forms get purple color to distinguish from regular mobs
+							//Caster.HueMod = MONSTER_FORM_PURPLE_HUE;
+						}
 						else
+						{
 							Caster.HueMod = 0;
+						}
 
 						BaseArmor.ValidateMobile( Caster );
 						BaseClothing.ValidateMobile( Caster );
 
-						if( !Core.ML )
+						// Always create timer to ensure spell expiration (removed Core.ML check)
+						StopTimer( Caster );
+
+						// Calculate duration before creating timer (same logic as InternalTimer constructor)
+						int magerySkill = (int)Caster.Skills[SkillName.Magery].Value;
+						if ( magerySkill > MAX_MAGERY_SKILL )
+							magerySkill = MAX_MAGERY_SKILL;
+
+						double baseDuration = magerySkill * DURATION_REDUCTION_MULTIPLIER;
+
+						// Animal Lore bonus: 1 second per 10 skill points (only for animal forms)
+						int animalLoreBonus = 0;
+						// Reuse 'body' variable already declared above (line 151)
+						if ( body.IsAnimal )
 						{
-							StopTimer( Caster );
-
-							Timer t = new InternalTimer( Caster );
-
-							m_Timers[Caster] = t;
-
-							t.Start();
+							int animalLoreSkill = (int)Caster.Skills[SkillName.AnimalLore].Value;
+							animalLoreBonus = animalLoreSkill / ANIMAL_LORE_DIVISOR;
 						}
+
+						// Total duration with bonus
+						int totalDuration = (int)baseDuration + animalLoreBonus;
+
+						// Always limit duration to maximum
+						if ( totalDuration > MAX_DURATION_SECONDS )
+							totalDuration = MAX_DURATION_SECONDS;
+
+						Timer t = new InternalTimer( Caster, m_NewBody );
+
+						m_Timers[Caster] = t;
+
+						// Send transformation start message with duration
+						Caster.SendMessage( Spell.MSG_COLOR_HEAL, String.Format( Spell.SpellMessages.INFO_POLYMORPH_TRANSFORM_START_FORMAT, totalDuration ) );
+
+						t.Start();
 					}
 				}
 				else
@@ -190,6 +236,9 @@ namespace Server.Spells.Seventh
 
 				BaseArmor.ValidateMobile( m );
 				BaseClothing.ValidateMobile( m );
+
+				// Send creative transformation end message
+				m.SendMessage( Spell.MSG_COLOR_HEAL, Spell.SpellMessages.INFO_POLYMORPH_TRANSFORM_END );
 			}
 		}
 
@@ -197,16 +246,34 @@ namespace Server.Spells.Seventh
 		{
 			private Mobile m_Owner;
 
-			public InternalTimer( Mobile owner ) : base( TimeSpan.FromSeconds( 0 ) )
+			public InternalTimer( Mobile owner, int bodyID ) : base( TimeSpan.FromSeconds( 0 ) )
 			{
 				m_Owner = owner;
 
-				int val = (int)owner.Skills[SkillName.Magery].Value;
+				// Base duration: Magery skill reduced by half
+				int magerySkill = (int)owner.Skills[SkillName.Magery].Value;
+				if ( magerySkill > MAX_MAGERY_SKILL )
+					magerySkill = MAX_MAGERY_SKILL;
 
-				if ( val > MAX_MAGERY_SKILL )
-					val = MAX_MAGERY_SKILL;
+				double baseDuration = magerySkill * DURATION_REDUCTION_MULTIPLIER;
 
-				Delay = TimeSpan.FromSeconds( val );
+				// Animal Lore bonus: 1 second per 10 skill points (only for animal forms, not monsters or humans)
+				int animalLoreBonus = 0;
+				Body body = (Body)bodyID;
+				if ( body.IsAnimal )
+				{
+					int animalLoreSkill = (int)owner.Skills[SkillName.AnimalLore].Value;
+					animalLoreBonus = animalLoreSkill / ANIMAL_LORE_DIVISOR;
+				}
+
+				// Total duration with bonus
+				int totalDuration = (int)baseDuration + animalLoreBonus;
+
+				// Always limit duration to maximum
+				if ( totalDuration > MAX_DURATION_SECONDS )
+					totalDuration = MAX_DURATION_SECONDS;
+
+				Delay = TimeSpan.FromSeconds( totalDuration );
 				Priority = TimerPriority.OneSecond;
 			}
 

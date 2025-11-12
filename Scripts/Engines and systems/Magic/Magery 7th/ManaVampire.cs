@@ -26,11 +26,11 @@ namespace Server.Spells.Seventh
 
 		#region Constants
 
-		/// <summary>Mana drain multiplier based on Magery skill</summary>
-		private const double MANA_DRAIN_MULTIPLIER = 0.20;
+		/// <summary>Mana drain multiplier based on Magery skill (reduced by 20% from original 0.20)</summary>
+		private const double MANA_DRAIN_MULTIPLIER = 0.16;
 
-		/// <summary>Resist percent for this spell</summary>
-		private const double RESIST_PERCENT = 98.0;
+		/// <summary>Damage reduction multiplier when target resists (50% reduction)</summary>
+		private const double RESIST_DAMAGE_MULTIPLIER = 0.5;
 
 		/// <summary>Particle effect ID for target</summary>
 		private const int PARTICLE_EFFECT_TARGET = 0x374A;
@@ -90,8 +90,17 @@ namespace Server.Spells.Seventh
 
 				m.Paralyzed = false;
 
+				// Check if target resists the spell
+				bool resisted = CheckResisted( m );
+
 				int toDrain = 0;
 				toDrain = (int)((Caster.Skills[SkillName.Magery].Value * MANA_DRAIN_MULTIPLIER) * NMSUtils.getDamageEvalBenefit(Caster));
+
+				// If target resists, reduce mana drain by half (Pareto principle: partial effect on resistance)
+				if ( resisted )
+				{
+					toDrain = (int)(toDrain * RESIST_DAMAGE_MULTIPLIER);
+				}
 
 				if ( toDrain < 0 )
 					toDrain = 0;
@@ -116,10 +125,9 @@ namespace Server.Spells.Seventh
 			FinishSequence();
 		}
 
-		public override double GetResistPercent( Mobile target )
-		{
-			return RESIST_PERCENT;
-		}
+		// Uses default GetResistPercent from MagerySpell base class
+		// This implements Pareto principle: resistance chance is calculated dynamically
+		// based on target's Magic Resist skill vs caster's Magery skill (80/20 balance)
 
 		private class InternalTarget : Target
 		{
