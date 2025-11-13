@@ -4,7 +4,7 @@ using Server.Items;
 
 namespace Server.Mobiles
 {
-	[CorpseName( "a fire elemental corpse" )]
+	[CorpseName( "corpo de Super Elemental do Fogo" )]
 	public class SummonedFireElementalGreater : BaseCreature
 	{
 		public override double DispelDifficulty{ get{ return 117.5; } }
@@ -14,7 +14,7 @@ namespace Server.Mobiles
 		[Constructable]
 		public SummonedFireElementalGreater () : base( AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4 )
 		{
-			Name = "a fire elemental";
+			Name = "Super Elemental do Fogo";
 			Body = 755;
 			BaseSoundID = 268;
 

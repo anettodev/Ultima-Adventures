@@ -40,8 +40,8 @@ namespace Server.Gumps
 
 		// 80 < 90: Minotaur, Naga Guardian, DeathKnight (3 forms)
 		public static readonly PolymorphEntry Minotaur =	new PolymorphEntry( 0x2D88, 0x4E, 1015236, 15, 10, 80 );
-		public static readonly PolymorphEntry NagaGuardian =	new PolymorphEntry( 0x25C8, 0x42, 1015236, 15, 10, 80 );
-		public static readonly PolymorphEntry DeathKnight =	new PolymorphEntry( 0x25B1, 0x41, 1015236, 15, 10, 80 ); // Giant Widow image
+		public static readonly PolymorphEntry NagaGuardian = new PolymorphEntry( 0x2134, 0x42, 1015236, 15, 10, 80 );
+		public static readonly PolymorphEntry DeathKnight =	new PolymorphEntry( 0x2D85, 0x41, 1015236, 15, 10, 80 ); // Giant Widow image
 
 		// 90 - 100: Daemon, Giant Widow, Werebear (3 forms)
 		public static readonly PolymorphEntry Daemon =		new PolymorphEntry( 8403, 0x09, 1015253, 25, 8, 90 );

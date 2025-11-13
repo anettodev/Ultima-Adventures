@@ -84,6 +84,17 @@ namespace Server.Spells.Sixth
 		/// </summary>
 		private void AttemptDispel( Mobile from, BaseCreature bc )
 		{
+			// Check for Energy Vortex dispel resistance
+			if ( bc is EnergyVortex )
+			{
+				EnergyVortex vortex = (EnergyVortex)bc;
+				if ( vortex.CheckDispelResistance( from ) )
+				{
+					// Dispel resisted, don't proceed
+					return;
+				}
+			}
+
 			int caosMomentum = Utility.RandomMinMax( CHAOS_MOMENTUM_MIN, CHAOS_MOMENTUM_MAX );
 			double percentageLimit = NMSUtils.getSummonDispelPercentage( bc, caosMomentum );
 			double dispelChance = NMSUtils.getDispelChance( from, bc, caosMomentum );

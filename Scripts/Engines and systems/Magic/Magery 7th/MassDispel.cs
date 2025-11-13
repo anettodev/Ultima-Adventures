@@ -189,6 +189,17 @@ namespace Server.Spells.Seventh
 		/// </summary>
 		private void TryDispelCreature( BaseCreature bc, int chaosMomentum )
 		{
+			// Check for Energy Vortex dispel resistance
+			if ( bc is EnergyVortex )
+			{
+				EnergyVortex vortex = (EnergyVortex)bc;
+				if ( vortex.CheckDispelResistance( Caster ) )
+				{
+					// Dispel resisted, don't proceed
+					return;
+				}
+			}
+
 			double percentageLimit = NMSUtils.getSummonDispelPercentage( bc, chaosMomentum );
 			double dispelChance = NMSUtils.getDispelChance( Caster, bc, chaosMomentum );
 

@@ -28,7 +28,7 @@ namespace Server.Mobiles
 		{
 			Name = "an air elemental";
 			Body = 13;
-			Hue = 0x4001;
+			Hue = 2229;
 			BaseSoundID = 655;
 
 			SetStr( 200 );

@@ -5,6 +5,7 @@ using Server;
 using Server.Items;
 using Server.Network;
 using Server.Mobiles;
+using Server.Commands;
 
 namespace Server.Gumps
 {
@@ -22,6 +23,44 @@ namespace Server.Gumps
 		private int m_Price;
 		private bool m_FromSacrifice;
 		private double m_HitsScalar;
+
+		/// <summary>
+		/// Registra comandos GM para testar os gumps
+		/// </summary>
+		public static void Initialize()
+		{
+			CommandSystem.Register("TestResurrectGump", AccessLevel.GameMaster, new CommandEventHandler(TestResurrectGump_OnCommand));
+			CommandSystem.Register("TestResurrectGumpPrice", AccessLevel.GameMaster, new CommandEventHandler(TestResurrectGumpPrice_OnCommand));
+		}
+
+		[Usage("TestResurrectGump")]
+		[Description("Abre o gump de ressurreiÃ§Ã£o para teste (sem preÃ§o)")]
+		private static void TestResurrectGump_OnCommand(CommandEventArgs e)
+		{
+			Mobile from = e.Mobile;
+			from.SendGump(new ResurrectGump(from, from, ResurrectMessage.Generic, false, 0.0));
+			from.SendMessage("Gump de ressurreiÃ§Ã£o aberto para teste.");
+		}
+
+		[Usage("TestResurrectGumpPrice [preÃ§o]")]
+		[Description("Abre o gump de ressurreiÃ§Ã£o com preÃ§o para teste")]
+		private static void TestResurrectGumpPrice_OnCommand(CommandEventArgs e)
+		{
+			Mobile from = e.Mobile;
+			int price = 1000; // PreÃ§o padrÃ£o
+
+			if (e.Arguments.Length > 0)
+			{
+				if (!int.TryParse(e.Arguments[0], out price))
+				{
+					from.SendMessage("Uso: TestResurrectGumpPrice [preÃ§o]");
+					return;
+				}
+			}
+
+			from.SendGump(new ResurrectGump(from, from, price));
+			from.SendMessage(String.Format("Gump de ressurreiÃ§Ã£o com preÃ§o {0} moedas de ouro aberto para teste.", price));
+		}
 
 		public ResurrectGump( Mobile owner ): this( owner, owner, ResurrectMessage.Generic, false )
 		{
@@ -51,9 +90,9 @@ namespace Server.Gumps
 		{
 		}
 
-		public ResurrectGump( Mobile owner, Mobile healer, ResurrectMessage msg, bool fromSacrifice, double hitsScalar ): base( 25, 25 )
+		public ResurrectGump( Mobile owner, Mobile healer, ResurrectMessage msg, bool fromSacrifice, double hitsScalar ): base( 50, 50 )
 		{
-
+			// Verifica se Ã© um Avatar e requer sacrifÃ­cio do curador
 			if (healer is PlayerMobile && owner is PlayerMobile && ((PlayerMobile)owner).Avatar)
 			{
                 bool proceed = false;
@@ -64,33 +103,32 @@ namespace Server.Gumps
                 {
                     proceed = true;
                     hEaler.BalanceEffect += 5;
-                    hEaler.SendMessage(55, "Você sacrificou 5 pontos de sua influência no equilibrio da força para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou 5 pontos de sua influÃªncia no equilÃ­brio da forÃ§a para trazer esta alma de volta.");
                 }
                 else if (hEaler.BalanceEffect >= 5)
                 {
                     proceed = true;
                     hEaler.BalanceEffect -= 5;
-                    hEaler.SendMessage(55, "Você sacrificou 5 pontos de sua influência no equilibrio da força para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou 5 pontos de sua influÃªncia no equilÃ­brio da forÃ§a para trazer esta alma de volta.");
                 }
                 else
                 {
                     proceed = true;
                     hEaler.Hits = (hEaler.Hits / 2) >= 1 ? hEaler.Hits / 2 : 1;
-                    hEaler.SendMessage(55, "Você sacrificou metade de sua vitalidade para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou metade de sua vitalidade para trazer esta alma de volta.");
                 }
 
                 if (proceed)
                 {
-                    healed.SendMessage(55, "Um sacrificio foi exigido para que o outro aventureiro lhe trouxesse de volta a vida!");
+                    healed.SendMessage(55, "Um sacrifÃ­cio foi exigido para que o outro aventureiro lhe trouxesse de volta a vida!");
                 }
                 else
                 {
-                    hEaler.SendMessage(55, "Para trazer o alvo de volta a vida, um sacrifício é necessário e você não possui o suficiente!");
-                    healed.SendMessage(55, "Para lhe trazer de volta a vida é necessário um sacrifício e o curandeiro não possui o suficiente! Procure outro que possa lhe ajudar.");
+                    hEaler.SendMessage(55, "Para trazer o alvo de volta a vida, um sacrifÃ­cio Ã© necessÃ¡rio e vocÃª nÃ£o possui o suficiente!");
+                    healed.SendMessage(55, "Para lhe trazer de volta a vida Ã© necessÃ¡rio um sacrifÃ­cio e o curandeiro nÃ£o possui o suficiente! Procure outro que possa lhe ajudar.");
                     healed.CloseGump(typeof(ResurrectGump));
                     return;
                 }
-
             }
 
 			m_Healer = healer;
@@ -107,42 +145,55 @@ namespace Server.Gumps
             int buttonLabelOffset = 30;
 
             AddPage(0);
+			
+			// Background images (corners and borders)
 			AddImage(0, 0, 154);
-			AddImage(300, 99, 154);
-			AddImage(0, 99, 154);
 			AddImage(300, 0, 154);
-			AddImage(298, 97, 129);
-			AddImage(2, 97, 129);
-			AddImage(298, 2, 129);
+			AddImage(0, 99, 154);
+			AddImage(300, 99, 154);
 			AddImage(2, 2, 129);
+			AddImage(298, 2, 129);
+			AddImage(2, 97, 129);
+			AddImage(298, 97, 129);
+			
+			// Decorative elements
 			AddImage(7, 6, 145);
 			AddImage(5, 143, 142);
 			AddImage(255, 171, 144);
 			AddImage(171, 47, 132);
 			AddImage(379, 8, 134);
 			AddImage(167, 7, 156);
-			AddImage(209, 11, 156);
 			AddImage(189, 10, 156);
+			AddImage(209, 11, 156);
 			AddImage(170, 44, 159);
+			
+			// Items
 			AddItem(156, 67, 2);
 			AddItem(178, 67, 3);
 			AddItem(185, 118, 3244);
-			AddButton(100, 260, 4023, 4023, 1, GumpButtonType.Reply, 0);
-            AddHtml(firstColumn + buttonLabelOffset, 260 + 2, 477, 22, @"<BODY><BASEFONT Color=#5eff00><BIG> Ressuscite-me </BIG></BASEFONT></BODY>", false, false);
-            AddButton(350, 260, 4020, 4020, 0, GumpButtonType.Reply, 0);
-            AddHtml(secondColumn + buttonLabelOffset, 260 + 2, 477, 22, @"<BODY><BASEFONT Color=#FF0000><BIG> Agora não </BIG></BASEFONT></BODY>", false, false);
-            AddHtml( 267, 95, 224, 22, @"<BODY><BASEFONT Color=#fff700><BIG>RESSURREIÇÃO</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-			AddHtml( 100, 163, 400, 96, @"<BODY><BASEFONT Color=#FFFFFF><BIG>É possível que você seja ressuscitado aqui por este curador.<br/>Você quer voltar para a terra dos vivos? Caso contrário, você poderá permanecer no reino espiritual.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			
+			// Decorative flames
 			AddImage(36, 124, 162);
 			AddImage(33, 131, 162);
 			AddImage(45, 138, 162);
 			AddImage(17, 135, 162);
+			
+			// Title
+			AddHtml( 267, 95, 224, 22, @"<BODY><BASEFONT Color=#fff700><BIG>RESSURREIÃ‡ÃƒO</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			
+			// Main message
+			AddHtml( 100, 163, 400, 96, @"<BODY><BASEFONT Color=#FFFFFF><BIG>Ã‰ possÃ­vel que vocÃª seja ressuscitado aqui por este curandeiro.<br/>VocÃª quer voltar para a terra dos vivos? Caso contrÃ¡rio, vocÃª poderÃ¡ permanecer no reino espiritual.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			
+			// Buttons (Yes and No)
+			AddButton(100, 260, 4023, 4023, 1, GumpButtonType.Reply, 0); // Yes
+            AddHtml(firstColumn + buttonLabelOffset, 260 + 2, 477, 22, @"<BODY><BASEFONT Color=#5eff00><BIG>Ressuscite-me</BIG></BASEFONT></BODY>", false, false);
+            AddButton(350, 260, 4020, 4020, 0, GumpButtonType.Reply, 0); // No
+            AddHtml(secondColumn + buttonLabelOffset, 260 + 2, 477, 22, @"<BODY><BASEFONT Color=#FF0000><BIG>Agora nÃ£o</BIG></BASEFONT></BODY>", false, false);
 		}
 
-		public ResurrectGump( Mobile owner, Mobile healer, int price ): base( 25, 25 )
+		public ResurrectGump( Mobile owner, Mobile healer, int price ): base( 50, 50 )
 		{
-
-
+			// Verifica se Ã© um Avatar e requer sacrifÃ­cio do curador
 			if (healer is PlayerMobile && owner is PlayerMobile && ((PlayerMobile)owner).Avatar)
 			{
 				bool proceed = false;
@@ -153,33 +204,32 @@ namespace Server.Gumps
 				{
 					proceed = true;
 					hEaler.BalanceEffect += 5;
-                    hEaler.SendMessage(55, "Você sacrificou 5 pontos de sua influência no equilibrio da força para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou 5 pontos de sua influÃªncia no equilÃ­brio da forÃ§a para trazer esta alma de volta.");
                 }
 				else if (hEaler.BalanceEffect >= 5)
 				{
 					proceed = true;
 					hEaler.BalanceEffect -= 5;
-                    hEaler.SendMessage(55, "Você sacrificou 5 pontos de sua influência no equilibrio da força para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou 5 pontos de sua influÃªncia no equilÃ­brio da forÃ§a para trazer esta alma de volta.");
                 }
 				else 
 				{
                     proceed = true;
                     hEaler.Hits = (hEaler.Hits / 2) >= 1 ? hEaler.Hits / 2 : 1;
-                    hEaler.SendMessage(55, "Você sacrificou metade de sua vitalidade para trazer esta alma de volta.");
+                    hEaler.SendMessage(55, "VocÃª sacrificou metade de sua vitalidade para trazer esta alma de volta.");
                 }
 
 				if (proceed)
 				{
-					healed.SendMessage(55, "Um sacrificio foi exigido para que o outro aventureiro lhe trouxesse de volta a vida!");
+					healed.SendMessage(55, "Um sacrifÃ­cio foi exigido para que o outro aventureiro lhe trouxesse de volta a vida!");
                 }
 				else
 				{
-					hEaler.SendMessage(55, "Para trazer o alvo de volta a vida, um sacrifício é necessário e você não possui o suficiente!");
-                    healed.SendMessage(55, "Para lhe trazer de volta a vida é necessário um sacrifício e o curandeiro não possui o suficiente! Procure outro que possa lhe ajudar.");
+					hEaler.SendMessage(55, "Para trazer o alvo de volta a vida, um sacrifÃ­cio Ã© necessÃ¡rio e vocÃª nÃ£o possui o suficiente!");
+                    healed.SendMessage(55, "Para lhe trazer de volta a vida Ã© necessÃ¡rio um sacrifÃ­cio e o curandeiro nÃ£o possui o suficiente! Procure outro que possa lhe ajudar.");
                     healed.CloseGump( typeof( ResurrectGump ) );
 					return;
 				}
-
 			}
 
 			m_Healer = healer;
@@ -189,42 +239,49 @@ namespace Server.Gumps
 
 			AddPage( 0 );
 
+			// Background frame
 			AddImage( 0, 0, 3600 );
+			AddImage( 0, 201, 3606 );
+			AddImage( 380, 0, 3602 );
+			AddImage( 380, 201, 3608 );
 
+			// Side borders
 			AddImageTiled( 0, 14, 15, 200, 3603 );
 			AddImageTiled( 380, 14, 14, 200, 3605 );
 
-			AddImage( 0, 201, 3606 );
-
+			// Top and bottom borders
 			AddImageTiled( 15, 201, 370, 16, 3607 );
 			AddImageTiled( 15, 0, 370, 16, 3601 );
 
-			AddImage( 380, 0, 3602 );
-
-			AddImage( 380, 201, 3608 );
-
+			// Main background
 			AddImageTiled( 15, 15, 365, 190, 2624 );
 
-			AddRadio( 30, 140, 9727, 9730, true, 1 );
-			AddHtmlLocalized( 65, 145, 300, 25, 1060015, 0x7FFF, false, false ); // Grudgingly pay the money
+			// Main message
+			AddHtml( 30, 20, 360, 35, @"<BODY><BASEFONT Color=#FFFFFF>Deseja se juntar aos vivos novamente? Posso restaurar seu corpo... por um preÃ§o, Ã© claro...</BASEFONT></BODY>", false, false );
 
-			AddRadio( 30, 175, 9727, 9730, false, 0 );
-			AddHtmlLocalized( 65, 178, 300, 25, 1060016, 0x7FFF, false, false ); // I'd rather stay dead, you scoundrel!!!
-
-			AddHtmlLocalized( 30, 20, 360, 35, 1060017, 0x7FFF, false, false ); // Wishing to rejoin the living, are you?  I can restore your body... for a price of course...
-
-			AddHtmlLocalized( 30, 105, 345, 40, 1060018, 0x5B2D, false, false ); // Do you accept the fee, which will be withdrawn from your bank?
-
+			// Gold coin image and lines
 			AddImage( 65, 72, 5605 );
-
 			AddImageTiled( 80, 90, 200, 1, 9107 );
 			AddImageTiled( 95, 92, 200, 1, 9157 );
 
-			AddLabel( 90, 70, 1645, price.ToString() );
-			AddHtmlLocalized( 140, 70, 100, 25, 1023823, 0x7FFF, false, false ); // gold coins
+			// Price label (yellow)
+			AddHtml( 90, 70, 100, 25, @"<BODY><BASEFONT Color=#FFFF00>" + price.ToString() + "</BASEFONT></BODY>", false, false );
+			AddHtml( 140, 70, 100, 25, @"<BODY><BASEFONT Color=#FFFFFF>moedas de ouro</BASEFONT></BODY>", false, false );
 
+			// Question (white)
+			AddHtml( 30, 105, 345, 40, @"<BODY><BASEFONT Color=#FFFFFF>VocÃª aceita a taxa, que serÃ¡ retirada do seu banco?</BASEFONT></BODY>", false, false );
+
+			// Radio buttons
+			AddRadio( 30, 140, 9727, 9730, true, 1 );
+			AddHtml( 65, 145, 300, 25, @"<BODY><BASEFONT Color=#FFFF00>Pagar o dinheiro, mesmo assim?</BASEFONT></BODY>", false, false );
+
+			AddRadio( 30, 175, 9727, 9730, false, 0 );
+			AddHtml( 65, 178, 300, 25, @"<BODY><BASEFONT Color=#FF0000>Prefiro ficar morto, seu ganancioso!!!</BASEFONT></BODY>", false, false );
+
+			// Accept button
 			AddButton( 290, 175, 247, 248, 2, GumpButtonType.Reply, 0 );
 
+			// Border decorations
 			AddImageTiled( 15, 14, 365, 1, 9107 );
 			AddImageTiled( 380, 14, 1, 190, 9105 );
 			AddImageTiled( 15, 205, 365, 1, 9107 );
@@ -247,33 +304,34 @@ namespace Server.Gumps
 				return;
 			}
 
-			if( info.ButtonID == 1 || info.ButtonID == 2 )
+			if( info.ButtonID == 1 || info.ButtonID == 2 ) // Yes button or Accept button
 			{
 				if( from.Map == null || !from.Map.CanFit( from.Location, 16, false, false ) )
 				{
-					from.SendLocalizedMessage( 502391 ); // Thou can not be resurrected there!
+					from.SendMessage("VocÃª nÃ£o pode ser ressuscitado neste local!");
 					return;
 				}
 
+				// Verifica se hÃ¡ preÃ§o a pagar (gump com healer pago)
 				if( m_Price > 0 )
 				{
-					if( info.IsSwitched( 1 ) )
+					if( info.IsSwitched( 1 ) ) // Radio button "pay money" selecionado
 					{
 						if( Banker.Withdraw( from, m_Price ) )
 						{
-							from.SendLocalizedMessage( 1060398, m_Price.ToString() ); // ~1_AMOUNT~ gold has been withdrawn from your bank box.
-							from.SendLocalizedMessage( 1060022, Banker.GetBalance( from ).ToString() ); // You have ~1_AMOUNT~ gold in cash remaining in your bank box.
+							from.SendMessage(String.Format("{0} moedas de ouro foram retiradas do seu banco.", m_Price.ToString()));
+							from.SendMessage(String.Format("VocÃª tem {0} moedas de ouro restantes no seu banco.", Banker.GetBalance( from ).ToString()));
 							Server.Misc.Death.Penalty( from, false );
 						}
 						else
 						{
-							from.SendLocalizedMessage( 1060020 ); // Unfortunately, you do not have enough cash in your bank to cover the cost of the healing.
+							from.SendMessage("Infelizmente, vocÃª nÃ£o tem dinheiro suficiente no banco para cobrir o custo da cura.");
 							return;
 						}
 					}
 					else
 					{
-						from.SendLocalizedMessage( 1060019 ); // You decide against paying the healer, and thus remain dead.
+						from.SendMessage("VocÃª decidiu nÃ£o pagar o curandeiro e assim permanece morto.");
 						return;
 					}
 				}

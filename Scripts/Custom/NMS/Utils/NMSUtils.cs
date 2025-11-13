@@ -95,6 +95,8 @@ namespace Server
             double superScale = (((mageInscribPoints - 200) / 100) + 1);
             double casterPower = (((mageInscribPoints) / 10) + (caster.RawInt / 10)) * superScale;
             double dispelChance = (casterPower - getSummonDispelDifficulty(bc)) + caosBonus; //adding  caos momentum to help dispel chance
+            // Linear increase: +5 bonus to increase success chance by 5% in all scenarios
+            dispelChance += 5.0;
             if (dispelChance < 0) { dispelChance = 0; }
             return dispelChance;
         }
@@ -113,7 +115,7 @@ namespace Server
         public static void makeCriminalAction(Mobile caster, bool status)
         {
             caster.CriminalAction(status);
-            caster.SendMessage(55, "Você cometeu um ato criminoso.");
+            caster.SendMessage(55, "Vocï¿½ cometeu um ato criminoso.");
             Misc.Titles.AwardKarma(caster, -30, true);
         }
     }

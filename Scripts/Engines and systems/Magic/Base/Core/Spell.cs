@@ -270,6 +270,38 @@ namespace Server.Spells
 	public const string INFO_POLYMORPH_TRANSFORM_END = "A transmutação se dissipa, e você retorna à sua aparência original.";
 	#endregion
 
+	#region 8th Circle Spell Messages
+	// Resurrection
+	public const string RESURRECTION_TARGET_NOT_VISIBLE = "O alvo não pode ser visto.";
+	public const string RESURRECTION_CANNOT_USE_ON_SELF = "Este feitiço não funciona em você mesmo.";
+	public const string RESURRECTION_MUST_BE_ALIVE = "Você deve estar vivo para usar este feitiço.";
+	public const string RESURRECTION_TARGET_NOT_DEAD = "O alvo não está morto para ser ressuscitado.";
+	public const string RESURRECTION_TARGET_TOO_FAR = "O alvo precisa estar mais próximo para ser ressuscitado.";
+	public const string RESURRECTION_LOCATION_BLOCKED_CASTER = "O alvo não pode ser ressuscitado neste local.";
+	public const string RESURRECTION_LOCATION_BLOCKED_TARGET = "Você não pode ser ressuscitado aqui!";
+	public const string RESURRECTION_SOULBOUND_MESSAGE = "Essa pessoa escolheu levar uma vida difícil. (SoulBound)";
+	public const string RESURRECTION_SOULORB_CREATED = "Você invoca um orbe mágico para proteger sua alma.";
+	public const string RESURRECTION_SOULORB_DURATION = "O orbe durará {0} antes de se dissipar.";
+	public const string RESURRECTION_PET_VETERINARY_REQUIRED = "Você precisa de pelo menos 80 pontos em Veterinária para ressuscitar pets.";
+	public const string RESURRECTION_PET_SUCCESS = "O feitiço foi bem-sucedido! Aguardando aprovação do dono do pet para completar a ressurreição.";
+	public const string RESURRECTION_PET_FAILED = "O feitiço falhou ao tentar ressuscitar o pet.";
+	public const string RESURRECTION_HENCH_NOT_DEAD = "Eles não estão mortos.";
+	public const string RESURRECTION_SPELL_FAILED = "Este feitiço não parece funcionar.";
+
+	// Earthquake
+	// (Uses RESIST_HALF_DAMAGE_VICTIM from Resist Messages section)
+
+	// Energy Vortex / Elemental Summons
+	public const string ERROR_LOCATION_BLOCKED_SUMMON = "O local está bloqueado para este feitiço.";
+	public const string VORTEX_RESISTED_DISPEL = "O vortex de energia resistiu ao feitiço de dissipação!";
+	public const string VORTEX_RETALIATION_CASTER = "O vortex de energia sentiu sua tentativa de dissipação e agora te mira com fúria arcana!";
+	public const string VORTEX_RETALIATION_TARGET = "O vortex de energia detecta sua presença e concentra sua energia destrutiva em você!";
+	public const string VORTEX_DEATH_EXPLOSION_CASTER = "O vortex de energia se desintegra em uma explosão cataclísmica de energia pura!";
+	public const string VORTEX_DEATH_EXPLOSION_VICTIM = "Você é atingido pela onda de choque da explosão do vortex de energia!";
+	public const string VORTEX_DEATH_EXPLOSION_AREA = "Uma explosão massiva de energia pura se espalha pela área!";
+	// (Uses ERROR_TOO_MANY_FOLLOWERS and INFO_SUMMON_DURATION_FORMAT from 5th Circle section)
+	#endregion
+
 		#region Drunk Messages
 		// Drunk Messages - Easter Eggs (Cheese references)
 		public const string DRUNK_CHEESE_1 = "Llhc";  // Leo liked his cheese

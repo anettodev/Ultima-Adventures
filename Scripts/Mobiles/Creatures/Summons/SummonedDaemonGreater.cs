@@ -4,7 +4,7 @@ using Server.Items;
 
 namespace Server.Mobiles
 {
-	[CorpseName( "a daemon corpse" )]
+	[CorpseName( "corpo de Demônio" )]
 	public class SummonedDaemonGreater : BaseCreature
 	{
 		public override double DispelDifficulty{ get{ return 125.0; } }
@@ -16,8 +16,9 @@ namespace Server.Mobiles
 		{
 			Name = NameList.RandomName( "devil" );
 			Body = 427;
+			Hue = 1194;
 			BaseSoundID = 357;
-			Title = "the balron";
+			Title = "o balron";
 
 			SetStr( 400 );
 			SetDex( 210 );
