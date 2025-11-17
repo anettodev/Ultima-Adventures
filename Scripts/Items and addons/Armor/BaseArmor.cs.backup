@@ -124,19 +124,66 @@ namespace Server.Items
 		{
 			get
 			{
-			int ar = BaseArmorRating;
+				int ar = BaseArmorRating;
 
-			// Apply protection level bonus
-			if ( m_Protection != ArmorProtectionLevel.Regular )
-				ar += ArmorConstants.PROTECTION_BASE_BONUS + (ArmorConstants.PROTECTION_LEVEL_MULTIPLIER * (int)m_Protection);
+				if ( m_Protection != ArmorProtectionLevel.Regular )
+					ar += 10 + (5 * (int)m_Protection);
 
-			// Apply craft resource bonus using dictionary lookup (replaces 50+ case switch statement)
-			ar += ArmorConstants.GetResourceArmorBonus(m_Resource);
+				switch ( m_Resource )
+				{
+					case CraftResource.DullCopper:		ar += 6; break;
+					case CraftResource.ShadowIron:		ar += 12; break;
+					case CraftResource.Copper:			ar += 18; break;
+					case CraftResource.Bronze:			ar += 24; break;
+                    case CraftResource.Platinum:		ar += 28; break;
+                    case CraftResource.Gold:			ar += 30; break;
+					case CraftResource.Agapite:			ar += 36; break;
+					case CraftResource.Verite:			ar += 42; break;
+					case CraftResource.Valorite:		ar += 48; break;
+                    case CraftResource.Titanium:		ar += 50; break;
+                    case CraftResource.Rosenium:		ar += 50; break;
+                    case CraftResource.Nepturite:		ar += 48; break;
+					case CraftResource.Obsidian:		ar += 48; break;
+					case CraftResource.Steel:			ar += 53; break;
+					case CraftResource.Brass:			ar += 60; break;
+					case CraftResource.Mithril:			ar += 66; break;
+					case CraftResource.Xormite:			ar += 66; break;
+					case CraftResource.Dwarven:			ar += 108; break;
+					case CraftResource.SpinedLeather:	ar += 8; break;
+					case CraftResource.HornedLeather:	ar += 12; break;
+					case CraftResource.BarbedLeather:	ar += 16; break;
+					case CraftResource.NecroticLeather:	ar += 18; break;
+					case CraftResource.VolcanicLeather:	ar += 20; break;
+					case CraftResource.FrozenLeather:	ar += 24; break;
+					case CraftResource.GoliathLeather:	ar += 28; break;
+					case CraftResource.DraconicLeather:	ar += 30; break;
+					case CraftResource.HellishLeather:	ar += 32; break;
+					case CraftResource.DinosaurLeather:	ar += 36; break;
+					case CraftResource.AlienLeather:	ar += 36; break;
+					case CraftResource.AshTree: 		ar += 6; break;
+					case CraftResource.CherryTree: 		ar += 12; break;
+					case CraftResource.EbonyTree: 		ar += 18; break;
+					case CraftResource.GoldenOakTree: 	ar += 24; break;
+					case CraftResource.HickoryTree: 	ar += 30; break;
+					/*case CraftResource.MahoganyTree: 	ar += 32; break;
+					case CraftResource.DriftwoodTree: 	ar += 32; break;
+					case CraftResource.OakTree: 		ar += 36; break;
+					case CraftResource.PineTree: 		ar += 38; break;
+					case CraftResource.GhostTree: 		ar += 38; break;*/
+					case CraftResource.RosewoodTree: 	ar += 42; break;
+					/*case CraftResource.WalnutTree: 		ar += 46; break;
+					case CraftResource.PetrifiedTree: 	ar += 54; break;*/
+					case CraftResource.ElvenTree: 		ar += 90; break;
+					case CraftResource.YellowScales:	ar += 32; break;
+					case CraftResource.RedScales:		ar += 36; break;
+					case CraftResource.GreenScales:		ar += 38; break;
+					case CraftResource.BlackScales:		ar += 42; break;
+					case CraftResource.WhiteScales:		ar += 46; break;
+					case CraftResource.BlueScales:		ar += 48; break;
+				}
 
-			// Apply quality modifier
-			ar += ArmorConstants.QUALITY_POOR_PENALTY + (ArmorConstants.QUALITY_LEVEL_BONUS * (int)m_Quality);
-
-			return ScaleArmorByDurability( ar );
+				ar += -8 + (8 * (int)m_Quality);
+				return ScaleArmorByDurability( ar );
 			}
 		}
 
@@ -359,7 +406,7 @@ namespace Server.Items
 			else
 				v = IntRequirement;
 
-			return AOS.Scale( v, ArmorConstants.STAT_REQUIREMENT_BASE - GetLowerStatReq() );
+			return AOS.Scale( v, 100 - GetLowerStatReq() );
 		}
 
 		public int ComputeStatBonus( StatType type )
@@ -459,9 +506,9 @@ namespace Server.Items
 			switch ( m_Protection )
 			{
 				case ArmorProtectionLevel.Guarding: return 1;
-				case ArmorProtectionLevel.Hardening: return ArmorConstants.PROTECTION_HARDENING_OFFSET;
+				case ArmorProtectionLevel.Hardening: return 2;
 				case ArmorProtectionLevel.Fortification: return 3;
-				case ArmorProtectionLevel.Invulnerability: return ArmorConstants.PROTECTION_INVULNERABILITY_OFFSET;
+				case ArmorProtectionLevel.Invulnerability: return 4;
 			}
 
 			return 0;
@@ -469,19 +516,19 @@ namespace Server.Items
 
 		public void UnscaleDurability()
 		{
-			int scale = ArmorConstants.DURABILITY_SCALE_BASE + GetDurabilityBonus();
+			int scale = 100 + GetDurabilityBonus();
 
-			m_HitPoints = ((m_HitPoints * ArmorConstants.DURABILITY_SCALE_BASE) + (scale - 1)) / scale;
-			m_MaxHitPoints = ((m_MaxHitPoints * ArmorConstants.DURABILITY_SCALE_BASE) + (scale - 1)) / scale;
+			m_HitPoints = ((m_HitPoints * 100) + (scale - 1)) / scale;
+			m_MaxHitPoints = ((m_MaxHitPoints * 100) + (scale - 1)) / scale;
 			InvalidateProperties();
 		}
 
 		public void ScaleDurability()
 		{
-			int scale = ArmorConstants.DURABILITY_SCALE_BASE + GetDurabilityBonus();
+			int scale = 100 + GetDurabilityBonus();
 
-			m_HitPoints = ((m_HitPoints * scale) + ArmorConstants.DURABILITY_ROUNDING_OFFSET) / ArmorConstants.DURABILITY_SCALE_BASE;
-			m_MaxHitPoints = ((m_MaxHitPoints * scale) + ArmorConstants.DURABILITY_ROUNDING_OFFSET) / ArmorConstants.DURABILITY_SCALE_BASE;
+			m_HitPoints = ((m_HitPoints * scale) + 99) / 100;
+			m_MaxHitPoints = ((m_MaxHitPoints * scale) + 99) / 100;
 			InvalidateProperties();
 		}
 
@@ -490,7 +537,7 @@ namespace Server.Items
 			int bonus = 0;
 
 			if ( m_Quality == ArmorQuality.Exceptional )
-				bonus += ArmorConstants.EXCEPTIONAL_DURABILITY_BONUS;
+				bonus += 20;
 
 			if (m_Durability != null) 
 			{
@@ -533,13 +580,13 @@ namespace Server.Items
 
 			CraftItem item = system.CraftItems.SearchFor( GetType() );
 
-			if ( item != null && item.Resources.Count == 1 && item.Resources.GetAt( 0 ).Amount >= ArmorConstants.SCISSOR_MIN_RESOURCES )
+			if ( item != null && item.Resources.Count == 1 && item.Resources.GetAt( 0 ).Amount >= 2 )
 			{
 				try
 				{
 					Item res = (Item)Activator.CreateInstance( CraftResources.GetInfo( m_Resource ).ResourceTypes[0] );
 
-					ScissorHelper( from, res, m_PlayerConstructed ? (item.Resources.GetAt( 0 ).Amount / ArmorConstants.SCISSOR_RESOURCE_DIVISOR) : 1 );
+					ScissorHelper( from, res, m_PlayerConstructed ? (item.Resources.GetAt( 0 ).Amount / 2) : 1 );
 					return true;
 				}
 				catch
@@ -551,7 +598,7 @@ namespace Server.Items
 			return false;
 		}
 
-		private static double[] m_ArmorScalars = ArmorConstants.GetArmorScalars();
+		private static double[] m_ArmorScalars = { 0.07, 0.07, 0.14, 0.15, 0.22, 0.35 };
 
 		public static double[] ArmorScalars
 		{
@@ -583,7 +630,7 @@ namespace Server.Items
 						if( armor.RequiredRace == Race.Elf )
 							m.SendLocalizedMessage( 1072203 ); // Only Elves may use this.
 						else
-							m.SendMessage( ArmorStringConstants.MSG_RACE_ONLY_FORMAT, armor.RequiredRace.PluralName );
+							m.SendMessage( "Only {0} may use this.", armor.RequiredRace.PluralName );
 
 						m.AddToBackpack( armor );
 					}
@@ -592,7 +639,7 @@ namespace Server.Items
 						if ( armor.AllowFemaleWearer )
 							m.SendLocalizedMessage( 1010388 ); // Only females can wear this.
 						else
-							m.SendMessage( ArmorStringConstants.MSG_CANNOT_WEAR );
+							m.SendMessage( "You may not wear this." );
 
 						m.AddToBackpack( armor );
 					}
@@ -601,7 +648,7 @@ namespace Server.Items
 						if ( armor.AllowMaleWearer )
 							m.SendLocalizedMessage( 1063343 ); // Only males can wear this.
 						else
-							m.SendMessage( ArmorStringConstants.MSG_CANNOT_WEAR );
+							m.SendMessage( "You may not wear this." );
 
 						m.AddToBackpack( armor );
 					}
@@ -626,8 +673,8 @@ namespace Server.Items
 					v += attrInfo.ArmorLowerRequirements;
 			}
 
-			if ( v > ArmorConstants.WEAR_MAX_VALUE )
-				v = ArmorConstants.WEAR_MAX_VALUE;
+			if ( v > 100 )
+				v = 100;
 
 			return v;
 		}
@@ -647,12 +694,12 @@ namespace Server.Items
 
 		public virtual double ScaleArmorByDurability( double armor )
 		{
-			int scale = ArmorConstants.DURABILITY_SCALE_BASE;
+			int scale = 100;
 
 			if ( m_MaxHitPoints > 0 && m_HitPoints < m_MaxHitPoints )
-				scale = ArmorConstants.DAMAGED_ARMOR_MIN_SCALE + ((ArmorConstants.DAMAGED_ARMOR_MAX_SCALE * m_HitPoints) / m_MaxHitPoints);
+				scale = 50 + ((50 * m_HitPoints) / m_MaxHitPoints);
 
-			return ( armor * scale ) / ArmorConstants.DURABILITY_SCALE_BASE;
+			return ( armor * scale ) / 100;
 		}
 
 		protected void Invalidate()
@@ -1164,7 +1211,7 @@ namespace Server.Items
 					if( RequiredRace == Race.Elf )
 						from.SendLocalizedMessage( 1072203 ); // Only Elves may use this.
 					else
-						from.SendMessage( ArmorStringConstants.MSG_RACE_ONLY_FORMAT, RequiredRace.PluralName );
+						from.SendMessage( "Only {0} may use this.", RequiredRace.PluralName );
 
 					return false;
 				}
@@ -1173,7 +1220,7 @@ namespace Server.Items
 					if( AllowFemaleWearer )
 						from.SendLocalizedMessage( 1010388 ); // Only females can wear this.
 					else
-						from.SendMessage( ArmorStringConstants.MSG_CANNOT_WEAR );
+						from.SendMessage( "You may not wear this." );
 
 					return false;
 				}
@@ -1182,7 +1229,7 @@ namespace Server.Items
 					if( AllowMaleWearer )
 						from.SendLocalizedMessage( 1063343 ); // Only males can wear this.
 					else
-						from.SendMessage( ArmorStringConstants.MSG_CANNOT_WEAR );
+						from.SendMessage( "You may not wear this." );
 
 					return false;
 				}
@@ -1204,7 +1251,7 @@ namespace Server.Items
 					}
 					else if( from.Int < intReq || (from.Int + intBonus) < 1 )
 					{
-						from.SendMessage( ArmorStringConstants.MSG_INSUFFICIENT_INT );
+						from.SendMessage( "You are not smart enough to equip that." );
 						return false;
 					}
 				}
@@ -1283,7 +1330,7 @@ namespace Server.Items
 			{
 				if ( Server.Misc.MaterialInfo.IsCowlHood( this ) )
 				{
-					from.SendMessage( ArmorStringConstants.MSG_COWL_COLOR_HINT );
+					from.SendMessage( "You can double click this to change the color." );
 				}
 			}
 
@@ -1302,18 +1349,18 @@ namespace Server.Items
 					if ( from.CanBeginAction( this ))
 					{
 						if (from.Karma >= 0)
-							from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_HONOR );
+							from.SendMessage( "Whose Honor will you challenge?" );
 						else if (from.Karma <0)
-							from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_HUMILIATE );
+							from.SendMessage( "What pityful human will you humiliate?" );
 						
 						from.Target = new ChampionChallengeTarget(this); // Call our target	
 					}
 					else 
-						from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_COOLDOWN );
+						from.SendMessage( "You are still taking off your glove, try again." );
 				}
 				else
 				{
-					from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_NOT_PLEDGED );
+					from.SendMessage( "Only those pledged to the balance may challenge another." );
 				}
 			}
 				
@@ -1322,13 +1369,13 @@ namespace Server.Items
 			{
 				if ( from.FindItemOnLayer( Layer.Helm ) != this )
 				{
-					from.SendMessage( ArmorStringConstants.MSG_MUST_WEAR_TO_CHANGE );
+					from.SendMessage( "You must be wearing this to change the color." );
 				}
 				else
 				{
 					Target t;
 
-					from.SendMessage( ArmorStringConstants.MSG_MATCH_COLOR_PROMPT );
+					from.SendMessage( "What worn item do you wish to match the color of?" );
 					t = new HatTarget( this );
 					from.Target = t;
 				}
@@ -1340,7 +1387,7 @@ namespace Server.Items
 		{
 			private Mobile m_From;
 
-			public ChallengeTimer( Mobile from ) : base( TimeSpan.FromSeconds( ArmorConstants.CHALLENGE_COOLDOWN_SECONDS ) )
+			public ChallengeTimer( Mobile from ) : base( TimeSpan.FromSeconds( 1.5 ) )
 			{
 				m_From = from;
 			}
@@ -1374,7 +1421,7 @@ namespace Server.Items
 					
 					Region reg = Region.Find( opponent.Location, opponent.Map );
 					
-					if (!(from.InRange(opponent, ArmorConstants.CHALLENGE_MAX_RANGE)))
+					if (!(from.InRange(opponent, 7)))
 					{
 						from.SendMessage("He's too far!");
 						return;
@@ -1425,7 +1472,7 @@ namespace Server.Items
 							
 							Effects.SendMovingEffect( from, opponent, 0x36E4, 7, 0, false, true, 0x480, 0 ); //change itemid from snowball to glove
 
-							if (Utility.RandomDouble() > ArmorConstants.CHALLENGE_MISS_CHANCE)
+							if (Utility.RandomDouble() > 0.25)
 							{
 								from.SendMessage("You throw a glove at your opponent's face, but miss!");
 								opponent.SendMessage("A glove narrowly misses your face!");
@@ -1445,30 +1492,30 @@ namespace Server.Items
 								if (from == AetherGlobe.EvilChamp )
 								{
 									AetherGlobe.GoodChamp = null;
-									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_HUMILIATED_FORMAT, from.Name ));
+									opponent.SendMessage("You have been humiliated by " + from.Name +" !");
 									opponent.SendMessage("You are no longer the champion of the Balance.");
 								}
 								else 
 								{
 									AetherGlobe.EvilChamp = null;
-									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_FOUND_WANTING_FORMAT, from.Name ));
+									opponent.SendMessage("You have been found wanting by " + from.Name +" !");
 									opponent.SendMessage("You are no longer the champion of the Balance.");
 								}	
 								
 								int old = ((PlayerMobile)opponent).BalanceEffect;
-								((PlayerMobile)opponent).BalanceEffect = (int)((double)(((PlayerMobile)opponent).BalanceEffect)*ArmorConstants.CHAMPION_DEFEAT_PENALTY);
-								((PlayerMobile)from).BalanceEffect += (int)( (double)(old - ((PlayerMobile)opponent).BalanceEffect) * ArmorConstants.CHAMPION_GAIN_RATIO );
+								((PlayerMobile)opponent).BalanceEffect = (int)((double)(((PlayerMobile)opponent).BalanceEffect)*.75);
+								((PlayerMobile)from).BalanceEffect += (int)( (double)(old - ((PlayerMobile)opponent).BalanceEffect) /2 );
 							}
 								
 							else
 							{
 								if (opponent.Karma >=0)
-									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_HUMILIATED_FORMAT, from.Name ));
+									opponent.SendMessage("You were humiliated by " + from.Name +" !");
 								else
-									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_FOUND_WANTING_FORMAT, from.Name ));
+									opponent.SendMessage("You were found wanting by " + from.Name +" !");
 								
-								((PlayerMobile)from).BalanceEffect += (int)((double)(((PlayerMobile)opponent).BalanceEffect)*ArmorConstants.BALANCE_TRANSFER_WINNER);
-								((PlayerMobile)opponent).BalanceEffect = (int)((double)(((PlayerMobile)opponent).BalanceEffect)*ArmorConstants.BALANCE_TRANSFER_LOSER);
+								((PlayerMobile)from).BalanceEffect += (int)((double)(((PlayerMobile)opponent).BalanceEffect)*.1);
+								((PlayerMobile)opponent).BalanceEffect = (int)((double)(((PlayerMobile)opponent).BalanceEffect)*.9);
 
 							}
 					}
@@ -1504,7 +1551,7 @@ namespace Server.Items
 
 					int color = 0;
 
-					if ( from.FindItemOnLayer( Layer.Helm ) != m_Hats ) { from.SendMessage( ArmorStringConstants.MSG_MUST_WEAR_TO_CHANGE ); }
+					if ( from.FindItemOnLayer( Layer.Helm ) != m_Hats ) { from.SendMessage( "You must be wearing this to change the color." ); }
 					else if ( from.FindItemOnLayer( Layer.Waist ) == iColorHat ) { color = iColorHat.Hue; }
 					else if ( from.FindItemOnLayer( Layer.OuterTorso ) == iColorHat ) { color = iColorHat.Hue; }
 					else if ( from.FindItemOnLayer( Layer.Arms ) == iColorHat ) { color = iColorHat.Hue; }
@@ -1520,22 +1567,22 @@ namespace Server.Items
 					else if ( from.FindItemOnLayer( Layer.Shirt ) == iColorHat ) { color = iColorHat.Hue; }
 					else
 					{
-						from.SendMessage( ArmorStringConstants.MSG_MATCH_EQUIPPED_ONLY );
+						from.SendMessage( "You can only match colors of certain equipped items." );
 					}
 
 					if ( color > 0 )
 					{
 						m_Hats.Hue = color;
-						from.SendMessage( ArmorStringConstants.MSG_COLOR_CHANGED );
+						from.SendMessage( "You change the color to match the item." );
 					}
 					else
 					{
-						from.SendMessage( ArmorStringConstants.MSG_ITEM_NEEDS_COLOR );
+						from.SendMessage( "Items selected must have a distinct color." );
 					}
 				}
 				else
 				{
-					from.SendMessage( ArmorStringConstants.MSG_MATCH_DISTINCT_COLORS );
+					from.SendMessage( "You can only match color of certain equipped items that have distinct colors." );
 				}
 			}
 		}
@@ -1589,28 +1636,28 @@ namespace Server.Items
 		public virtual int OnHit( BaseWeapon weapon, int damageTaken )
 		{
 			// Armor absorption reduced to half: 25-50% of ArmorRating (was 50-100%)
-			double HalfAr = ArmorRating / ArmorConstants.ARMOR_ABSORPTION_DIVISOR; // Quarter instead of half
+			double HalfAr = ArmorRating / 4.0; // Quarter instead of half
 			int Absorbed = (int)(HalfAr + HalfAr*Utility.RandomDouble());
 
 			damageTaken -= Absorbed;
 			if ( damageTaken < 0 ) 
 				damageTaken = 0;
 
-			if ( Absorbed < ArmorConstants.MIN_ABSORBED_DAMAGE )
-				Absorbed = ArmorConstants.MIN_ABSORBED_DAMAGE;
+			if ( Absorbed < 2 )
+				Absorbed = 2;
 
-			int ruin = ArmorConstants.DURABILITY_LOSS_CHANCE; // 25% chance to lower durability
+			int ruin = 75; // 25% chance to lower durability
 
 			if ( Server.Misc.MaterialInfo.IsAnyKindOfMetalItem( (Item)this ) )
-				ruin = ArmorConstants.METAL_DURABILITY_LOSS_CHANCE; // Metal armor is just more durable and it gives life back to metal armor types
+				ruin = 50; // Metal armor is just more durable and it gives life back to metal armor types
 
-			if ( ruin < Utility.Random( ArmorConstants.DURABILITY_RANDOM_RANGE ) ) // chance to lower durability
+			if ( ruin < Utility.Random( 100 ) ) // chance to lower durability
 			{
 				if ( this is ILevelable && !(AdventuresFunctions.IsInMidland((object)this)) )
 				{
 					LevelItemManager.RepairItems( ((Mobile)Parent) );
 				}
-				else if ( !AdventuresFunctions.IsInMidland((object)this) && m_AosArmorAttributes.SelfRepair > Utility.Random( ArmorConstants.SELF_REPAIR_CHANCE_DIVISOR ) )
+				else if ( !AdventuresFunctions.IsInMidland((object)this) && m_AosArmorAttributes.SelfRepair > Utility.Random( 20 ) )
 				{
 					HitPoints += 1;
 				}
@@ -1621,7 +1668,7 @@ namespace Server.Items
 					if ( weapon.Type == WeaponType.Bashing )
 						wear = Absorbed / 2;
 					else
-						wear = Utility.Random( ArmorConstants.RANDOM_WEAR_RANGE );
+						wear = Utility.Random( 2 );
 
 					if ( wear > 0 && m_MaxHitPoints > 0 )
 					{
@@ -1671,13 +1718,13 @@ namespace Server.Items
 				amount = 100-Wear;
 
 			double repair = (double)m_HitPoints / (double)m_MaxHitPoints; //0 is damaged, 1 is in good repair, check condition of repair
-			repair += ArmorConstants.WEAR_BONUS_MULTIPLIER * ((double)m_HitPoints/ArmorConstants.WEAR_MAX_DURABILITY); // bonus for items with high durability e.g. 255 versus 60.  
+			repair += 0.50 * ((double)m_HitPoints/255); // bonus for items with high durability e.g. 255 versus 60.  
 			
 			//at this point a weapon at 90% durability value with 100 hits would equal 1.29, impossible to have wear
 			//wep with 20% repair and 50 hits would equal .298
 			
 			//check if wear actually happens based on the state of repair.
-			if ( (Utility.RandomDouble()/ ArmorConstants.WEAR_RANDOM_DIVISOR) > repair )
+			if ( (Utility.RandomDouble()/2) > repair )
 
 /*
 m_Hits
@@ -2057,11 +2104,11 @@ m_MaxHits
 			if( Quality == ArmorQuality.Exceptional )
 			{
 				if ( !( Core.ML && this is BaseShield ))		// Guessed Core.ML removed exceptional resist bonuses from crafted shields
-					DistributeBonuses( (tool is BaseRunicTool ? ArmorConstants.EXCEPTIONAL_RESIST_BONUS_RUNIC : ArmorConstants.EXCEPTIONAL_RESIST_BONUS_STANDARD) ); // Not sure since when, but right now 15 points are added, not 14.
+					DistributeBonuses( (tool is BaseRunicTool ? 8 : Core.SE ? 5 : 5) ); // Not sure since when, but right now 15 points are added, not 14.
 
 				if( Core.ML && !(this is BaseShield) )
 				{
-					int bonus = (int)(from.Skills.ArmsLore.Value / ArmorConstants.ARMSLORE_BONUS_DIVISOR);
+					int bonus = (int)(from.Skills.ArmsLore.Value / 20);
 
 					for( int i = 0; i < bonus; i++ )
 					{
