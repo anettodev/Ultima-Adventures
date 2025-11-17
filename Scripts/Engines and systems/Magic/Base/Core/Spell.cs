@@ -67,6 +67,7 @@ namespace Server.Spells
 		public const string ERROR_SOMETHING_PREVENTED_CAST = "Algo de estranho aconteceu e não permitiu usar o feitiço.";
 		public const string ERROR_LOST_CONCENTRATION_FORMAT = "Você perdeu a concentração após ter segurado o feitiço por aproximadamente: {0} segundos";
 		public const string ERROR_CONCENTRATION_DISTURBED = "Sua concentração foi perturbada, arruinando o feitiço.";
+	public const string ERROR_ARMOR_BLOCKS_MAGERY = "Sua armadura pesada impede você de conjurar magias arcanas!";
 		
 		// Target Errors
 		public const string ERROR_TARGET_NOT_VISIBLE = "O alvo não pode ser visto.";

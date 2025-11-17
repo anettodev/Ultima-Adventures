@@ -18,7 +18,8 @@ namespace Server.Items
 		public override int AosStrReq{ get{ return 20; } }
 		public override int ArmorBase{ get{ return 40; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Plate; } }
+		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Plate; }
+		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
 
 		[Constructable]
 		public MinotaurMorphGorget() : base( 11022 )

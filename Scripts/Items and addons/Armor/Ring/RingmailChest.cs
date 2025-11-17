@@ -23,7 +23,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 22; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Ringmail; } }
+		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Ringmail; }
+		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
 
 		[Constructable]
 		public RingmailChest() : base( 0x13EC )

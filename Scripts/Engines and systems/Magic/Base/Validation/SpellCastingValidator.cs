@@ -1,4 +1,5 @@
 using System;
+using Server.Items;
 using Server.Mobiles;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
@@ -121,7 +122,56 @@ namespace Server.Spells
 				SpellMovementHandler.ConfigureAllowedSteps(spell, playerMobile);
 			}
 
+
+		// Check if heavy armor blocks Magery spells
+		if (spell is MagerySpell && IsWearingHeavyArmorWithoutMageArmor(caster))
+		{
+			caster.SendMessage(SpellConstants.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_ARMOR_BLOCKS_MAGERY);
+			return false;
+		}
+
 			return true;
+		}
+
+		/// <summary>
+		/// Checks if the mobile is wearing heavy armor (NONE meditation allowance)
+		/// without the Mage Armor or Spell Channeling property
+		/// </summary>
+		public static bool IsWearingHeavyArmorWithoutMageArmor(Mobile from)
+		{
+			if (from == null)
+				return false;
+
+			// Check all armor slots
+			BaseArmor[] armorPieces = new BaseArmor[]
+			{
+				from.NeckArmor as BaseArmor,
+				from.HandArmor as BaseArmor,
+				from.HeadArmor as BaseArmor,
+				from.ArmsArmor as BaseArmor,
+				from.LegsArmor as BaseArmor,
+				from.ChestArmor as BaseArmor,
+				from.ShieldArmor as BaseArmor,
+				from.FindItemOnLayer(Layer.Shoes) as BaseArmor,
+				from.FindItemOnLayer(Layer.Cloak) as BaseArmor,
+				from.FindItemOnLayer(Layer.OuterTorso) as BaseArmor
+			};
+
+			foreach (BaseArmor armor in armorPieces)
+			{
+				if (armor == null)
+					continue;
+
+				// If armor has Mage Armor or Spell Channeling, it doesn't block
+				if (armor.ArmorAttributes.MageArmor != 0 || armor.Attributes.SpellChanneling != 0)
+					continue;
+
+				// If armor has NONE meditation allowance, it blocks casting
+				if (armor.MeditationAllowance == ArmorMeditationAllowance.None)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

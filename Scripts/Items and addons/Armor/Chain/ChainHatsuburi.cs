@@ -19,7 +19,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 3; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Chainmail; } }
+		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Chainmail; }
+		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
 
 		[Constructable]
 		public ChainHatsuburi() : base( 0x2774 )

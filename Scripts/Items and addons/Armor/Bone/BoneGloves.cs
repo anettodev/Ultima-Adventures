@@ -23,7 +23,8 @@ namespace Server.Items
 		public override int ArmorBase{ get{ return 30; } }
 		public override int RevertArmorBase{ get{ return 2; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Bone; } }
+		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Bone; }
+		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.All; } } }
 		public override CraftResource DefaultResource{ get{ return CraftResource.RegularLeather; } }
 
 		[Constructable]

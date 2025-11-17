@@ -22,7 +22,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 28; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Chainmail; } }
+		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Chainmail; }
+		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
 
 		[Constructable]
 		public ChainChest() : base( 0x13BF )
