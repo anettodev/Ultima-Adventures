@@ -907,5 +907,28 @@ namespace Server.Misc
 
 			return Heat;
 		}
+
+		// Global Classic Poisoning Mode Setting
+		// 0 = Modern mode (default), 1 = Classic mode
+		// Set via [poisons command (admin/owner only)
+		private static int s_GlobalClassicPoisoning = 1;
+
+		/// <summary>
+		/// Gets the global classic poisoning mode setting.
+		/// Returns 1 for classic mode, 0 for modern mode.
+		/// </summary>
+		public static int ClassicPoisoningMode()
+		{
+			return s_GlobalClassicPoisoning;
+		}
+
+		/// <summary>
+		/// Sets the global classic poisoning mode.
+		/// 1 = Classic mode, 0 = Modern mode
+		/// </summary>
+		public static void SetClassicPoisoningMode( int mode )
+		{
+			s_GlobalClassicPoisoning = ( mode == 1 ) ? 1 : 0;
+		}
 	}
 }

@@ -68,7 +68,8 @@ namespace Server.Items
 				}
 				else
 				{
-					double halfArmor = ArmorRating / 2.0;
+					// Shield absorption reduced to half: 25-50% of ArmorRating (was 50-100%)
+					double halfArmor = ArmorRating / 4.0; // Quarter instead of half
 					int absorbed = (int)(halfArmor + (halfArmor*Utility.RandomDouble()));
 
 					if( absorbed < 2 )
@@ -124,8 +125,12 @@ namespace Server.Items
 
 				if( chance < 0.01 )
 					chance = 0.01;
+				
+				// Cap parry chance at 58%
+				if( chance > 0.58 )
+					chance = 0.58;
 				/*
-				FORMULA: Displayed AR = ((Parrying Skill * Base AR of Shield) ÷ 200) + 1 
+				FORMULA: Displayed AR = ((Parrying Skill * Base AR of Shield) ï¿½ 200) + 1 
 
 				FORMULA: % Chance of Blocking = parry skill - (shieldAR * 2)
 

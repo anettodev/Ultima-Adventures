@@ -20,12 +20,8 @@ namespace Server.Items
 			bool canpoison = true;
 			bool canhide = true;
 
-			int ClassicPoisons = 0;
-			CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( attacker );
-			if ( DB != null )
-			{
-				ClassicPoisons = DB.ClassicPoisoning;
-			}
+			// Use global classic poisoning mode setting
+			int ClassicPoisons = Server.Misc.MyServerSettings.ClassicPoisoningMode();
 
 			if ( ClassicPoisons > 0 )
 			{

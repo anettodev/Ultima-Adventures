@@ -28,7 +28,7 @@ namespace Server.Items
 		public override int OldMaxDamage{ get{ return 41; } }
 		public override int OldSpeed{ get{ return 20; } }
 
-		public override int DefMaxRange{ get{ return 10; } }
+		public override int DefMaxRange{ get{ return 15; } }
 
 		public override int InitMinHits{ get{ return 31; } }
 		public override int InitMaxHits{ get{ return 60; } }

@@ -26,7 +26,14 @@ O sistema de dano usa a fórmula AOS, que calcula o dano base e aplica múltiplo
 3. Bônus de Modificadores = QualityBonus + DamageLevelBonus + WeaponDamageAttribute
 4. Total Bonus = Soma de todos os bônus (em decimal, ex: 0.79 = 79%)
 5. Dano Total = Dano Base + (Dano Base × Total Bonus)
-6. Dano Final = DiminishingReturns(Dano Total, Cap, 10)
+6. MULTIPLICADOR METAL: Se Resource = Metal, então Dano Total × 1.25
+7. Dano após DR = DiminishingReturns(Dano Total, Cap, 10)
+   - Cap Regular Metal: 64
+   - Cap Avatar Metal: 92
+   - Cap Regular Madeira: 58 (64 × 0.9, reduzido em 10%)
+   - Cap Avatar Madeira: 83 (92 × 0.9, reduzido em 10%)
+8. AUMENTO DE DANO: Dano após DR × 1.12 (12% de aumento)
+9. Dano Final = Dano após aumento
 ```
 
 ### Componentes do Cálculo
@@ -47,11 +54,23 @@ O sistema de dano usa a fórmula AOS, que calcula o dano base e aplica múltiplo
 - **Weapon Damage Attribute**: Bônus de atributos mágicos
 - **Caps**: Modificadores são limitados por `DamageIncreaseCap()` (geralmente 100%)
 
-#### 4. Diminishing Returns
-- **Jogadores Regulares**: Cap de 53 de dano
-- **Avatares**: Cap de 77 de dano
+#### 4. Multiplicador de Metal
+- **Armas de Metal**: Multiplicador de 1.25x (25% mais dano)
+- Aplicado após todos os bônus, antes do diminishing returns
+- Armas de madeira não recebem este multiplicador
+
+#### 5. Diminishing Returns
+- **Jogadores Regulares Metal**: Cap de 64 de dano (aumentado de 53)
+- **Avatares Metal**: Cap de 92 de dano (aumentado de 77)
+- **Jogadores Regulares Madeira**: Cap de 58 de dano (64 × 0.9, reduzido em 10%)
+- **Avatares Madeira**: Cap de 83 de dano (92 × 0.9, reduzido em 10%)
 - **Criaturas**: Cap de 225 de dano
 - Sistema de steps exponenciais após o threshold
+
+#### 6. Aumento de Dano
+- **12% de aumento** aplicado após diminishing returns
+- Beneficia todas as armas igualmente
+- Mantém diferenças proporcionais entre metal e madeira
 
 ---
 
@@ -304,7 +323,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Damage Level Bonus: 0%
 - **Total Bonus**: 5%
 - **Dano Calculado**: 16.5 × 1.05 = 17.325
-- **Dano Final**: ~17-18
+- **Multiplicador Metal**: 17.325 × 1.25 = 21.656
+- **Diminishing Returns**: 21.656 (abaixo do cap de 64)
+- **Aumento de 12%**: 21.656 × 1.12 = 24.255
+- **Dano Final**: ~24-25
 
 #### Exemplo: Machado (Base: 13-16)
 - Dano Base: 13-16 (média 14.5)
@@ -312,14 +334,20 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Lumberjacking Bonus: 0% (assumindo 0 skill)
 - **Total Bonus**: 5%
 - **Dano Calculado**: 14.5 × 1.05 = 15.225
-- **Dano Final**: ~15-16
+- **Multiplicador Metal**: 15.225 × 1.25 = 19.031
+- **Diminishing Returns**: 19.031 (abaixo do cap de 64)
+- **Aumento de 12%**: 19.031 × 1.12 = 21.315
+- **Dano Final**: ~21-22
 
 #### Exemplo: QuarterStaff (Base: 11-14)
 - Dano Base: 11-14 (média 12.5)
 - Strength Bonus: 5%
 - **Total Bonus**: 5%
 - **Dano Calculado**: 12.5 × 1.05 = 13.125
-- **Dano Final**: ~13-14
+- **Multiplicador Metal**: Não aplicado (madeira)
+- **Diminishing Returns**: 13.125 (abaixo do cap de 58)
+- **Aumento de 12%**: 13.125 × 1.12 = 14.700
+- **Dano Final**: ~15
 
 ---
 
@@ -334,7 +362,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Tactics Bonus: (60 × 0.300) / 100 = 0.18 (18%)
 - **Total Bonus**: 8% + 18% + 18% = 44%
 - **Dano Calculado**: 19.5 × 1.44 = 28.08
-- **Dano Final**: ~27-29
+- **Multiplicador Metal**: 28.08 × 1.25 = 35.1
+- **Diminishing Returns**: 35.1 (abaixo do cap de 64)
+- **Aumento de 12%**: 35.1 × 1.12 = 39.312
+- **Dano Final**: ~39-40
 
 #### Exemplo: Machado (Base: 13-16, Material +3)
 - Dano Base: 13-16 + 3 = 16-19 (média 17.5)
@@ -344,7 +375,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Lumberjacking Bonus: (60 × 0.200) / 100 = 0.12 (12%)
 - **Total Bonus**: 8% + 18% + 18% + 12% = 56%
 - **Dano Calculado**: 17.5 × 1.56 = 27.3
-- **Dano Final**: ~26-28
+- **Multiplicador Metal**: 27.3 × 1.25 = 34.125
+- **Diminishing Returns**: 34.125 (abaixo do cap de 64)
+- **Aumento de 12%**: 34.125 × 1.12 = 38.22
+- **Dano Final**: ~38-39
 
 #### Exemplo: QuarterStaff (Base: 11-14, Material +1)
 - Dano Base: 11-14 + 1 = 12-15 (média 13.5)
@@ -353,7 +387,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Tactics Bonus: 18%
 - **Total Bonus**: 44%
 - **Dano Calculado**: 13.5 × 1.44 = 19.44
-- **Dano Final**: ~19-20
+- **Multiplicador Metal**: Não aplicado (madeira)
+- **Diminishing Returns**: 19.44 (abaixo do cap de 58)
+- **Aumento de 12%**: 19.44 × 1.12 = 21.773
+- **Dano Final**: ~22
 
 ---
 
@@ -368,7 +405,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Tactics Bonus: (100 × 0.300 + 3.00) / 100 = 0.33 (33%)
 - **Total Bonus**: 13% + 33% + 33% = 79%
 - **Dano Calculado**: 21.5 × 1.79 = 38.485
-- **Dano Final**: ~37-40
+- **Multiplicador Metal**: 38.485 × 1.25 = 48.106
+- **Diminishing Returns**: 48.106 (abaixo do cap de 64)
+- **Aumento de 12%**: 48.106 × 1.12 = 53.879
+- **Dano Final**: ~54
 
 #### Exemplo: Machado (Base: 13-16, Material +5)
 - Dano Base: 13-16 + 5 = 18-21 (média 19.5)
@@ -378,7 +418,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Lumberjacking Bonus: (100 × 0.200 + 10.00) / 100 = 0.30 (30%)
 - **Total Bonus**: 13% + 33% + 33% + 30% = 109%
 - **Dano Calculado**: 19.5 × 2.09 = 40.755
-- **Dano Final**: ~39-42
+- **Multiplicador Metal**: 40.755 × 1.25 = 50.944
+- **Diminishing Returns**: 50.944 (abaixo do cap de 64)
+- **Aumento de 12%**: 50.944 × 1.12 = 57.058
+- **Dano Final**: ~57
 
 #### Exemplo: QuarterStaff (Base: 11-14, Material +5)
 - Dano Base: 11-14 + 5 = 16-19 (média 17.5)
@@ -387,7 +430,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Tactics Bonus: 33%
 - **Total Bonus**: 79%
 - **Dano Calculado**: 17.5 × 1.79 = 31.325
-- **Dano Final**: ~30-33
+- **Multiplicador Metal**: Não aplicado (madeira)
+- **Diminishing Returns**: 31.325 (abaixo do cap de 58)
+- **Aumento de 12%**: 31.325 × 1.12 = 35.084
+- **Dano Final**: ~35
 
 ---
 
@@ -404,8 +450,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Damage Level Bonus: +18%
 - **Total Bonus**: 15.5% + 39% + 39% + 10% + 18% = 121.5%
 - **Dano Calculado**: 34.5 × 2.215 = 76.4175
-- **Diminishing Returns**: Capped at 53 (jogadores regulares) ou 77 (avatares)
-- **Dano Final**: ~50-53 (regular) ou ~75-77 (avatar)
+- **Multiplicador Metal**: 76.4175 × 1.25 = 95.522
+- **Diminishing Returns**: Capped at 64 (regular) ou 92 (avatar)
+- **Aumento de 12%**: 64 × 1.12 = 71.68 (regular) ou 92 × 1.12 = 103.04 (avatar)
+- **Dano Final**: ~72 (regular) ou ~103 (avatar)
 
 #### Exemplo: Machado (Base: 13-16, Material +18)
 - Dano Base: 13-16 + 18 = 31-34 (média 32.5)
@@ -417,8 +465,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Damage Level Bonus: +18%
 - **Total Bonus**: 15.5% + 39% + 39% + 34% + 10% + 18% = 155.5%
 - **Dano Calculado**: 32.5 × 2.555 = 83.0375
-- **Diminishing Returns**: Capped at 53 (regular) ou 77 (avatar)
-- **Dano Final**: ~50-53 (regular) ou ~75-77 (avatar)
+- **Multiplicador Metal**: 83.0375 × 1.25 = 103.797
+- **Diminishing Returns**: Capped at 64 (regular) ou 92 (avatar)
+- **Aumento de 12%**: 64 × 1.12 = 71.68 (regular) ou 92 × 1.12 = 103.04 (avatar)
+- **Dano Final**: ~72 (regular) ou ~103 (avatar)
 
 #### Exemplo: QuarterStaff (Base: 11-14, Material +8)
 - Dano Base: 11-14 + 8 = 19-22 (média 20.5)
@@ -429,8 +479,10 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 - Damage Level Bonus: +18%
 - **Total Bonus**: 121.5%
 - **Dano Calculado**: 20.5 × 2.215 = 45.4075
-- **Diminishing Returns**: Capped at 53 (regular) ou 77 (avatar)
-- **Dano Final**: ~44-47 (regular) ou ~45-47 (avatar)
+- **Multiplicador Metal**: Não aplicado (madeira)
+- **Diminishing Returns**: Capped at 58 (regular, reduzido em 10%) ou 83 (avatar, reduzido em 10%)
+- **Aumento de 12%**: 45.4075 × 1.12 = 50.856 (regular, abaixo do cap) ou 83 × 1.12 = 92.96 (avatar)
+- **Dano Final**: ~51 (regular) ou ~93 (avatar)
 
 ---
 
@@ -444,18 +496,19 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
 
 | Material | Bônus Mat. | Dano Base | Total Bonus | Dano Calc. | Dano Final |
 |----------|------------|-----------|-------------|------------|------------|
-| **Iron** | +0 | 15-18 | 121.5% | 36.5 | 36-37 |
-| **Copper** | +3 | 18-21 | 121.5% | 46.5 | 46-47 |
-| **Agapite** | +5 | 20-23 | 121.5% | 52.0 | 50-53* |
-| **Steel** | +7 | 22-25 | 121.5% | 57.5 | 53* |
-| **Mithril** | +9 | 24-27 | 121.5% | 63.0 | 53* |
-| **Titanium** | +15 | 30-33 | 121.5% | 75.0 | 53* (77** avatar) |
-| **Dwarven** | +18 | 33-36 | 121.5% | 81.5 | 53* (77** avatar) |
+| **Iron** | +0 | 15-18 | 121.5% | 36.5 | 40.9* |
+| **Copper** | +3 | 18-21 | 121.5% | 46.5 | 52.1* |
+| **Agapite** | +5 | 20-23 | 121.5% | 52.0 | 58.2* |
+| **Steel** | +7 | 22-25 | 121.5% | 57.5 | 64.4* |
+| **Mithril** | +9 | 24-27 | 121.5% | 63.0 | 70.6* |
+| **Titanium** | +15 | 30-33 | 121.5% | 75.0 | 71.7*** (103.0**** avatar) |
+| **Dwarven** | +18 | 33-36 | 121.5% | 81.5 | 71.7*** (103.0**** avatar) |
 
-*Capped at 53 para jogadores regulares  
-**Capped at 77 para avatares
+*Dano após multiplicador metal (1.25x) e aumento de 12%  
+***Capped at 64 para jogadores regulares (71.7 após 12%)  
+****Capped at 92 para avatares (103.0 após 12%)
 
-**Observação**: Com stats máximos, materiais superiores ainda são limitados pelo cap de diminishing returns, mas oferecem mais margem para outros modificadores.
+**Observação**: Com stats máximos, materiais superiores ainda são limitados pelo cap de diminishing returns, mas oferecem mais margem para outros modificadores. O multiplicador de metal (1.25x) e o aumento de 12% garantem que armas de metal sempre terão vantagem.
 
 ---
 
@@ -604,9 +657,12 @@ A durabilidade da arma afeta o dano quando a arma está danificada:
    - Com stats altos: Foque em Quality e Damage Level
 
 3. **Considerar Diminishing Returns**
-   - Jogadores regulares: Cap de 53
-   - Avatares: Cap de 77
+   - Jogadores regulares Metal: Cap de 64 (71.7 após 12%)
+   - Avatares Metal: Cap de 92 (103.0 após 12%)
+   - Jogadores regulares Madeira: Cap de 58 (50.9 após 12%)
+   - Avatares Madeira: Cap de 83 (93.0 após 12%)
    - Materiais superiores podem não valer a pena se você já está no cap
+   - **Nota**: Armas de madeira têm cap 10% menor que armas de metal
 
 4. **Manter Durabilidade**
    - Armas danificadas perdem dano

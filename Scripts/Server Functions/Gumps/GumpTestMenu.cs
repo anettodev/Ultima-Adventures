@@ -57,7 +57,8 @@ namespace Server.Gumps
 			"#FFA07A", // Jogadores Novos - Salmão
 			"#98D8C8", // Casas - Verde água
 			"#F7DC6F", // Itens e Vendors - Amarelo
-			"#9B59B6"  // UOE Editor - Roxo
+			"#9B59B6", // UOE Editor - Roxo
+			"#FF6B9D"  // Tests - Rosa
 		};
 
 		/// <summary>
@@ -129,6 +130,9 @@ namespace Server.Gumps
 				new GumpEntry("SetIdUOE (Set ID)", 49),
 				new GumpEntry("SetLocUOE (Set Location)", 50),
 				new GumpEntry("SettingUOE (Settings)", 51)
+			),
+			new GumpCategory("Tests",
+				new GumpEntry("MageryItemsGump (Magery Items)", 52)
 			)
 		};
 
@@ -610,6 +614,14 @@ namespace Server.Gumps
 					EnsureUOETool(from);
 					from.SendGump(new SettingUOE(from, 0));
 					from.SendMessage("SettingUOE aberto.");
+					from.SendGump(new GumpTestMenu(from, m_SelectedCategory));
+					break;
+
+				case 52: // MageryItemsGump
+					Server.Items.MageryTestToken mageryToken = new Server.Items.MageryTestToken();
+					mageryToken.MoveToWorld(from.Location, from.Map);
+					from.SendGump(new MageryItemsGump(mageryToken));
+					from.SendMessage("MageryItemsGump aberto. O token de teste será deletado quando você fechar o gump.");
 					from.SendGump(new GumpTestMenu(from, m_SelectedCategory));
 					break;
 			}

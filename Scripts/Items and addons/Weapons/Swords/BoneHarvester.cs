@@ -14,8 +14,8 @@ namespace Server.Items
 		public override WeaponAbility FifthAbility{ get{ return WeaponAbility.Block; } }
 
 		public override int AosStrengthReq{ get{ return 25; } }
-		public override int AosMinDamage{ get{ return 13; } }
-		public override int AosMaxDamage{ get{ return 15; } }
+		public override int AosMinDamage{ get{ return 14; } }
+		public override int AosMaxDamage{ get{ return 16; } }
 		public override int AosSpeed{ get{ return 36; } }
 		public override float MlSpeed{ get{ return 3.00f; } }
 

@@ -20,9 +20,9 @@ namespace Server.Items
 		public override WeaponAbility PrimaryAbility{ get{ return WeaponAbility.WhirlwindAttack; } }
 		public override WeaponAbility SecondaryAbility{ get{ return WeaponAbility.InfectiousStrike; } }
 
-		public override int AosStrengthReq{ get{ return 90; } }
+		public override int AosStrengthReq{ get{ return 70; } }
 		public override int AosMinDamage{ get{ return 18; } }
-		public override int AosMaxDamage{ get{ return 24; } }
+		public override int AosMaxDamage{ get{ return 23; } }
 		public override int AosSpeed{ get{ return 35; } }
 		
 		public override int DefHitSound { get { return 567; } }

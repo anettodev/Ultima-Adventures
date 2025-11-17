@@ -16,7 +16,7 @@ namespace Server.Items
 
 		public override void Open( Mobile from )
 		{
-			int amount = 35;
+			int amount = 55;
 			if ( this.Weight > 2.0 )
 			{
 				Item i = null;

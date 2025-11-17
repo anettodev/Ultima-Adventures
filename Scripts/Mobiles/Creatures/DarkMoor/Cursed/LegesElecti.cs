@@ -102,7 +102,8 @@ namespace Server.Mobiles
 		public override void OnDeath( Container c )
 		{
 			base.OnDeath( c );
-			mother.PassDamage(this, 0, true);
+			if (m_mother != null && !m_mother.Deleted)
+				m_mother.PassDamage(this, 0, true);
 			Timer.DelayCall( TimeSpan.FromSeconds( 1 ), new TimerStateCallback ( Blast ), new object[]{ this.Location, this.Map } );
 		}
 
@@ -229,7 +230,7 @@ namespace Server.Mobiles
 
 		public override void OnDamage( int amount, Mobile from, bool willKill )
 		{
-			if (this == m_mother.chosenelecti)
+			if (m_mother != null && !m_mother.Deleted && this == m_mother.chosenelecti)
 				m_mother.PassDamage(this, amount, false);
 
 			base.OnDamage( amount, from, willKill);

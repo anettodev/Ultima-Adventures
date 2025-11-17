@@ -1635,7 +1635,8 @@ namespace Server.Items
 		
 		public virtual int OnHit( BaseWeapon weapon, int damageTaken )
 		{
-			double HalfAr = ArmorRating / 2.0;
+			// Armor absorption reduced to half: 25-50% of ArmorRating (was 50-100%)
+			double HalfAr = ArmorRating / 4.0; // Quarter instead of half
 			int Absorbed = (int)(HalfAr + HalfAr*Utility.RandomDouble());
 
 			damageTaken -= Absorbed;

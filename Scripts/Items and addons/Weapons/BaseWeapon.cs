@@ -1,5 +1,4 @@
 using System;
-using System;
 using System.Text;
 using System.Collections;
 using Server.Network;
@@ -24,6 +23,11 @@ namespace Server.Items
 
 	public abstract class BaseWeapon : Item, IWeapon, ICraftable, ISlayer, IDurability
 	{
+		#region Constants
+		// All constants have been moved to WeaponConstants.cs for better maintainability
+		// Use WeaponConstants.ConstantName to access constants
+		#endregion
+		
 		private string m_EngravedText;
 		
 		[CommandProperty( AccessLevel.GameMaster )]
@@ -35,56 +39,7 @@ namespace Server.Items
 
 		public static int WeaponMaterialDamage( CraftResource m_Resource )
 		{
-			int dmg = 0;
-
-			switch ( m_Resource )
-			{
-				case CraftResource.DullCopper:		dmg = 1; break;
-				case CraftResource.ShadowIron:		dmg = 2; break;
-				case CraftResource.Copper:			dmg = 3; break;
-				case CraftResource.Bronze:			dmg = 4; break;
-				case CraftResource.Gold:			dmg = 4; break;
-                case CraftResource.Platinum: dmg = 4; break;
-                case CraftResource.Agapite:			dmg = 5; break;
-				case CraftResource.Verite:			dmg = 5; break;
-				case CraftResource.Valorite:		dmg = 6; break;
-				case CraftResource.Nepturite:		dmg = 6; break;
-				case CraftResource.Obsidian:		dmg = 6; break;
-				case CraftResource.Steel:			dmg = 7; break;
-				case CraftResource.Brass:			dmg = 8; break;
-				case CraftResource.Mithril:			dmg = 9; break;
-				case CraftResource.Xormite:			dmg = 9; break;
-                case CraftResource.Titanium:		dmg = 15; break;
-                case CraftResource.Rosenium: dmg = 15; break;
-                case CraftResource.Dwarven:			dmg = 18; break;
-				case CraftResource.SpinedLeather:	dmg = 1; break;
-				case CraftResource.HornedLeather:	dmg = 2; break;
-				case CraftResource.BarbedLeather:	dmg = 3; break;
-				case CraftResource.NecroticLeather:	dmg = 4; break;
-				case CraftResource.VolcanicLeather:	dmg = 4; break;
-				case CraftResource.FrozenLeather:	dmg = 5; break;
-				case CraftResource.GoliathLeather:	dmg = 6; break;
-				case CraftResource.DraconicLeather:	dmg = 8; break;
-				case CraftResource.HellishLeather:	dmg = 9; break;
-				case CraftResource.DinosaurLeather:	dmg = 10; break;
-				case CraftResource.AlienLeather:	dmg = 18; break;
-				case CraftResource.AshTree: 		dmg = 1; break;
-				case CraftResource.CherryTree: 		dmg = 1; break;
-				case CraftResource.EbonyTree: 		dmg = 2; break;
-				case CraftResource.GoldenOakTree: 	dmg = 2; break;
-				case CraftResource.HickoryTree: 	dmg = 3; break;
-				/*case CraftResource.MahoganyTree: 	dmg = 3; break;
-				case CraftResource.OakTree: 		dmg = 4; break;
-				case CraftResource.PineTree: 		dmg = 4; break;*/
-				case CraftResource.RosewoodTree: 	dmg = 5; break;
-				/*case CraftResource.WalnutTree: 		dmg = 5; break;
-				case CraftResource.DriftwoodTree: 	dmg = 7; break;
-				case CraftResource.GhostTree: 		dmg = 8; break;*/
-				/*case CraftResource.PetrifiedTree: 	dmg = 9; break;*/
-				case CraftResource.ElvenTree: 		dmg = 18; break;
-			}
-
-			return dmg;
+			return WeaponMaterialDamageTable.GetMaterialDamage(m_Resource);
 		}
 
 
@@ -321,7 +276,19 @@ namespace Server.Items
 		public CraftResource Resource
 		{
 			get{ return m_Resource; }
-			set{ UnscaleDurability(); m_Resource = value; Hue = CraftResources.GetHue( m_Resource ); InvalidateProperties(); ScaleDurability(); }
+			set
+			{ 
+				UnscaleDurability(); 
+				m_Resource = value; 
+				// Use MaterialInfo.GetMaterialColor for proper material colors
+				int materialHue = GetMaterialHue( m_Resource );
+				if ( materialHue > 0 )
+					Hue = materialHue;
+				else
+					Hue = CraftResources.GetHue( m_Resource ); // Fallback to default if no material color found
+				InvalidateProperties(); 
+				ScaleDurability(); 
+			}
 		}
 
 		[CommandProperty( AccessLevel.GameMaster )]
@@ -464,7 +431,7 @@ namespace Server.Items
 						}
 						else if ( m_SkillMod == null && Parent is Mobile )
 						{
-							m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * 5 );
+							m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * WeaponConstants.ACCURACY_LEVEL_SKILL_MOD_MULTIPLIER );
 							((Mobile)Parent).AddSkillMod( m_SkillMod );
 						}
 						else if ( m_SkillMod != null )
@@ -503,7 +470,7 @@ namespace Server.Items
 
 		public virtual void UnscaleDurability()
 		{
-			int scale = 50 + GetDurabilityBonus();
+			int scale = WeaponConstants.DURABILITY_BASE_SCALE + GetDurabilityBonus();
 
 			m_Hits = ((m_Hits * 100) + (scale - 1)) / scale;
 			m_MaxHits = ((m_MaxHits * 100) + (scale - 1)) / scale;
@@ -512,7 +479,7 @@ namespace Server.Items
 
 		public virtual void ScaleDurability()
 		{
-			int scale = 50 + GetDurabilityBonus();
+			int scale = WeaponConstants.DURABILITY_BASE_SCALE + GetDurabilityBonus();
 
 			m_Hits = ((m_Hits * scale) + 99) / 100;
 			m_MaxHits = ((m_MaxHits * scale) + 99) / 100;
@@ -631,13 +598,13 @@ namespace Server.Items
 				if( RequiredRace == Race.Elf )
 					from.SendLocalizedMessage( 1072203 ); // Only Elves may use this.
 				else
-					from.SendMessage( "Only {0} may use this.", RequiredRace.PluralName );
+					from.SendMessage( WeaponStringConstants.MSG_ONLY_RACE_CAN_USE, RequiredRace.PluralName );
 
 				return false;
 			}
 			else if ( from.Dex < DexRequirement )
 			{
-				from.SendMessage( "You are not nimble enough to equip that." );
+				from.SendMessage( WeaponStringConstants.MSG_NOT_AGILE_ENOUGH );
 				return false;
 			} 
 			else if ( from.Str < AOS.Scale( StrRequirement, 100 - GetLowerStatReq() ) )
@@ -647,7 +614,7 @@ namespace Server.Items
 			}
 			else if ( from.Int < IntRequirement )
 			{
-				from.SendMessage( "You are not smart enough to equip that." );
+				from.SendMessage( WeaponStringConstants.MSG_NOT_INTELLIGENT_ENOUGH );
 				return false;
 			}
 			else if ( !from.CanBeginAction( typeof( BaseWeapon ) ) )
@@ -666,9 +633,9 @@ namespace Server.Items
 		{
 
 			bool SB = false;
-			if (from is PlayerMobile )
+			if (from.IsPlayerMobile())
 			{
-				if (((PlayerMobile)from).SoulBound || AdventuresFunctions.IsInMidland((object)from))
+				if (from.IsSoulBound() || from.IsInMidland())
 					SB = true;
 			}
 
@@ -676,34 +643,34 @@ namespace Server.Items
 			int dexBonus = m_AosAttributes.BonusDex;
 			int intBonus = m_AosAttributes.BonusInt;
 
-			if ( (strBonus != 0 || dexBonus != 0 || intBonus != 0) && !SB && !AdventuresFunctions.IsInMidland((object)from))
+			if ( (strBonus != 0 || dexBonus != 0 || intBonus != 0) && !SB && !from.IsInMidland())
 			{
 				Mobile m = from;
 
 				string modName = this.Serial.ToString();
 
 				if ( strBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Str, modName + "Str", strBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Str, modName + WeaponStringConstants.STAT_MOD_STR, strBonus, TimeSpan.Zero ) );
 
 				if ( dexBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Dex, modName + "Dex", dexBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Dex, modName + WeaponStringConstants.STAT_MOD_DEX, dexBonus, TimeSpan.Zero ) );
 
 				if ( intBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Int, modName + "Int", intBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Int, modName + WeaponStringConstants.STAT_MOD_INT, intBonus, TimeSpan.Zero ) );
 			}
 
 			from.NextCombatTime = Core.TickCount + (int)GetDelay(from).TotalMilliseconds;
 
-			if ( UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && !SB && !AdventuresFunctions.IsInMidland((object)from) )
+			if ( UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && !SB && !from.IsInMidland() )
 			{
 				if ( m_SkillMod != null )
 					m_SkillMod.Remove();
 
-				m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * 5 );
+				m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * WeaponConstants.ACCURACY_LEVEL_SKILL_MOD_MULTIPLIER );
 				from.AddSkillMod( m_SkillMod );
 			}
 
-			if ( Core.AOS && m_AosWeaponAttributes.MageWeapon != 0 && m_AosWeaponAttributes.MageWeapon != 30 && !SB && !AdventuresFunctions.IsInMidland((object)from))
+			if ( Core.AOS && m_AosWeaponAttributes.MageWeapon != 0 && m_AosWeaponAttributes.MageWeapon != 30 && !SB && !from.IsInMidland())
 			{
 				if ( m_MageMod != null )
 					m_MageMod.Remove();
@@ -712,7 +679,7 @@ namespace Server.Items
 				from.AddSkillMod( m_MageMod );
 			}
 
-			if (!SB && !AdventuresFunctions.IsInMidland((object)from))
+			if (!SB && !from.IsInMidland())
 				CustomWeaponAbilities.Check(this,from);
 
 			return true;
@@ -727,13 +694,13 @@ namespace Server.Items
 				Mobile from = (Mobile)parent;
 
 				bool SB = false;
-				if (from is PlayerMobile )
+				if (from.IsPlayerMobile())
 				{
-					if (((PlayerMobile)from).SoulBound || AdventuresFunctions.IsInMidland((object)from))
+					if (from.IsSoulBound() || from.IsInMidland())
 						SB = true;
 				}
 
-				if ( Core.AOS && !SB && !AdventuresFunctions.IsInMidland((object)from))
+				if ( Core.AOS && !SB && !from.IsInMidland())
 					m_AosSkillBonuses.AddTo( from );
 
 				from.CheckStatTimers();
@@ -751,7 +718,7 @@ namespace Server.Items
 				/*bool SB = false;
 				if (m is PlayerMobile )
 				{
-					if (((PlayerMobile)m).SoulBound)
+					if (m.IsSoulBound())
 						SB = true;
 				}*/
 
@@ -759,9 +726,9 @@ namespace Server.Items
 
 				//if (!SB)
 				//{
-					m.RemoveStatMod( modName + "Str" );
-					m.RemoveStatMod( modName + "Dex" );
-					m.RemoveStatMod( modName + "Int" );
+					m.RemoveStatMod( modName + WeaponStringConstants.STAT_MOD_STR );
+					m.RemoveStatMod( modName + WeaponStringConstants.STAT_MOD_DEX );
+					m.RemoveStatMod( modName + WeaponStringConstants.STAT_MOD_INT );
 				//}
 
 				if ( weapon != null )
@@ -854,33 +821,33 @@ namespace Server.Items
 			double ourValue, theirValue;
 
 			int bonus = GetHitChanceBonus();
-			if ( AdventuresFunctions.IsInMidland((object)attacker))
+			if ( attacker.IsInMidland())
 			{
 				bonus = 0;
 			}
 
 			if ( Core.AOS )
 			{
-				if ( atkValue <= -20.0 )
-					atkValue = -19.9;
+				if ( atkValue <= WeaponConstants.HIT_CHANCE_MAX_VALUE )
+					atkValue = WeaponConstants.HIT_CHANCE_MIN_VALUE;
 
-				if ( defValue <= -20.0 )
-					defValue = -19.9;
+				if ( defValue <= WeaponConstants.HIT_CHANCE_MAX_VALUE )
+					defValue = WeaponConstants.HIT_CHANCE_MIN_VALUE;
 
-				if ( !AdventuresFunctions.IsInMidland((object)attacker))
+				if ( !attacker.IsInMidland())
 					bonus += AosAttributes.GetValue( attacker, AosAttribute.AttackChance );
 
-				if ( AdventuresFunctions.IsInMidland((object)attacker) && attacker is PlayerMobile && ( ((PlayerMobile)attacker).Mounted && !(((PlayerMobile)attacker).Mount is EtherealMount ) ) )
-					bonus += 15;			
+				if ( attacker.IsInMidland() && attacker.IsPlayerMobile() && ( attacker.IsMounted() && !(attacker.GetMount() is EtherealMount ) ) )
+					bonus += WeaponConstants.MIDLAND_MOUNTED_BONUS;			
 				
-				if ( AdventuresFunctions.IsInMidland((object)attacker) && attacker is PlayerMobile)
-					bonus += (int)(15 * ((PlayerMobile)attacker).Agility());
+				if ( attacker.IsInMidland() && attacker.IsPlayerMobile())
+					bonus += (int)(WeaponConstants.MIDLAND_AGILITY_MULTIPLIER * attacker.GetAgility());
 
-				if ( AdventuresFunctions.IsInMidland((object)attacker) && attacker is BaseCreature)
-					bonus += (int)(15 * ((BaseCreature)attacker).Agility());
+				if ( attacker.IsInMidland() && attacker.IsBaseCreature())
+					bonus += (int)(WeaponConstants.MIDLAND_AGILITY_MULTIPLIER * attacker.GetAgility());
 
 				if ( Spells.Chivalry.DivineFurySpell.UnderEffect( attacker ) )
-					bonus += 10; // attacker gets 10% bonus when they're under divine fury
+					bonus += WeaponConstants.DIVINE_FURY_BONUS; // attacker gets 10% bonus when they're under divine fury
 
 				if ( CheckAnimal( attacker, typeof( GreyWolf ) ) || CheckAnimal( attacker, typeof( MysticalFox ) ) )
 					bonus += 25; // attacker gets 20% bonus when under Wolf or Bake Kitsune form
@@ -902,28 +869,28 @@ namespace Server.Items
 				if ( bonus > MyServerSettings.HitChanceCap())
 					bonus = MyServerSettings.HitChanceCap();
 
-				ourValue = (atkValue + 20.0) * (100 + bonus);
+				ourValue = (atkValue + WeaponConstants.HIT_CHANCE_ATK_VALUE_OFFSET) * (WeaponConstants.DURABILITY_SCALE_DIVISOR + bonus);
 
-				if ( !AdventuresFunctions.IsInMidland((object)defender))
+				if ( !defender.IsInMidland())
 					bonus = AosAttributes.GetValue( defender, AosAttribute.DefendChance );
 
-				if ( AdventuresFunctions.IsInMidland((object)defender) && defender is PlayerMobile)
+				if ( defender.IsInMidland() && defender.IsPlayerMobile())
 				{
-					if (!((PlayerMobile)defender).Mounted)
-						bonus += (int)(15 * ((PlayerMobile)defender).Agility());
+					if (!defender.IsMounted())
+						bonus += (int)(WeaponConstants.MIDLAND_AGILITY_MULTIPLIER * defender.GetAgility());
 				}
 
-				if ( AdventuresFunctions.IsInMidland((object)defender) && defender is BaseCreature)
+				if ( defender.IsInMidland() && defender.IsBaseCreature())
 				{
-					if (!((BaseCreature)defender).Mounted)
-						bonus += (int)(15 * ((BaseCreature)defender).Agility());
+					if (!defender.IsMounted())
+						bonus += (int)(WeaponConstants.MIDLAND_AGILITY_MULTIPLIER * defender.GetAgility());
 				}
 
 				if ( Spells.Chivalry.DivineFurySpell.UnderEffect( defender ) )
-					bonus -= 20; // defender loses 20% bonus when they're under divine fury
+					bonus -= WeaponConstants.DIVINE_FURY_DEFENSE_MALUS; // defender loses 20% bonus when they're under divine fury
 
 				if ( HitLower.IsUnderDefenseEffect( defender ) )
-					bonus -= 25; // Under Hit Lower Defense effect -> 25% malus
+					bonus -= WeaponConstants.HIT_LOWER_ATTACK_MALUS; // Under Hit Lower Defense effect -> 25% malus
 					
 				int blockBonus = 0;
 
@@ -991,7 +958,7 @@ namespace Server.Items
 				int weaponSpeedCap = MyServerSettings.WeaponSpeedCap();
 				int bonus = AosAttributes.GetValue( m, AosAttribute.WeaponSpeed );
 
-				if ( (m is PlayerMobile && ((PlayerMobile)m).SoulBound) || AdventuresFunctions.IsInMidland((object)m))
+				if ( (m.IsPlayerMobile() && m.IsSoulBound()) || m.IsInMidland())
 					bonus = 0;
 
 				if (bonus > weaponSpeedCap) {
@@ -1018,12 +985,12 @@ namespace Server.Items
 				if ( SkillHandlers.Discordance.GetEffect( m, ref discordanceEffect ) )
 					bonus -= discordanceEffect;
 
-				if (AdventuresFunctions.IsInMidland((object)m) && m is PlayerMobile)
+				if (m.IsInMidland() && m.IsPlayerMobile())
 				{
-					//double differential = speed - ((speed/2)*((PlayerMobile)m).Agility());
+					//double differential = speed - ((speed/2)*m.GetAgility());
 					//differential /= 1;
 					//speed -= differential;
-					bonus += (int)(50 * ((PlayerMobile)m).Agility());
+					bonus += (int)(50 * m.GetAgility());
 				}
 
 				if ( bonus > 60 )
@@ -1110,9 +1077,9 @@ namespace Server.Items
 			if( move != null && !move.OnBeforeSwing( attacker, defender ) )
 				SpecialMove.ClearCurrentMove( attacker );
 
-			if( attacker.Hidden && attacker is PlayerMobile && attacker.Skills[SkillName.Hiding].Value > Utility.RandomMinMax( 1, 125 ) )
+			if( attacker.Hidden && attacker.IsPlayerMobile() && attacker.Skills[SkillName.Hiding].Value > Utility.RandomMinMax( 1, 125 ) )
 			{
-				PlayerMobile pm = (PlayerMobile)attacker;
+				PlayerMobile pm = attacker.AsPlayerMobile();
 
 				pm.Stealthing = 1;
 
@@ -1146,10 +1113,11 @@ namespace Server.Items
 				canSwing = ( p == null || p.PeacedUntil <= DateTime.UtcNow );
 			}
 
-			if (AdventuresFunctions.IsInMidland((object)attacker) && attacker is PlayerMobile)
+			if (attacker.IsInMidland() && attacker.IsPlayerMobile())
 			{
-				if (Utility.RandomDouble() < (0.35 * (((PlayerMobile)attacker).Encumbrance()) + 0.45 * (1- ((PlayerMobile)attacker).Agility())))
-					((PlayerMobile)attacker).Stam -= Utility.RandomMinMax(1, 3);
+				PlayerMobile pm = attacker.AsPlayerMobile();
+				if (Utility.RandomDouble() < (0.35 * pm.Encumbrance() + 0.45 * (1- pm.GetAgility())))
+					pm.Stam -= Utility.RandomMinMax(1, 3);
 			}
 
 			if ( canSwing && attacker.HarmfulCheck( defender ) )
@@ -1159,9 +1127,9 @@ namespace Server.Items
 				if ( attacker.NetState != null )
 					attacker.Send( new Swing( 0, attacker, defender ) );
 
-				if ( attacker is BaseCreature )
+				if ( attacker.IsBaseCreature() )
 				{
-					BaseCreature bc = (BaseCreature)attacker;
+					BaseCreature bc = attacker.AsBaseCreature();
 					WeaponAbility ab = bc.GetWeaponAbility();
 
 					if ( ab != null )
@@ -1212,124 +1180,22 @@ namespace Server.Items
 		}
 		#endregion
 
+		/// <summary>
+		/// Checks if the defender successfully parries an attack.
+		/// Delegates to WeaponCombatHandler for improved maintainability.
+		/// </summary>
 		public static bool CheckParry( Mobile defender )
 		{
-			if ( defender == null )
-				return false;
-
-			BaseShield shield = defender.FindItemOnLayer( Layer.TwoHanded ) as BaseShield;
-
-			double parry = defender.Skills[SkillName.Parry].Value;
-			double bushidoNonRacial = defender.Skills[SkillName.Bushido].NonRacialValue;
-			double bushido = defender.Skills[SkillName.Bushido].Value;
-
-			if ( shield != null )
-			{
-				double chance = (parry - bushidoNonRacial) / 400.0;	// As per OSI, no negitive effect from the Racial stuffs, ie, 120 parry and '0' bushido with humans
-
-				if ( chance < 0 ) // chance shouldn't go below 0
-					chance = 0;				
-
-				// Parry/Bushido over 100 grants a 5% bonus.
-				if ( parry >= 100.0 || bushido >= 100.0)
-					chance += 0.05;
-
-				// Evasion grants a variable bonus post ML. 50% prior.
-				if ( Evasion.IsEvading( defender ) )
-					chance *= Evasion.GetParryScalar( defender );
-
-				// Low dexterity lowers the chance.
-				if ( defender.Dex < 80 )
-					chance = chance * (20 + defender.Dex) / 100;
-
-				if (AdventuresFunctions.IsInMidland((object)defender) && defender is PlayerMobile)
-					chance *= ((PlayerMobile)defender).Agility();
-
-				return defender.CheckSkill( SkillName.Parry, chance );
-			}
-			else if ( !(defender.Weapon is Fists) && !(defender.Weapon is BaseRanged) )
-			{
-				BaseWeapon weapon = defender.Weapon as BaseWeapon;
-
-				double divisor = (weapon.Layer == Layer.OneHanded) ? 48000.0 : 41140.0;
-
-				double chance = (parry * bushido) / divisor;
-
-				double aosChance = parry / 800.0;
-
-				// Parry or Bushido over 100 grant a 5% bonus.
-				if( parry >= 100.0 )
-				{
-					chance += 0.05;
-					aosChance += 0.05;
-				}
-				else if( bushido >= 100.0 )
-				{
-					chance += 0.05;
-				}
-
-				// Evasion grants a variable bonus post ML. 50% prior.
-				if( Evasion.IsEvading( defender ) )
-					chance *= Evasion.GetParryScalar( defender );
-
-				// Low dexterity lowers the chance.
-				if( defender.Dex < 80 )
-					chance = chance * (20 + defender.Dex) / 100;
-
-				if (AdventuresFunctions.IsInMidland((object)defender) && defender is PlayerMobile)
-					chance *= ((PlayerMobile)defender).Agility();
-
-				if ( chance > aosChance )
-					return defender.CheckSkill( SkillName.Parry, chance );
-				else
-					return (aosChance > Utility.RandomDouble()); // Only skillcheck if wielding a shield & there's no effect from Bushido
-			}
-
-			return false;
+			return WeaponCombatHandler.CheckParry( defender );
 		}
 
+		/// <summary>
+		/// Checks if the defender successfully dodges an attack.
+		/// Delegates to WeaponCombatHandler for improved maintainability.
+		/// </summary>
 		public static bool CheckDodge( Mobile defender, Mobile attacker)
 		{
-			if ( defender == null || ( !(defender is PlayerMobile || defender is BaseCreature) || !(attacker is PlayerMobile || attacker is BaseCreature) )) // only basecreatures and playermobiles can do this
-				return false;
-
-			double chance = 0;
-			double defag = 0;
-			double attag = 0;
-
-			if (defender is PlayerMobile)
-				defag = ((PlayerMobile)defender).Agility();
-			if (defender is BaseCreature)
-				defag = ((BaseCreature)defender).Agility();	
-				
-			chance = defag/1.25; // max 0.8%
-
-			if (attacker is BaseCreature)
-				attag = ((BaseCreature)attacker).Agility();
-			if (attacker is PlayerMobile)
-				attag = ((PlayerMobile)attacker).Agility();
-
-				// Evasion grants a variable bonus post ML. 50% prior.
-				if( Evasion.IsEvading( defender ) )
-					chance *= (Evasion.GetParryScalar( defender )/2);
-
-				// Low stam lowers the chance.
-				if( defender.Dex < 50 )
-					chance = chance * (20 + defender.Dex) / 100;
-
-			if ( (defender is BaseCreature && ((BaseCreature)defender).midrace == 3) || (defender is PlayerMobile && ((PlayerMobile)defender).midrace == 3))
-				chance += 0.1;
-
-			//Compare enemyagility.  Attacker with higher agility can reduce chance of defender dodge
-			chance += (defag - attag)/4; // MAX 0.25 bonus if opponenet is NOT agile
-
-			if (defender is PlayerMobile && ((PlayerMobile)defender).Mounted)
-				chance /= 2;
-
-			if ( chance > Utility.RandomDouble() )
-				return true;
-
-			return false;
+			return WeaponCombatHandler.CheckDodge( defender, attacker );
 		}
 
 		public virtual int AbsorbDamageAOS( Mobile attacker, Mobile defender, int damage )
@@ -1343,7 +1209,9 @@ namespace Server.Items
 				if ( blocked )
 				{
 					defender.FixedEffect( 0x37B9, 10, 16 );
-					damage = 0;
+					
+					// Use WeaponDamageHandler for parry damage reduction
+					damage = WeaponDamageHandler.HandleParryDamage( defender, damage );
 
 					// Successful block removes the Honorable Execution penalty.
 					HonorableExecution.RemovePenalty( defender );
@@ -1371,17 +1239,17 @@ namespace Server.Items
 						defender.Stam += Utility.RandomMinMax( 1, (int)(bushido / 5) );
 					}
 
-					BaseShield shield = defender.FindItemOnLayer( Layer.TwoHanded ) as BaseShield;
+					BaseShield parryShield = defender.FindItemOnLayer( Layer.TwoHanded ) as BaseShield;
 
-					if ( shield != null )
+					if ( parryShield != null )
 					{
-						shield.OnHit( this, damage ); // call OnHit to lose durability
+						parryShield.OnHit( this, damage ); // call OnHit to lose durability
 						LevelItemManager.RepairItems( defender );
 					}
 
-					if (AdventuresFunctions.IsInMidland((object)defender) && defender.Player && CheckDodge(defender, attacker) && Utility.RandomBool()) //riposte!
+					if (defender.IsInMidland() && defender.Player && CheckDodge(defender, attacker) && Utility.RandomBool()) //riposte!
 					{
-						defender.SendMessage("You parry the blow and quickly counter the attack!");
+						defender.SendMessage(WeaponStringConstants.MSG_DODGE_AND_COUNTER);
 						OnSwing(defender, attacker);
 					}
 
@@ -1392,94 +1260,16 @@ namespace Server.Items
 
 			if ( !blocked )
 			{
-				double positionChance = Utility.RandomDouble();
-
-				Item hitItem = null;
-				//determine which item is hit - also adding a hit order... Weps>Outerclothes>armor>innerclothes>jewelry
-			
-				int tries = 10;
-				while ( hitItem == null && tries > 0)
+				// Use WeaponDamageHandler for item hit detection and damage application
+				Item hitItem = WeaponDamageHandler.DetermineHitItem( defender );
+				if ( hitItem != null )
 				{
-					//18% odds its a wep that gets hit
-					if( positionChance < 0.06 && defender.FindItemOnLayer( Layer.OneHanded ) != null && defender.FindItemOnLayer( Layer.OneHanded ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.OneHanded ));
-					else if( positionChance < 0.12 && defender.FindItemOnLayer( Layer.TwoHanded ) != null && defender.FindItemOnLayer( Layer.TwoHanded ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.TwoHanded ));
-					else if( positionChance < 0.18 && defender.FindItemOnLayer( Layer.FirstValid ) != null && defender.FindItemOnLayer( Layer.FirstValid ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.FirstValid ));
-
-					//64% odds its a armor/outer clothes that gets hit
-					else if( positionChance < 0.26 && defender.FindItemOnLayer( Layer.OuterTorso ) != null && defender.FindItemOnLayer( Layer.OuterTorso ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.OuterTorso ));
-					else if( positionChance < 0.33 && defender.FindItemOnLayer( Layer.OuterLegs ) != null && defender.FindItemOnLayer( Layer.OuterLegs ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.OuterLegs ));
-					else if( positionChance < 0.40 && defender.FindItemOnLayer( Layer.Waist ) != null && defender.FindItemOnLayer( Layer.Waist ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Waist ));
-					else if( positionChance < 0.47 && defender.FindItemOnLayer( Layer.Helm ) != null && defender.FindItemOnLayer( Layer.Helm ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Helm ));
-					else if( positionChance < 0.54 && defender.FindItemOnLayer( Layer.Arms ) != null && defender.FindItemOnLayer( Layer.Arms ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Arms ));
-					else if( positionChance < 0.61 && defender.FindItemOnLayer( Layer.Neck ) != null && defender.FindItemOnLayer( Layer.Neck ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Neck ));
-					else if( positionChance < 0.68 && defender.FindItemOnLayer( Layer.Gloves ) != null && defender.FindItemOnLayer( Layer.Gloves ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Gloves ));
-					else if( positionChance < 0.75 && defender.FindItemOnLayer( Layer.Shoes ) != null && defender.FindItemOnLayer( Layer.Shoes ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Shoes ));
-					else if( positionChance < 0.82 && defender.FindItemOnLayer( Layer.Cloak ) != null && defender.FindItemOnLayer( Layer.Cloak ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Cloak ));
-
-					//15% odds its inner clothes that gets hit
-					else if( positionChance < 0.84 && defender.FindItemOnLayer( Layer.InnerLegs ) != null && defender.FindItemOnLayer( Layer.InnerLegs ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.InnerLegs ));
-					else if( positionChance < 0.86 && defender.FindItemOnLayer( Layer.InnerTorso ) != null && defender.FindItemOnLayer( Layer.InnerTorso ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.InnerTorso ));
-					else if( positionChance < 0.88 && defender.FindItemOnLayer( Layer.Pants ) != null && defender.FindItemOnLayer( Layer.Pants ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Pants ));
-					else if( positionChance < 0.90 && defender.FindItemOnLayer( Layer.Shirt ) != null && defender.FindItemOnLayer( Layer.Shirt ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Shirt ));
-					else if( positionChance < 0.92 && defender.FindItemOnLayer( Layer.InnerTorso ) != null && defender.FindItemOnLayer( Layer.InnerTorso ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.InnerTorso ));
-					else if( positionChance < 0.94 && defender.FindItemOnLayer( Layer.InnerTorso ) != null && defender.FindItemOnLayer( Layer.InnerTorso ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.InnerTorso ));
-					else if( positionChance < 0.96 && defender.FindItemOnLayer( Layer.InnerTorso ) != null && defender.FindItemOnLayer( Layer.InnerTorso ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.InnerTorso ));
-
-					//4% its jewelry 
-					else if( positionChance < 0.98 && defender.FindItemOnLayer( Layer.Bracelet ) != null && defender.FindItemOnLayer( Layer.Bracelet ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Bracelet ));
-					else if( positionChance < 0.99 && defender.FindItemOnLayer( Layer.Ring ) != null && defender.FindItemOnLayer( Layer.Ring ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Ring ));
-					else if( positionChance <= 1.0 && defender.FindItemOnLayer( Layer.Earrings ) != null && defender.FindItemOnLayer( Layer.Earrings ) is Item )
-						hitItem = (Item)(defender.FindItemOnLayer( Layer.Earrings ));
-						
-					//sanity check
-					if (!(hitItem is IWearableDurability) && !(hitItem is BaseJewel) && !(hitItem is IDurability) ) //can't reduce durability
-						hitItem = null;
-						
-					tries --;
-				}
-
-				if (hitItem is IWearableDurability) //baseclothing or basearmor
-				{
-					IWearableDurability armor = hitItem as IWearableDurability;
-
-					if ( armor != null )
-					{
-						armor.OnHit( this, damage ); // call OnHit to lose durability
-						LevelItemManager.RepairItems( defender );
-					}
-				}
-				else if (hitItem is BaseJewel) // jewels
-				{
-					BaseJewel armor = hitItem as BaseJewel;
-
-					if ( armor != null )
-					{
-						armor.OnHit( this, damage ); // call OnHit to lose durability
-						LevelItemManager.RepairItems( defender );
-					}
+					WeaponDamageHandler.ApplyItemDamage( hitItem, this, damage, defender );
 				}
 			}
+
+			// Use WeaponDamageHandler to ensure minimum damage
+			damage = WeaponDamageHandler.EnsureMinimumDamage( defender, damage, blocked );
 
 			return damage;
 		}
@@ -1593,9 +1383,9 @@ namespace Server.Items
 
 			foreach ( Mobile m in defender.GetMobilesInRange( 1 ) )
 			{
-				if ( m != attacker && m is BaseCreature )
+				if ( m != attacker && m.IsBaseCreature() )
 				{
-					BaseCreature tc = (BaseCreature)m;
+					BaseCreature tc = m.AsBaseCreature();
 
 					if ( (tc.PackInstinct & bc.PackInstinct) == 0 || (!tc.Controlled && !tc.Summoned) )
 						continue;
@@ -1639,13 +1429,13 @@ namespace Server.Items
 		{
 			bool dodged = false;
 
-			if ( (defender is PlayerMobile || defender is BaseCreature) && AdventuresFunctions.IsInMidland((object)defender))
+			if ( (defender.IsPlayerMobile() || defender.IsBaseCreature()) && defender.IsInMidland())
 				dodged = CheckDodge(defender, attacker);
 
 			double sneakBonus = 0.0;
-			if( attacker is PlayerMobile )
+			if( attacker.IsPlayerMobile() )
 			{
-				PlayerMobile pm = (PlayerMobile)attacker;
+				PlayerMobile pm = attacker.AsPlayerMobile();
 
 				if ( pm.Stealthing > 0 )
 				{
@@ -1667,7 +1457,7 @@ namespace Server.Items
 					if ( this is BaseRanged ){ sneakBonus = (double)(sneakBonus/2); }
 
 					int tellBonus = (int)(sneakBonus * 100);
-					attacker.SendMessage( "You perform a sneak attack for " + tellBonus + "% more damage!" );
+					attacker.SendMessage( string.Format(WeaponStringConstants.MSG_SNEAK_ATTACK, tellBonus) );
 					pm.Stealthing = 0;
 				}
 			}
@@ -1698,23 +1488,18 @@ namespace Server.Items
 				attacker.PlaySound( GetHitAttackSound( attacker, defender ) );
 				defender.PlaySound( GetHitDefendSound( attacker, defender ) );
 
-				if ( AdventuresFunctions.IsInMidland((object)defender) && (( defender is BaseCreature && ((BaseCreature)defender).Mounted  && !(((BaseCreature)defender).Mount is EtherealMount) ) || (defender is PlayerMobile && ((PlayerMobile)defender).Mounted && !(((PlayerMobile)defender).Mount is EtherealMount)) ) ) // hit deflects on mount
+				if ( defender.IsInMidland() && ( defender.IsMounted() && !(defender.GetMount() is EtherealMount) ) ) // hit deflects on mount
 				{
-
-					IMount mount = null;
-					if (defender is BaseCreature)
-						mount = ((BaseCreature)defender).Mount;
-					else if (defender is PlayerMobile)
-						mount = ((PlayerMobile)defender).Mount;
+					IMount mount = defender.GetMount();
 					
 						if ( mount != null && mount is BaseCreature && CheckHit( attacker, (Mobile)mount ))
 						{
-							if ( ( attacker is BaseCreature && ( (((BaseCreature)attacker).Agility()/2) * Utility.RandomDouble() ) > ( Utility.RandomDouble() * ((BaseCreature)mount).Agility() ) ) || 
-								( attacker is PlayerMobile && ( (((PlayerMobile)attacker).Agility()/2) * Utility.RandomDouble() ) > ( Utility.RandomDouble() * ((BaseCreature)mount).Agility() ) ) )
+							BaseCreature mountCreature = mount as BaseCreature;
+							if ( (attacker.GetAgility()/2) * Utility.RandomDouble() > ( Utility.RandomDouble() * mountCreature.Agility() ) )
 							{
 								OnHit( attacker, (Mobile)mount, (Utility.RandomMinMax(1, 5)/10) );
-								if (defender is PlayerMobile)
-									defender.SendMessage("The hit misses you, but deflects on your mount!");
+								if (defender.IsPlayerMobile())
+									defender.SendMessage(WeaponStringConstants.MSG_MOUNT_HIT);
 							}
 						}
 				}
@@ -1723,26 +1508,17 @@ namespace Server.Items
 
 				if (dodged)
 				{
-					if (attacker is PlayerMobile)
-						attacker.SendMessage ("Your opponent swiftly dodges your attack!");
-					if (defender is PlayerMobile)
-						defender.SendMessage ("You step aside in one swift move and dodge the attack!");
+					if (attacker.IsPlayerMobile())
+						attacker.SendMessage(WeaponStringConstants.MSG_OPPONENT_DODGES);
+					if (defender.IsPlayerMobile())
+						defender.SendMessage(WeaponStringConstants.MSG_YOU_DODGE);
 
-					if ( (defender is BaseCreature && attacker is BaseCreature) && Utility.RandomDouble() < ((BaseCreature)attacker).Agility() && Utility.RandomBool())
+					if ( Utility.RandomDouble() < attacker.GetAgility() && Utility.RandomBool())
 					{
-					}
-					else if ( (defender is BaseCreature && attacker is PlayerMobile) && Utility.RandomDouble() < ((PlayerMobile)attacker).Agility() && Utility.RandomBool())
-					{
-						attacker.SendMessage ("but you deftly adjust your swing and hit the opponent!");
-					}
-					else if ( (defender is PlayerMobile && attacker is BaseCreature) && Utility.RandomDouble() < ((BaseCreature)attacker).Agility() && Utility.RandomBool())
-					{
-						defender.SendMessage ("But your opponent deftly adjusts and scores a hit!");
-					}	
-					else if ( (defender is PlayerMobile && attacker is PlayerMobile) && Utility.RandomDouble() < ((PlayerMobile)attacker).Agility() && Utility.RandomBool())
-					{
-						defender.SendMessage ("But your opponent deftly adjusts and scores a hit!");
-						attacker.SendMessage ("but you deftly adjust your swing and hit the opponent!");
+						if (attacker.IsPlayerMobile())
+							attacker.SendMessage(WeaponStringConstants.MSG_ADJUST_AND_HIT);
+						if (defender.IsPlayerMobile())
+							defender.SendMessage(WeaponStringConstants.MSG_OPPONENT_ADJUSTS);
 					}							
 					else 
 						return;
@@ -1750,16 +1526,13 @@ namespace Server.Items
 
 			int damage = ComputeDamage( attacker, defender );
 
-			Mobile atcker = attacker;
-			
-			if ( attacker is BaseCreature && ((BaseCreature)attacker).GetMaster() is PlayerMobile)
-				atcker = ((BaseCreature)attacker).GetMaster();
+			Mobile atcker = attacker.GetEffectiveAttacker();
 
-			if ( atcker is PlayerMobile && ((PlayerMobile)atcker).Avatar ) // new effect - balance affects players damage
+			if ( atcker.IsPlayerMobile() && atcker.IsAvatar() ) // new effect - balance affects players damage
 			{
 				double bal = 0;
 				double adjust = 0;
-				PlayerMobile pm = (PlayerMobile)atcker;
+				PlayerMobile pm = atcker.AsPlayerMobile();
 				
 				if (AetherGlobe.BalanceLevel > 51000) //balance is evil
 				{
@@ -1810,8 +1583,8 @@ namespace Server.Items
 			//factor *= damageBonus;
 			percentageBonus += (int)(damageBonus * 100) - 100;
 
-			if (AdventuresFunctions.IsInMidland((object)attacker) && ( ( attacker is PlayerMobile && ((PlayerMobile)attacker).Mounted) || (attacker is BaseCreature && ((BaseCreature)attacker).Mounted)) )
-				percentageBonus += 15;
+			if (attacker.IsInMidland() && attacker.IsMounted())
+				percentageBonus += WeaponConstants.MIDLAND_MOUNTED_BONUS;
 
 			CheckSlayerResult cs = CheckSlayers( attacker, defender );
 
@@ -1821,32 +1594,32 @@ namespace Server.Items
 					defender.FixedEffect( 0x37B9, 10, 5 );
 
 				//factor *= 2.0;
-				percentageBonus += 75;
+				percentageBonus += WeaponConstants.SLAYER_BONUS;
 
-				if ( Utility.Random( 5 ) == 1 && attacker is PlayerMobile )
+				if ( Utility.Random( 5 ) == 1 && attacker.IsPlayerMobile() )
 				{
-					attacker.SendMessage( "This weapon seems to be doing quite well against this enemy." );
+					attacker.SendMessage(WeaponStringConstants.MSG_SLAYER_EFFECTIVE);
 				}
 			}
 
 			if ( !attacker.Player )
 			{
-				if ( defender is PlayerMobile )
+				if ( defender.IsPlayerMobile() )
 				{
-					PlayerMobile pm = (PlayerMobile)defender;
+					PlayerMobile pm = defender.AsPlayerMobile();
 
 					if( pm.EnemyOfOneType != null && pm.EnemyOfOneType != attacker.GetType() )
 					{
 						//factor *= 2.0;
-						percentageBonus += 50;
+						percentageBonus += WeaponConstants.ENEMY_OF_ONE_BONUS;
 					}
 				}
 			}
 			else if ( !defender.Player )
 			{
-				if ( attacker is PlayerMobile )
+				if ( attacker.IsPlayerMobile() )
 				{
-					PlayerMobile pm = (PlayerMobile)attacker;
+					PlayerMobile pm = attacker.AsPlayerMobile();
 
 					if ( pm.WaitingForEnemy )
 					{
@@ -1885,14 +1658,14 @@ namespace Server.Items
 				percentageBonus += 25;
 			}
 
-			if ( attacker is PlayerMobile && !(Core.ML && defender is PlayerMobile ))
+			if ( attacker.IsPlayerMobile() && !(Core.ML && defender.IsPlayerMobile()) )
 			{
-				PlayerMobile pmAttacker = (PlayerMobile) attacker;
+				PlayerMobile pmAttacker = attacker.AsPlayerMobile();
 
 				if( pmAttacker.HonorActive && pmAttacker.InRange( defender, 1 ) )
 				{
 					//factor *= 1.25;
-					percentageBonus += 25;
+					percentageBonus += WeaponConstants.HONOR_ACTIVE_BONUS;
 				}
 
 				if( pmAttacker.SentHonorContext != null && pmAttacker.SentHonorContext.Target == defender )
@@ -1902,18 +1675,24 @@ namespace Server.Items
 				}
 			}
 
-			percentageBonus = Math.Min( percentageBonus, 300 );
+			percentageBonus = Math.Min( percentageBonus, WeaponConstants.MAX_DAMAGE_PERCENTAGE_BONUS );
 
 			damage = damage + (int)( damage * sneakBonus );
 
 			damage = AOS.Scale( damage, 100 + percentageBonus );
 			#endregion
 
-			if ( attacker is BaseCreature )
-				((BaseCreature)attacker).AlterMeleeDamageTo( defender, ref damage );
+			if ( attacker.IsBaseCreature() )
+			{
+				BaseCreature bc = attacker.AsBaseCreature();
+				bc.AlterMeleeDamageTo( defender, ref damage );
+			}
 
-			if ( defender is BaseCreature )
-				((BaseCreature)defender).AlterMeleeDamageFrom( attacker, ref damage );
+			if ( defender.IsBaseCreature() )
+			{
+				BaseCreature bc = defender.AsBaseCreature();
+				bc.AlterMeleeDamageFrom( attacker, ref damage );
+			}
 
 			damage = AbsorbDamage( attacker, defender, damage );
 
@@ -1967,7 +1746,6 @@ namespace Server.Items
 			}
 
 			int damageGiven = damage;
-            //attacker.SendMessage(55, "damage given  - " + damageGiven);
 
             if ( ( defender is IMount && ((IMount)defender).Rider != null ) ) // mount getting hit
 			{
@@ -1994,20 +1772,23 @@ namespace Server.Items
 
 			bool ignoreArmor = ( a is ArmorIgnore || (move != null && move.IgnoreArmor( attacker )) || (BladeWeaving && weaponA is ArmorIgnore ));
 
-			if (attacker is BaseCreature && ((BaseCreature)attacker).Special == 6) //new creature abilities
+			if (attacker.IsBaseCreature())
 			{
-				if (Utility.RandomMinMax(5, 15) > Utility.Random(100)) 
-				ignoreArmor = true;
+				BaseCreature bc = attacker.AsBaseCreature();
+				if (bc.Special == 6) //new creature abilities
+				{
+					if (Utility.RandomMinMax(5, 15) > Utility.Random(100)) 
+						ignoreArmor = true;
+				}
 			}
 
 			damageGiven = AOS.Damage( defender, attacker, damage, ignoreArmor, phys, fire, cold, pois, nrgy, chaos, direct, false, this is BaseRanged, false );
-            //attacker.SendMessage(55, "damage given AOS - " + damageGiven);
             double propertyBonus = ( move == null ) ? 1.0 : move.GetPropertyBonus( attacker );
 
 				Phylactery vault = null;
-				if (attacker is PlayerMobile && ((PlayerMobile)attacker).SoulBound)
+				if (attacker.IsPlayerMobile() && attacker.IsSoulBound())
 				{
-					vault = ((PlayerMobile)attacker).FindPhylactery();
+					vault = attacker.AsPlayerMobile().FindPhylactery();
 				}
 
 				int lifeLeech = 0;
@@ -2028,21 +1809,25 @@ namespace Server.Items
 				}
 				else 
 				{
-					if ( (int)((vault.VampireEssence + vault.CalculatePhylacteryMods("VampireEssence"))*propertyBonus) >Utility.Random(125))
+					if ( (int)((vault.VampireEssence + vault.CalculatePhylacteryMods(WeaponStringConstants.PHYLACTERY_VAMPIRE_ESSENCE))*propertyBonus) >Utility.Random(125))
 						lifeLeech += 15;
-					if ( (int)((vault.SpringEssence + vault.CalculatePhylacteryMods("SpringEssence"))*propertyBonus) >Utility.Random(125))
+					if ( (int)((vault.SpringEssence + vault.CalculatePhylacteryMods(WeaponStringConstants.PHYLACTERY_SPRING_ESSENCE))*propertyBonus) >Utility.Random(125))
 						stamLeech += 15;
-					if ( (int)((vault.SacredEssence + vault.CalculatePhylacteryMods("SacredEssence"))*propertyBonus) >Utility.Random(125))
+					if ( (int)((vault.SacredEssence + vault.CalculatePhylacteryMods(WeaponStringConstants.PHYLACTERY_SACRED_ESSENCE))*propertyBonus) >Utility.Random(125))
 						manaLeech += 15;
 				}
 
 				if ( m_Cursed )
 					lifeLeech += 15; // Additional 25% life leech for cursed weapons (necro spell)
 
-				if (attacker is BaseCreature && ((BaseCreature)attacker).Special == 2 && Utility.RandomDouble() < ( Convert.ToDouble( ((BaseCreature)attacker).Level) / 100 )) // new creature abilities 
+				if (attacker.IsBaseCreature())
 				{
-					lifeLeech += Utility.RandomMinMax(5, 15);
-				} //creature ability 2
+					BaseCreature bc = attacker.AsBaseCreature();
+					if (bc.Special == 2 && Utility.RandomDouble() < ( Convert.ToDouble( bc.Level) / 100 )) // new creature abilities 
+					{
+						lifeLeech += Utility.RandomMinMax(5, 15);
+					} //creature ability 2
+				}
 
 				context = TransformationSpellHelper.GetContext( attacker );
 
@@ -2051,7 +1836,7 @@ namespace Server.Items
 
 				if ( context != null && context.Type == typeof( WraithFormSpell ) )
 				{
-					wraithLeech = (5 + (int)((15 * attacker.Skills.SpiritSpeak.Value) / 100)); // Wraith form gives an additional 5-20% mana leech
+					wraithLeech = (WeaponConstants.WRAITH_LEECH_BASE + (int)((WeaponConstants.WRAITH_LEECH_MULTIPLIER * attacker.Skills.SpiritSpeak.Value) / 100)); // Wraith form gives an additional 5-20% mana leech
 
 					// Mana leeched by the Wraith Form spell is actually stolen, not just leeched.
 					defender.Mana -= AOS.Scale( damageGiven, wraithLeech );
@@ -2081,13 +1866,14 @@ namespace Server.Items
 						HitPoints -= (Utility.RandomMinMax(0,2));
 				}
 
-				if ( !(AdventuresFunctions.IsInMidland((object)this)) && m_AosWeaponAttributes.SelfRepair > Utility.Random( 20 ) )
+				Mobile parent = this.Parent as Mobile;
+				if ( parent != null && !parent.IsInMidland() && m_AosWeaponAttributes.SelfRepair > Utility.Random( 20 ) )
 				{
 					HitPoints += 1;
 				}
 				else
 				{
-					if ( this is ILevelable && !(AdventuresFunctions.IsInMidland((object)this)))
+					if ( this is ILevelable && parent != null && !parent.IsInMidland())
 					{
 						LevelItemManager.RepairItems( attacker );
 					}
@@ -2115,7 +1901,7 @@ namespace Server.Items
 
 			if ( attacker is VampireBatFamiliar )
 			{
-				BaseCreature bc = (BaseCreature)attacker;
+				BaseCreature bc = attacker.AsBaseCreature();
 				Mobile caster = bc.ControlMaster;
 
 				if ( caster == null )
@@ -2127,11 +1913,11 @@ namespace Server.Items
 					bc.Hits += damage;
 			}
 
-			if ( !AdventuresFunctions.IsInMidland((object)attacker) )
+			if ( !attacker.IsInMidland() )
 			{
 				bool SB = false;
 
-				if (attacker is PlayerMobile && ((PlayerMobile)attacker).SoulBound)
+				if (attacker.IsPlayerMobile() && attacker.IsSoulBound())
 					SB = true; // set up for future removals if necessary... 
 
 				int physChance = (int)(m_AosWeaponAttributes.HitPhysicalArea * propertyBonus);
@@ -2161,15 +1947,18 @@ namespace Server.Items
 				int lightningChance = (int)(m_AosWeaponAttributes.HitLightning * propertyBonus);
 				int dispelChance = (int)(m_AosWeaponAttributes.HitDispel * propertyBonus);
 
-				if ( attacker is BaseCreature && ((BaseCreature)attacker).Special != 0) //new creature abilities
+				if ( attacker.IsBaseCreature() ) //new creature abilities
 				{
-					BaseCreature pet = attacker as BaseCreature;
-					if (pet.Special == 3)
-						harmChance = Utility.RandomMinMax(5,15);
-					if (pet.Special == 4)
-						fireballChance = Utility.RandomMinMax(5,15);
-					if (pet.Special == 5)
-						lightningChance = Utility.RandomMinMax(5,15);
+					BaseCreature pet = attacker.AsBaseCreature();
+					if (pet.Special != 0)
+					{
+						if (pet.Special == 3)
+							harmChance = Utility.RandomMinMax(5,15);
+						if (pet.Special == 4)
+							fireballChance = Utility.RandomMinMax(5,15);
+						if (pet.Special == 5)
+							lightningChance = Utility.RandomMinMax(5,15);
+					}
 				}
 
 				if ( maChance != 0 && maChance > Utility.Random( 100 ) )
@@ -2197,11 +1986,17 @@ namespace Server.Items
 					DoLowerDefense( attacker, defender );
 			}
 
-			if ( attacker is BaseCreature )
-				((BaseCreature)attacker).OnGaveMeleeAttack( defender );
+			if ( attacker.IsBaseCreature() )
+			{
+				BaseCreature bc = attacker.AsBaseCreature();
+				bc.OnGaveMeleeAttack( defender );
+			}
 
-			if ( defender is BaseCreature )
-				((BaseCreature)defender).OnGotMeleeAttack( attacker );
+			if ( defender.IsBaseCreature() )
+			{
+				BaseCreature bc = defender.AsBaseCreature();
+				bc.OnGotMeleeAttack( attacker );
+			}
 
 			if ( a != null )
 				a.OnHit( attacker, defender, damage );
@@ -2228,26 +2023,20 @@ namespace Server.Items
 
 				bool willPoison = true;
 
-				int ClassicPoisons = 0;
-				CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( attacker );
-				if ( DB != null )
-				{
-					ClassicPoisons = DB.ClassicPoisoning;
-				}
+				// Use global classic poisoning mode setting
+				int ClassicPoisons = Server.Misc.MyServerSettings.ClassicPoisoningMode();
 
 				if ( p != null )
 				{
-					// Use poisoning skill to help determine potency 
-					int maxLevel = attacker.Skills[SkillName.Poisoning].Fixed / 200;
-					if ( maxLevel < 0 ) maxLevel = 0;
-					if ( p.Level > maxLevel ) p = Poison.GetPoison( maxLevel );
+					// Poison level is determined by the potion type applied, no skill-based cap
+					// In classic mode, success chance and charges are handled during application
 
 					if ( poisonWeapon.PoisonCharges < 1 && willPoison == true )
 						willPoison = false;
 
-					if ( defender is BaseCreature && willPoison == true )
+					if ( defender.IsBaseCreature() && willPoison == true )
 					{
-						BaseCreature bc = (BaseCreature)defender;
+						BaseCreature bc = defender.AsBaseCreature();
 						Poison venom = bc.PoisonImmune;
 						if ( venom != null && venom.Level >= p.Level )
 							willPoison = false;
@@ -2269,7 +2058,20 @@ namespace Server.Items
 							willPoison = false;
 					}
 
-					if ( ClassicPoisons > 0 && !( this is BaseKnife || this is BaseSword || this is BaseSpear ) )
+					// BaseBashing weapons (mace fighting) cannot deliver poison
+					if ( this is BaseBashing )
+						willPoison = false;
+					
+					// Pickaxe and all pickaxe variants cannot deliver poison
+					if ( this is Pickaxe || 
+						 this is SturdyPickaxe || 
+						 this is GargoylesPickaxe || 
+						 this is RubyPickaxe || 
+						 this is LevelPickaxe || 
+						 this is GiftPickaxe )
+						willPoison = false;
+					
+					if ( ClassicPoisons > 0 && !( this is BaseKnife || this is BaseSword || this is BaseSpear || this is BaseAxe || this is BasePoleArm || this is BaseRanged ) )
 					{
 						willPoison = false;
 					}
@@ -2310,7 +2112,7 @@ namespace Server.Items
 
 				int SDICap = MyServerSettings.RealSpellDamageCap();
 				// SDI bonus
-				if ( !AdventuresFunctions.IsInMidland((object)attacker) && !(attacker is PlayerMobile && ((PlayerMobile)attacker).SoulBound))
+				if ( !attacker.IsInMidland() && !(attacker.IsPlayerMobile() && attacker.IsSoulBound()))
 				{
 					damageBonus += AosAttributes.GetValue( attacker, AosAttribute.SpellDamage );
 				}
@@ -2409,8 +2211,10 @@ namespace Server.Items
 				{
 					bool dispellable = false;
 
-					if ( defender is BaseCreature )
-						dispellable = ((BaseCreature)defender).Summoned && !((BaseCreature)defender).IsAnimatedDead;
+					if ( bc != null )
+					{
+						dispellable = bc.Summoned && !bc.IsAnimatedDead;
+					}
 
 					if ( !dispellable )
 						return;
@@ -2526,27 +2330,36 @@ namespace Server.Items
 
 		public virtual void AddBlood( Mobile attacker, Mobile defender, int damage )
 		{
-			if ( damage > 0 && ( (defender is BaseCreature && !((BaseCreature)defender).BleedImmune) || !(defender is BaseCreature) ) )
+			if ( damage > 0 )
 			{
-				new Blood().MoveToWorld( defender.Location, defender.Map );
-
-				int extraBlood = (Core.SE ? Utility.RandomMinMax( 3, 4 ) : Utility.RandomMinMax( 0, 1 ) );
-
-				for( int i = 0; i < extraBlood; i++ )
+				bool canBleed = true;
+				if ( defender.IsBaseCreature() )
 				{
-					new Blood().MoveToWorld( new Point3D(
-						defender.X + Utility.RandomMinMax( -1, 1 ),
-						defender.Y + Utility.RandomMinMax( -1, 1 ),
-						defender.Z ), defender.Map );
+					BaseCreature bc = defender.AsBaseCreature();
+					canBleed = !bc.BleedImmune;
+				}
+				if ( canBleed )
+				{
+					new Blood().MoveToWorld( defender.Location, defender.Map );
+
+					int extraBlood = (Core.SE ? Utility.RandomMinMax( WeaponConstants.EXTRA_BLOOD_SE_MIN, WeaponConstants.EXTRA_BLOOD_SE_MAX ) : Utility.RandomMinMax( WeaponConstants.EXTRA_BLOOD_CLASSIC_MIN, WeaponConstants.EXTRA_BLOOD_CLASSIC_MAX ) );
+
+					for( int i = 0; i < extraBlood; i++ )
+					{
+						new Blood().MoveToWorld( new Point3D(
+							defender.X + Utility.RandomMinMax( WeaponConstants.BLOOD_SPREAD_MIN, WeaponConstants.BLOOD_SPREAD_MAX ),
+							defender.Y + Utility.RandomMinMax( WeaponConstants.BLOOD_SPREAD_MIN, WeaponConstants.BLOOD_SPREAD_MAX ),
+							defender.Z ), defender.Map );
+					}
 				}
 			}
 		}
 
 		public virtual void GetDamageTypes( Mobile wielder, out int phys, out int fire, out int cold, out int pois, out int nrgy, out int chaos, out int direct )
 		{
-			if( wielder is BaseCreature )
+			if( wielder.IsBaseCreature() )
 			{
-				BaseCreature bc = (BaseCreature)wielder;
+				BaseCreature bc = wielder.AsBaseCreature();
 
 				if (bc.Special == 8) //new creature abilities
 				{
@@ -2626,22 +2439,23 @@ namespace Server.Items
 
 		public virtual void OnMiss( Mobile attacker, Mobile defender )
 		{
-			if ( attacker is PlayerMobile )
+			if ( attacker.IsPlayerMobile() )
 			{
-				PlayerMobile pm = (PlayerMobile)attacker;
+				PlayerMobile pm = attacker.AsPlayerMobile();
 				pm.Stealthing = 0;
 			}
-			if (AdventuresFunctions.IsInMidland((object)defender) &&  defender is PlayerMobile && attacker is BaseCreature )
+			if (defender.IsInMidland() && defender.IsPlayerMobile() && attacker.IsBaseCreature())
 			{
-				PlayerMobile pm = (PlayerMobile)defender;
+				PlayerMobile pm = defender.AsPlayerMobile();
 				if (pm.Mounted && pm.Mount != null && !(pm.Mount is EtherealMount) )
 				{
 					IMount mount = pm.Mount;
 
-					if ( CheckHit( attacker, (Mobile)mount ) && ( (((BaseCreature)attacker).Agility()/3) * Utility.RandomDouble() ) > ( Utility.RandomDouble() * ((BaseCreature)mount).Agility() ) )
+					BaseCreature mountCreature = mount as BaseCreature;
+					if ( CheckHit( attacker, (Mobile)mount ) && ( (attacker.GetAgility()/3) * Utility.RandomDouble() ) > ( Utility.RandomDouble() * mountCreature.Agility() ) )
 					{
 						OnHit( attacker, defender, (Utility.RandomMinMax(1, 5)/10) );
-						defender.SendMessage("The hit misses you, but if deflected on your mount!");
+						defender.SendMessage(WeaponStringConstants.MSG_MOUNT_HIT_ON_MISS);
 					}
 					
 				}
@@ -2665,9 +2479,9 @@ namespace Server.Items
 				((IHonorTarget)defender).ReceivedHonorContext.OnTargetMissed( attacker );
 
 
-			if ( attacker is BaseCreature )
+			if ( attacker.IsBaseCreature() )
 			{
-				BaseCreature bc = (BaseCreature)attacker;
+				BaseCreature bc = attacker.AsBaseCreature();
 				if ( bc.AI == AIType.AI_Archer )
 				{
 					int sound = 0;
@@ -2682,9 +2496,9 @@ namespace Server.Items
 
 		public virtual void GetBaseDamageRange( Mobile attacker, out int min, out int max )
 		{
-			if ( attacker is BaseCreature )
+			if ( attacker.IsBaseCreature() )
 			{
-				BaseCreature c = (BaseCreature)attacker;
+				BaseCreature c = attacker.AsBaseCreature();
 
 				if ( c.DamageMin >= 0 )
 				{
@@ -2716,7 +2530,7 @@ namespace Server.Items
 					max = 65;
 					return;
 				}	
-				else if ( ((PlayerMobile)attacker).Troubadour() && this is Fists)
+				else if ( attacker.IsPlayerMobile() && attacker.AsPlayerMobile().Troubadour() && this is Fists)
 				{	
 					min = 10;
 					max = 17;
@@ -2726,6 +2540,10 @@ namespace Server.Items
 			
 			min = MinDamage;
 			max = MaxDamage;
+			
+			// Reduce base damage by 10% (CEIL - rounded up)
+			min = (int)Math.Ceiling(min * WeaponConstants.BASE_DAMAGE_REDUCTION);
+			max = (int)Math.Ceiling(max * WeaponConstants.BASE_DAMAGE_REDUCTION);
 		}
 
 		public virtual double GetBaseDamage( Mobile attacker )
@@ -2752,38 +2570,15 @@ namespace Server.Items
 			if ( !Core.AOS )
 				return 0;
 
-			int bonus = 0;
-
-			switch ( m_AccuracyLevel )
-			{
-				case WeaponAccuracyLevel.Accurate:		bonus += 02; break;
-				case WeaponAccuracyLevel.Surpassingly:	bonus += 04; break;
-				case WeaponAccuracyLevel.Eminently:		bonus += 06; break;
-				case WeaponAccuracyLevel.Exceedingly:	bonus += 08; break;
-				case WeaponAccuracyLevel.Supremely:		bonus += 10; break;
-			}
-
-			return bonus;
+			return WeaponBonusTables.GetAccuracyLevelBonus(m_AccuracyLevel);
 		}
 
 		public virtual int GetDamageBonus()
 		{
 			int bonus = VirtualDamageBonus;
 
-			switch ( m_Quality )
-			{
-				case WeaponQuality.Low:			bonus -= 20; break;
-				case WeaponQuality.Exceptional:	bonus += 20; break;
-			}
-
-			switch ( m_DamageLevel )
-			{
-				case WeaponDamageLevel.Ruin:	bonus += 15; break;
-				case WeaponDamageLevel.Might:	bonus += 20; break;
-				case WeaponDamageLevel.Force:	bonus += 25; break;
-				case WeaponDamageLevel.Power:	bonus += 30; break;
-				case WeaponDamageLevel.Vanq:	bonus += 35; break;
-			}
+			bonus += WeaponBonusTables.GetQualityBonus(m_Quality);
+			bonus += WeaponBonusTables.GetDamageLevelBonus(m_DamageLevel);
 
 			return bonus;
 		}
@@ -2822,39 +2617,20 @@ namespace Server.Items
 			 * These are the bonuses given by the physical characteristics of the mobile.
 			 * No caps apply.
 			 */
-			double	strengthBonus = GetBonus( attacker.Str,										0.300, 100.0,  5.00 );
-			double	anatomyBonus = GetBonus( attacker.Skills[SkillName.Anatomy].Value,			0.500, 100.0,  5.00 );
-			double	tacticsBonus = GetBonus( attacker.Skills[SkillName.Tactics].Value,			0.625, 100.0,  6.25 );
-			double	lumberBonus = GetBonus( attacker.Skills[SkillName.Lumberjacking].Value,		0.200, 100.0, 10.00 );
-			double	armsLoreBonus = GetBonus( attacker.Skills[SkillName.ArmsLore].Value,		0.625, 100.0,  6.25 );
-			double	miningBonus = GetBonus( attacker.Skills[SkillName.Mining].Value,			0.200, 100.0, 10.00 );
-			double	fishingBonus = GetBonus( attacker.Skills[SkillName.Fishing].Value,			0.200, 100.0, 10.00 );
-			double	ninjaBonus = GetBonus( attacker.Skills[SkillName.Ninjitsu].Value,			0.625, 100.0,  6.25 );
-			double	bushidoBonus = GetBonus( attacker.Skills[SkillName.Bushido].Value,			0.625, 100.0,  6.25 );
-			double	necroBonus = GetBonus( attacker.Skills[SkillName.Necromancy].Value,			0.625, 100.0,  6.25 );
-			double	wizardBonus = GetBonus( attacker.Skills[SkillName.Magery].Value,			0.625, 100.0,  6.25 );
-			double	bowyerBonus = GetBonus( attacker.Skills[SkillName.Fletching].Value,			0.625, 100.0,  6.25 );
-
-			if ( Type != WeaponType.Axe && Type != WeaponType.Slashing && Type != WeaponType.Polearm )
-				bushidoBonus = 0.0;
-
-			if ( Type != WeaponType.Axe )
-				lumberBonus = 0.0;
-
-			if ( Type != WeaponType.Bashing )
-				miningBonus = 0.0;
-
-			if (!( this is Harpoon || this is GiftHarpoon || this is LevelHarpoon ))
-				fishingBonus = 0.0;
-
-			if (!( this is WizardWand || this is BaseWizardStaff || this is BaseLevelStave || this is BaseGiftStave || this is GiftScepter || this is LevelScepter || this is Scepter ))
-			{
-				necroBonus = 0.0;
-				wizardBonus = 0.0;
-			}
-
-			if (!( this is BaseRanged && Server.Misc.MaterialInfo.IsAnyKindOfWoodItem((this)) ))
-				bowyerBonus = 0.0;
+			var skillBonuses = SkillBonusCalculator.CalculateAllSkillBonuses(attacker, this);
+			
+			double	strengthBonus = skillBonuses[WeaponStringConstants.SKILL_BONUS_STRENGTH];
+			double	anatomyBonus = skillBonuses[SkillName.Anatomy.ToString()];
+			double	tacticsBonus = skillBonuses[SkillName.Tactics.ToString()];
+			double	lumberBonus = skillBonuses[SkillName.Lumberjacking.ToString()];
+			double	armsLoreBonus = 0.0; // ArmsLore does not provide damage bonus
+			double	miningBonus = skillBonuses[SkillName.Mining.ToString()];
+			double	fishingBonus = skillBonuses[SkillName.Fishing.ToString()];
+			double	ninjaBonus = skillBonuses[SkillName.Ninjitsu.ToString()];
+			double	bushidoBonus = skillBonuses[SkillName.Bushido.ToString()];
+			double	necroBonus = skillBonuses[SkillName.Necromancy.ToString()];
+			double	wizardBonus = skillBonuses[SkillName.Magery.ToString()];
+			double	bowyerBonus = skillBonuses[SkillName.Fletching.ToString()];
 
 			#endregion
 
@@ -2894,17 +2670,18 @@ namespace Server.Items
 
 			double total = damage + (int)(damage * totalBonus);
 
-			if (attacker is PlayerMobile && ((PlayerMobile)attacker).Avatar)
-				total = (double)(AdventuresFunctions.DiminishingReturns( (int)total, 200, 10 ) );
-			else if (attacker is PlayerMobile)
-				total = (double)(AdventuresFunctions.DiminishingReturns( (int)total, 150, 10 ) );
-			else
-				total = (double)(AdventuresFunctions.DiminishingReturns( (int)total, 225, 10 ) );
+			// Metal weapons deal 20-30% more damage than wood weapons
+			if (CraftResources.GetType(m_Resource) == CraftResourceType.Metal)
+			{
+				total *= WeaponConstants.METAL_WEAPON_DAMAGE_MULTIPLIER;
+			}
+
+			total = DamageCapCalculator.ApplyDiminishingReturns(attacker, total, this);
 			
-			Mobile atcker = attacker;
+			// Apply 12% damage increase
+			total *= 1.12;
 			
-			if ( attacker is BaseCreature && ((BaseCreature)attacker).GetMaster() is PlayerMobile)
-				atcker = ((BaseCreature)attacker).GetMaster();
+			Mobile atcker = attacker.GetEffectiveAttacker();
 
 			return total;
 
@@ -3122,7 +2899,35 @@ namespace Server.Items
 			int scale = 100;
 
 			if ( m_MaxHits > 0 && m_Hits < m_MaxHits )
-				scale = 50 + ((50 * m_Hits) / m_MaxHits);
+			{
+				double durabilityRatio = (double)m_Hits / (double)m_MaxHits;
+				
+				// New durability scaling:
+				// 80% durability = 75% damage
+				// 50% durability = 50% damage
+				// 25% durability = 30% damage
+				// Linear interpolation between these points
+				if ( durabilityRatio >= 0.8 )
+				{
+					// Between 80% and 100%: linear from 75% to 100%
+					scale = 75 + (int)((durabilityRatio - 0.8) / 0.2 * 25);
+				}
+				else if ( durabilityRatio >= 0.5 )
+				{
+					// Between 50% and 80%: linear from 50% to 75%
+					scale = 50 + (int)((durabilityRatio - 0.5) / 0.3 * 25);
+				}
+				else if ( durabilityRatio >= 0.25 )
+				{
+					// Between 25% and 50%: linear from 30% to 50%
+					scale = 30 + (int)((durabilityRatio - 0.25) / 0.25 * 20);
+				}
+				else
+				{
+					// Below 25%: linear from 0% to 30%
+					scale = (int)(durabilityRatio / 0.25 * 30);
+				}
+			}
 
 			return AOS.Scale( damage, scale );
 		}
@@ -3566,7 +3371,7 @@ namespace Server.Items
 
 					if ( UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && Parent is Mobile )
 					{
-						m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * 5 );
+						m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * WeaponConstants.ACCURACY_LEVEL_SKILL_MOD_MULTIPLIER );
 						((Mobile)Parent).AddSkillMod( m_SkillMod );
 					}
 
@@ -3697,7 +3502,7 @@ namespace Server.Items
 					if ( m_Animation == OldAnimation )
 						m_Animation = (WeaponAnimation)(-1);
 
-					if ( UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && Parent is Mobile && !(AdventuresFunctions.IsInMidland((object)Parent)))
+					if ( UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && Parent is Mobile && !((Mobile)Parent).IsInMidland())
 					{
 						m_SkillMod = new DefaultSkillMod( AccuracySkill, true, (int)m_AccuracyLevel * 5);
 						((Mobile)Parent).AddSkillMod( m_SkillMod );
@@ -3707,27 +3512,27 @@ namespace Server.Items
 				}
 			}
 
-			if ( Core.AOS && Parent is Mobile  && !(AdventuresFunctions.IsInMidland((object)Parent)))
+			if ( Core.AOS && Parent is Mobile && !((Mobile)Parent).IsInMidland())
 				m_AosSkillBonuses.AddTo( (Mobile)Parent );
 
 			int strBonus = m_AosAttributes.BonusStr;
 			int dexBonus = m_AosAttributes.BonusDex;
 			int intBonus = m_AosAttributes.BonusInt;
 
-			if ( this.Parent is Mobile && (strBonus != 0 || dexBonus != 0 || intBonus != 0) && (Parent is PlayerMobile && !((PlayerMobile)Parent).SoulBound) && !(AdventuresFunctions.IsInMidland((object)Parent)) )
+			if ( this.Parent is Mobile && (strBonus != 0 || dexBonus != 0 || intBonus != 0) && (Parent is PlayerMobile && !((Mobile)Parent).IsSoulBound()) && !((Mobile)Parent).IsInMidland() )
 			{
 				Mobile m = (Mobile)this.Parent;
 
 				string modName = this.Serial.ToString();
 
 				if ( strBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Str, modName + "Str", strBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Str, modName + WeaponStringConstants.STAT_MOD_STR, strBonus, TimeSpan.Zero ) );
 
 				if ( dexBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Dex, modName + "Dex", dexBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Dex, modName + WeaponStringConstants.STAT_MOD_DEX, dexBonus, TimeSpan.Zero ) );
 
 				if ( intBonus != 0 )
-					m.AddStatMod( new StatMod( StatType.Int, modName + "Int", intBonus, TimeSpan.Zero ) );
+					m.AddStatMod( new StatMod( StatType.Int, modName + WeaponStringConstants.STAT_MOD_INT, intBonus, TimeSpan.Zero ) );
 			}
 
 			if ( Parent is Mobile )
@@ -3780,7 +3585,7 @@ namespace Server.Items
 			string name = this.Name;
 
 			if ( name == null )
-				name = String.Format( "#{0}", LabelNumber );
+				name = String.Format( WeaponStringConstants.FORMAT_LABEL_NUMBER, LabelNumber );
 
 			return name;
 		}
@@ -3790,6 +3595,47 @@ namespace Server.Items
 		{
 			get{ return base.Hue; }
 			set{ base.Hue = value; InvalidateProperties(); }
+		}
+
+		/// <summary>
+		/// Converts UO hue value to HTML hex color code (#RRGGBB).
+		/// UO hues use 15-bit color format: 5 bits R, 5 bits G, 5 bits B.
+		/// NOTE: This method is currently unused but kept for potential future use.
+		/// The tooltip color was reverted to always use cyan (#8be4fc) due to hex conversion issues.
+		/// </summary>
+		private string HueToHexColor( int hue )
+		{
+			if ( hue <= 0 || hue > 0x7FFF )
+				return WeaponStringConstants.COLOR_CYAN; // Default cyan if invalid hue
+
+			// Extract RGB components from 15-bit hue format
+			// Format: RRRRR GGGGG BBBBB (15 bits total)
+			int r5 = (hue >> 10) & 0x1F;  // 5 bits for red
+			int g5 = (hue >> 5) & 0x1F;   // 5 bits for green
+			int b5 = hue & 0x1F;          // 5 bits for blue
+
+			// Convert 5-bit values (0-31) to 8-bit values (0-255)
+			// Scale: multiply by 255/31 = 8.2258... â‰ˆ 8.23, but we'll use bit shifting for accuracy
+			int r = (r5 * 255) / 31;
+			int g = (g5 * 255) / 31;
+			int b = (b5 * 255) / 31;
+
+			// Ensure values are in valid range
+			if ( r > 255 ) r = 255;
+			if ( g > 255 ) g = 255;
+			if ( b > 255 ) b = 255;
+
+			// Convert to hex string
+			return String.Format(WeaponStringConstants.FORMAT_HEX_COLOR, r, g, b);
+		}
+
+		/// <summary>
+		/// Gets the material hue for a given CraftResource using WeaponResourceMapper.
+		/// Returns 0 if no color is found or resource is None/Iron.
+		/// </summary>
+		private int GetMaterialHue( CraftResource resource )
+		{
+			return WeaponResourceMapper.GetMaterialHue( resource );
 		}
 
 		public int GetElementalDamageHue()
@@ -3830,80 +3676,31 @@ namespace Server.Items
 
 		public override void AddNameProperty( ObjectPropertyList list )
 		{
-			int oreType;
-            TextInfo cultInfo = new CultureInfo("en-US", false).TextInfo;
-            string resourceName = CraftResources.GetName(m_Resource);
-            if (string.IsNullOrEmpty(resourceName) || resourceName.ToLower() == "none" || resourceName.ToLower() == "normal" || resourceName.ToLower() == "iron")
-            {
-                resourceName = "";
-            }
-
-            switch ( m_Resource )
-			{
-				case CraftResource.DullCopper:		oreType = 1053108; break; // dull copper
-				case CraftResource.ShadowIron:		oreType = 1053107; break; // shadow iron
-				case CraftResource.Copper:			oreType = 1053106; break; // copper
-				case CraftResource.Bronze:			oreType = 1053105; break; // bronze
-                case CraftResource.Platinum: oreType = 6663002; break; // Platinum
-                case CraftResource.Gold:			oreType = 1053104; break; // golden
-				case CraftResource.Agapite:			oreType = 1053103; break; // agapite
-				case CraftResource.Verite:			oreType = 1053102; break; // verite
-				case CraftResource.Valorite:		oreType = 1053101; break; // valorite
-                case CraftResource.Titanium:		oreType = 6661002; break; // Titanium
-                case CraftResource.Rosenium: oreType = 6662002; break; // Rosenium
-                case CraftResource.Nepturite:		oreType = 1036175; break; // nepturite
-				case CraftResource.Obsidian:		oreType = 1036165; break; // obsidian
-				case CraftResource.Steel:			oreType = 1036146; break; // steel
-				case CraftResource.Brass:			oreType = 1036154; break; // brass
-				case CraftResource.Mithril:			oreType = 1036139; break; // mithril
-				case CraftResource.Xormite:			oreType = 1034439; break; // xormite
-				case CraftResource.Dwarven:			oreType = 1036183; break; // dwarven
-				case CraftResource.SpinedLeather:	oreType = 1061118; break; // deep sea
-				case CraftResource.HornedLeather:	oreType = 1061117; break; // lizard
-				case CraftResource.BarbedLeather:	oreType = 1061116; break; // serpent
-				case CraftResource.NecroticLeather:	oreType = 1034413; break; // necrotic
-				case CraftResource.VolcanicLeather:	oreType = 1034424; break; // volcanic
-				case CraftResource.FrozenLeather:	oreType = 1034435; break; // frozen
-				case CraftResource.GoliathLeather:	oreType = 1034380; break; // goliath
-				case CraftResource.DraconicLeather:	oreType = 1034391; break; // draconic
-				case CraftResource.HellishLeather:	oreType = 1034402; break; // hellish
-				case CraftResource.DinosaurLeather:	oreType = 1036161; break; // dinosaur
-				case CraftResource.AlienLeather:	oreType = 1034454; break; // alien
-				case CraftResource.RedScales:		oreType = 1060814; break; // red
-				case CraftResource.YellowScales:	oreType = 1060818; break; // yellow
-				case CraftResource.BlackScales:		oreType = 1060820; break; // black
-				case CraftResource.GreenScales:		oreType = 1060819; break; // green
-				case CraftResource.WhiteScales:		oreType = 1060821; break; // white
-				case CraftResource.BlueScales:		oreType = 1060815; break; // blue
-				case CraftResource.AshTree: 		oreType = 1095399; break; // ash
-				case CraftResource.CherryTree: 		oreType = 1095400; break; // cherry
-				case CraftResource.EbonyTree: 		oreType = 1095401; break; // ebony
-				case CraftResource.GoldenOakTree: 	oreType = 1095402; break; // gold oak
-				case CraftResource.HickoryTree: 	oreType = 1095403; break; // hickory
-				/*case CraftResource.MahoganyTree: 	oreType = 1095404; break; // mahogany
-				case CraftResource.DriftwoodTree: 	oreType = 1095510; break; // driftwood
-				case CraftResource.OakTree: 		oreType = 1095405; break; // oak
-				case CraftResource.PineTree: 		oreType = 1095406; break; // pine
-				case CraftResource.GhostTree: 		oreType = 1095513; break; // ghostwood*/
-				case CraftResource.RosewoodTree: 	oreType = 1095407; break; // rosewood
-				/*case CraftResource.WalnutTree: 		oreType = 1095408; break; // walnut*/
-				/*case CraftResource.PetrifiedTree: 	oreType = 1095534; break; // petrified*/
-				case CraftResource.ElvenTree: 		oreType = 1095537; break; // elven
-				default: oreType = 0; break;
-			}
-
+			// Item name (first)
 			if (Name == null)
-				list.Add(GetNameString());//list.Add(ItemNameHue.UnifiedItemProps.RarityNameMod(this, "{0}"), GetNameString());//
+				list.Add(GetNameString());
 			else
 				list.Add(1053099, ItemNameHue.UnifiedItemProps.RarityNameMod(this, "{0}"), Name);
 
-            if (oreType != 0)
-                list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(resourceName, "#8be4fc")); //list.Add( 1053099, "#{0}\t{1}", oreType, ItemNameHue.UnifiedItemProps.SetColor(GetNameString(), "#8be4fc") ); // ~1_oretype~ ~2_armortype~
+			// Resource type (second, immediately after name)
+			int oreType = WeaponResourceMapper.GetOreType( m_Resource );
+			if (oreType != 0)
+			{
+				string resourceName = CraftResources.GetName(m_Resource);
+				if (!string.IsNullOrEmpty(resourceName) && 
+				    resourceName.ToLower() != WeaponStringConstants.RESOURCE_NONE && 
+				    resourceName.ToLower() != WeaponStringConstants.RESOURCE_NORMAL && 
+				    resourceName.ToLower() != WeaponStringConstants.RESOURCE_IRON)
+				{
+					// Get the material hue and convert to hex color for the tooltip
+					int materialHue = GetMaterialHue( m_Resource );
+					string colorHex = WeaponStringConstants.COLOR_CYAN;
+					list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(resourceName, colorHex));
+				}
+			}
 
 			if ( !String.IsNullOrEmpty( m_EngravedText ) )
-				list.Add( 1062613, ItemNameHue.UnifiedItemProps.SetColor(m_EngravedText, "#8be4fc") );
-
-			/* list.Add( 1062613, Utility.FixHtml( m_EngravedText ) ); */
+				list.Add( 1062613, ItemNameHue.UnifiedItemProps.SetColor(m_EngravedText, WeaponStringConstants.COLOR_CYAN) );
 		}
 
 		public override bool AllowEquipedCast( Mobile from )
@@ -3938,26 +3735,69 @@ namespace Server.Items
 		{
 			base.GetProperties( list );
 
+			// ============================================
+			// SECTION 1: BASIC IDENTIFICATION
+			// ============================================
+			// Note: Resource type is now displayed in AddNameProperty (right after name)
+			
 			if ( m_Crafter != null )
-				list.Add( 1050043, ItemNameHue.UnifiedItemProps.SetColor(m_Crafter.Name, "#8be4fc") ); // crafted by ~1_NAME~
-
-			if ( m_AosSkillBonuses != null )
-				m_AosSkillBonuses.GetProperties( list );
+				list.Add( 1050043, ItemNameHue.UnifiedItemProps.SetColor(m_Crafter.Name, WeaponStringConstants.COLOR_CYAN) ); // crafted by ~1_NAME~
 
 			if ( m_Quality == WeaponQuality.Exceptional )
-                list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Excepcional", "#ffe066"));//list.Add( 1060636 ); // exceptional
-
-            if ( RequiredRace == Race.Elf )
+                list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_EXCEPTIONAL, WeaponStringConstants.COLOR_YELLOW));//list.Add( 1060636 ); // exceptional
+			
+			if ( m_AosSkillBonuses != null )
+				m_AosSkillBonuses.GetProperties( list );
+            
+			if ( RequiredRace == Race.Elf )
 				list.Add( 1075086 ); // Elves Only
 
 			if ( ArtifactRarity > 0 )
-				list.Add( 1061078, ArtifactRarity.ToString() ); // artifact rarity ~1_val~
+			{
+				string artifactText = ArtifactRarity.ToString();
+				// Purple color for ArtifactRarity = 1
+				if ( ArtifactRarity == 1 )
+					list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "artifact rarity {0}", artifactText ), WeaponStringConstants.COLOR_PURPLE ) );
+				else
+					list.Add( 1061078, artifactText ); // artifact rarity ~1_val~
+			}
 
 			if ( this is IUsesRemaining && ((IUsesRemaining)this).ShowUsesRemaining )
 				list.Add( 1060584, ((IUsesRemaining)this).UsesRemaining.ToString() ); // uses remaining: ~1_val~
 
-			if ( m_Poison != null && m_PoisonCharges > 0 )
-				list.Add( 1062412 + m_Poison.Level, m_PoisonCharges.ToString() );
+			// ============================================
+			// SECTION 2: SPECIAL PROPERTIES
+			// ============================================
+			// Display poison information: type and charges remaining (in green)
+			if ( m_Poison != null )
+			{
+				// Get poison name based on level
+				string poisonName;
+				switch ( m_Poison.Level )
+				{
+					case 0: poisonName = "Lesser poison"; break;
+					case 1: poisonName = "Regular poison"; break;
+					case 2: poisonName = "Greater poison"; break;
+					case 3: poisonName = "Deadly poison"; break;
+					case 4: poisonName = "Lethal poison"; break;
+					default: poisonName = "Poison"; break;
+				}
+				
+				string poisonText;
+				if ( m_PoisonCharges > 0 )
+				{
+					// Format: "Poison Type: X charges"
+					poisonText = String.Format( "{0}: {1}", poisonName, m_PoisonCharges.ToString() );
+				}
+				else
+				{
+					// Format: "Poison Type: 0" - depleted
+					poisonText = String.Format( "{0}: 0", poisonName );
+				}
+				
+				// Apply green color to poison information
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( poisonText, WeaponStringConstants.COLOR_GREEN ) );
+			}
 
 			if( m_Slayer != SlayerName.None )
 			{
@@ -3973,9 +3813,73 @@ namespace Server.Items
 					list.Add( entry.Title );
 			}
 
-
 			base.AddResistanceProperties( list );
 
+			// ============================================
+			// SECTION 3: DAMAGE INFORMATION
+			// ============================================
+			// Damage types in order: Physical, Fire, Cold, Poison, Energy, Chaos, Direct
+			int phys, fire, cold, pois, nrgy, chaos, direct;
+			GetDamageTypes( null, out phys, out fire, out cold, out pois, out nrgy, out chaos, out direct );
+
+			if ( phys != 0 )
+				list.Add( 1060403, phys.ToString() ); // physical damage ~1_val~%
+
+			if ( fire != 0 )
+				list.Add( 1060405, fire.ToString() ); // fire damage ~1_val~%
+
+			if ( cold != 0 )
+				list.Add( 1060404, cold.ToString() ); // cold damage ~1_val~%
+
+			if ( pois != 0 )
+				list.Add( 1060406, pois.ToString() ); // poison damage ~1_val~%
+
+			if ( nrgy != 0 )
+				list.Add( 1060407, nrgy.ToString() ); // energy damage ~1_val
+
+			if ( Core.ML && chaos != 0 )
+				list.Add( 1072846, chaos.ToString() ); // chaos damage ~1_val~%
+
+			if ( Core.ML && direct != 0 )
+				list.Add( 1079978, direct.ToString() ); // Direct Damage: ~1_PERCENT~%
+
+			// Weapon damage (min-max) with color coding
+			string damageText = String.Format( "{0} - {1}", MinDamage.ToString(), MaxDamage.ToString() );
+			string damageColor = WeaponStringConstants.COLOR_CYAN; // default
+			if ( MinDamage >= 30 )
+				damageColor = WeaponStringConstants.COLOR_RED; // Red for min damage > 30
+			else if ( MinDamage >= 20 )
+				damageColor = WeaponStringConstants.COLOR_ORANGE; // Orange for min damage > 20
+			list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Damage {0}", damageText ), damageColor ) );
+
+			// ============================================
+			// SECTION 4: PHYSICAL PROPERTIES
+			// ============================================
+			// Weapon speed
+			if ( Core.ML )
+				list.Add( 1061167, String.Format( WeaponStringConstants.FORMAT_WEAPON_SPEED, Speed ) ); // weapon speed ~1_val~
+			else
+				list.Add( 1061167, Speed.ToString() );
+
+			// Weight (explicitly add if DisplayWeight is true)
+			if ( DisplayWeight )
+				AddWeightProperty( list );
+			// Durability
+            if (m_Hits >= 0 && m_MaxHits > 0)
+                list.Add(1060639, WeaponStringConstants.FORMAT_DURABILITY, m_Hits, m_MaxHits); // durability ~1_val~ / ~2_val~
+			// Range
+			if ( MaxRange > 1 )
+				list.Add( 1061169, MaxRange.ToString() ); // range ~1_val~
+			// Wear
+            if (Wear > 0)
+            {
+                string wearTear = string.Format(WeaponStringConstants.LABEL_WEAR, Wear);
+                list.Add(ItemNameHue.UnifiedItemProps.SetColor(wearTear, WeaponStringConstants.COLOR_YELLOW));
+            }
+
+			// ============================================
+			// SECTION 5: AOS ATTRIBUTES & BONUSES
+			// ============================================
 			int prop;
 
 			if ( Core.ML && this is BaseRanged && ( (BaseRanged) this ).Balanced )
@@ -3994,10 +3898,10 @@ namespace Server.Items
 				list.Add( 1060411, prop.ToString() ); // enhance potions ~1_val~%
 
 			if ( (prop = m_AosAttributes.CastRecovery) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
-				list.Add( 1060412, prop.ToString() ); // faster cast recovery ~1_val~
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Faster Cast Recovery {0}", prop.ToString() ), WeaponStringConstants.COLOR_PINK ) ); // faster cast recovery ~1_val~
 
 			if ( (prop = m_AosAttributes.CastSpeed) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
-				list.Add( 1060413, prop.ToString() ); // faster casting ~1_val~
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Faster Casting {0}", prop.ToString() ), WeaponStringConstants.COLOR_PINK ) ); // faster casting ~1_val~
 
 			if ( (prop = (GetHitChanceBonus() + m_AosAttributes.AttackChance)) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
 				list.Add( 1060415, prop.ToString() ); // hit chance increase ~1_val~%
@@ -4060,10 +3964,10 @@ namespace Server.Items
 				list.Add( 1060432, prop.ToString() ); // intelligence bonus ~1_val~
 
 			if ( (prop = m_AosAttributes.LowerManaCost) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
-				list.Add( 1060433, prop.ToString() ); // lower mana cost ~1_val~%
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Lower Mana Cost {0}%", prop.ToString() ), WeaponStringConstants.COLOR_BLUE ) ); // lower mana cost ~1_val~%
 
 			if ( (prop = m_AosAttributes.LowerRegCost) != 0 )
-				list.Add( 1060434, prop.ToString() ); // lower reagent cost ~1_val~%
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Lower Reagent Cost {0}%", prop.ToString() ), WeaponStringConstants.COLOR_PINK ) ); // lower reagent cost ~1_val~%
 
 			if ( (prop = GetLowerStatReq()) != 0 )
 				list.Add( 1060435, prop.ToString() ); // lower requirements ~1_val~%
@@ -4072,13 +3976,13 @@ namespace Server.Items
 				list.Add( 1060436, prop.ToString() ); // luck ~1_val~
 
 			if ( (prop = m_AosWeaponAttributes.MageWeapon) != 0 )
-				list.Add( 1060438, (30 - prop).ToString() ); // mage weapon -~1_val~ skill
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Mage Weapon -{0} skill", (30 - prop).ToString() ), WeaponStringConstants.COLOR_PINK ) ); // mage weapon -~1_val~ skill
 
 			if ( (prop = m_AosAttributes.BonusMana) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
-				list.Add( 1060439, prop.ToString() ); // mana increase ~1_val~
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Mana Increase {0}", prop.ToString() ), WeaponStringConstants.COLOR_BLUE ) ); // mana increase ~1_val~
 
 			if ( (prop = m_AosAttributes.RegenMana) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
-				list.Add( 1060440, prop.ToString() ); // mana regeneration ~1_val~
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( String.Format( "Mana Regeneration {0}", prop.ToString() ), WeaponStringConstants.COLOR_BLUE ) ); // mana regeneration ~1_val~
 
 			if ( (prop = m_AosAttributes.NightSight) != 0 )
 
@@ -4098,7 +4002,7 @@ namespace Server.Items
 				list.Add( 1060450, prop.ToString() ); // self repair ~1_val~
 
 			if ( (prop = m_AosAttributes.SpellChanneling) != 0 )
-				list.Add( 1060482 ); // spell channeling
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( "Spell Channeling", WeaponStringConstants.COLOR_PINK ) ); // spell channeling
 
 			if ( (prop = m_AosAttributes.SpellDamage) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
 				list.Add( 1060483, prop.ToString() ); // spell damage increase ~1_val~%
@@ -4112,84 +4016,44 @@ namespace Server.Items
 			if ( (prop = m_AosAttributes.WeaponSpeed) != 0 && !(AdventuresFunctions.IsInMidland((object)this)))
 				list.Add( 1060486, prop.ToString() ); // swing speed increase ~1_val~%
 
-			int phys, fire, cold, pois, nrgy, chaos, direct;
-
-			GetDamageTypes( null, out phys, out fire, out cold, out pois, out nrgy, out chaos, out direct );
-
-			if ( phys != 0 )
-				list.Add( 1060403, phys.ToString() ); // physical damage ~1_val~%
-
-			if ( fire != 0 )
-				list.Add( 1060405, fire.ToString() ); // fire damage ~1_val~%
-
-			if ( cold != 0 )
-				list.Add( 1060404, cold.ToString() ); // cold damage ~1_val~%
-
-			if ( pois != 0 )
-				list.Add( 1060406, pois.ToString() ); // poison damage ~1_val~%
-
-			if ( nrgy != 0 )
-				list.Add( 1060407, nrgy.ToString() ); // energy damage ~1_val
-
-			if ( Core.ML && chaos != 0 )
-				list.Add( 1072846, chaos.ToString() ); // chaos damage ~1_val~%
-
-			if ( Core.ML && direct != 0 )
-				list.Add( 1079978, direct.ToString() ); // Direct Damage: ~1_PERCENT~%
-
-			list.Add( 1061168, "{0}\t{1}", MinDamage.ToString(), MaxDamage.ToString() ); // weapon damage ~1_val~ - ~2_val~
-
-			if ( Core.ML )
-				list.Add( 1061167, String.Format( "{0}s", Speed ) ); // weapon speed ~1_val~
-			else
-				list.Add( 1061167, Speed.ToString() );
-
-			if ( MaxRange > 1 )
-				list.Add( 1061169, MaxRange.ToString() ); // range ~1_val~
-
+			// ============================================
+			// SECTION 6: REQUIREMENTS (LAST)
+			// ============================================
 			int strReq = AOS.Scale( StrRequirement, 100 - GetLowerStatReq() );
 
 			if ( strReq > 0 )
 				list.Add( 1061170, strReq.ToString() ); // strength requirement ~1_val~
-
-            if (m_Hits >= 0 && m_MaxHits > 0)
-                list.Add(1060639, "{0}\t{1}", m_Hits, m_MaxHits); // durability ~1_val~ / ~2_val~
-
-            if (Wear > 0)
-            {
-                string wearTear = "Desgaste: " + Wear + "%";
-                list.Add(ItemNameHue.UnifiedItemProps.SetColor(wearTear, "#ffe066"));
-            }
 
             if ( Core.SE || m_AosWeaponAttributes.UseBestSkill == 0 )
 			{
 				switch ( Skill )
 				{
 					case SkillName.Swords:  
-						list.Add(ItemNameHue.UnifiedItemProps.SetColor("Skill: swordsmanship", "#8be4fc")); break; // skill required: swordsmanship
+						list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_SWORDS, WeaponStringConstants.COLOR_CYAN)); break; // skill required: swordsmanship
 					case SkillName.Macing:  
-						list.Add(ItemNameHue.UnifiedItemProps.SetColor("Skill: mace fighting", "#8be4fc")); break; // skill required: mace fighting
+						list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_MACING, WeaponStringConstants.COLOR_CYAN)); break; // skill required: mace fighting
 					case SkillName.Fencing: 
-						list.Add(ItemNameHue.UnifiedItemProps.SetColor("Skill: fencing", "#8be4fc")); break; // skill required: fencing
+						list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_FENCING, WeaponStringConstants.COLOR_CYAN)); break; // skill required: fencing
 					case SkillName.Archery: 
 						if ( this is Harpoon || this is LevelHarpoon || this is GiftHarpoon || this is BaseWizardStaff || this is BaseLevelStave || this is BaseGiftStave || this is ThrowingGloves || this is GiftThrowingGloves || this is LevelThrowingGloves )
 						{ 
-							list.Add(ItemNameHue.UnifiedItemProps.SetColor("Skill: marksmanship", "#8be4fc")); 
+							list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_ARCHERY_THROWING, WeaponStringConstants.COLOR_CYAN)); 
 						}
 						else 
 						{ 
-							list.Add(ItemNameHue.UnifiedItemProps.SetColor("Skill: archery", "#8be4fc")); // skill required: archery
+							list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_ARCHERY_BOW, WeaponStringConstants.COLOR_CYAN)); // skill required: archery
                         } 
 						break; 
 					case SkillName.Wrestling: 
-						list.Add(ItemNameHue.UnifiedItemProps.SetColor("skill: wrestling", "#8be4fc")); break; // skill required: wrestling
+						list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_SKILL_WRESTLING, WeaponStringConstants.COLOR_CYAN)); break; // skill required: wrestling
 				}
 			}
-            if (Layer == Layer.TwoHanded)
-                list.Add(ItemNameHue.UnifiedItemProps.SetColor("Arma de duas mãos", "#8be4fc")); // two-handed weapon
-            else
-                list.Add(ItemNameHue.UnifiedItemProps.SetColor("Arma de uma mão", "#8be4fc")); // one-handed weapon
-        }
+            if (Layer == Layer.TwoHanded) {
+                list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_TWO_HANDED, WeaponStringConstants.COLOR_CYAN)); // two-handed           
+			} else {
+                list.Add(ItemNameHue.UnifiedItemProps.SetColor(WeaponStringConstants.LABEL_ONE_HANDED, WeaponStringConstants.COLOR_CYAN)); // one-handed
+			}
+		}
 
 		public void WearAndTear( int severity )
 		{
@@ -4207,13 +4071,18 @@ namespace Server.Items
 			
 			//check if wear actually happens based on the state of repair.
 			if ( (Utility.RandomDouble()/1.5) > repair )
+			{
+				// NOTE: The following commented code was an alternative implementation for wear and tear
+				// that would reduce max hits, resistances, and stats. This was replaced with the simpler
+				// Wear percentage system. Kept for reference in case we need to revert or implement
+				// a more complex wear system in the future.
 			/*
-			this.m_MaxHits = (int)( this.m_MaxHits - ( (int)( (double)this.m_MaxHits * 0.04 ) * severity ) ); // hitpoints go down for each injury
+				this.m_MaxHits = (int)( this.m_MaxHits - ( (int)( (double)this.m_MaxHits * 0.04 ) * severity ) );
 			
-			int whichresist = Utility.RandomMinMax(1, 6); // which resist will be reduced, 1/6 chance of all 5 being reduced 
+				int whichresist = Utility.RandomMinMax(1, 6);
 			
 			if (m_AosWeaponAttributes.ResistPhysicalBonus > 0 && (whichresist == 1 || whichresist == 6))
-				m_AosWeaponAttributes.ResistPhysicalBonus = (int)( (double)m_AosWeaponAttributes.ResistPhysicalBonus
+					m_AosWeaponAttributes.ResistPhysicalBonus = (int)( (double)m_AosWeaponAttributes.ResistPhysicalBonus * (0.5 * severity) );
 			if (this.FireResistSeed < 80 && (whichresist == 2 || whichresist == 6))
 				this.SetResistance( ResistanceType.Fire, (int)((double)this.FireResistSeed *(0.5 * severity)) );
 			if (this.ColdResistSeed < 80 && (whichresist == 3 || whichresist == 6))
@@ -4223,7 +4092,7 @@ namespace Server.Items
 			if (this.EnergyResistSeed < 80 && (whichresist == 5 || whichresist == 6))
 				this.SetResistance( ResistanceType.Energy, (int)((double)this.EnergyResistSeed *(0.5 * severity)) );
 			
-			int which = Utility.RandomMinMax(1, 4); // which stat will be reduced, 1/4 chance of all 3 reducing
+				int which = Utility.RandomMinMax(1, 4);
 			
 			if (which == 1 || which ==4)
 				this.RawStr = (int)( this.RawStr - ( (int)( (double)this.RawStr * 0.04 ) * severity ) );
@@ -4231,39 +4100,8 @@ namespace Server.Items
 				this.RawInt = (int)( this.RawInt - ( (int)( (double)this.RawInt * 0.04 ) * severity ) );
 			else if (which == 3 || which ==4)
 				this.RawDex = (int)( this.RawDex - ( (int)( (double)this.RawDex * 0.04 ) * severity ) );
-
-/*
-m_Hits
-
-		public override int PhysicalResistance{ get{ return m_AosWeaponAttributes.ResistPhysicalBonus; } }
-		public override int FireResistance{ get{ return m_AosWeaponAttributes.ResistFireBonus; } }
-		public override int ColdResistance{ get{ return m_AosWeaponAttributes.ResistColdBonus; } }
-		public override int PoisonResistance{ get{ return m_AosWeaponAttributes.ResistPoisonBonus; } }
-		public override int EnergyResistance{ get{ return m_AosWeaponAttributes.ResistEnergyBonus; } }
-				public virtual int AosMinDamage{ get{ return 0; } }
-		public virtual int AosMaxDamage{ get{ return 0; } }
-		public virtual int AosSpeed{ get{ return 0; } }
-			private int m_StrReq, m_DexReq, m_IntReq;
-		private int m_MinDamage, m_MaxDamage;
-				private SlayerName m_Slayer;
-		private SlayerName m_Slayer2;
-		private WeaponDamageLevel m_DamageLevel;
-		private WeaponAccuracyLevel m_AccuracyLevel;
-		private WeaponDurabilityLevel m_DurabilityLevel;
-		private AosAttributes m_AosAttributes;
-		private AosWeaponAttributes m_AosWeaponAttributes;
-		
-		Attributes.LowerManaCost = 25;
-			Attributes.LowerRegCost = 25;
-			SkillBonuses.SetValues( 0, SkillName.EvalInt, 10 );
-			SkillBonuses.SetValues( 1, SkillName.Magery, 10 );
-			SkillBonuses.SetValues( 2, SkillName.MagicResist, 10 );
-			SkillBonuses.SetValues( 3, SkillName.Meditation, 10 );
-			Attributes.RegenMana = 10;
-			Attributes.BonusInt = 10;
-			Attributes.SpellChanneling = 1;
-
-*/
+				*/
+			}
 
 			Wear += severity;
 
@@ -4312,8 +4150,19 @@ m_Hits
 			else if( m_Slayer != SlayerName.None || m_Slayer2 != SlayerName.None || m_DurabilityLevel != WeaponDurabilityLevel.Regular || m_DamageLevel != WeaponDamageLevel.Regular || m_AccuracyLevel != WeaponAccuracyLevel.Regular )
 				attrs.Add( new EquipInfoAttribute( 1038000 ) ); // Unidentified
 
-			if ( m_Poison != null && m_PoisonCharges > 0 )
-				attrs.Add( new EquipInfoAttribute( 1017383, m_PoisonCharges ) );
+			// Display poison information in equipment info
+			if ( m_Poison != null )
+			{
+				if ( m_PoisonCharges > 0 )
+				{
+					attrs.Add( new EquipInfoAttribute( 1017383, m_PoisonCharges ) );
+				}
+				else
+				{
+					// Show poison type even when depleted
+					attrs.Add( new EquipInfoAttribute( 1017383, 0 ) );
+				}
+			}
 
 			int number;
 
@@ -4364,29 +4213,18 @@ m_Hits
 				Resource = CraftResources.GetFromType( resourceType );
 
 				CraftContext context = craftSystem.GetContext( from );
-
-				if ( context != null && context.DoNotColor )
-					Hue = 0;
+				bool doNotColor = (context != null && context.DoNotColor);
+				
+				// Use WeaponCraftHandler to set weapon hue
+				WeaponCraftHandler.SetWeaponHue( this, m_Resource, doNotColor );
 
 				if ( tool is BaseRunicTool )
 					((BaseRunicTool)tool).ApplyAttributesTo( this );
 
+				// Use WeaponCraftHandler for exceptional quality bonuses
 				if ( Quality == WeaponQuality.Exceptional )
 				{
-					if ( Attributes.WeaponDamage > 35 )
-						Attributes.WeaponDamage -= 20;
-					else
-						Attributes.WeaponDamage = 15;
-
-					if( Core.ML )
-					{
-						Attributes.WeaponDamage += (int)(from.Skills.ArmsLore.Value / 20);
-
-						if ( Attributes.WeaponDamage > MaxWeaponDamage() )
-							Attributes.WeaponDamage = MaxWeaponDamage();
-
-						from.CheckSkill( SkillName.ArmsLore, 0, 100 );
-					}
+					WeaponCraftHandler.ApplyExceptionalQuality( this, from );
 				}
 			}
 			else if ( tool is BaseRunicTool )
@@ -4398,258 +4236,13 @@ m_Hits
 					Resource = thisResource;
 
 					CraftContext context = craftSystem.GetContext( from );
+					bool doNotColor = (context != null && context.DoNotColor);
+					
+					// Use WeaponCraftHandler to set weapon hue
+					WeaponCraftHandler.SetWeaponHue( this, thisResource, doNotColor );
 
-					if ( context != null && context.DoNotColor )
-						Hue = 0;
-
-					switch ( thisResource )
-					{
-						case CraftResource.DullCopper:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							AccuracyLevel = WeaponAccuracyLevel.Accurate;
-							break;
-						}
-						case CraftResource.ShadowIron:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							DamageLevel = WeaponDamageLevel.Ruin;
-							break;
-						}
-						case CraftResource.Copper:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Fortified;
-							DamageLevel = WeaponDamageLevel.Ruin;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-						case CraftResource.Bronze:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Fortified;
-							DamageLevel = WeaponDamageLevel.Might;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-                        case CraftResource.Platinum:
-                        {
-                            Identified = true;
-                            DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-                            DamageLevel = WeaponDamageLevel.Force;
-                            AccuracyLevel = WeaponAccuracyLevel.Eminently;
-                            break;
-                        }
-                        case CraftResource.Gold:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Force;
-							AccuracyLevel = WeaponAccuracyLevel.Eminently;
-							break;
-						}
-						case CraftResource.Agapite:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Power;
-							AccuracyLevel = WeaponAccuracyLevel.Eminently;
-							break;
-						}
-						case CraftResource.Verite:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Power;
-							AccuracyLevel = WeaponAccuracyLevel.Exceedingly;
-							break;
-						}
-						case CraftResource.Valorite:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-                        case CraftResource.Titanium:
-                        {
-								Identified = true;
-                                DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-                                DamageLevel = WeaponDamageLevel.Vanq;
-                                AccuracyLevel = WeaponAccuracyLevel.Supremely;
-                                break;
-                        }
-                        case CraftResource.Rosenium:
-                            {
-                                Identified = true;
-                                DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-                                DamageLevel = WeaponDamageLevel.Vanq;
-                                AccuracyLevel = WeaponAccuracyLevel.Supremely;
-                                break;
-                            }
-                        case CraftResource.Nepturite:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.Obsidian:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.Steel:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.Mithril:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.Xormite:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.Dwarven:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-						case CraftResource.AshTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							AccuracyLevel = WeaponAccuracyLevel.Accurate;
-							break;
-						}
-						case CraftResource.CherryTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							DamageLevel = WeaponDamageLevel.Ruin;
-							AccuracyLevel = WeaponAccuracyLevel.Accurate;
-							break;
-						}
-						case CraftResource.EbonyTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							DamageLevel = WeaponDamageLevel.Might;
-							AccuracyLevel = WeaponAccuracyLevel.Accurate;
-							break;
-						}
-						case CraftResource.GoldenOakTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Durable;
-							DamageLevel = WeaponDamageLevel.Might;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-						case CraftResource.HickoryTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Fortified;
-							DamageLevel = WeaponDamageLevel.Force;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-						/*case CraftResource.MahoganyTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Fortified;
-							DamageLevel = WeaponDamageLevel.Force;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-						case CraftResource.DriftwoodTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Fortified;
-							DamageLevel = WeaponDamageLevel.Force;
-							AccuracyLevel = WeaponAccuracyLevel.Surpassingly;
-							break;
-						}
-						case CraftResource.OakTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Power;
-							AccuracyLevel = WeaponAccuracyLevel.Eminently;
-							break;
-						}
-						case CraftResource.PineTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Power;
-							AccuracyLevel = WeaponAccuracyLevel.Eminently;
-							break;
-						}
-						case CraftResource.GhostTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Power;
-							AccuracyLevel = WeaponAccuracyLevel.Eminently;
-							break;
-						}*/
-						case CraftResource.RosewoodTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Exceedingly;
-							break;
-						}
-						/*case CraftResource.WalnutTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}*/
-						/*case CraftResource.PetrifiedTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}*/
-						case CraftResource.ElvenTree:
-						{
-							Identified = true;
-							DurabilityLevel = WeaponDurabilityLevel.Indestructible;
-							DamageLevel = WeaponDamageLevel.Vanq;
-							AccuracyLevel = WeaponAccuracyLevel.Supremely;
-							break;
-						}
-					}
+					// Use WeaponCraftHandler to apply resource attributes
+					WeaponCraftHandler.ApplyResourceAttributes( this, thisResource );
 				}
 			}
 

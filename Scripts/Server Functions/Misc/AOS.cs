@@ -323,8 +323,30 @@ namespace Server
 				}
 			}			
 
-			m.Damage(totalDamage / 2, from ); // TODO COOP3R - check calibration
-			return totalDamage / 2;
+			// Ensure minimum damage (never zero, except for parry 30% chance)
+			// Without shield: minimum 4 damage
+			// With shield: minimum 2 damage
+			int finalDamage = totalDamage / 2;
+			if ( finalDamage > 0 )
+			{
+				// Check if defender has a shield to determine minimum damage
+				BaseShield shield = m.FindItemOnLayer( Layer.TwoHanded ) as BaseShield;
+				if ( shield == null )
+				{
+					// No shield: minimum 4 damage
+					if ( finalDamage < 4 )
+						finalDamage = 4;
+				}
+				else
+				{
+					// With shield: minimum 2 damage
+					if ( finalDamage < 2 )
+						finalDamage = 2;
+				}
+			}
+			
+			m.Damage(finalDamage, from ); // TODO COOP3R - check calibration
+			return finalDamage;
 		}
 
 		public static void Fix( ref int val )

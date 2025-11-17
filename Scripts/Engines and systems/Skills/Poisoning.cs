@@ -2,6 +2,7 @@ using System;
 using Server.Targeting;
 using Server.Items;
 using Server.Network;
+using Server.Misc;
 
 namespace Server.SkillHandlers
 {
@@ -12,18 +13,141 @@ namespace Server.SkillHandlers
 			SkillInfo.Table[(int)SkillName.Poisoning].Callback = new SkillUseCallback( OnUse );
 		}
 
+		/// <summary>
+		/// Main entry point for Poisoning skill.
+		/// </summary>
 		public static TimeSpan OnUse( Mobile m )
 		{
 			m.Target = new InternalTargetPoison();
-
 			m.SendLocalizedMessage( 502137 ); // Select the poison you wish to use
-
-			return TimeSpan.FromSeconds( 5.0 ); // 10 second delay before beign able to re-use a skill
+			return TimeSpan.FromSeconds( PoisoningConstants.SKILL_REUSE_DELAY_SECONDS );
 		}
+
+		/// <summary>
+		/// Validates if a target can be poisoned and returns true if timer should start.
+		/// </summary>
+		private static bool ValidatePoisonTarget( Mobile from, object targeted )
+		{
+			Item targetItem = targeted as Item;
+			if ( targetItem == null )
+				return false;
+
+			// Ninja weapons can always be poisoned
+			if ( PoisoningHelpers.IsPoisonableNinjaWeapon( targetItem ) )
+				return true;
+
+			// Food and drinks can always be poisoned
+			if ( PoisoningHelpers.IsPoisonableFood( targetItem ) || 
+				 PoisoningHelpers.IsPoisonableDrink( targetItem ) )
+				return true;
+
+			// Weapons require special validation
+			BaseWeapon weapon = targetItem as BaseWeapon;
+			if ( weapon != null )
+			{
+				// BaseBashing weapons (mace fighting) cannot be poisoned in any mode
+				if ( weapon is BaseBashing )
+					return false;
+				
+				// Pickaxe and all pickaxe variants cannot be poisoned in any mode
+				if ( weapon is Pickaxe || 
+					 weapon is SturdyPickaxe || 
+					 weapon is GargoylesPickaxe || 
+					 weapon is RubyPickaxe || 
+					 weapon is LevelPickaxe || 
+					 weapon is GiftPickaxe )
+					return false;
+				
+				// Check global classic poisoning mode setting
+				// Global setting takes precedence over per-player setting
+				bool isClassicMode = ( Server.Misc.MyServerSettings.ClassicPoisoningMode() == 1 );
+				
+				if ( !isClassicMode )
+				{
+					// Modern mode: Requires InfectiousStrike ability
+					return PoisoningHelpers.HasInfectiousStrikeAbility( weapon );
+				}
+				else
+				{
+					// Classic mode: Metal or ranged weapons
+					if ( PoisoningHelpers.CanPoisonInClassicMode( weapon ) )
+						return true;
+					else
+					{
+						from.SendMessage( PoisoningConstants.MSG_COLOR_ERROR, 
+							PoisoningMessages.ERROR_ONLY_METAL_OR_RANGED );
+						return false;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Handles failure case for poison application.
+		/// </summary>
+		private static void HandlePoisonFailure( Mobile from, Item target, Poison poison, bool isClassicMode )
+		{
+			// Modern mode: 5% chance of poisoning self if skill < 80
+			if ( !isClassicMode && 
+				 from.Skills[SkillName.Poisoning].Base < PoisoningConstants.MODERN_FAILURE_SKILL_THRESHOLD && 
+				 Utility.Random( PoisoningConstants.MODERN_FAILURE_POISON_CHANCE ) == 0 )
+			{
+				from.SendLocalizedMessage( 502148 ); // You make a grave mistake while applying the poison.
+				from.PlaySound( PoisoningConstants.SOUND_POISON_FAILURE );
+				from.ApplyPoison( from, poison );
+			}
+			else
+			{
+				// Send appropriate failure message
+				BaseWeapon weapon = target as BaseWeapon;
+				PoisoningHelpers.SendFailureMessage( from, weapon );
+			}
+		}
+
+		/// <summary>
+		/// Applies poison in modern mode (non-classic).
+		/// </summary>
+		private static void ApplyPoisonModernMode( Mobile from, Item target, Poison poison )
+		{
+			if ( PoisoningHelpers.IsPoisonableFood( target ) )
+			{
+				PoisonApplicationHandlers.ApplyToFood( from, target, poison );
+			}
+			else if ( PoisoningHelpers.IsPoisonableDrink( target ) )
+			{
+				PoisonApplicationHandlers.ApplyToDrink( from, target, poison );
+			}
+			else if ( target is BaseWeapon )
+			{
+				PoisonApplicationHandlers.ApplyToWeaponModernMode( from, (BaseWeapon)target, poison );
+			}
+			else if ( target is FukiyaDarts )
+			{
+				PoisonApplicationHandlers.ApplyToFukiyaDarts( from, (FukiyaDarts)target, poison );
+			}
+			else if ( target is Shuriken )
+			{
+				PoisonApplicationHandlers.ApplyToShuriken( from, (Shuriken)target, poison );
+			}
+
+			from.SendLocalizedMessage( 1010517 ); // You apply the poison
+			
+			// Play success sound for weapons only
+			if ( target is BaseWeapon || target is FukiyaDarts || target is Shuriken )
+			{
+				from.PlaySound( PoisoningConstants.SOUND_POISON_SUCCESS );
+			}
+			
+			Misc.Titles.AwardKarma( from, PoisoningConstants.KARMA_PENALTY, true );
+		}
+
+		#region Target Classes
 
 		private class InternalTargetPoison : Target
 		{
-			public InternalTargetPoison() :  base ( 2, false, TargetFlags.None )
+			public InternalTargetPoison() : base( 2, false, TargetFlags.None )
 			{
 			}
 
@@ -34,7 +158,7 @@ namespace Server.SkillHandlers
 					from.SendLocalizedMessage( 502142 ); // To what do you wish to apply the poison?
 					from.Target = new InternalTarget( (BasePoisonPotion)targeted );
 				}
-				else // Not a Poison Potion
+				else
 				{
 					from.SendLocalizedMessage( 502139 ); // That is not a poison potion.
 				}
@@ -44,7 +168,7 @@ namespace Server.SkillHandlers
 			{
 				private BasePoisonPotion m_Potion;
 
-				public InternalTarget( BasePoisonPotion potion ) :  base ( 2, false, TargetFlags.None )
+				public InternalTarget( BasePoisonPotion potion ) : base( 2, false, TargetFlags.None )
 				{
 					m_Potion = potion;
 				}
@@ -54,63 +178,33 @@ namespace Server.SkillHandlers
 					if ( m_Potion.Deleted )
 						return;
 
-					bool startTimer = false;
-
-					CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( from );
-
-					if ( targeted is FukiyaDarts || targeted is Shuriken )
-					{
-						startTimer = true;
-					}
-					else if ( targeted is Food || targeted is BaseBeverage || targeted is FoodStaleBread || targeted is Waterskin || targeted is DirtyWaterskin || targeted is FoodDriedBeef )
-					{
-						startTimer = true;
-					}
-					else if ( targeted is BaseWeapon )
-					{
-						BaseWeapon weapon = (BaseWeapon)targeted;
-
-						if ( DB.ClassicPoisoning != 1 )
-						{
-							startTimer = (	weapon.PrimaryAbility == WeaponAbility.InfectiousStrike || 
-											weapon.SecondaryAbility == WeaponAbility.InfectiousStrike || 
-											weapon.ThirdAbility == WeaponAbility.InfectiousStrike || 
-											weapon.FourthAbility == WeaponAbility.InfectiousStrike || 
-											weapon.FifthAbility == WeaponAbility.InfectiousStrike || 
-											weapon.PrimaryAbility == WeaponAbility.ShadowInfectiousStrike || 
-											weapon.SecondaryAbility == WeaponAbility.ShadowInfectiousStrike || 
-											weapon.ThirdAbility == WeaponAbility.ShadowInfectiousStrike || 
-											weapon.FourthAbility == WeaponAbility.ShadowInfectiousStrike || 
-											weapon.FifthAbility == WeaponAbility.ShadowInfectiousStrike );
-						}
-						else if ( weapon.Layer == Layer.OneHanded )
-						{
-							// Only Bladed or Piercing weapon can be poisoned
-							startTimer = ( weapon.Type == WeaponType.Slashing || weapon.Type == WeaponType.Piercing );
-							if ( startTimer == false ){ from.SendMessage(38, "You can only poison slashing or piercing weapons."); }
-						}
-						else if ( weapon.Layer == Layer.TwoHanded && DB.ClassicPoisoning == 1 )
-						{
-							from.SendMessage(38, "You can only poison one-handed slashing or piercing weapons.");
-						}
-					}
+					bool startTimer = ValidatePoisonTarget( from, targeted );
 
 					if ( startTimer )
 					{
 						new InternalTimer( from, (Item)targeted, m_Potion ).Start();
-
-						from.PlaySound( 0x4F );
-
+						from.PlaySound( PoisoningConstants.SOUND_POISON_APPLY );
 						m_Potion.Consume();
 						from.AddToBackpack( new Bottle() );
 					}
 					else if ( targeted is WaterFlask || targeted is WaterVial )
 					{
-						from.PrivateOverheadMessage(MessageType.Regular, 1150, false, "There isn't enough water in this to apply the right amount of poison.", from.NetState);
+						from.PrivateOverheadMessage( MessageType.Regular, PoisoningConstants.MSG_COLOR_OVERHEAD, false, 
+							PoisoningMessages.ERROR_NOT_ENOUGH_WATER, from.NetState );
 					}
-					else // Target can't be poisoned
+					else
 					{
-						from.SendMessage(38, "You cannot poison that! You can only poison certain weapons, food, or drink.");
+						// Target can't be poisoned
+						if ( targeted is BaseWeapon )
+						{
+							from.SendMessage( PoisoningConstants.MSG_COLOR_ERROR, 
+								PoisoningMessages.ERROR_CANNOT_POISON_WEAPON );
+						}
+						else
+						{
+							from.SendMessage( PoisoningConstants.MSG_COLOR_ERROR, 
+								PoisoningMessages.ERROR_CANNOT_POISON_GENERIC );
+						}
 					}
 				}
 
@@ -121,7 +215,8 @@ namespace Server.SkillHandlers
 					private Poison m_Poison;
 					private double m_MinSkill, m_MaxSkill;
 
-					public InternalTimer( Mobile from, Item target, BasePoisonPotion potion ) : base( TimeSpan.FromSeconds( 2.0 ) )
+					public InternalTimer( Mobile from, Item target, BasePoisonPotion potion ) 
+						: base( TimeSpan.FromSeconds( PoisoningConstants.POISON_APPLY_DELAY_SECONDS ) )
 					{
 						m_From = from;
 						m_Target = target;
@@ -133,88 +228,31 @@ namespace Server.SkillHandlers
 
 					protected override void OnTick()
 					{
+						// Use global classic poisoning mode setting
+						bool isClassicMode = ( Server.Misc.MyServerSettings.ClassicPoisoningMode() == 1 );
+
+						// Classic mode weapon handling
+						if ( m_Target is BaseWeapon && isClassicMode )
+						{
+							BaseWeapon weapon = (BaseWeapon)m_Target;
+							PoisonApplicationHandlers.ApplyToWeaponClassicMode( m_From, weapon, m_Poison );
+							return;
+						}
+
+						// Modern mode or non-weapon targets
 						if ( m_From.CheckTargetSkill( SkillName.Poisoning, m_Target, m_MinSkill, m_MaxSkill ) )
 						{
-							if ( m_Target is Food || m_Target is FoodStaleBread || m_Target is FoodDriedBeef )
-							{
-								int FoodPoisonLevel = 1;
-								if ( m_Poison == Poison.Lethal ){ FoodPoisonLevel = 5; }
-								else if ( m_Poison == Poison.Deadly ){ FoodPoisonLevel = 4; }
-								else if ( m_Poison == Poison.Greater ){ FoodPoisonLevel = 3; }
-								else if ( m_Poison == Poison.Regular ){ FoodPoisonLevel = 2; }
-
-								PoisonFood TaintFood = new PoisonFood();
-								TaintFood.Poisoner = m_From;
-								TaintFood.Poison = FoodPoisonLevel;
-
-								m_From.AddToBackpack ( TaintFood );
-
-								if ( m_Target.Amount > 1 ){ m_Target.Amount = m_Target.Amount - 1; } else { m_Target.Delete(); }
-							}
-							else if ( m_Target is BaseBeverage || m_Target is Waterskin || m_Target is DirtyWaterskin )
-							{
-								int DrinkPoisonLevel = 1;
-								if ( m_Poison == Poison.Lethal ){ DrinkPoisonLevel = 5; }
-								else if ( m_Poison == Poison.Deadly ){ DrinkPoisonLevel = 4; }
-								else if ( m_Poison == Poison.Greater ){ DrinkPoisonLevel = 3; }
-								else if ( m_Poison == Poison.Regular ){ DrinkPoisonLevel = 2; }
-
-								PoisonLiquid TaintDrink = new PoisonLiquid();
-								TaintDrink.Poisoner = m_From;
-								TaintDrink.Poison = DrinkPoisonLevel;
-
-								m_From.AddToBackpack ( TaintDrink );
-
-								if ( m_Target.Amount > 1 ){ m_Target.Amount = m_Target.Amount - 1; } else { m_Target.Delete(); }
-							}
-							else if ( m_Target is BaseWeapon )
-							{
-								((BaseWeapon)m_Target).Poison = m_Poison;
-								((BaseWeapon)m_Target).PoisonCharges = 18 - (m_Poison.Level * 2);
-							}
-							else if ( m_Target is FukiyaDarts )
-							{
-								((FukiyaDarts)m_Target).Poison = m_Poison;
-								((FukiyaDarts)m_Target).PoisonCharges = Math.Min( 18 - (m_Poison.Level * 2), ((FukiyaDarts)m_Target).UsesRemaining );
-							}
-							else if ( m_Target is Shuriken )
-							{
-								((Shuriken)m_Target).Poison = m_Poison;
-								((Shuriken)m_Target).PoisonCharges = Math.Min( 18 - (m_Poison.Level * 2), ((Shuriken)m_Target).UsesRemaining );
-							}
-
-							m_From.SendLocalizedMessage( 1010517 ); // You apply the poison
-
-							Misc.Titles.AwardKarma( m_From, -20, true );
+							ApplyPoisonModernMode( m_From, m_Target, m_Poison );
 						}
-						else // Failed
+						else
 						{
-							// 5% of chance of getting poisoned if failed
-							if ( m_From.Skills[SkillName.Poisoning].Base < 80.0 && Utility.Random( 20 ) == 0 )
-							{
-								m_From.SendLocalizedMessage( 502148 ); // You make a grave mistake while applying the poison.
-								m_From.ApplyPoison( m_From, m_Poison );
-							}
-							else
-							{
-								if ( m_Target is BaseWeapon )
-								{
-									BaseWeapon weapon = (BaseWeapon)m_Target;
-
-									if ( weapon.Type == WeaponType.Slashing )
-										m_From.SendLocalizedMessage( 1010516 ); // You fail to apply a sufficient dose of poison on the blade
-									else
-										m_From.SendLocalizedMessage( 1010518 ); // You fail to apply a sufficient dose of poison
-								}
-								else
-								{
-									m_From.SendLocalizedMessage( 1010518 ); // You fail to apply a sufficient dose of poison
-								}
-							}
+							HandlePoisonFailure( m_From, m_Target, m_Poison, isClassicMode );
 						}
 					}
 				}
 			}
 		}
+
+		#endregion
 	}
 }

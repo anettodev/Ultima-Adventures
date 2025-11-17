@@ -961,7 +961,7 @@ namespace Server
 			UpdateResistances();
 		}
 
-		private static int m_MaxPlayerResistance = 70;
+		private static int m_MaxPlayerResistance = 50;
 
 		public static int MaxPlayerResistance { get { return m_MaxPlayerResistance; } set { m_MaxPlayerResistance = value; } }
 

@@ -18,8 +18,8 @@ namespace Server.Items
 		public override WeaponAbility FifthAbility{ get{ return WeaponAbility.ZapStamStrike; } }
 
 		public override int AosStrengthReq{ get{ return 45; } }
-		public override int AosMinDamage{ get{ return 12; } }
-		public override int AosMaxDamage{ get{ return 16; } }
+		public override int AosMinDamage{ get{ return 13; } }
+		public override int AosMaxDamage{ get{ return 18; } }
 		public override int AosSpeed{ get{ return 27; } }
 		public override float MlSpeed{ get{ return 4.00f; } }
 
@@ -28,7 +28,7 @@ namespace Server.Items
 		public override int OldMaxDamage{ get{ return 16; } }
 		public override int OldSpeed{ get{ return 27; } }
 
-		public override int DefMaxRange{ get{ return 10; } }
+		public override int DefMaxRange{ get{ return 15; } }
 
 		public override int InitMinHits{ get{ return 41; } }
 		public override int InitMaxHits{ get{ return 90; } }
