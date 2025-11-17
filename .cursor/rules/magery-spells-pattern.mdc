@@ -1,0 +1,428 @@
+---
+description: This RunUO-based Ultima Online server has 64 Magery spells (8 circles × 8 spells) that are being refactored for improved maintainability, readability, and consistency. The base `Spell.cs` infrastructure has been enhanced with centralized constants and messages.
+globs: Scripts/Engines and systems/Magic/Spells/**/*.cs
+alwaysApply: true
+---
+
+# Ultima Adventures - Magery Spell Refactoring Guide
+
+## Core Refactoring Principles
+
+1. **DRY** - Extract repeated logic into reusable methods
+2. **KISS** - Break complex methods into focused functions
+3. **Single Responsibility** - One clear purpose per method
+4. **EN-US Code** - All variables, methods, comments in English
+5. **PT-BR Strings** - User-facing messages only, use `Spell.SpellMessages` constants
+
+## 8-Step Refactoring Pattern
+
+### Step 1: Add XML Documentation Header
+
+```csharp
+/// <summary>
+/// [Spell Name] - [Circle]th Circle [Type] Spell
+/// [Brief description of what it does]
+/// </summary>
+public class SpellNameSpell : MagerySpell
+```
+
+### Step 2: Extract Constants Region
+
+```csharp
+#region Constants
+// Damage Constants
+private const int DAMAGE_BONUS = 2;
+private const int DAMAGE_DICE = 1;
+private const int DAMAGE_SIDES = 3;
+private const int DAMAGE_CAP = 8;
+
+// Effect Constants
+private const int EFFECT_ID = 0x36E4;
+private const int EFFECT_SPEED = 5;
+private const int EFFECT_DURATION = 3600;
+private const int SOUND_ID = 0x1E5;
+
+// Target Constants
+private const int TARGET_RANGE_ML = 10;
+private const int TARGET_RANGE_LEGACY = 12;
+#endregion
+```
+
+**Extract all magic numbers**: damage values, effect IDs, sound IDs, durations, ranges, multipliers, divisors
+
+### Step 3: Replace Hard-Coded PT-BR Strings
+
+```csharp
+// ❌ BEFORE
+Caster.SendMessage(55, "O alvo não pode ser visto.");
+
+// ✅ AFTER
+Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+```
+
+**Available Messages in `Spell.SpellMessages`:**
+- `ERROR_TARGET_NOT_VISIBLE` - "O alvo não pode ser visto."
+- `ERROR_TARGET_ALREADY_DEAD` - "O alvo já está morto."
+- `ERROR_CANNOT_HEAL_DEAD` - "Você não pode curar aquilo que já está morto."
+- `ERROR_CANNOT_HEAL_GOLEM` - "* Não sei como curar isso *"
+- `ERROR_TARGET_MORTALLY_POISONED_SELF` - "Você sente o veneno mortal impedindo a cura..."
+- `ERROR_TARGET_MORTALLY_POISONED_OTHER` - "O seu alvo está mortalmente envenenado e não pode ser curado!"
+- `ERROR_SOMETHING_PREVENTED_CAST` - "Algo impediu o feitiço..."
+- `RESIST_SPELL_EFFECTS` - "{0} resistiu aos efeitos da magia!"
+- `RESIST_HALF_DAMAGE_VICTIM` - "Você resistiu ao feitiço e sofreu apenas metade do dano!"
+- `RESIST_HALF_DAMAGE_ATTACKER` - "O alvo resistiu ao feitiço e sofreu apenas metade do dano!"
+- `ONE_RING_PREVENTED_SPELL` - "O UM ANEL desfez o feitiço..."
+- `ONE_RING_PROTECTION_REVEAL` - "O UM ANEL protegeu você de ser revelado!"
+
+**Message Colors (from Spell.cs):**
+- `MSG_COLOR_ERROR = 55` - Red error messages
+- `MSG_COLOR_WARNING = 33` - Yellow warning messages
+- `MSG_COLOR_SYSTEM = 95` - Gray system messages
+
+### Step 4: Extract Complex Logic into Methods
+
+**Validation Logic:**
+```csharp
+/// <summary>
+/// Validates if target can be affected by spell
+/// </summary>
+private bool IsValidTarget(Mobile target)
+{
+    if (condition1)
+    {
+        Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_MESSAGE);
+        return false;
+    }
+
+    if (condition2)
+    {
+        Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_MESSAGE);
+        return false;
+    }
+
+    return true;
+}
+```
+
+**Damage Calculation:**
+```csharp
+/// <summary>
+/// Calculates spell damage with cap
+/// </summary>
+/// <param name="target">The target mobile</param>
+/// <returns>Calculated damage amount</returns>
+private double CalculateDamage(Mobile target)
+{
+    double damage = GetNMSDamage(DAMAGE_BONUS, DAMAGE_DICE, DAMAGE_SIDES, target);
+
+    // Apply damage cap for balance
+    if (damage >= DAMAGE_CAP)
+    {
+        damage = DAMAGE_CAP;
+    }
+
+    return damage;
+}
+```
+
+**Effect Playing:**
+```csharp
+/// <summary>
+/// Plays visual and sound effects for the spell
+/// </summary>
+private void PlayEffects(Mobile source, Mobile target)
+{
+    int hue = Server.Items.CharacterDatabase.GetMySpellHue(Caster, 0);
+    source.MovingParticles(target, EFFECT_ID, EFFECT_SPEED, 0, false, false, hue, 0, EFFECT_DURATION, 0, 0, 0);
+    source.PlaySound(SOUND_ID);
+}
+```
+
+### Step 5: Add Method Documentation
+
+All methods must have XML documentation:
+```csharp
+/// <summary>
+/// [What the method does]
+/// </summary>
+/// <param name="paramName">[Parameter description]</param>
+/// <returns>[Return value description]</returns>
+```
+
+### Step 6: Add Inline Comments for Damage Types
+
+```csharp
+// Apply damage (0% physical, 100% fire, 0% cold, 0% poison, 0% energy)
+SpellHelper.Damage(this, target, damage, 0, 100, 0, 0, 0);
+```
+
+**Damage Type Order**: Physical, Fire, Cold, Poison, Energy (must sum to 100%)
+
+### Step 7: Remove Commented-Out Code
+
+- Remove all commented WIZARD code
+- Remove old commented formulas
+- Remove commented TODOs (document separately if needed)
+- Remove any dead code
+
+### Step 8: Improve InternalTarget Class
+
+```csharp
+private class InternalTarget : Target
+{
+    private SpellNameSpell m_Owner;
+
+    public InternalTarget(SpellNameSpell owner) : base(Core.ML ? TARGET_RANGE_ML : TARGET_RANGE_LEGACY, false, TargetFlags.Harmful)
+    {
+        m_Owner = owner;
+    }
+
+    protected override void OnTarget(Mobile from, object o)
+    {
+        if (o is Mobile mobile)
+        {
+            m_Owner.Target(mobile);
+        }
+    }
+
+    protected override void OnTargetFinish(Mobile from)
+    {
+        m_Owner.FinishSequence();
+    }
+}
+```
+
+## Damage Calculation Systems
+
+### NMS System (Recommended)
+
+```csharp
+// Simple calculation based on EvalInt
+int damage = GetNMSDamage(
+    bonus: 25,        // Base damage bonus
+    dice: 1,          // Number of dice
+    sides: 5,         // Sides per die
+    target            // Target mobile
+);
+```
+
+**Formula**: `Dice(dice, sides, bonus) * EvalIntBenefit`
+
+### AOS System (Legacy)
+
+```csharp
+// Complex calculation with Inscribe, Int, SDI, EvalInt
+int damage = GetNewAosDamage(
+    bonus: 25,        // Base damage bonus
+    dice: 1,          // Number of dice
+    sides: 5,         // Sides per die
+    target,           // Target mobile
+    scalar: 1.0       // Additional scalar (optional)
+);
+```
+
+## Spell Type Patterns
+
+### Attack Spell Pattern
+
+```csharp
+public void Target(Mobile target)
+{
+    if (!Caster.CanSee(target))
+    {
+        Caster.SendMessage(Spell.MSG_COLOR_ERROR, Spell.SpellMessages.ERROR_TARGET_NOT_VISIBLE);
+    }
+    else if (CheckHSequence(target))
+    {
+        Mobile source = Caster;
+
+        SpellHelper.Turn(source, target);
+        SpellHelper.NMSCheckReflect((int)Circle, ref source, ref target);
+
+        double damage = CalculateDamage(target);
+        PlayEffects(source, target);
+
+        // Apply damage (damage type percentages)
+        SpellHelper.Damage(this, target, damage, 0, 100, 0, 0, 0);
+    }
+
+    FinishSequence();
+}
+```
+
+### Beneficial Spell Pattern
+
+```csharp
+public void Target(Mobile target)
+{
+    if (!IsValidTarget(target))
+    {
+        // Error messages handled in IsValidTarget
+    }
+    else if (CheckBSequence(target))
+    {
+        SpellHelper.Turn(Caster, target);
+
+        int healAmount = CalculateHealAmount(target);
+        SpellHelper.Heal(healAmount, target, Caster);
+
+        PlayEffects(target);
+    }
+
+    FinishSequence();
+}
+```
+
+### Area Effect Spell Pattern
+
+```csharp
+/// <summary>
+/// Gets valid targets in area
+/// </summary>
+private List<Mobile> GetTargetsInArea()
+{
+    List<Mobile> targets = new List<Mobile>();
+
+    foreach (Mobile m in Caster.GetMobilesInRange(EFFECT_RANGE))
+    {
+        if (IsValidTarget(m))
+        {
+            targets.Add(m);
+        }
+    }
+
+    return targets;
+}
+
+/// <summary>
+/// Validates if mobile is a valid target
+/// </summary>
+private bool IsValidTarget(Mobile target)
+{
+    return Caster.Region == target.Region
+        && Caster != target
+        && SpellHelper.ValidIndirectTarget(Caster, target)
+        && Caster.CanBeHarmful(target, false)
+        && (!Core.AOS || Caster.InLOS(target));
+}
+```
+
+### Field Spell Pattern
+
+```csharp
+#region Constants
+private const int FIELD_LENGTH = 5;
+private const int FIELD_DURATION_BASE = 30;
+private const int DAMAGE_PER_TICK = 10;
+#endregion
+```
+
+### Summon Spell Pattern
+
+```csharp
+#region Constants
+private const double DURATION_SCALE_BASE = 1.0;
+private const double SORCERER_SCALE_BONUS = 0.50;
+private const int SUMMON_SOUND = 0x217;
+#endregion
+
+/// <summary>
+/// Calculates summon duration with sorcerer bonus
+/// </summary>
+private TimeSpan CalculateSummonDuration()
+{
+    double scale = DURATION_SCALE_BASE + ((Caster.Skills[SkillName.Magery].Value - 90.0) / 100.0);
+
+    if (Caster is PlayerMobile playerMobile && playerMobile.Sorcerer())
+    {
+        scale += SORCERER_SCALE_BONUS;
+    }
+
+    return TimeSpan.FromSeconds(BASE_DURATION * scale);
+}
+```
+
+## Quality Assurance Checklist
+
+Before completing a spell refactoring, verify:
+
+- [ ] XML documentation header added
+- [ ] Constants region created with all magic numbers extracted
+- [ ] All PT-BR strings replaced with `Spell.SpellMessages`
+- [ ] Parameter `m` renamed to `target` (for consistency)
+- [ ] Validation logic extracted to methods
+- [ ] Damage calculation extracted to method
+- [ ] Effects extracted to method
+- [ ] XML documentation added to all methods
+- [ ] Inline comment for damage type added
+- [ ] All commented-out code removed
+- [ ] InternalTarget updated to use constants
+- [ ] Pattern matching used where possible (`is Mobile mobile`)
+- [ ] Spell compiles without errors
+- [ ] No linter warnings
+
+## Reference Files
+
+- **Examples**: `MagicArrow.cs` (attack), `Heal.cs` (beneficial), `ReactiveArmor.cs` (complex buff)
+- **Base Class**: `Scripts/Engines and systems/Magic/Base/Spell.cs`
+- **Documentation**:
+  - `/Documentation/Magery_Spells_Complete_Guide.md` - All 64 spell details
+  - `/Documentation/Spell_Refactoring_Pattern.md` - Step-by-step guide
+  - `/Documentation/Spell_Developer_Guide.md` - Developer quick reference
+
+## Important Notes
+
+### Naming Conventions
+
+- **Constants**: `UPPER_SNAKE_CASE`
+- **Private Methods**: `PascalCase`
+- **Local Variables**: `camelCase`
+- **Fields**: `m_PascalCase`
+
+### Damage Types Reference
+
+- **Fire**: Magic Arrow, Fireball, Fire Field, Explosion, Flamestrike, Meteor Swarm (35%)
+- **Energy**: Lightning, Energy Bolt, Energy Field, Chain Lightning (24%)
+- **Cold**: Harm, Mind Blast (12%)
+- **Physical**: Earthquake (6%)
+- **Poison**: Poison spell (DoT), Poison Field (12%)
+
+### Common Mistakes to Avoid
+
+- ❌ Don't modify public method signatures (breaks 95+ spell files)
+- ❌ Don't remove virtual/override keywords (breaks inheritance)
+- ❌ Don't hardcode user messages (use `Spell.SpellMessages`)
+- ❌ Don't use magic numbers (extract to constants)
+
+### Midland Region
+
+Midland has special spell mechanics based on Lucidity. The base `Spell` class automatically handles:
+- SDI disabled in Midland
+- FC/FCR bonuses based on Lucidity
+- Damage multipliers based on Lucidity
+
+**You don't need to check for Midland manually** - it's handled automatically in damage and timing calculations.
+
+## When Working on Spells
+
+1. **Read the existing spell file first** to understand current implementation
+2. **Check spell type** (Attack, Beneficial, Area, Field, Summon) for appropriate pattern
+3. **Follow the 8-step pattern exactly** - proven with 7 completed spells
+4. **Use existing refactored spells as reference** - MagicArrow.cs, Heal.cs
+5. **Test compilation after each spell** - ensure no errors
+6. **Verify spell logic matches original** - maintain backward compatibility
+7. **Update progress** in README_REFACTORING.md if doing bulk refactoring
+
+## Development Workflow
+
+1. Choose a spell to refactor (preferably by circle order)
+2. Read the spell file to understand logic
+3. Create Constants region with all magic numbers
+4. Replace PT-BR strings with SpellMessages
+5. Extract complex logic to methods
+6. Add XML documentation
+7. Add inline comments for damage types
+8. Remove dead code
+9. Update InternalTarget
+10. Test compilation
+11. Verify functionality unchanged
