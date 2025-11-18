@@ -21,16 +21,24 @@ namespace Server.Items
 
 		#endregion
 
-		#region Properties
+	#region Properties
 
-		public override int Hue{ get { return BandageConstants.HUE_BANDAGE_DEFAULT; } }
-
-		public override double DefaultWeight
+	public override int Hue
+	{
+		get
 		{
-			get { return 0.3; }
+			int baseHue = base.Hue;
+			return baseHue == 0 ? BandageConstants.HUE_BANDAGE_DEFAULT : baseHue;
 		}
+		set { base.Hue = value; }
+	}
 
-		#endregion
+	public override double DefaultWeight
+	{
+		get { return 0.3; }
+	}
+
+	#endregion
 
 		#region Constructors
 

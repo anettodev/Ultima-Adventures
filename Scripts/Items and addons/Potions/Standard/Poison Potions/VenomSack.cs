@@ -1,1 +1,173 @@
-using System;using Server;using Server.Network;using System.Text;using Server.Items;using Server.Mobiles;namespace Server.Items{	public class VenomSack : Item	{		[Constructable]		public VenomSack() : base( 0x23A )		{			Name = "venom sack";			Weight = 1.0;			Amount = 1;			Stackable = true;		}		public VenomSack( Serial serial ) : base( serial )		{		}		public override void OnDoubleClick( Mobile from )		{			int nSkill = 0;			if ( this.Name == "lesser venom sack" ){ nSkill = -5; }			else if ( this.Name == "venom sack" ){ nSkill = 15; }			else if ( this.Name == "greater venom sack" ){ nSkill = 35; }			else if ( this.Name == "deadly venom sack" ){ nSkill = 55; }			else { nSkill = 75; }			if ( from.CheckSkill( SkillName.Poisoning, nSkill, 125 ) )			{				if (!from.Backpack.ConsumeTotal(typeof(Bottle), 1))				{					from.SendMessage("You need an empty bottle to drain the venom from the sack.");					return;				}				else				{					from.PlaySound( 0x240 );					string sPotion = "";					if ( this.Name == "lesser venom sack" ){ from.AddToBackpack( new LesserPoisonPotion() ); sPotion = "lesser poison"; }					else if ( this.Name == "venom sack" ){ from.AddToBackpack( new PoisonPotion() ); sPotion = "poison"; }					else if ( this.Name == "greater venom sack" ){ from.AddToBackpack( new GreaterPoisonPotion() ); sPotion = "greater poison"; }					else if ( this.Name == "deadly venom sack" ){ from.AddToBackpack( new DeadlyPoisonPotion() ); sPotion = "deadly poison"; }										else { from.AddToBackpack( new LethalPoisonPotion() ); sPotion = "lethal poison"; }					if ( from.CheckSkill( SkillName.Poisoning, nSkill, 125 ) )					{						from.SendMessage("You get a bottle of " + sPotion + " from some of the sack.");					}					else					{						from.SendMessage("You get a bottle of " + sPotion + " from the rest of the sack.");						this.Consume();					}					return;				}			}			else			{				from.PlaySound( 0x62D );				if ( Utility.RandomMinMax( 0, 10 ) > 6 )				{					from.Say( "Poison!" );					if ( this.Name == "lesser venom sack" ){ from.ApplyPoison( from, Poison.Lesser ); }					else if ( this.Name == "venom sack" ){ from.ApplyPoison( from, Poison.Regular ); }					else if ( this.Name == "greater venom sack" ){ from.ApplyPoison( from, Poison.Greater ); }					else if ( this.Name == "deadly venom sack" ){ from.ApplyPoison( from, Poison.Deadly ); }					else { from.ApplyPoison( from, Poison.Lethal ); }					from.SendMessage( "Poison!");				}				else				{					from.SendMessage("You fail to get any venom from the sack.");				}				this.Consume();				return;			}		}        public override void AddNameProperties(ObjectPropertyList list)		{            base.AddNameProperties(list);			list.Add( 1070722, "Use To Attempt To Extract Venom");			list.Add( 1049644, "Need An Empty Bottle"); // PARENTHESIS        }		public override void Serialize( GenericWriter writer )		{			base.Serialize( writer );			writer.Write( (int) 0 ); // version		}		public override void Deserialize( GenericReader reader )		{			base.Deserialize( reader );			int version = reader.ReadInt();			Stackable = true;			Hue = 0;		}	}}
+using System;
+using Server;
+using Server.Network;
+using System.Text;
+using Server.Items;
+using Server.Mobiles;
+
+namespace Server.Items
+{
+	/// <summary>
+	/// Venom sack item that can be used to extract poison potions.
+	/// Requires poisoning skill and an empty bottle.
+	/// Using a venom sack has a chance to poison the user on failure.
+	/// </summary>
+	public class VenomSack : Item
+	{
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of VenomSack
+		/// </summary>
+		[Constructable]
+		public VenomSack() : base( PoisonPotionConstants.ITEM_ID_VENOM_SACK )
+		{
+			Name = PoisonPotionItemStringConstants.NAME_VENOM_SACK;
+			Weight = PoisonPotionConstants.WEIGHT_VENOM_SACK;
+			Amount = 1;
+			Stackable = true;
+		}
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">Serialization reader</param>
+		public VenomSack( Serial serial ) : base( serial )
+		{
+		}
+
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click interaction with the venom sack
+		/// </summary>
+		/// <param name="from">The mobile using the venom sack</param>
+		public override void OnDoubleClick( Mobile from )
+		{
+			VenomSackTypeHelper.VenomSackConfiguration config = VenomSackTypeHelper.GetConfiguration( this.Name );
+			
+			if ( config == null )
+			{
+				// Default to lethal if name not recognized
+				config = VenomSackTypeHelper.GetConfiguration( PoisonPotionItemStringConstants.NAME_LETHAL_VENOM );
+			}
+
+			if ( from.CheckSkill( SkillName.Poisoning, config.SkillRequirement, PoisonPotionConstants.SKILL_MAX_CHECK ) )
+			{
+				HandleSuccessfulExtraction( from, config );
+			}
+			else
+			{
+				HandleFailedExtraction( from, config );
+			}
+		}
+
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Handles successful venom extraction
+		/// </summary>
+		/// <param name="from">The mobile extracting venom</param>
+		/// <param name="config">The venom sack configuration</param>
+		private void HandleSuccessfulExtraction( Mobile from, VenomSackTypeHelper.VenomSackConfiguration config )
+		{
+			if ( !from.Backpack.ConsumeTotal( typeof( Bottle ), 1 ) )
+			{
+				from.SendMessage( PoisonPotionItemStringConstants.MSG_NEED_BOTTLE );
+				return;
+			}
+
+			from.PlaySound( PoisonPotionConstants.SOUND_ID_VENOM_SUCCESS );
+
+			BasePoisonPotion potion = VenomSackTypeHelper.CreatePotion( this.Name );
+			if ( potion != null )
+			{
+				from.AddToBackpack( potion );
+			}
+
+			string potionName = config.PotionName;
+
+			// Second skill check determines if sack is consumed
+			if ( from.CheckSkill( SkillName.Poisoning, config.SkillRequirement, PoisonPotionConstants.SKILL_MAX_CHECK ) )
+			{
+				from.SendMessage( string.Format( PoisonPotionItemStringConstants.MSG_GET_POTION_PARTIAL, potionName ) );
+			}
+			else
+			{
+				from.SendMessage( string.Format( PoisonPotionItemStringConstants.MSG_GET_POTION_COMPLETE, potionName ) );
+				this.Consume();
+			}
+		}
+
+		/// <summary>
+		/// Handles failed venom extraction
+		/// </summary>
+		/// <param name="from">The mobile attempting extraction</param>
+		/// <param name="config">The venom sack configuration</param>
+		private void HandleFailedExtraction( Mobile from, VenomSackTypeHelper.VenomSackConfiguration config )
+		{
+			from.PlaySound( PoisonPotionConstants.SOUND_ID_VENOM_FAILURE );
+
+			// Chance to poison the user
+			if ( Utility.RandomMinMax( PoisonPotionConstants.POISON_CHANCE_MIN, PoisonPotionConstants.POISON_CHANCE_MAX ) > PoisonPotionConstants.POISON_CHANCE_THRESHOLD )
+			{
+				from.Say( PoisonPotionItemStringConstants.MSG_POISONED );
+				from.ApplyPoison( from, config.PoisonType );
+				from.SendMessage( PoisonPotionItemStringConstants.MSG_POISONED );
+			}
+			else
+			{
+				from.SendMessage( PoisonPotionItemStringConstants.MSG_FAILED_EXTRACTION );
+			}
+
+			this.Consume();
+		}
+
+		#endregion
+
+		#region Property Display
+
+		/// <summary>
+		/// Adds name properties to the property list
+		/// </summary>
+		/// <param name="list">The property list</param>
+		public override void AddNameProperties( ObjectPropertyList list )
+		{
+			base.AddNameProperties( list );
+			list.Add( 1070722, PoisonPotionItemStringConstants.PROP_USE_DESCRIPTION );
+			list.Add( 1049644, PoisonPotionItemStringConstants.PROP_NEED_BOTTLE ); // PARENTHESIS
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the VenomSack
+		/// </summary>
+		/// <param name="writer">Generic writer</param>
+		public override void Serialize( GenericWriter writer )
+		{
+			base.Serialize( writer );
+			writer.Write( PoisonPotionConstants.SERIALIZATION_VERSION );
+		}
+
+		/// <summary>
+		/// Deserializes the VenomSack
+		/// </summary>
+		/// <param name="reader">Generic reader</param>
+		public override void Deserialize( GenericReader reader )
+		{
+			base.Deserialize( reader );
+			int version = reader.ReadInt();
+			Stackable = true;
+			Hue = PoisonPotionConstants.HUE_DEFAULT;
+		}
+
+		#endregion
+	}
+}

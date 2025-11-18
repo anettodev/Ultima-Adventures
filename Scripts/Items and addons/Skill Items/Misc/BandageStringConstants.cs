@@ -41,6 +41,12 @@ namespace Server.Items
 		/// <summary>Message when fingers slip during bandaging</summary>
 		public const string MSG_FINGERS_SLIP = "Seus dedos escorregam!";
 
+		/// <summary>Property label for enhanced bandages</summary>
+		public const string MSG_ENHANCED_BANDAGE_PROPERTY = "essas bandagens foram aprimoradas.";
+
+		/// <summary>Color hex code for enhanced bandage property display</summary>
+		public const string ENHANCED_BANDAGE_COLOR_HEX = "#8be4fc";
+
 		#endregion
 
 		#region Henchman Names

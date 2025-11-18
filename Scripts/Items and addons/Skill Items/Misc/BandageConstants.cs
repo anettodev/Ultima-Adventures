@@ -270,6 +270,9 @@ namespace Server.Items
 		/// <summary>Default bandage hue</summary>
 		public const int HUE_BANDAGE_DEFAULT = 0;
 
+		/// <summary>Enhanced bandage hue (golden color)</summary>
+		public const int HUE_ENHANCED_BANDAGE = 0x8A5;
+
 		/// <summary>Overhead message color</summary>
 		public const int MESSAGE_COLOR_OVERHEAD = 1150;
 
