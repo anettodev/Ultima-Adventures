@@ -23,6 +23,24 @@ namespace Server.Items
 		/// <summary>Message when target is too hungry to be healed</summary>
 		public const string MSG_CANNOT_HEAL_HUNGRY = "Você não pode curar aqueles que estão extremamente famintos.";
 
+		/// <summary>Message format for healing result with concentration penalty</summary>
+		public const string MSG_HEALING_RESULT_WITH_PENALTY = "Você curou {0} pontos de vida. Devido ao dano sofrido, a perda de concentração foi de {1}%.";
+
+		/// <summary>Message format for healing result without penalty</summary>
+		public const string MSG_HEALING_RESULT_NO_PENALTY = "Você curou {0} pontos de vida.";
+
+		/// <summary>Message when trying to cast spell while bandaging</summary>
+		public const string MSG_ALREADY_HEALING = "Você está realizando uma ação de cura!";
+
+		/// <summary>Message when healing is cancelled because healer became frozen or paralyzed</summary>
+		public const string MSG_HEALING_CANCELLED_FROZEN = "A cura foi interrompida porque você foi paralizado!";
+
+		/// <summary>Message when healing is cancelled because healer became paralyzed (spell)</summary>
+		public const string MSG_HEALING_CANCELLED_PARALYZED = "A cura foi interrompida porque você foi paralizado!";
+
+		/// <summary>Message when fingers slip during bandaging</summary>
+		public const string MSG_FINGERS_SLIP = "Seus dedos escorregam!";
+
 		#endregion
 
 		#region Henchman Names

@@ -3596,11 +3596,11 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			if ( !Core.AOS )
 				disruptThreshold = 0;
 			else if ( from != null && from.Player )
-				disruptThreshold = (int)((double)HitsMax * 0.15) ;
+				disruptThreshold = (int)((double)HitsMax * 0.10) ; // 10% of max HP
 			else
 				disruptThreshold = 25;
 
-			if ( amount > disruptThreshold )
+			if ( amount >= disruptThreshold )
 			{
 				BandageContext c = BandageContext.GetContext( this );
 
@@ -3609,7 +3609,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 					if (AdventuresFunctions.IsInMidland((object)this) && (Agility()/2) > Utility.RandomDouble() )
 					{}
 					else
-						c.Slip();
+						c.Slip( amount );
 				}
 			}
 
@@ -3656,13 +3656,13 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			switch( Utility.Random( 7 ) )
 			{
-				case 0: LoggingFunctions.LogStandard( this, "has returned from the realm of the dead" );		break;
-				case 1: LoggingFunctions.LogStandard( this, "was brought back to the world of the living" );	break;
-				case 2: LoggingFunctions.LogStandard( this, "has been restored to life" );					break;
-				case 3: LoggingFunctions.LogStandard( this, "has been brought back from the grave" );		break;
-				case 4: LoggingFunctions.LogStandard( this, "has been resurrected to this world" );			break;
-				case 5: LoggingFunctions.LogStandard( this, "has returned to life after death" );			break;
-				case 6: LoggingFunctions.LogStandard( this, "was resurrected for another chance at life" );	break;
+				case 0: LoggingFunctions.LogStandard( this, "retornou do reino dos mortos" );					break;
+				case 1: LoggingFunctions.LogStandard( this, "foi trazido de volta ao mundo dos vivos" );		break;
+				case 2: LoggingFunctions.LogStandard( this, "foi restaurado à vida" );						break;
+				case 3: LoggingFunctions.LogStandard( this, "foi trazido de volta do túmulo" );				break;
+				case 4: LoggingFunctions.LogStandard( this, "foi ressuscitado para este mundo" );			break;
+				case 5: LoggingFunctions.LogStandard( this, "retornou à vida após a morte" );				break;
+				case 6: LoggingFunctions.LogStandard( this, "foi ressuscitado para outra chance na vida" );	break;
 			}
 
 			if ( this.QuestArrow != null ){ this.QuestArrow.Stop(); }

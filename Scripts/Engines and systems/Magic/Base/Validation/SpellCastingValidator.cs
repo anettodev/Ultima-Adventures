@@ -57,6 +57,12 @@ namespace Server.Spells
 				return false;
 			}
 
+			if (BandageHelpers.IsCurrentlyBandaging(spell.Caster))
+			{
+				spell.Caster.SendMessage(Server.Items.BandageStringConstants.MSG_ALREADY_HEALING);
+				return false;
+			}
+
 			return true;
 		}
 

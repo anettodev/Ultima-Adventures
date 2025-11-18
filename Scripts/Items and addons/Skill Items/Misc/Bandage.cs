@@ -94,7 +94,7 @@ namespace Server.Items
 
 			from.RevealingAction();
 
-			if ( BandageContext.BeginHeal( from, from ) != null )
+			if ( BandageContext.BeginHeal( from, from, m_Bandage ) != null )
 				m_Bandage.Consume();
 				Server.Gumps.QuickBar.RefreshQuickBar( from );
 		}
@@ -183,9 +183,9 @@ namespace Server.Items
 				{
 					if ( from.InRange( m_Bandage.GetWorldLocation(), Bandage.Range ) )
 					{
-						if ( BandageContext.BeginHeal( from, (Mobile)targeted ) != null )
-						{
-							m_Bandage.Consume();
+					if ( BandageContext.BeginHeal( from, (Mobile)targeted, m_Bandage ) != null )
+					{
+						m_Bandage.Consume();
 							Server.Gumps.QuickBar.RefreshQuickBar( from );
 						}
 					}
@@ -236,6 +236,12 @@ namespace Server.Items
 		private Mobile m_Patient;
 		private int m_Slips;
 		private Timer m_Timer;
+		private DateTime m_StartTime;
+		private TimeSpan m_HealDelay;
+		private int m_HealerStartingHits;
+		private int m_DamageEvents;
+		private int m_LastKnownHits; // Track last known hits to avoid double-counting damage events
+		private bool m_IsEnhancedBandage; // Track if enhanced bandage was used
 
 		private static Dictionary<Mobile, BandageContext> m_Table = new Dictionary<Mobile, BandageContext>();
 
@@ -247,17 +253,24 @@ namespace Server.Items
 		public Mobile Patient{ get{ return m_Patient; } }
 		public int Slips{ get{ return m_Slips; } set{ m_Slips = value; } }
 		public Timer Timer{ get{ return m_Timer; } }
+		public int DamageEvents{ get{ return m_DamageEvents; } }
 
 		#endregion
 
 		#region Constructor
 
-		public BandageContext( Mobile healer, Mobile patient, TimeSpan delay )
+		public BandageContext( Mobile healer, Mobile patient, TimeSpan delay, bool isEnhancedBandage )
 		{
 			m_Healer = healer;
 			m_Patient = patient;
+			m_HealDelay = delay;
+			m_StartTime = DateTime.UtcNow;
+			m_HealerStartingHits = healer != null ? healer.Hits : 0;
+			m_LastKnownHits = healer != null ? healer.Hits : 0;
+			m_DamageEvents = 0;
+			m_IsEnhancedBandage = isEnhancedBandage;
 
-			m_Timer = new InternalTimer( this, delay );
+			m_Timer = new InternalTimer( this );
 			m_Timer.Start();
 		}
 
@@ -267,13 +280,24 @@ namespace Server.Items
 
 		/// <summary>
 		/// Records a finger slip during bandaging, increasing penalty and displaying a message.
+		/// Slips are now counted as damage events (not separate).
 		/// </summary>
-		public void Slip()
+		/// <param name="damageAmount">The amount of damage that caused the slip (used to update tracking)</param>
+		public void Slip( int damageAmount )
 		{
-			m_Healer.SendLocalizedMessage( BandageConstants.CLILOC_FINGERS_SLIP ); // Your fingers slip!
-			m_Healer.LocalOverheadMessage( MessageType.Regular, BandageConstants.MESSAGE_COLOR_OVERHEAD, BandageConstants.CLILOC_FINGERS_SLIP ); // WIZARD ADDED FOR OVERHEAD MESSAGE
+			// Send PT-BR message in yellow color
+			m_Healer.SendMessage( BandageConstants.SLIP_MESSAGE_HUE, BandageStringConstants.MSG_FINGERS_SLIP );
+			m_Healer.LocalOverheadMessage( MessageType.Regular, BandageConstants.SLIP_MESSAGE_HUE, false, BandageStringConstants.MSG_FINGERS_SLIP );
 
 			++m_Slips;
+			// Slips are now counted as damage events (not separate)
+			++m_DamageEvents;
+			// Update last known hits to prevent double-counting in timer
+			// Calculate expected hits after damage is applied (hits haven't been reduced yet when Slip() is called)
+			int expectedHits = m_Healer.Hits - damageAmount;
+			if ( expectedHits < 0 )
+				expectedHits = 0;
+			m_LastKnownHits = expectedHits;
 		}
 
 		/// <summary>
@@ -287,6 +311,10 @@ namespace Server.Items
 				m_Timer.Stop();
 
 			m_Timer = null;
+
+			// Release action lock
+			if ( m_Healer != null )
+				m_Healer.EndAction( typeof( BandageContext ) );
 		}
 
 		#endregion
@@ -337,8 +365,9 @@ namespace Server.Items
 		/// </summary>
 		/// <param name="healer">The mobile applying the bandage</param>
 		/// <param name="patient">The mobile being healed</param>
+		/// <param name="bandage">Optional bandage item to check if it's enhanced</param>
 		/// <returns>BandageContext if successful, null if healing cannot be performed</returns>
-		public static BandageContext BeginHeal( Mobile healer, Mobile patient )
+		public static BandageContext BeginHeal( Mobile healer, Mobile patient, Item bandage = null )
 		{
 			bool isDeadPet = ( patient is BaseCreature && ((BaseCreature)patient).IsDeadPet );
 
@@ -369,15 +398,25 @@ namespace Server.Items
 				bool onSelf = ( healer == patient );
 				SkillName primarySkill = GetPrimarySkill( patient );
 
-				// Calculate bandage delay using timing calculator
-				double milliseconds = BandageTimingCalculator.CalculateBandageDelay( healer, patient, primarySkill );
+				// Check if bandage is enhanced
+				bool isEnhanced = ( bandage != null && bandage is EnhancedBandage );
+
+				// Calculate bandage delay using timing calculator (enhanced bandages are faster)
+				double milliseconds = BandageTimingCalculator.CalculateBandageDelay( healer, patient, primarySkill, isEnhanced );
 
 				BandageContext context = GetContext( healer );
 
 				if ( context != null )
 					context.StopHeal();
 
-				context = new BandageContext( healer, patient, TimeSpan.FromMilliseconds( milliseconds ) );
+				// Block other actions while bandaging
+				if ( !healer.BeginAction( typeof( BandageContext ) ) )
+				{
+					// If we can't begin action, something else is blocking - shouldn't happen but handle gracefully
+					return null;
+				}
+
+				context = new BandageContext( healer, patient, TimeSpan.FromMilliseconds( milliseconds ), isEnhanced );
 
 				m_Table[healer] = context;
 
@@ -537,7 +576,8 @@ namespace Server.Items
 				double anatomy = m_Healer.Skills[secondarySkill].Value;
 
 				// New poison cure formula: BaseChance + (Healing/10 * 1%) + (Anatomy/10 * 1%) - (Slips * 2%)
-				double chance = BandageHelpers.CalculatePoisonCureChance(healing, anatomy, poisonLevel, m_Slips);
+				// Enhanced bandage adds 5% to cure chance for all poison levels
+				double chance = BandageHelpers.CalculatePoisonCureChance(healing, anatomy, poisonLevel, m_Slips, m_IsEnhancedBandage);
 
 				bool hasCureSkills = (healing >= BandageConstants.SKILL_CURE_MIN_HEALING && anatomy >= BandageConstants.SKILL_CURE_MIN_ANATOMY);
 
@@ -546,6 +586,14 @@ namespace Server.Items
 					if ( m_Patient.CurePoison( m_Healer ) )
 					{
 						wasSuccessful = true; // Cure successful!
+
+						// Apply enhanced bandage visual and sound effects (like Greater Heal spell)
+						// Use green color for poison cure
+						if ( m_IsEnhancedBandage )
+						{
+							m_Patient.FixedParticles( 0x376A, 9, 32, 5030, BandageConstants.ENHANCED_BANDAGE_PARTICLE_HUE, 0, EffectLayer.Waist );
+							m_Patient.PlaySound( 0x202 );
+						}
 
 						healerNumber = (m_Healer == m_Patient) ? -1 : BandageConstants.CLILOC_CURED_TARGET; // You have cured the target of all poisons.
 						patientNumber = BandageConstants.CLILOC_BEEN_CURED; // You have been cured of all poisons.
@@ -612,8 +660,24 @@ namespace Server.Items
 					else
 						toHeal -= m_Slips * BandageConstants.SLIP_HEALING_PENALTY_CLASSIC;
 
-					// Reduce healing amount by half
+					// Reduce healing amount by base reduction
 					toHeal *= BandageConstants.HEALING_AMOUNT_REDUCTION;
+
+					// Apply concentration loss penalty (10% per damage event)
+					// Each time healer takes damage, healing is reduced by 10%
+					if ( m_DamageEvents > 0 )
+					{
+						double concentrationPenalty = 1.0 - (m_DamageEvents * BandageConstants.HEALING_DAMAGE_EVENT_REDUCTION);
+						if ( concentrationPenalty < 0.0 )
+							concentrationPenalty = 0.0; // Can't go below 0
+						toHeal *= concentrationPenalty;
+					}
+
+					// Apply enhanced bandage bonus if used
+					if ( m_IsEnhancedBandage )
+					{
+						toHeal += EnhancedBandage.HealingBonus;
+					}
 
 					// Cap healing at 100 HP maximum
 					if ( toHeal > BandageConstants.HEALING_AMOUNT_CAP )
@@ -625,7 +689,27 @@ namespace Server.Items
 						healerNumber = BandageConstants.CLILOC_BANDAGES_BARELY_HELP; // You apply the bandages, but they barely help.
 					}
 
-					m_Patient.Heal( (int) toHeal, m_Healer, false );
+					int finalHealAmount = (int)toHeal;
+					m_Patient.Heal( finalHealAmount, m_Healer, false );
+
+					// Apply enhanced bandage visual and sound effects (like Greater Heal spell)
+					// Use green color for healing
+					if ( m_IsEnhancedBandage )
+					{
+						m_Patient.FixedParticles( 0x376A, 9, 32, 5030, BandageConstants.ENHANCED_BANDAGE_PARTICLE_HUE, 0, EffectLayer.Waist );
+						m_Patient.PlaySound( 0x202 );
+					}
+
+					// Send message to healer about healing result and concentration penalty (green color)
+					if ( m_DamageEvents > 0 )
+					{
+						int penaltyPercentage = m_DamageEvents * (int)(BandageConstants.HEALING_DAMAGE_EVENT_REDUCTION * 100);
+						m_Healer.SendMessage( BandageConstants.HEALING_RESULT_MESSAGE_HUE, BandageStringConstants.MSG_HEALING_RESULT_WITH_PENALTY, finalHealAmount, penaltyPercentage );
+					}
+					else
+					{
+						m_Healer.SendMessage( BandageConstants.HEALING_RESULT_MESSAGE_HUE, BandageStringConstants.MSG_HEALING_RESULT_NO_PENALTY, finalHealAmount );
+					}
 				}
 				else
 				{
@@ -687,12 +771,13 @@ namespace Server.Items
 
 		/// <summary>
 		/// Timer that triggers the EndHeal method after the bandage delay expires.
+		/// Also monitors distance between healer and patient, cancelling if they move too far apart.
 		/// </summary>
 		private class InternalTimer : Timer
 		{
 			private BandageContext m_Context;
 
-			public InternalTimer( BandageContext context, TimeSpan delay ) : base( delay )
+			public InternalTimer( BandageContext context ) : base( TimeSpan.FromMilliseconds( 500 ), TimeSpan.FromMilliseconds( 500 ) )
 			{
 				m_Context = context;
 				Priority = TimerPriority.FiftyMS;
@@ -700,7 +785,77 @@ namespace Server.Items
 
 			protected override void OnTick()
 			{
-				m_Context.EndHeal();
+				if ( m_Context == null || m_Context.m_Healer == null || m_Context.m_Patient == null )
+				{
+					Stop();
+					return;
+				}
+
+				// Check if healer or patient is deleted
+				if ( m_Context.m_Healer.Deleted || m_Context.m_Patient.Deleted )
+				{
+					m_Context.StopHeal();
+					Stop();
+					return;
+				}
+
+				// Check if healer is no longer alive
+				if ( !m_Context.m_Healer.Alive )
+				{
+					m_Context.StopHeal();
+					Stop();
+					return;
+				}
+
+				// Check if healer became frozen/paralyzed (spell) - cancel healing
+				if (  m_Context.m_Healer.Frozen || m_Context.m_Healer.Paralyzed )
+				{
+					m_Context.m_Healer.SendMessage( BandageStringConstants.MSG_HEALING_CANCELLED_PARALYZED );
+					m_Context.StopHeal();
+					Stop();
+					return;
+				}
+
+				// Check distance - if target moved too far, cancel healing
+				if ( !m_Context.m_Healer.InRange( m_Context.m_Patient, BandageConstants.HEALING_MAX_RANGE ) )
+				{
+					m_Context.m_Healer.SendLocalizedMessage( BandageConstants.CLILOC_TARGET_TOO_FAR_CANCELLED );
+					m_Context.StopHeal();
+					Stop();
+					return;
+				}
+
+				// Check if healer took damage (concentration compromised)
+				// Track damage events by monitoring hits reduction
+				// Note: Slips already increment damage events, so we only count damage that didn't cause a slip
+				if ( m_Context.m_Healer != null && m_Context.m_Healer.Hits < m_Context.m_LastKnownHits )
+				{
+					// Calculate how much damage was taken since last check
+					int damageTaken = m_Context.m_LastKnownHits - m_Context.m_Healer.Hits;
+					
+					// Only count as damage event if damage didn't cause a slip (slips already increment damage events)
+					// Damage below slip threshold still counts as a damage event
+					if ( damageTaken > 0 )
+					{
+						// Increment damage events (slips already counted, this is for sub-threshold damage)
+						m_Context.m_DamageEvents++;
+						m_Context.m_LastKnownHits = m_Context.m_Healer.Hits; // Update baseline
+					}
+				}
+				else if ( m_Context.m_Healer != null && m_Context.m_Healer.Hits > m_Context.m_LastKnownHits )
+				{
+					// If hits increased (healing), update baseline
+					m_Context.m_LastKnownHits = m_Context.m_Healer.Hits;
+				}
+
+				// Check if healing delay has elapsed
+				TimeSpan elapsed = DateTime.UtcNow - m_Context.m_StartTime;
+				if ( elapsed >= m_Context.m_HealDelay )
+				{
+					m_Context.EndHeal();
+					Stop();
+					return;
+				}
 			}
 		}
 

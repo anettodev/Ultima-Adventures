@@ -944,7 +944,7 @@ namespace Server
 
 				if ( info.Callback != null )
 				{
-					if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null)
+					if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null && Server.Items.BandageHelpers.IsCurrentlyBandaging(from) == false)
 					{
 						from.DisruptiveAction();
 

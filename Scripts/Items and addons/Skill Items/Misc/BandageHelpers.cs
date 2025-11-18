@@ -13,6 +13,19 @@ namespace Server.Items
 		#region Validation Helpers
 
 		/// <summary>
+		/// Checks if the mobile is currently performing a bandage healing action.
+		/// </summary>
+		/// <param name="from">The mobile to check</param>
+		/// <returns>True if currently bandaging, false otherwise</returns>
+		public static bool IsCurrentlyBandaging(Mobile from)
+		{
+			if (from == null)
+				return false;
+
+			return !from.CanBeginAction(typeof(BandageContext));
+		}
+
+		/// <summary>
 		/// Checks if the mobile is wearing the One Ring which prevents bandage usage.
 		/// </summary>
 		/// <param name="from">The mobile to check</param>
@@ -176,22 +189,24 @@ namespace Server.Items
 		}
 
 		/// <summary>
-		/// Calculates the total poison cure chance based on skills, poison level, and slips.
-		/// Formula: BaseChance + (Healing/10 * 1%) + (Anatomy/10 * 1%) - (Slips * 2%)
+		/// Calculates the total poison cure chance based on skills, poison level, slips, and enhanced bandage.
+		/// Formula: BaseChance + (Healing/10 * 1%) + (Anatomy/10 * 1%) - (Slips * 2%) + (EnhancedBandage ? 5% : 0%)
 		/// </summary>
 		/// <param name="healing">Healing or Veterinary skill value</param>
 		/// <param name="anatomy">Anatomy or AnimalLore skill value</param>
 		/// <param name="poisonLevel">Level of the poison (0-4)</param>
 		/// <param name="slips">Number of finger slips</param>
+		/// <param name="isEnhancedBandage">Whether enhanced bandage is being used</param>
 		/// <returns>Total cure chance as a decimal (0.0 to 1.0+)</returns>
-		public static double CalculatePoisonCureChance(double healing, double anatomy, int poisonLevel, int slips)
+		public static double CalculatePoisonCureChance(double healing, double anatomy, int poisonLevel, int slips, bool isEnhancedBandage = false)
 		{
 			double baseChance = GetPoisonCureBaseChance(poisonLevel);
 			double healingBonus = (healing / 10.0) * BandageConstants.POISON_CURE_SKILL_BONUS_PER_10;
 			double anatomyBonus = (anatomy / 10.0) * BandageConstants.POISON_CURE_SKILL_BONUS_PER_10;
 			double slipPenalty = slips * BandageConstants.SLIP_PENALTY_PER_SLIP;
+			double enhancedBonus = isEnhancedBandage ? 0.05 : 0.0; // 5% bonus for enhanced bandage (all poison levels)
 
-			return baseChance + healingBonus + anatomyBonus - slipPenalty;
+			return baseChance + healingBonus + anatomyBonus - slipPenalty + enhancedBonus;
 		}
 
 		#endregion
@@ -207,7 +222,7 @@ namespace Server.Items
 		/// <param name="bandage">The bandage being consumed</param>
 		/// <param name="henchmanName">The name to set for the henchman</param>
 		/// <returns>True if resurrection was successful or attempted, false if prerequisites not met</returns>
-		public static bool TryResurrectHenchman<T>(T henchman, Mobile from, Bandage bandage, string henchmanName) where T : Item
+		public static bool TryResurrectHenchman<T>(T henchman, Mobile from, Bandage bandage, string henchmanName) where T : HenchmanItem
 		{
 			if (henchman == null || from == null || bandage == null)
 				return false;
@@ -215,18 +230,15 @@ namespace Server.Items
 			if (!HasResurrectionSkills(from))
 				return false;
 
-			// Use dynamic to access HenchDead property (common to all henchman items)
-			dynamic friend = henchman;
-
-			if (friend.HenchDead <= 0)
+			if (henchman.HenchDead <= 0)
 			{
 				from.SendMessage(BandageStringConstants.MSG_HENCHMAN_NOT_DEAD);
 				return true; // Return true because we handled the message
 			}
 
-			friend.Name = henchmanName;
-			friend.HenchDead = 0;
-			friend.InvalidateProperties();
+			henchman.Name = henchmanName;
+			henchman.HenchDead = 0;
+			henchman.InvalidateProperties();
 			bandage.Consume();
 
 			return true;

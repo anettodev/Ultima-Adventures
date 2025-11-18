@@ -16,6 +16,9 @@ namespace Server.Items
 		/// <summary>Extended range when FriendsAvoidHeels is enabled</summary>
 		public const int RANGE_FRIENDS_AVOID_HEELS = 5;
 
+		/// <summary>Maximum range during healing - if target moves beyond this, healing is cancelled</summary>
+		public const int HEALING_MAX_RANGE = 2;
+
 		/// <summary>Range required for pet owner to resurrect pet</summary>
 		public const int RANGE_PET_OWNER_RESURRECT = 3;
 
@@ -94,10 +97,10 @@ namespace Server.Items
 		public const int HEALING_MINIMUM_AMOUNT = 1;
 
 		/// <summary>Base minimum healing amount</summary>
-		public const double HEALING_MIN_BASE = 25.0;
+		public const double HEALING_MIN_BASE = 20.0;
 
 		/// <summary>Base maximum healing amount</summary>
-		public const double HEALING_MAX_BASE = 100.0;
+		public const double HEALING_MAX_BASE = 50.0;
 
 		/// <summary>Divisor for skill-based healing calculations</summary>
 		public const int HEALING_CALC_DIVISOR = 2;
@@ -106,10 +109,22 @@ namespace Server.Items
 		public const int CREATURE_HEALING_DIVISOR = 100;
 
 		/// <summary>Maximum healing amount cap in hit points</summary>
-		public const int HEALING_AMOUNT_CAP = 100;
+		public const int HEALING_AMOUNT_CAP = 80;
 
-		/// <summary>Healing amount reduction multiplier (half healing)</summary>
-		public const double HEALING_AMOUNT_REDUCTION = 0.5;
+		/// <summary>Healing amount reduction multiplier (reduced by 60% total = 40% of original)</summary>
+		public const double HEALING_AMOUNT_REDUCTION = 0.4;
+
+		/// <summary>Healing reduction per damage event (10% per event)</summary>
+		public const double HEALING_DAMAGE_EVENT_REDUCTION = 0.10;
+
+		/// <summary>Green color hue for healing result messages</summary>
+		public const int HEALING_RESULT_MESSAGE_HUE = 0x0059;
+
+		/// <summary>Yellow color hue for slip warning messages</summary>
+		public const int SLIP_MESSAGE_HUE = 0x0035;
+
+		/// <summary>Green color hue for enhanced bandage particle effects</summary>
+		public const int ENHANCED_BANDAGE_PARTICLE_HUE = 0x0059; // Green color for cure/heal effects
 
 		#endregion
 
@@ -173,6 +188,24 @@ namespace Server.Items
 
 		/// <summary>Bandage speed multiplier (30% slower = 1.3x time)</summary>
 		public const double BANDAGE_SPEED_MULTIPLIER = 1.3;
+
+		/// <summary>Minimum healing time in seconds (applies to all scenarios)</summary>
+		public const double HEALING_MIN_SECONDS = 1.3;
+
+		/// <summary>Maximum healing time in seconds (applies to all scenarios)</summary>
+		public const double HEALING_MAX_SECONDS = 7.2;
+
+		/// <summary>Other-healing maximum time in seconds (before self-healing multiplier)</summary>
+		public const double OTHER_HEALING_MAX_SECONDS = 2.4;
+
+		/// <summary>Other-healing minimum time in seconds (before self-healing multiplier)</summary>
+		public const double OTHER_HEALING_MIN_SECONDS = 1.0;
+
+		/// <summary>Self-healing multiplier (2.0x slower than other-healing)</summary>
+		public const double SELF_HEALING_MULTIPLIER = 2.0;
+
+		/// <summary>DEX bonus multiplier (30% stronger = 1.3x effect)</summary>
+		public const double DEX_BONUS_MULTIPLIER = 1.3;
 
 		/// <summary>Minimum dexseconds threshold for veterinary healing</summary>
 		public const int VET_DEXSECONDS_THRESHOLD = 2;
@@ -342,6 +375,9 @@ namespace Server.Items
 
 		/// <summary>"Attempting to heal you."</summary>
 		public const int CLILOC_ATTEMPTING_HEAL = 1008078;
+
+		/// <summary>"Your target moved too far away and the healing was cancelled."</summary>
+		public const int CLILOC_TARGET_TOO_FAR_CANCELLED = 500964;
 
 		#endregion
 	}

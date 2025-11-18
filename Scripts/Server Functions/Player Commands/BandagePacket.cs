@@ -45,7 +45,7 @@ namespace Server.Network
 					{
 						if ( from.InRange( bandage.GetWorldLocation(), Core.AOS ? 2 : 1 ) )
 						{
-							if ( BandageContext.BeginHeal( from, to ) != null )
+							if ( BandageContext.BeginHeal( from, to, bandage ) != null )
 								bandage.Consume();
 						}
 						else

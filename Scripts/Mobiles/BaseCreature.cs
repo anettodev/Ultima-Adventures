@@ -5119,16 +5119,16 @@ namespace Server.Mobiles
 			if( !Core.AOS )
 				disruptThreshold = 0;
 			else if( from != null && from.Player )
-				disruptThreshold = 18;
+				disruptThreshold = 20; // 20 HP from players
 			else
-				disruptThreshold = 25;
+				disruptThreshold = 25; // 25 HP from NPCs
 
-			if( amount > disruptThreshold )
+			if( amount >= disruptThreshold )
 			{
 				BandageContext c = BandageContext.GetContext( this );
 
 				if( c != null )
-					c.Slip();
+					c.Slip( amount );
 			}
 
 			if( Confidence.IsRegenerating( this ) )
