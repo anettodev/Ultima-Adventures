@@ -22,8 +22,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 46; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Bone; }
-		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
+	public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Bone; } }
+	public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } }
 		public override CraftResource DefaultResource{ get{ return CraftResource.RegularLeather; } }
 
 		public override int LabelNumber{ get{ return 1041375; } } // daemon bone leggings

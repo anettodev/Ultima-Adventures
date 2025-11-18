@@ -20,6 +20,9 @@ namespace Server.Items
         /// <summary>Purple color for rare/artifact properties</summary>
         public const string COLOR_PURPLE = "#d896ff";
 
+        /// <summary>Dark purple color for highest tier properties (Indestructible)</summary>
+        public const string COLOR_DARK_PURPLE = "#8b008b";
+
         /// <summary>Pink color for magic/casting properties</summary>
         public const string COLOR_PINK = "#ff69b4";
 
@@ -34,6 +37,9 @@ namespace Server.Items
 
         /// <summary>Green color for positive effects/healing</summary>
         public const string COLOR_GREEN = "#90ee90";
+
+        /// <summary>Dark green color for luck property</summary>
+        public const string COLOR_DARK_GREEN = "#006400";
 
         #endregion
 
@@ -186,7 +192,7 @@ namespace Server.Items
         public const string LABEL_EXCEPTIONAL = "Excepcional";
 
         /// <summary>Format string for crafted by message</summary>
-        public const string LABEL_CRAFTED_BY_FORMAT = "criado por {0}";
+        public const string LABEL_CRAFTED_BY_FORMAT = "feito por {0}";
 
         /// <summary>Label indicating item is considered armor</summary>
         public const string LABEL_CONSIDERED_ARMOR = "Este item é considerado como armadura";
@@ -208,6 +214,24 @@ namespace Server.Items
 
         /// <summary>Label for meditation severely hindered</summary>
         public const string LABEL_MEDITATION_SEVERELY_HINDERED = "Meditação: Severamente Dificultada";
+
+        /// <summary>Label for Durable durability level</summary>
+        public const string LABEL_DURABLE = "Durável";
+
+        /// <summary>Label for Substantial durability level</summary>
+        public const string LABEL_SUBSTANTIAL = "Substancial";
+
+        /// <summary>Label for Massive durability level</summary>
+        public const string LABEL_MASSIVE = "Massivo";
+
+        /// <summary>Label for Fortified durability level</summary>
+        public const string LABEL_FORTIFIED = "Fortificado";
+
+        /// <summary>Label for Indestructible durability level</summary>
+        public const string LABEL_INDESTRUCTIBLE = "Indestrutível";
+
+        /// <summary>Format string for durability display with label</summary>
+        public const string FORMAT_DURABILITY_WITH_LABEL = "Durabilidade: {0} / {1}";
 
         #endregion
 

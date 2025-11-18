@@ -20,8 +20,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 30; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Plate; }
-		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.All; } } }
+	public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Plate; } }
+	public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.All; } }
 
 		[Constructable]
 		public BoneHelm() : base( 0x1451 )

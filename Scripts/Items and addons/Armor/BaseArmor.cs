@@ -1376,41 +1376,41 @@ namespace Server.Items
 					
 					if (!(from.InRange(opponent, ArmorConstants.CHALLENGE_MAX_RANGE)))
 					{
-						from.SendMessage("He's too far!");
+						from.SendMessage( ArmorStringConstants.MSG_TARGET_TOO_FAR );
 						return;
 					}
 
 					else if (opponent == from)
 					{
-						from.SendMessage("How ridiculous you feel!  You remind yourself to stop doing that.");
+						from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_SELF );
 						return;
 					}
 
 					else if ( ((PlayerMobile)opponent).BalanceStatus == 0)
 					{
-						from.SendMessage("This one's not worthy of a challenge.");
+						from.SendMessage( ArmorStringConstants.MSG_TARGET_UNWORTHY );
 						return;						
 					}
 					
 					else if ( (from != AetherGlobe.EvilChamp && from != AetherGlobe.GoodChamp) && ( opponent == AetherGlobe.EvilChamp || opponent == AetherGlobe.GoodChamp )  )
 					{
-						from.SendMessage("You lack the status to challenge a champion of the balance.");
+						from.SendMessage( ArmorStringConstants.MSG_INSUFFICIENT_STATUS );
 						return;
 					}
 					else if ( (from == AetherGlobe.EvilChamp ) && ( opponent != AetherGlobe.GoodChamp )  )
 					{
-						from.SendMessage("This person is beneath you to challenge.");
+						from.SendMessage( ArmorStringConstants.MSG_TARGET_BENEATH );
 						return;
 					}
 					else if ( (from == AetherGlobe.GoodChamp) && ( opponent != AetherGlobe.EvilChamp  )  )
 					{
-						from.SendMessage("This person is beneath you to challenge.");
+						from.SendMessage( ArmorStringConstants.MSG_TARGET_BENEATH );
 						return;
 					}
 
 					else if ( reg.IsPartOf( "SafeRegion" ) )
 					{
-						from.SendMessage("Not here...");
+						from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_INVALID_REGION );
 						return;
 					}
 
@@ -1427,18 +1427,18 @@ namespace Server.Items
 
 							if (Utility.RandomDouble() > ArmorConstants.CHALLENGE_MISS_CHANCE)
 							{
-								from.SendMessage("You throw a glove at your opponent's face, but miss!");
-								opponent.SendMessage("A glove narrowly misses your face!");
+								from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_MISS_FROM );
+								opponent.SendMessage( ArmorStringConstants.MSG_CHALLENGE_MISS_TO );
 								return;
 							}
 							
-							from.SendMessage("Your Glove Connects with his Face!");
-							opponent.SendMessage("A glove smacks you in the Face!.");
+							from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_HIT_FROM );
+							opponent.SendMessage( ArmorStringConstants.MSG_CHALLENGE_HIT_TO );
 							
 							if (from.Karma >= 0)
-								from.SendMessage("You cannot believe such a vile being can walk upright - you dishonor him!");
+								from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_GOOD_WIN );
 							else
-								from.SendMessage("This one was weak - you completely humiliate him for all to see.");
+								from.SendMessage( ArmorStringConstants.MSG_CHALLENGE_EVIL_WIN );
 						
 							if ( (AetherGlobe.EvilChamp == champ || AetherGlobe.GoodChamp == champ) && (AetherGlobe.EvilChamp == opponent || AetherGlobe.GoodChamp == opponent))
 							{
@@ -1446,13 +1446,13 @@ namespace Server.Items
 								{
 									AetherGlobe.GoodChamp = null;
 									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_HUMILIATED_FORMAT, from.Name ));
-									opponent.SendMessage("You are no longer the champion of the Balance.");
+									opponent.SendMessage( ArmorStringConstants.MSG_CHAMPION_DETHRONED );
 								}
 								else 
 								{
 									AetherGlobe.EvilChamp = null;
 									opponent.SendMessage(String.Format( ArmorStringConstants.MSG_FOUND_WANTING_FORMAT, from.Name ));
-									opponent.SendMessage("You are no longer the champion of the Balance.");
+									opponent.SendMessage( ArmorStringConstants.MSG_CHAMPION_DETHRONED );
 								}	
 								
 								int old = ((PlayerMobile)opponent).BalanceEffect;
@@ -1474,13 +1474,13 @@ namespace Server.Items
 					}
 					else
 					{
-							from.SendMessage("Your glove snags on a finger, try again.");
+							from.SendMessage( ArmorStringConstants.MSG_GLOVE_SNAGGED );
 					}
 				}	
 				else if ( ((PlayerMobile)from).BalanceStatus == 0 )
-					from.SendMessage("You must pledge to the balance before challenging another.");
+					from.SendMessage( ArmorStringConstants.MSG_MUST_PLEDGE_BALANCE );
 				else if ( ((PlayerMobile)from).BalanceStatus == ((PlayerMobile)opponent).BalanceStatus)			
-					from.SendMessage("This person fights for the same side as you!");
+					from.SendMessage( ArmorStringConstants.MSG_SAME_SIDE );
 				
 				return;
 
@@ -1738,19 +1738,26 @@ m_MaxHits
                 resourceName = "";
             }
 
+			// Item Name Color
             list.Add(1053099, ItemNameHue.UnifiedItemProps.RarityNameMod(this, "{0}"), cultInfo.ToTitleCase(GetNameString()));
 
-			if (m_Quality == ArmorQuality.Exceptional) 
-			{
-                list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Excepcional", "#ffe066"));
-                //list.Add(1053099, ItemNameHue.UnifiedItemProps.RarityNameMod(this, "Excepcional"));
-            }
-			
-            if (resourceName != "")
+			// Resource Type Color
+			if (resourceName != "")
 			{
                 //list.Add(1053099, ItemNameHue.UnifiedItemProps.RarityNameMod(this, ((m_Quality == ArmorQuality.Exceptional) ? "Exceptional " : "") + "{0}\t{1}"), resourceName, GetNameString());
                 list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(resourceName, "#8be4fc"));
             }
+
+			// Crafter name (Cyan)
+			if ( m_Crafter != null )
+				list.Add(1050043, ItemNameHue.UnifiedItemProps.SetColor(m_Crafter.Name, ArmorStringConstants.COLOR_CYAN));
+
+			// Exceptional Quality Color
+			if (m_Quality == ArmorQuality.Exceptional) 
+			{
+                list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Excepcional", "#ffe066"));
+                //list.Add(1053099, ItemNameHue.UnifiedItemProps.RarityNameMod(this, "Excepcional"));
+            } 
 				
 		    #endregion
 		}
@@ -1792,16 +1799,23 @@ m_MaxHits
 			// SECTION 1: BASIC IDENTIFICATION
 			// ============================================
 
-			// Crafter name (Cyan)
-			if ( m_Crafter != null )
-				list.Add(1050043, ItemNameHue.UnifiedItemProps.SetColor(m_Crafter.Name, ArmorStringConstants.COLOR_CYAN));
-
 			// Race requirements
 			if( RequiredRace == Race.Elf )
 				list.Add( 1075086 ); // Elves Only
 
-			// Skill bonuses
-			m_AosSkillBonuses.GetProperties( list );
+			// Skill bonuses (colored cyan)
+			for( int i = 0; i < 5; ++i )
+			{
+				SkillName skill;
+				double bonus;
+
+				if( !m_AosSkillBonuses.GetValues( i, out skill, out bonus ) )
+					continue;
+
+				string skillName = SkillInfo.Table[(int)skill].Name;
+				string skillBonusText = String.Format( "{0} +{1}%", skillName, bonus );
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( skillBonusText, ArmorStringConstants.COLOR_CYAN ) );
+			}
 
 			// Artifact rarity (Purple for rare items)
 			if ( (prop = ArtifactRarity) > 0 )
@@ -1824,6 +1838,49 @@ m_MaxHits
 			if ( (prop = m_AosAttributes.DefendChance) != 0 && !md)
 				list.Add( 1060408, prop.ToString() ); // defense chance increase ~1_val~%
 
+			// Current durability vs max (colored based on percentage)
+			if ( m_HitPoints >= 0 && m_MaxHitPoints > 0 )
+			{
+				double durabilityPercent = (double)m_HitPoints / (double)m_MaxHitPoints;
+				string durabilityColor = durabilityPercent <= 0.5 ? ArmorStringConstants.COLOR_RED : ArmorStringConstants.COLOR_GREEN;
+				string durabilityText = String.Format( ArmorStringConstants.FORMAT_DURABILITY_WITH_LABEL, m_HitPoints, m_MaxHitPoints );
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( durabilityText, durabilityColor ) );
+			}
+
+			// Durability level title (Purple for Durable-Substantial-Massive-Fortified, Dark Purple for Indestructible)
+			if ( m_Durability != ArmorDurabilityLevel.Regular )
+			{
+				string durabilityTitle = "";
+				string durabilityColor = ArmorStringConstants.COLOR_PURPLE;
+
+				switch ( m_Durability )
+				{
+					case ArmorDurabilityLevel.Durable:
+						durabilityTitle = ArmorStringConstants.LABEL_DURABLE;
+						break;
+					case ArmorDurabilityLevel.Substantial:
+						durabilityTitle = ArmorStringConstants.LABEL_SUBSTANTIAL;
+						break;
+					case ArmorDurabilityLevel.Massive:
+						durabilityTitle = ArmorStringConstants.LABEL_MASSIVE;
+						break;
+					case ArmorDurabilityLevel.Fortified:
+						durabilityTitle = ArmorStringConstants.LABEL_FORTIFIED;
+						break;
+					case ArmorDurabilityLevel.Indestructible:
+						durabilityTitle = ArmorStringConstants.LABEL_INDESTRUCTIBLE;
+						durabilityColor = ArmorStringConstants.COLOR_DARK_PURPLE;
+						break;
+				}
+
+				if ( durabilityTitle != "" )
+					list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( durabilityTitle, durabilityColor ) );
+			}
+
+			// Self repair
+			if ( (prop = m_AosArmorAttributes.SelfRepair) != 0 && !md)
+				list.Add( 1060450, prop.ToString() ); // self repair ~1_val~
+
 			// ============================================
 			// SECTION 3: RESISTANCES
 			// ============================================
@@ -1833,18 +1890,6 @@ m_MaxHits
 			// ============================================
 			// SECTION 4: PHYSICAL PROPERTIES
 			// ============================================
-
-			// Durability bonus (Yellow for wear-related properties)
-			if ( (prop = GetDurabilityBonus()) > 0 )
-				list.Add( 1060410, prop.ToString() ); // durability ~1_val~%
-
-			// Current durability vs max
-			if ( m_HitPoints >= 0 && m_MaxHitPoints > 0 )
-				list.Add( 1060639, "{0}\t{1}", m_HitPoints, m_MaxHitPoints ); // durability ~1_val~ / ~2_val~
-
-			// Self repair
-			if ( (prop = m_AosArmorAttributes.SelfRepair) != 0 && !md)
-				list.Add( 1060450, prop.ToString() ); // self repair ~1_val~
 
 			// ============================================
 			// SECTION 5: COMBAT BONUSES
@@ -1958,9 +2003,11 @@ m_MaxHits
 			// SECTION 8: UTILITY PROPERTIES
 			// ============================================
 
-			// Luck
+			// Luck (Dark Green - luck property)
 			if ( (prop = (GetLuckBonus() + m_AosAttributes.Luck)) != 0 )
-				list.Add( 1060436, prop.ToString() ); // luck ~1_val~
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor(
+					String.Format( "Luck {0}", prop ),
+					ArmorStringConstants.COLOR_DARK_GREEN ) );
 
 			// Night Sight
 			if ( (prop = m_AosAttributes.NightSight) != 0 )

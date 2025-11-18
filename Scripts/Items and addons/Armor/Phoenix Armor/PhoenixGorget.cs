@@ -26,8 +26,8 @@ namespace Server.Items
 
 		public override int ArmorBase{ get{ return 40; } }
 
-		public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Ringmail; }
-		public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } } }
+	public override ArmorMaterialType MaterialType{ get{ return ArmorMaterialType.Ringmail; } }
+	public override ArmorMeditationAllowance DefMedAllowance{ get{ return ArmorMeditationAllowance.Half; } }
 
 		[Constructable]
 		public PhoenixGorget() : base( 0x13D6 )

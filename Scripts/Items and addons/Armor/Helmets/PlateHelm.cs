@@ -14,7 +14,7 @@ namespace Server.Items
 		public override int InitMinHits{ get{ return 50; } }
 		public override int InitMaxHits{ get{ return 65; } }
 
-		public override int AosStrReq{ get{ return 80; } }
+		public override int AosStrReq{ get{ return 70; } }
 		public override int OldStrReq{ get{ return 40; } }
 
 		public override int OldDexBonus{ get{ return -1; } }

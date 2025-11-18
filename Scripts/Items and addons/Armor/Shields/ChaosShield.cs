@@ -14,7 +14,7 @@ namespace Server.Items
 		public override int InitMinHits{ get{ return 100; } }
 		public override int InitMaxHits{ get{ return 125; } }
 
-		public override int AosStrReq{ get{ return 95; } }
+		public override int AosStrReq{ get{ return 85; } }
 
 		public override int ArmorBase{ get{ return 32; } }
 
