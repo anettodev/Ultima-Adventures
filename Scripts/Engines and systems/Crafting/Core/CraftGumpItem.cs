@@ -279,10 +279,10 @@ namespace Server.Engines.Craft
                 PlayerMobile pm = m_From as PlayerMobile;
                 if (CraftSystem.PlayerLoc == null)
                 {
-                    CraftSystem.PlayerLoc = new Hashtable();
+                    CraftSystem.PlayerLoc = new Dictionary<Mobile, Point3D>();
                 }
-                if (!CraftSystem.PlayerLoc.Contains(pm))
-                    CraftSystem.PlayerLoc.Add(pm, pm.Location);
+                if (!CraftSystem.PlayerLoc.ContainsKey(pm))
+                    CraftSystem.PlayerLoc[pm] = pm.Location;
 
                 int num = m_CraftSystem.CanCraft( m_From, m_Tool, m_CraftItem.ItemType );
 

@@ -7,20 +7,47 @@ using Server.Mobiles;
 
 namespace Server.Engines.Craft
 {
+	/// <summary>
+	/// Blacksmithy crafting system for creating weapons, armor, and tools from metal ingots
+	/// </summary>
 	public class DefBlacksmithy : CraftSystem
 	{
-		public override SkillName MainSkill
-		{
-			get	{ return SkillName.Blacksmith;	}
-		}
+		#region Constants
 
-		public override int GumpTitleNumber
-		{
-			get { return 1044002; } // <CENTER>BLACKSMITHY MENU</CENTER>
-		}
+		/// <summary>Minimum chance at minimum skill (0%)</summary>
+		private const double CHANCE_AT_MIN = 0.0;
+
+		#endregion
+
+		#region Fields
 
 		private static CraftSystem m_CraftSystem;
+		private static Type typeofAnvil = typeof( AnvilAttribute );
+		private static Type typeofForge = typeof( ForgeAttribute );
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the main skill required for blacksmithy
+		/// </summary>
+		public override SkillName MainSkill
+		{
+			get { return SkillName.Blacksmith; }
+		}
+
+		/// <summary>
+		/// Gets the gump title number for the blacksmithy menu
+		/// </summary>
+		public override int GumpTitleNumber
+		{
+			get { return BlacksmithyConstants.MSG_GUMP_TITLE; }
+		}
+
+		/// <summary>
+		/// Gets the singleton instance of the blacksmithy craft system
+		/// </summary>
 		public static CraftSystem CraftSystem
 		{
 			get
@@ -32,38 +59,125 @@ namespace Server.Engines.Craft
 			}
 		}
 
-		public override CraftECA ECA{ get{ return CraftECA.ChanceMinusSixtyToFourtyFive; } }
+		/// <summary>
+		/// Gets the exception chance adjustment type for blacksmithy
+		/// </summary>
+		public override CraftECA ECA
+		{
+			get { return CraftECA.ChanceMinusSixtyToFourtyFive; }
+		}
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the DefBlacksmithy class
+		/// </summary>
+		private DefBlacksmithy() : base( BlacksmithyConstants.MIN_CRAFT_EFFECT, BlacksmithyConstants.MAX_CRAFT_EFFECT, BlacksmithyConstants.CRAFT_DELAY )
+		{
+		}
+
+		#endregion
+
+		#region Craft System Overrides
+
+		/// <summary>
+		/// Gets the chance of success at minimum skill level
+		/// </summary>
+		/// <param name="item">The craft item</param>
+		/// <returns>0.0 (0% chance at minimum skill)</returns>
 		public override double GetChanceAtMin( CraftItem item )
 		{
-			return 0.0; // 0%
+			return CHANCE_AT_MIN;
 		}
 
-		private DefBlacksmithy() : base( 1, 1, 1.25 )// base( 1, 2, 1.7 )
+		#endregion
+
+		#region Anvil and Forge Detection
+
+		/// <summary>
+		/// Checks if an item ID represents an anvil
+		/// </summary>
+		/// <param name="itemID">The item ID to check</param>
+		/// <returns>True if the item ID is an anvil</returns>
+		private static bool IsAnvilItemID( int itemID )
 		{
-			/*
-			
-			base( MinCraftEffect, MaxCraftEffect, Delay )
-			
-			MinCraftEffect	: The minimum number of time the mobile will play the craft effect
-			MaxCraftEffect	: The maximum number of time the mobile will play the craft effect
-			Delay			: The delay between each craft effect
-			
-			Example: (3, 6, 1.7) would make the mobile do the PlayCraftEffect override
-			function between 3 and 6 time, with a 1.7 second delay each time.
-			
-			*/ 
+			return itemID == BlacksmithyConstants.ANVIL_ITEM_ID_1
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_2
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_3
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_4
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_5
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_6
+				|| itemID == BlacksmithyConstants.ANVIL_ITEM_ID_7;
 		}
 
-		private static Type typeofAnvil = typeof( AnvilAttribute );
-		private static Type typeofForge = typeof( ForgeAttribute );
+		/// <summary>
+		/// Checks if an item ID represents a forge
+		/// </summary>
+		/// <param name="itemID">The item ID to check</param>
+		/// <returns>True if the item ID is a forge</returns>
+		private static bool IsForgeItemID( int itemID )
+		{
+			if ( itemID == BlacksmithyConstants.FORGE_ITEM_ID )
+				return true;
 
+			if ( itemID >= BlacksmithyConstants.FORGE_RANGE_1_START && itemID <= BlacksmithyConstants.FORGE_RANGE_1_END )
+				return true;
+
+			if ( itemID >= BlacksmithyConstants.FORGE_RANGE_2_START && itemID <= BlacksmithyConstants.FORGE_RANGE_2_END )
+				return true;
+
+			if ( itemID >= BlacksmithyConstants.FORGE_RANGE_3_START && itemID <= BlacksmithyConstants.FORGE_RANGE_3_END )
+				return true;
+
+			if ( itemID == BlacksmithyConstants.FORGE_ITEM_ID_2 )
+				return true;
+
+			if ( itemID >= BlacksmithyConstants.FORGE_RANGE_4_START && itemID <= BlacksmithyConstants.FORGE_RANGE_4_END )
+				return true;
+
+			return false;
+		}
+
+		/// <summary>
+		/// Checks if an item ID is in the Fire Giant Forge range
+		/// </summary>
+		/// <param name="itemID">The item ID to check</param>
+		/// <returns>True if the item ID is in the Fire Giant Forge range</returns>
+		private static bool IsFireGiantForgeRange( int itemID )
+		{
+			return itemID >= BlacksmithyConstants.FIRE_GIANT_FORGE_MIN && itemID <= BlacksmithyConstants.FIRE_GIANT_FORGE_MAX;
+		}
+
+		/// <summary>
+		/// Checks if an object is a Fire Giant Forge and consumes its charge
+		/// </summary>
+		/// <param name="obj">The object to check</param>
+		/// <returns>True if the object is a Fire Giant Forge</returns>
+		private static bool CheckFireGiantForge( object obj )
+		{
+			if ( obj is FireGiantForge )
+			{
+				FireGiantForge kettle = (FireGiantForge)obj;
+				Server.Items.FireGiantForge.ConsumeCharge( kettle );
+				return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines if an object is a forge
+		/// </summary>
+		/// <param name="obj">The object to check</param>
+		/// <returns>True if the object is a forge</returns>
 		public static bool IsForge( object obj )
 		{
 			if ( Core.ML && obj is Mobile && ((Mobile)obj).IsDeadBondedPet )
 				return false;
 
-			if ( obj.GetType().IsDefined( typeof( ForgeAttribute ), false ) )
+			if ( obj.GetType().IsDefined( typeofForge, false ) )
 				return true;
 
 			int itemID = 0;
@@ -73,26 +187,24 @@ namespace Server.Engines.Craft
 			else if ( obj is StaticTarget )
 				itemID = ((StaticTarget)obj).ItemID;
 
-			if ( itemID >= 6896 && itemID <= 6898 )
+			if ( IsFireGiantForgeRange( itemID ) )
 			{
-				if ( obj is FireGiantForge )
-				{
-					FireGiantForge kettle = (FireGiantForge)obj;
-					Server.Items.FireGiantForge.ConsumeCharge( kettle );
-					return true;
-				}
+				return CheckFireGiantForge( obj );
 			}
 
-			return ( itemID == 4017 || (itemID >= 0x10DE && itemID <= 0x10E0) || (itemID >= 6522 && itemID <= 6569) || (itemID >= 0x544B && itemID <= 0x544E) );
+			return IsForgeItemID( itemID );
 		}
 
-		public static void CheckAnvilAndForge( Mobile from, int range, out bool anvil, out bool forge )
+		/// <summary>
+		/// Checks items in range for anvil and forge
+		/// </summary>
+		/// <param name="from">The mobile to check from</param>
+		/// <param name="range">The range to check</param>
+		/// <param name="anvil">Output parameter indicating if anvil was found</param>
+		/// <param name="forge">Output parameter indicating if forge was found</param>
+		private static void CheckItemsInRange( Mobile from, int range, ref bool anvil, ref bool forge )
 		{
-			anvil = false;
-			forge = false;
-
 			Map map = from.Map;
-
 			if ( map == null )
 				return;
 
@@ -102,12 +214,12 @@ namespace Server.Engines.Craft
 			{
 				Type type = item.GetType();
 
-				bool isAnvil = ( type.IsDefined( typeofAnvil, false ) || item.ItemID == 4015 || item.ItemID == 4016 || item.ItemID == 0x2DD5 || item.ItemID == 0x2DD6 || item.ItemID == 0x2B55 || item.ItemID == 0x2B57 );
-				bool isForge = ( type.IsDefined( typeofForge, false ) || item.ItemID == 4017 || (item.ItemID >= 0x10DE && item.ItemID <= 0x10E0) || (item.ItemID >= 6522 && item.ItemID <= 6569) || item.ItemID == 0x2DD8 || (item.ItemID >= 0x544B && item.ItemID <= 0x544E) );
+				bool isAnvil = type.IsDefined( typeofAnvil, false ) || IsAnvilItemID( item.ItemID );
+				bool isForge = type.IsDefined( typeofForge, false ) || IsForgeItemID( item.ItemID );
 
 				if ( isAnvil || isForge )
 				{
-					if ( (from.Z + 16) < item.Z || (item.Z + 16) < from.Z || !from.InLOS( item ) )
+					if ( (from.Z + BlacksmithyConstants.Z_OFFSET) < item.Z || (item.Z + BlacksmithyConstants.Z_OFFSET) < from.Z || !from.InLOS( item ) )
 						continue;
 
 					anvil = anvil || isAnvil;
@@ -119,23 +231,37 @@ namespace Server.Engines.Craft
 			}
 
 			eable.Free();
+		}
 
+		/// <summary>
+		/// Checks static tiles for anvil and forge
+		/// </summary>
+		/// <param name="from">The mobile to check from</param>
+		/// <param name="map">The map to check</param>
+		/// <param name="range">The range to check</param>
+		/// <param name="anvil">Output parameter indicating if anvil was found</param>
+		/// <param name="forge">Output parameter indicating if forge was found</param>
+		private static void CheckStaticTiles( Mobile from, Map map, int range, ref bool anvil, ref bool forge )
+		{
 			for ( int x = -range; (!anvil || !forge) && x <= range; ++x )
 			{
 				for ( int y = -range; (!anvil || !forge) && y <= range; ++y )
 				{
-					StaticTile[] tiles = map.Tiles.GetStaticTiles( from.X+x, from.Y+y, true );
+					StaticTile[] tiles = map.Tiles.GetStaticTiles( from.X + x, from.Y + y, true );
 
 					for ( int i = 0; (!anvil || !forge) && i < tiles.Length; ++i )
 					{
 						int id = tiles[i].ID;
 
-						bool isAnvil = ( id == 4015 || id == 4016 || id == 0x2DD5 || id == 0x2DD6 || id == 0x2B55 || id == 0x2B57 || id == 0xFAF);
-						bool isForge = ( id == 4017 || (id >= 0x10DE && id <= 0x10E0) || (id >= 6522 && id <= 6569) || id == 0x2DD8 || (id >= 0x544B && id <= 0x544E) || (id >= 0x197A && id <= 0x1984)  );
+						bool isAnvil = IsAnvilItemID( id );
+						bool isForge = IsForgeItemID( id );
 
 						if ( isAnvil || isForge )
 						{
-							if ( (from.Z + 16) < tiles[i].Z || (tiles[i].Z + 16) < from.Z || !from.InLOS( new Point3D( from.X+x, from.Y+y, tiles[i].Z + (tiles[i].Height/2) + 1 ) ) )
+							int tileZ = tiles[i].Z;
+							Point3D tileLocation = new Point3D( from.X + x, from.Y + y, tileZ + (tiles[i].Height / BlacksmithyConstants.TILE_HEIGHT_OFFSET) + BlacksmithyConstants.TILE_HEIGHT_OFFSET );
+
+							if ( (from.Z + BlacksmithyConstants.Z_OFFSET) < tileZ || (tileZ + BlacksmithyConstants.Z_OFFSET) < from.Z || !from.InLOS( tileLocation ) )
 								continue;
 
 							anvil = anvil || isAnvil;
@@ -144,441 +270,434 @@ namespace Server.Engines.Craft
 					}
 				}
 			}
+		}
 
-			if (from.Map == Map.Felucca && from.X >= 6896 && from.X <= 6912 && from.Y >= 145 && from.Y <= 163)
-			{ //wasnt working in skara for some reason
-				anvil = true;
-				forge = true;
-			}
-			if (from.Map == Map.Felucca && from.X >= 6911 && from.X <= 6920 && from.Y >= 179 && from.Y <= 186)
-			{ //wasnt working in skara for some reason
-				anvil = true;
-				forge = true;
+		/// <summary>
+		/// Checks special locations (Skara Brae) for anvil and forge
+		/// </summary>
+		/// <param name="from">The mobile to check</param>
+		/// <param name="anvil">Output parameter indicating if anvil was found</param>
+		/// <param name="forge">Output parameter indicating if forge was found</param>
+		private static void CheckSpecialLocations( Mobile from, ref bool anvil, ref bool forge )
+		{
+			if ( from.Map == Map.Felucca )
+			{
+				// Skara Brae Area 1
+				if ( from.X >= BlacksmithyConstants.SKARA_BRAE_AREA1_X_MIN && from.X <= BlacksmithyConstants.SKARA_BRAE_AREA1_X_MAX
+					&& from.Y >= BlacksmithyConstants.SKARA_BRAE_AREA1_Y_MIN && from.Y <= BlacksmithyConstants.SKARA_BRAE_AREA1_Y_MAX )
+				{
+					anvil = true;
+					forge = true;
+					return;
+				}
+
+				// Skara Brae Area 2
+				if ( from.X >= BlacksmithyConstants.SKARA_BRAE_AREA2_X_MIN && from.X <= BlacksmithyConstants.SKARA_BRAE_AREA2_X_MAX
+					&& from.Y >= BlacksmithyConstants.SKARA_BRAE_AREA2_Y_MIN && from.Y <= BlacksmithyConstants.SKARA_BRAE_AREA2_Y_MAX )
+				{
+					anvil = true;
+					forge = true;
+				}
 			}
 		}
 
+		/// <summary>
+		/// Checks if the mobile is near both an anvil and a forge
+		/// </summary>
+		/// <param name="from">The mobile to check</param>
+		/// <param name="range">The range to check</param>
+		/// <param name="anvil">Output parameter indicating if anvil was found</param>
+		/// <param name="forge">Output parameter indicating if forge was found</param>
+		public static void CheckAnvilAndForge( Mobile from, int range, out bool anvil, out bool forge )
+		{
+			anvil = false;
+			forge = false;
+
+			Map map = from.Map;
+			if ( map == null )
+				return;
+
+			CheckItemsInRange( from, range, ref anvil, ref forge );
+
+			if ( !anvil || !forge )
+			{
+				CheckStaticTiles( from, map, range, ref anvil, ref forge );
+			}
+
+			if ( !anvil || !forge )
+			{
+				CheckSpecialLocations( from, ref anvil, ref forge );
+			}
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Checks if the mobile can craft with the given tool
+		/// </summary>
+		/// <param name="from">The mobile attempting to craft</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="itemType">The type of item being crafted</param>
+		/// <returns>0 if crafting is allowed, otherwise a localized message number</returns>
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if ( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
+				return BlacksmithyConstants.MSG_TOOL_WORN_OUT;
 			else if ( !BaseTool.CheckTool( tool, from ) )
-				return 1048146; // If you have a tool equipped, you must use that tool.
+				return BlacksmithyConstants.MSG_MUST_USE_EQUIPPED_TOOL;
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+				return BlacksmithyConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
 			bool anvil, forge;
 
-			CheckAnvilAndForge( from, 2, out anvil, out forge );
+			CheckAnvilAndForge( from, BlacksmithyConstants.CHECK_RANGE, out anvil, out forge );
 
 			if ( anvil && forge )
 				return 0;
 
-			return 1044267; // You must be near an anvil and a forge to smith items.
+			return BlacksmithyConstants.MSG_MUST_BE_NEAR_ANVIL_AND_FORGE;
 		}
 
+		/// <summary>
+		/// Plays the craft effect animation and sound
+		/// </summary>
+		/// <param name="from">The mobile crafting</param>
 		public override void PlayCraftEffect( Mobile from )
 		{
-			// no animation, instant sound
-			//if ( from.Body.Type == BodyType.Human && !from.Mounted )
-			//	from.Animate( 9, 5, 1, true, false, 0 );
-			//new InternalTimer( from ).Start();
-
-			from.PlaySound( 0x541 );
+			from.PlaySound( BlacksmithyConstants.SOUND_BLACKSMITH );
 		}
 
-		// Delay to synchronize the sound with the hit on the anvil
-		private class InternalTimer : Timer
-		{
-			private Mobile m_From;
-
-			public InternalTimer( Mobile from ) : base( TimeSpan.FromSeconds( 0.7 ) )
-			{
-				m_From = from;
-			}
-
-			protected override void OnTick()
-			{
-				m_From.PlaySound( 0x541 );
-			}
-		}
-
+		/// <summary>
+		/// Plays the ending effect message based on crafting result
+		/// </summary>
+		/// <param name="from">The mobile who crafted</param>
+		/// <param name="failed">Whether the craft failed</param>
+		/// <param name="lostMaterial">Whether materials were lost</param>
+		/// <param name="toolBroken">Whether the tool broke</param>
+		/// <param name="quality">The quality level (0=below average, 1=average, 2=exceptional)</param>
+		/// <param name="makersMark">Whether a maker's mark was applied</param>
+		/// <param name="item">The craft item</param>
+		/// <returns>The localized message number for the result</returns>
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+				from.SendLocalizedMessage( BlacksmithyConstants.MSG_TOOL_WORN_OUT );
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+					return BlacksmithyConstants.MSG_FAILED_WITH_MATERIAL_LOSS;
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return BlacksmithyConstants.MSG_FAILED_WITHOUT_MATERIAL_LOSS;
 			}
 			else
 			{
 				if ( quality == 0 )
-					return 502785; // You were barely able to make this item.  It's quality is below average.
+					return BlacksmithyConstants.MSG_BELOW_AVERAGE_QUALITY;
 				else if ( makersMark && quality == 2 )
-					return 1044156; // You create an exceptional quality item and affix your maker's mark.
+					return BlacksmithyConstants.MSG_EXCEPTIONAL_WITH_MARK;
 				else if ( quality == 2 )
-					return 1044155; // You create an exceptional quality item.
-				else				
-					return 1044154; // You create the item.
+					return BlacksmithyConstants.MSG_EXCEPTIONAL_QUALITY;
+				else
+					return BlacksmithyConstants.MSG_ITEM_CREATED;
 			}
 		}
 
+		#region Craft List Initialization
+
+		/// <summary>
+		/// Adds Royal armor skills (ArmsLore and Magery) to a craft item
+		/// </summary>
+		/// <param name="index">The craft item index</param>
+		private void AddRoyalArmorSkills( int index )
+		{
+			AddSkill( index, SkillName.ArmsLore, 100.0, 120.0 );
+			AddSkill( index, SkillName.Magery, 70.0, 110.0 );
+		}
+
+		/// <summary>
+		/// Adds Dragon Scale armor skills (ArmsLore and Magery) to a craft item
+		/// </summary>
+		/// <param name="index">The craft item index</param>
+		private void AddDragonScaleArmorSkills( int index )
+		{
+			AddSkill( index, SkillName.ArmsLore, 100.0, 120.0 );
+			AddSkill( index, SkillName.Magery, 80.0, 110.0 );
+		}
+
+		/// <summary>
+		/// Initializes the list of craftable items for blacksmithy
+		/// </summary>
 		public override void InitCraftList()
 		{
-            /*
-			Synthax for a SIMPLE craft item
-			AddCraft( ObjectType, Group, MinSkill, MaxSkill, ResourceType, Amount, Message )
-			
-			ObjectType		: The type of the object you want to add to the build list.
-			Group			: The group in wich the object will be showed in the craft menu.
-			MinSkill		: The minimum of skill value
-			MaxSkill		: The maximum of skill value
-			ResourceType	: The type of the resource the mobile need to create the item
-			Amount			: The amount of the ResourceType it need to create the item
-			Message			: String or Int for Localized.  The message that will be sent to the mobile, if the specified resource is missing.
-			
-			Synthax for a COMPLEXE craft item.  A complexe item is an item that need either more than
-			only one skill, or more than only one resource.
-		
-			*/
-            string chainRingTitle = "Loriga & Malhas";
+			string chainRingTitle = BlacksmithyStringConstants.GROUP_CHAIN_RING;
 
             #region Ringmail
-            AddCraft(typeof(RingmailGloves), chainRingTitle, "Luvas de Loriga", 32.0, 62.0, typeof(IronIngot), 1044036, 8, 1044037);
-            AddCraft(typeof(RingmailLegs), chainRingTitle, "Calça de Loriga", 40.4, 69.4, typeof(IronIngot), 1044036, 12, 1044037);
-            AddCraft(typeof(RingmailArms), chainRingTitle, "Ombreiras de Loriga", 36.9, 66.9, typeof(IronIngot), 1044036, 10, 1044037);
-            AddCraft(typeof(RingmailChest), chainRingTitle, "Peitoral de Loriga", 44.9, 74.9, typeof(IronIngot), 1044036, 14, 1044037);
+            AddCraft(typeof(RingmailGloves), chainRingTitle, BlacksmithyStringConstants.ITEM_RINGMAIL_GLOVES, 32.0, 62.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(RingmailLegs), chainRingTitle, BlacksmithyStringConstants.ITEM_RINGMAIL_LEGS, 40.4, 69.4, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(RingmailArms), chainRingTitle, BlacksmithyStringConstants.ITEM_RINGMAIL_ARMS, 36.9, 66.9, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(RingmailChest), chainRingTitle, BlacksmithyStringConstants.ITEM_RINGMAIL_CHEST, 44.9, 74.9, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE);
             #endregion
 
             #region Chainmail
-            AddCraft( typeof( ChainCoif ), chainRingTitle, "Coifa de Malha", 34.5, 64.5, typeof( IronIngot ), 1044036, 10, 1044037 );
-			AddCraft( typeof( ChainLegs ), chainRingTitle, "Calça de Malha", 46.7, 86.7, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( ChainChest ), chainRingTitle, "Tunica de Malha", 49.1, 89.1, typeof( IronIngot ), 1044036, 16, 1044037 );
+            AddCraft( typeof( ChainCoif ), chainRingTitle, BlacksmithyStringConstants.ITEM_CHAIN_COIF, 34.5, 64.5, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( ChainLegs ), chainRingTitle, BlacksmithyStringConstants.ITEM_CHAIN_LEGS, 46.7, 86.7, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( ChainChest ), chainRingTitle, BlacksmithyStringConstants.ITEM_CHAIN_CHEST, 49.1, 89.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE );
             #endregion
 
-/*			AddCraft( typeof( RingmailSkirt ), chainRingTitle, "banded mail skirt", 19.4, 69.4, typeof( IronIngot ), 1044036, 16, 1044037 );
-			AddCraft( typeof( ChainSkirt ), chainRingTitle, "metal skirt", 36.7, 86.7, typeof( IronIngot ), 1044036, 18, 1044037 );*/
 
 			int index = -1;
 
             #region Platemail
-            string platemailTitle = "Armadura de Metal";
-            AddCraft( typeof( PlateArms ), platemailTitle, "Ombreiras de Metal", 66.3, 116.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( PlateGloves ), platemailTitle, "Luvas de Metal", 58.9, 108.9, typeof( IronIngot ), 1044036, 12, 1044037 );
-			AddCraft( typeof( PlateGorget ), platemailTitle, "Gorgel de Metal", 56.4, 106.4, typeof( IronIngot ), 1044036, 10, 1044037 );
-			AddCraft( typeof( PlateLegs ), platemailTitle, "Calças de Metal", 70.8, 118.8, typeof( IronIngot ), 1044036, 20, 1044037 );
-			//AddCraft( typeof( PlateSkirt ), chainRingTitle, "platemail skirt", 68.8, 118.8, typeof( IronIngot ), 1044036, 20, 1044037 );
-			AddCraft( typeof( PlateChest ), platemailTitle, "Peitoral de Metal", 75.0, 125.0, typeof( IronIngot ), 1044036, 25, 1044037 );
-			AddCraft( typeof( FemalePlateChest ), platemailTitle, "Peitoral Feminino de Metal", 64.1, 104.1, typeof( IronIngot ), 1044036, 22, 1044037 );
+            string platemailTitle = BlacksmithyStringConstants.GROUP_PLATEMAIL;
+            AddCraft( typeof( PlateArms ), platemailTitle, BlacksmithyStringConstants.ITEM_PLATE_ARMS, 66.3, 116.3, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 18, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( PlateGloves ), platemailTitle, BlacksmithyStringConstants.ITEM_PLATE_GLOVES, 58.9, 108.9, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( PlateGorget ), platemailTitle, BlacksmithyStringConstants.ITEM_PLATE_GORGET, 56.4, 106.4, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( PlateLegs ), platemailTitle, BlacksmithyStringConstants.ITEM_PLATE_LEGS, 70.8, 118.8, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 20, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( PlateChest ), platemailTitle, BlacksmithyStringConstants.ITEM_PLATE_CHEST, 75.0, 125.0, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 25, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( FemalePlateChest ), platemailTitle, BlacksmithyStringConstants.ITEM_FEMALE_PLATE_CHEST, 64.1, 104.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 22, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-            index = AddCraft(typeof(HorseArmor), platemailTitle, "Armadura para Cavalos", 90.0, 100.1, typeof(IronIngot), 1044036, 250, 1044037);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            /*index = AddCraft( typeof( DragonBardingDeed ), platemailTitle, 1053012, 72.5, 150.1, typeof( IronIngot ), 1044036, 650, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);*/
-
-
-            /*index = AddCraft( typeof( PlateMempo ), "Platemail", 1030180, 80.0, 130.0, typeof( IronIngot ), 1044036, 18, 1044037 );
-			index = AddCraft( typeof( PlateDo ), "Platemail", 1030184, 80.0, 130.0, typeof( IronIngot ), 1044036, 28, 1044037 );
-			index = AddCraft( typeof( PlateHiroSode ), "Platemail", 1030187, 80.0, 130.0, typeof( IronIngot ), 1044036, 16, 1044037 );
-			index = AddCraft( typeof( PlateSuneate ), "Platemail", 1030195, 65.0, 115.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-			index = AddCraft( typeof( PlateHaidate ), "Platemail", 1030200, 65.0, 115.0, typeof( IronIngot ), 1044036, 20, 1044037 );*/
+			index = AddCraft( typeof( HorseArmor ), platemailTitle, BlacksmithyStringConstants.ITEM_HORSE_ARMOR, 90.0, 100.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 250, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddSkill( index, SkillName.ArmsLore, 100.0, 120.0 );
 
             #endregion
 
             #region Royal
-            string royalTitle = "Armadura de Real";
+            string royalTitle = BlacksmithyStringConstants.GROUP_ROYAL;
 
-            index = AddCraft( typeof( RoyalGloves ), royalTitle, "Braçadeiras Real", 70.0, 140.1, typeof( IronIngot ), 1044036, 12, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft(typeof(RoyalGorget), royalTitle, "Gorgel Real", 72.4, 140.1, typeof(IronIngot), 1044036, 8, 1044037);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft( typeof( RoyalHelm ), royalTitle, "Elmo Real", 75.0, 140.1, typeof( IronIngot ), 1044036, 15, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft( typeof( RoyalsLegs ), royalTitle, "Calças Real", 80.0, 140.1, typeof( IronIngot ), 1044036, 20, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft(typeof(RoyalBoots), royalTitle, "Botas Real", 82.9, 140.1, typeof(IronIngot), 1044036, 9, 1044037);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft( typeof( RoyalArms ), royalTitle, "Ombreira Real", 85.0, 140.1, typeof( IronIngot ), 1044036, 18, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
-            index = AddCraft( typeof( RoyalChest ), royalTitle, "Tunica Real", 90.0, 140.1, typeof( IronIngot ), 1044036, 24, 1044037 );
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 70.0, 110.0);
+            index = AddCraft( typeof( RoyalGloves ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_GLOVES, 70.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddRoyalArmorSkills( index );
+            index = AddCraft(typeof(RoyalGorget), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_GORGET, 72.4, 140.1, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+			AddRoyalArmorSkills( index );
+            index = AddCraft( typeof( RoyalHelm ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_HELM, 75.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 15, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddRoyalArmorSkills( index );
+            index = AddCraft( typeof( RoyalsLegs ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_LEGS, 80.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 20, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddRoyalArmorSkills( index );
+            index = AddCraft(typeof(RoyalBoots), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_BOOTS, 82.9, 140.1, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 9, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+			AddRoyalArmorSkills( index );
+            index = AddCraft( typeof( RoyalArms ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_ARMS, 85.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 18, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddRoyalArmorSkills( index );
+            index = AddCraft( typeof( RoyalChest ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_CHEST, 90.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 24, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddRoyalArmorSkills( index );
             #endregion
 
             #region Dragon Scale Armor
 
-            string scalemailTitle = "Armadura de Escamas";
+            string scalemailTitle = BlacksmithyStringConstants.GROUP_SCALEMAIL;
 
-			index = AddCraft( typeof( DragonGloves ), scalemailTitle, "Luvas de Escamas", 70.0, 150.1, typeof( RedScales ), "Escamas Reptilianas", 12, 1042081 );
-            AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 6, 1042081);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 80.0, 110.0);
+			index = AddCraft( typeof( DragonGloves ), scalemailTitle, BlacksmithyStringConstants.ITEM_DRAGON_GLOVES, 70.0, 150.1, typeof( RedScales ), BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES, 12, BlacksmithyConstants.MSG_DRAGON_SCALES );
+            AddRes(index, typeof(PlatinumIngot), BlacksmithyStringConstants.RESOURCE_PLATINUM_INGOTS, 6, BlacksmithyConstants.MSG_DRAGON_SCALES);
+			AddDragonScaleArmorSkills( index );
             SetUseSubRes2( index, true );
 
-			index = AddCraft( typeof( DragonHelm ), scalemailTitle, "Elmo de Escamas", 75.0, 150.1, typeof( RedScales ), "Escamas Reptilianas", 16, 1042081 );
-            AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 8, 1042081);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 80.0, 110.0);
+			index = AddCraft( typeof( DragonHelm ), scalemailTitle, BlacksmithyStringConstants.ITEM_DRAGON_HELM, 75.0, 150.1, typeof( RedScales ), BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES, 16, BlacksmithyConstants.MSG_DRAGON_SCALES );
+            AddRes(index, typeof(PlatinumIngot), BlacksmithyStringConstants.RESOURCE_PLATINUM_INGOTS, 8, BlacksmithyConstants.MSG_DRAGON_SCALES);
+			AddDragonScaleArmorSkills( index );
             SetUseSubRes2( index, true );
 
-			index = AddCraft( typeof( DragonLegs ), scalemailTitle, "Calças de Escamas", 80.0, 150.1, typeof( RedScales ), "Escamas Reptilianas", 20, 1042081 );
-            AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 12, 1042081);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 80.0, 110.0);
+			index = AddCraft( typeof( DragonLegs ), scalemailTitle, BlacksmithyStringConstants.ITEM_DRAGON_LEGS, 80.0, 150.1, typeof( RedScales ), BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES, 20, BlacksmithyConstants.MSG_DRAGON_SCALES );
+            AddRes(index, typeof(PlatinumIngot), BlacksmithyStringConstants.RESOURCE_PLATINUM_INGOTS, 12, BlacksmithyConstants.MSG_DRAGON_SCALES);
+			AddDragonScaleArmorSkills( index );
             SetUseSubRes2( index, true );
 
-			index = AddCraft( typeof( DragonArms ), scalemailTitle, "Ombreiras de Escamas", 85.0, 150.1, typeof( RedScales ), "Escamas Reptilianas", 18, 1042081 );
-            AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 10, 1042081);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 80.0, 110.0);
+			index = AddCraft( typeof( DragonArms ), scalemailTitle, BlacksmithyStringConstants.ITEM_DRAGON_ARMS, 85.0, 150.1, typeof( RedScales ), BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES, 18, BlacksmithyConstants.MSG_DRAGON_SCALES );
+            AddRes(index, typeof(PlatinumIngot), BlacksmithyStringConstants.RESOURCE_PLATINUM_INGOTS, 10, BlacksmithyConstants.MSG_DRAGON_SCALES);
+			AddDragonScaleArmorSkills( index );
             SetUseSubRes2( index, true );
 
-			index = AddCraft( typeof( DragonChest ), scalemailTitle, "Tunica de Escamas", 90.0, 150.1, typeof( RedScales ), "Escamas Reptilianas", 24, 1042081 );
-            AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 14, 1042081);
-            AddSkill(index, SkillName.ArmsLore, 100.0, 120.0);
-            AddSkill(index, SkillName.Magery, 80.0, 110.0);
+			index = AddCraft( typeof( DragonChest ), scalemailTitle, BlacksmithyStringConstants.ITEM_DRAGON_CHEST, 90.0, 150.1, typeof( RedScales ), BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES, 24, BlacksmithyConstants.MSG_DRAGON_SCALES );
+            AddRes(index, typeof(PlatinumIngot), BlacksmithyStringConstants.RESOURCE_PLATINUM_INGOTS, 14, BlacksmithyConstants.MSG_DRAGON_SCALES);
+			AddDragonScaleArmorSkills( index );
             SetUseSubRes2( index, true );
             #endregion
 
             #region Helmets
-            string helmetsTitle = "Elmos & Capacetes";
+            string helmetsTitle = BlacksmithyStringConstants.GROUP_HELMETS;
 
-            AddCraft( typeof( Bascinet ), helmetsTitle, "Bacinete ", 28.3, 58.3, typeof( IronIngot ), 1044036, 11, 1044037 );
-			AddCraft( typeof( CloseHelm ), helmetsTitle, "Elmo Fechado", 57.9, 87.9, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( Helmet ), helmetsTitle, "Elmo Comum", 37.9, 87.9, typeof( IronIngot ), 1044036, 12, 1044037 );
-			AddCraft( typeof( NorseHelm ), helmetsTitle, "Elmo Nórdico", 47.9, 87.9, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( PlateHelm ), helmetsTitle, "Elmo Completo", 62.6, 112.6, typeof( IronIngot ), 1044036, 16, 1044037 );
-			AddCraft( typeof( DreadHelm ), helmetsTitle, "Elmo de Chifres", 62.6, 112.6, typeof( IronIngot ), 1044036, 15, 1044037 );
+            AddCraft( typeof( Bascinet ), helmetsTitle, BlacksmithyStringConstants.ITEM_BASCINET, 28.3, 58.3, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 11, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( CloseHelm ), helmetsTitle, BlacksmithyStringConstants.ITEM_CLOSE_HELM, 57.9, 87.9, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( Helmet ), helmetsTitle, BlacksmithyStringConstants.ITEM_HELMET, 37.9, 87.9, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( NorseHelm ), helmetsTitle, BlacksmithyStringConstants.ITEM_NORSE_HELM, 47.9, 87.9, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( PlateHelm ), helmetsTitle, BlacksmithyStringConstants.ITEM_PLATE_HELM, 62.6, 112.6, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( DreadHelm ), helmetsTitle, BlacksmithyStringConstants.ITEM_DREAD_HELM, 62.6, 112.6, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 15, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-            /*if( Core.SE )
-			{
-				index = AddCraft( typeof( ChainHatsuburi ), "Helmets", 1030175, 30.0, 80.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-				index = AddCraft( typeof( PlateHatsuburi ), "Helmets", 1030176, 45.0, 95.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-				index = AddCraft( typeof( HeavyPlateJingasa ), "Helmets", 1030178, 45.0, 95.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-				index = AddCraft( typeof( LightPlateJingasa ), "Helmets", 1030188, 45.0, 95.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-				index = AddCraft( typeof( SmallPlateJingasa ), "Helmets", 1030191, 45.0, 95.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-				index = AddCraft( typeof( DecorativePlateKabuto ), "Helmets", 1030179, 90.0, 140.0, typeof( IronIngot ), 1044036, 25, 1044037 );
-
-				index = AddCraft( typeof( PlateBattleKabuto ), "Helmets", 1030192, 90.0, 140.0, typeof( IronIngot ), 1044036, 25, 1044037 );
-
-				index = AddCraft( typeof( StandardPlateKabuto ), "Helmets", 1030196, 90.0, 140.0, typeof( IronIngot ), 1044036, 25, 1044037 );
-				 
-			}*/
             #endregion
 
             #region Shields
 
-            string shieldsTitle = "Escudos";
+            string shieldsTitle = BlacksmithyStringConstants.GROUP_SHIELDS;
 
-            AddCraft( typeof( Buckler ), shieldsTitle, "Buckler", 0.0, 45.0, typeof( IronIngot ), 1044036, 10, 1044037 );
-            AddCraft(typeof( MetalShield ), shieldsTitle, "Escudo Redondo", 15.2, 49.8, typeof(IronIngot), 1044036, 12, 1044037);
-            AddCraft(typeof( WoodenKiteShield), shieldsTitle, "Escudo Kite", 20.2, 64.8, typeof(IronIngot), 1044036, 9, 1044037);
-            AddCraft( typeof( BronzeShield ), shieldsTitle, "Escudo Bizantino", 35.2, 69.8, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( MetalKiteShield ), shieldsTitle, "Escudo Heater", 54.6, 85.6, typeof( IronIngot ), 1044036, 16, 1044037 );
-            AddCraft(typeof(HeaterShield), shieldsTitle, "Escudo Corporal", 65.3, 89.3, typeof(IronIngot), 1044036, 18, 1044037);
+            AddCraft( typeof( Buckler ), shieldsTitle, BlacksmithyStringConstants.ITEM_BUCKLER, 0.0, 45.0, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+            AddCraft(typeof( MetalShield ), shieldsTitle, BlacksmithyStringConstants.ITEM_METAL_SHIELD, 15.2, 49.8, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof( WoodenKiteShield), shieldsTitle, BlacksmithyStringConstants.ITEM_WOODEN_KITE_SHIELD, 20.2, 64.8, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 9, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft( typeof( BronzeShield ), shieldsTitle, BlacksmithyStringConstants.ITEM_BRONZE_SHIELD, 35.2, 69.8, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( MetalKiteShield ), shieldsTitle, BlacksmithyStringConstants.ITEM_METAL_KITE_SHIELD, 54.6, 85.6, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+            AddCraft(typeof(HeaterShield), shieldsTitle, BlacksmithyStringConstants.ITEM_HEATER_SHIELD, 65.3, 89.3, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 18, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
             if (Core.AOS)
             {
-                AddCraft(typeof(ChaosShield), shieldsTitle, "Escudo do Caos", 85.0, 125.0, typeof(IronIngot), 1044036, 25, 1044037);
-                AddCraft(typeof(OrderShield), shieldsTitle, "Escudo da Ordem", 85.0, 125.0, typeof(IronIngot), 1044036, 25, 1044037);
+                AddCraft(typeof(ChaosShield), shieldsTitle, BlacksmithyStringConstants.ITEM_CHAOS_SHIELD, 85.0, 125.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 25, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+                AddCraft(typeof(OrderShield), shieldsTitle, BlacksmithyStringConstants.ITEM_ORDER_SHIELD, 85.0, 125.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 25, BlacksmithyConstants.MSG_MISSING_RESOURCE);
             }
 
-            /*AddCraft( typeof( RoyalShield ), "Shields", "royal shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( GuardsmanShield ), "Shields", "guardsman shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( ElvenShield ), "Shields", "elven shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( DarkShield ), "Shields", "dark shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( CrestedShield ), "Shields", "crested shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddCraft( typeof( ChampionShield ), "Shields", "champion shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			index = AddCraft( typeof( JeweledShield ), "Shields", "jeweled shield", 54.3, 84.3, typeof( IronIngot ), 1044036, 18, 1044037 );
-			AddRes( index, typeof( StarSapphire ), 1023855, 1, 1044037 );*/
 
             #endregion
 
             #region Bladed
-            string bladesTitle = "Lâminas e Espadas";
+            string bladesTitle = BlacksmithyStringConstants.GROUP_BLADES;
 
-            AddCraft(typeof(Dagger), bladesTitle, "Adaga", 0, 49.6, typeof(IronIngot), 1044036, 3, 1044037);
-            AddCraft(typeof(Cutlass), bladesTitle, "Cutelo", 24.3, 64.3, typeof(IronIngot), 1044036, 8, 1044037);
-            AddCraft(typeof(Scimitar), bladesTitle, "Cimitarra", 31.7, 71.7, typeof(IronIngot), 1044036, 10, 1044037);
+            AddCraft(typeof(Dagger), bladesTitle, BlacksmithyStringConstants.ITEM_DAGGER, 0, 49.6, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 3, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(Cutlass), bladesTitle, BlacksmithyStringConstants.ITEM_CUTLASS, 24.3, 64.3, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(Scimitar), bladesTitle, BlacksmithyStringConstants.ITEM_SCIMITAR, 31.7, 71.7, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft(typeof(Kryss), bladesTitle, "Kopesh", 36.7, 88.7, typeof(IronIngot), 1044036, 8, 1044037);
-            AddCraft(typeof(Katana), bladesTitle, "Katana", 42.1, 90.1, typeof(IronIngot), 1044036, 9, 1044037);
+            AddCraft(typeof(Kryss), bladesTitle, BlacksmithyStringConstants.ITEM_KRYSS, 36.7, 88.7, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(Katana), bladesTitle, BlacksmithyStringConstants.ITEM_KATANA, 42.1, 90.1, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 9, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft( typeof( VikingSword ), bladesTitle, "Espada Bastarda", 48.3, 84.3, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( Broadsword ), bladesTitle, "Espada Larga", 55.4, 95.4, typeof( IronIngot ), 1044036, 11, 1044037 );
+            AddCraft( typeof( VikingSword ), bladesTitle, BlacksmithyStringConstants.ITEM_VIKING_SWORD, 48.3, 84.3, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( Broadsword ), bladesTitle, BlacksmithyStringConstants.ITEM_BROADSWORD, 55.4, 95.4, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 11, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-			AddCraft( typeof( Longsword ), bladesTitle, "Espada Longa", 59.0, 88.0, typeof( IronIngot ), 1044036, 14, 1044037 );
+			AddCraft( typeof( Longsword ), bladesTitle, BlacksmithyStringConstants.ITEM_LONGSWORD, 59.0, 88.0, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-            /*AddCraft(typeof(AssassinSpike), bladesTitle, "assassin dagger", 10.0, 49.6, typeof(IronIngot), 1044036, 3, 1044037);
-            AddCraft(typeof(ElvenSpellblade), bladesTitle, "assassin sword", 44.1, 94.1, typeof(IronIngot), 1044036, 8, 1044037);
-            AddCraft(typeof(CrescentBlade), bladesTitle, 1029921, 45.0, 95.0, typeof(IronIngot), 1044036, 14, 1044037);
-            AddCraft(typeof(RadiantScimitar), bladesTitle, "falchion", 35.4, 85.4, typeof(IronIngot), 1044036, 10, 1044037);
-
-            AddCraft( typeof( ElvenMachete ), bladesTitle, "machete", 33.0, 83.0, typeof( IronIngot ), 1044036, 10, 1044037 );
-			AddCraft( typeof( RoyalSword ), bladesTitle, "royal sword", 54.3, 84.3, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( BoneHarvester ), bladesTitle, "sickle", 33.0, 83.0, typeof( IronIngot ), 1044036, 10, 1044037 );
-			
-			AddCraft( typeof( RuneBlade ), bladesTitle, "war blades", 28.0, 78.0, typeof( IronIngot ), 1044036, 12, 1044037 );
-			AddCraft( typeof( WarCleaver ), bladesTitle, "war cleaver", 10.0, 49.6, typeof( IronIngot ), 1044036, 3, 1044037 );
-			AddCraft( typeof( Leafblade ), bladesTitle, "war dagger", 20.0, 59.6, typeof( IronIngot ), 1044036, 5, 1044037 );
-
-			if( Core.SE )
-			{
-				index = AddCraft( typeof( NoDachi ), "Bladed", 1030221, 75.0, 125.0, typeof( IronIngot ), 1044036, 18, 1044037 );
-				 
-				index = AddCraft( typeof( Wakizashi ), "Bladed", 1030223, 50.0, 100.0, typeof( IronIngot ), 1044036, 8, 1044037 );
-				 
-				index = AddCraft( typeof( Lajatang ), "Bladed", 1030226, 80.0, 130.0, typeof( IronIngot ), 1044036, 25, 1044037 );
-				 
-				index = AddCraft( typeof( Daisho ), "Bladed", 1030228, 60.0, 110.0, typeof( IronIngot ), 1044036, 15, 1044037 );
-				 
-				index = AddCraft( typeof( Tekagi ), "Bladed", 1030230, 55.0, 105.0, typeof( IronIngot ), 1044036, 12, 1044037 );
-				 
-				index = AddCraft( typeof( Shuriken ), "Bladed", 1030231, 45.0, 95.0, typeof( IronIngot ), 1044036, 5, 1044037 );
-				 
-				index = AddCraft( typeof( Kama ), "Bladed", 1030232, 40.0, 90.0, typeof( IronIngot ), 1044036, 14, 1044037 );
-				 
-				index = AddCraft( typeof( Sai ), "Bladed", 1030234, 50.0, 100.0, typeof( IronIngot ), 1044036, 12, 1044037 );
-				 
-			}*/
             #endregion
 
             #region Axes
-            string axeTitle = "Machados";
+            string axeTitle = BlacksmithyStringConstants.GROUP_AXES;
             
-            AddCraft( typeof( Hatchet ), axeTitle, "Machadinha", 24.2, 64.2, typeof( IronIngot ), 1044036, 10, 1044037 );
-			AddCraft( typeof( LumberAxe ), axeTitle, "Machado de Lenhador", 24.2, 64.2, typeof( IronIngot ), 1044036, 10, 1044037 );
+            AddCraft( typeof( Hatchet ), axeTitle, BlacksmithyStringConstants.ITEM_HATCHET, 24.2, 64.2, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( LumberAxe ), axeTitle, BlacksmithyStringConstants.ITEM_LUMBER_AXE, 24.2, 64.2, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
             
-            AddCraft( typeof( BattleAxe ), axeTitle, "Machado de Batalha", 30.5, 70.5, typeof( IronIngot ), 1044036, 11, 1044037 );
-            AddCraft(typeof(Axe), axeTitle, "Machado Comum", 35.2, 74.2, typeof(IronIngot), 1044036, 12, 1044037);
+            AddCraft( typeof( BattleAxe ), axeTitle, BlacksmithyStringConstants.ITEM_BATTLE_AXE, 30.5, 70.5, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 11, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+            AddCraft(typeof(Axe), axeTitle, BlacksmithyStringConstants.ITEM_AXE, 35.2, 74.2, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft(typeof(TwoHandedAxe), axeTitle, "Machado de Duas Mãos", 63.0, 83.0, typeof(IronIngot), 1044036, 16, 1044037);
+            AddCraft(typeof(TwoHandedAxe), axeTitle, BlacksmithyStringConstants.ITEM_TWO_HANDED_AXE, 63.0, 83.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft(typeof(WarAxe), axeTitle, "Machado de Guerra", 69.1, 89.1, typeof(IronIngot), 1044036, 13, 1044037);
-            AddCraft( typeof( DoubleAxe ), axeTitle, "Machado Duplo", 39.3, 79.3, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( ExecutionersAxe ), axeTitle, "Machado de Carrasco", 44.2, 84.2, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( LargeBattleAxe ), axeTitle, "Machado Grande de Batalha", 58.0, 88.0, typeof( IronIngot ), 1044036, 14, 1044037 );
+            AddCraft(typeof(WarAxe), axeTitle, BlacksmithyStringConstants.ITEM_WAR_AXE, 69.1, 89.1, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 13, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft( typeof( DoubleAxe ), axeTitle, BlacksmithyStringConstants.ITEM_DOUBLE_AXE, 39.3, 79.3, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( ExecutionersAxe ), axeTitle, BlacksmithyStringConstants.ITEM_EXECUTIONERS_AXE, 44.2, 84.2, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( LargeBattleAxe ), axeTitle, BlacksmithyStringConstants.ITEM_LARGE_BATTLE_AXE, 58.0, 88.0, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-            //AddCraft( typeof( OrnateAxe ), axeTitle, "barbarian axe", 39.1, 89.1, typeof( IronIngot ), 1044036, 16, 1044037 );
 
             #endregion
 
             #region Pole Arms
-            string poleArmsTitle = "Lanças & Hastes";
+            string poleArmsTitle = BlacksmithyStringConstants.GROUP_POLE_ARMS;
 
-            AddCraft(typeof(Harpoon), poleArmsTitle, "Arpão", 30.0, 70.0, typeof(IronIngot), 1044036, 10, 1044351);
+            AddCraft(typeof(Harpoon), poleArmsTitle, BlacksmithyStringConstants.ITEM_HARPOON, 30.0, 70.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_HARPOON_RESOURCE_ERROR);
 
-            AddCraft(typeof(ShortSpear), poleArmsTitle, "Lança Pequena", 45.3, 85.3, typeof(IronIngot), 1044036, 8, 1044037);
-            AddCraft(typeof(Spear), poleArmsTitle, "Lança", 55.0, 90.0, typeof(IronIngot), 1044036, 12, 1044037);
+            AddCraft(typeof(ShortSpear), poleArmsTitle, BlacksmithyStringConstants.ITEM_SHORT_SPEAR, 45.3, 85.3, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE);
+            AddCraft(typeof(Spear), poleArmsTitle, BlacksmithyStringConstants.ITEM_SPEAR, 55.0, 90.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE);
             if (Core.AOS)
-                AddCraft(typeof(Pike), poleArmsTitle, "Pique", 47.0, 87.0, typeof(IronIngot), 1044036, 10, 1044037);
+                AddCraft(typeof(Pike), poleArmsTitle, BlacksmithyStringConstants.ITEM_PIKE, 47.0, 87.0, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft(typeof(WarFork), poleArmsTitle, "Garfo de Guerra", 52.9, 92.9, typeof(IronIngot), 1044036, 12, 1044037);
+            AddCraft(typeof(WarFork), poleArmsTitle, BlacksmithyStringConstants.ITEM_WAR_FORK, 52.9, 92.9, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            AddCraft( typeof( Bardiche ), poleArmsTitle, "Bardiche", 31.7, 85.7, typeof( IronIngot ), 1044036, 16, 1044037 );
-            AddCraft(typeof(Halberd), poleArmsTitle, "Alabarda", 39.1, 89.1, typeof(IronIngot), 1044036, 16, 1044037);
+            AddCraft( typeof( Bardiche ), poleArmsTitle, BlacksmithyStringConstants.ITEM_BARDICHE, 31.7, 85.7, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+            AddCraft(typeof(Halberd), poleArmsTitle, BlacksmithyStringConstants.ITEM_HALBERD, 39.1, 89.1, typeof(IronIngot), BlacksmithyConstants.MSG_IRON_INGOT, 16, BlacksmithyConstants.MSG_MISSING_RESOURCE);
 
-            //AddCraft(typeof(Pitchfork), "Polearms", 1023720, 36.1, 86.1, typeof(IronIngot), 1044036, 12, 1044037); // tridente
-            /*if ( Core.AOS )
-				AddCraft( typeof( BladedStaff ), "Polearms", 1029917, 40.0, 90.0, typeof( IronIngot ), 1044036, 12, 1044037 );
-
-			if ( Core.AOS )
-				AddCraft( typeof( DoubleBladedStaff ), "Polearms", 1029919, 45.0, 95.0, typeof( IronIngot ), 1044036, 16, 1044037 );
-
-			if ( Core.AOS )
-				AddCraft( typeof( Lance ), "Polearms", 1029920, 48.0, 98.0, typeof( IronIngot ), 1044036, 20, 1044037 );
-
-			if ( Core.AOS )
-				AddCraft( typeof( Scythe ), "Polearms", 1029914, 39.0, 89.0, typeof( IronIngot ), 1044036, 14, 1044037 );*/
 
             // Not craftable (is this an AOS change ??)
 
             #endregion
 
             #region Bashing
-            string bashingTitle = "Macas e Martelos";
+            string bashingTitle = BlacksmithyStringConstants.GROUP_BASHING;
 
-            AddCraft( typeof( HammerPick ), bashingTitle, "Martelo Picareta", 34.2, 84.2, typeof( IronIngot ), 1044036, 12, 1044037 );
-			AddCraft( typeof( Mace ), bashingTitle, "Maca", 14.5, 64.5, typeof( IronIngot ), 1044036, 8, 1044037 );
-			AddCraft( typeof( Maul ), bashingTitle, "Maul", 19.4, 69.4, typeof( IronIngot ), 1044036, 10, 1044037 );
-			AddCraft( typeof( WarMace ), bashingTitle, "Maca de Guerra", 28.0, 78.0, typeof( IronIngot ), 1044036, 14, 1044037 );
-			AddCraft( typeof( WarHammer ), bashingTitle, "Martelo de Guerra", 34.2, 84.2, typeof( IronIngot ), 1044036, 13, 1044037 );
+            AddCraft( typeof( HammerPick ), bashingTitle, BlacksmithyStringConstants.ITEM_HAMMER_PICK, 34.2, 84.2, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( Mace ), bashingTitle, BlacksmithyStringConstants.ITEM_MACE, 14.5, 64.5, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 8, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( Maul ), bashingTitle, BlacksmithyStringConstants.ITEM_MAUL, 19.4, 69.4, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 10, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( WarMace ), bashingTitle, BlacksmithyStringConstants.ITEM_WAR_MACE, 28.0, 78.0, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 14, BlacksmithyConstants.MSG_MISSING_RESOURCE );
+			AddCraft( typeof( WarHammer ), bashingTitle, BlacksmithyStringConstants.ITEM_WAR_HAMMER, 34.2, 84.2, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 13, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 
-            /*AddCraft(typeof(DiamondMace), bashingTitle, "battle mace", 28.0, 78.0, typeof(IronIngot), 1044036, 14, 1044037);
-            AddCraft(typeof(Scepter), "Bashing", 1029916, 21.4, 71.4, typeof(IronIngot), 1044036, 10, 1044037);
-            index = AddCraft(typeof(Tessen), "Bashing", 1030222, 85.0, 135.0, typeof(IronIngot), 1044036, 16, 1044037);
-            AddSkill(index, SkillName.Tailoring, 50.0, 55.0);
-            AddRes(index, typeof(Cloth), 1044286, 10, 1044287);*/
 
             #endregion
 
-            // Set the overridable material
-            SetSubRes( typeof( IronIngot ), 1044022 );
+			// Set the overridable material
+			SetSubRes( typeof( IronIngot ), BlacksmithyStringConstants.INGOT_IRON );
 
 			// Add every material you want the player to be able to choose from
 			// This will override the overridable material
-			// The NameNumber is in CILOC file!!!!
-			AddSubRes( typeof( IronIngot ),			1044022, 00.0, 1044036, 1044267 );
-			AddSubRes( typeof( DullCopperIngot ),	1044023, 65.0, 1044036, 1044268 );
-			AddSubRes( typeof( CopperIngot ),		1044025, 70.0, 1044036, 1044268 );
-			AddSubRes( typeof( BronzeIngot ),		1044026, 75.0, 1044036, 1044268 );
-            AddSubRes( typeof(ShadowIronIngot),		1044024, 80.0, 1044036, 1044268);
-            AddSubRes( typeof(PlatinumIngot),		6663000, 85.0, 1044036, 1044268);
-            AddSubRes( typeof( GoldIngot ),			1044027, 85.0, 1044036, 1044268 );
-			AddSubRes( typeof( AgapiteIngot ),		1044028, 90.0, 1044036, 1044268 );
-			AddSubRes( typeof( VeriteIngot ),		1044029, 95.0, 1044036, 1044268 );
-			AddSubRes( typeof( ValoriteIngot ),		1044030, 95.0, 1044036, 1044268 );
-            AddSubRes( typeof( TitaniumIngot),		6661000, 100.0, 1044036, 1044268);
-            AddSubRes( typeof(RoseniumIngot),		6662000, 100.0, 1044036, 1044268);
-            /*AddSubRes( typeof( NepturiteIngot ),	1036173, 105.0, 1044036, 1044268 );
-			AddSubRes( typeof( ObsidianIngot ),		1036162, 105.0, 1044036, 1044268 );
-			AddSubRes( typeof( SteelIngot ),		1036144, 110.0, 1044036, 1044268 );
-			AddSubRes( typeof( BrassIngot ),		1036152, 110.0, 1044036, 1044268 );
-			AddSubRes( typeof( MithrilIngot ),		1036137, 115.0, 1044036, 1044268 );
-			AddSubRes( typeof( XormiteIngot ),		1034437, 115.0, 1044036, 1044268 );
-			AddSubRes( typeof( DwarvenIngot ),		1036181, 120.0, 1044036, 1044268 );*/
+			AddSubRes( typeof( IronIngot ), BlacksmithyStringConstants.INGOT_IRON, 00.0, BlacksmithyConstants.MSG_SUB_RESOURCE_ERROR );
+			AddSubRes( typeof( DullCopperIngot ), BlacksmithyStringConstants.INGOT_DULL_COPPER, 65.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( CopperIngot ), BlacksmithyStringConstants.INGOT_COPPER, 70.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( BronzeIngot ), BlacksmithyStringConstants.INGOT_BRONZE, 75.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( ShadowIronIngot ), BlacksmithyStringConstants.INGOT_SHADOW_IRON, 80.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( PlatinumIngot ), BlacksmithyStringConstants.INGOT_PLATINUM, 85.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( GoldIngot ), BlacksmithyStringConstants.INGOT_GOLD, 85.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( AgapiteIngot ), BlacksmithyStringConstants.INGOT_AGAPITE, 90.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( VeriteIngot ), BlacksmithyStringConstants.INGOT_VERITE, 95.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( ValoriteIngot ), BlacksmithyStringConstants.INGOT_VALORITE, 95.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( TitaniumIngot ), BlacksmithyStringConstants.INGOT_TITANIUM, 100.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
+			AddSubRes( typeof( RoseniumIngot ), BlacksmithyStringConstants.INGOT_ROSENIUM, 100.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
 
-			SetSubRes2( typeof( RedScales ), 1060875 );
+			SetSubRes2( typeof( RedScales ), BlacksmithyConstants.MSG_RED_SCALES_NAME );
 
-			AddSubRes2( typeof( RedScales ),		1060875, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof(YellowScales),		1060876, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof( BlackScales ),		1060877, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof( GreenScales ),		1060878, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof( WhiteScales ),		1060879, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof( BlueScales ),		1060880, 0.0, 1053137, 1054018 );
-			AddSubRes2( typeof( DinosaurScales ),	1054017, 0.0, 1053137, 1054018 );
+			AddSubRes2( typeof( RedScales ),		BlacksmithyConstants.MSG_RED_SCALES_NAME, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof(YellowScales),		BlacksmithyConstants.MSG_YELLOW_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( BlackScales ),		BlacksmithyConstants.MSG_BLACK_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( GreenScales ),		BlacksmithyConstants.MSG_GREEN_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( WhiteScales ),		BlacksmithyConstants.MSG_WHITE_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( BlueScales ),		BlacksmithyConstants.MSG_BLUE_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( DinosaurScales ),	BlacksmithyConstants.MSG_DINOSAUR_SCALES_NAME, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
 
 			Resmelt = true;
 			Repair = true;
 			MarkOption = true;
 			CanEnhance = Core.AOS;
 		}
+
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Timer to synchronize sound effect with anvil hit (currently unused)
+		/// </summary>
+		private class InternalTimer : Timer
+		{
+			private Mobile m_From;
+
+			/// <summary>
+			/// Initializes a new instance of the InternalTimer class
+			/// </summary>
+			/// <param name="from">The mobile to play sound for</param>
+			public InternalTimer( Mobile from ) : base( TimeSpan.FromSeconds( BlacksmithyConstants.TIMER_DELAY_SECONDS ) )
+			{
+				m_From = from;
+			}
+
+			/// <summary>
+			/// Called when the timer expires
+			/// </summary>
+			protected override void OnTick()
+			{
+				m_From.PlaySound( BlacksmithyConstants.SOUND_BLACKSMITH );
+			}
+		}
+
+		#endregion
 	}
 
+	/// <summary>
+	/// Attribute used to mark items as forges for blacksmithy crafting
+	/// </summary>
 	public class ForgeAttribute : Attribute
 	{
+		/// <summary>
+		/// Initializes a new instance of the ForgeAttribute class
+		/// </summary>
 		public ForgeAttribute()
 		{
 		}
 	}
 
+	/// <summary>
+	/// Attribute used to mark items as anvils for blacksmithy crafting
+	/// </summary>
 	public class AnvilAttribute : Attribute
 	{
+		/// <summary>
+		/// Initializes a new instance of the AnvilAttribute class
+		/// </summary>
 		public AnvilAttribute()
 		{
 		}

@@ -932,42 +932,42 @@ namespace Server.Engines.Craft
 									}
 									else
 									{
-                                        craftSystem.stopCraftAction(pm);
+                                        craftSystem.StopCraftAction(pm);
                                         from.EndAction( typeof( CraftSystem ) );
 										from.SendGump( new CraftGump( from, craftSystem, tool, message ) );
 									}
 								}
 								else
 								{
-                                    craftSystem.stopCraftAction(pm);
+                                    craftSystem.StopCraftAction(pm);
                                     from.EndAction( typeof( CraftSystem ) );
 									from.SendGump( new CraftGump( from, craftSystem, tool, message ) );
 								}
 							}
 							else
 							{
-                                craftSystem.stopCraftAction(pm);
+                                craftSystem.StopCraftAction(pm);
                                 from.EndAction( typeof( CraftSystem ) );
 								from.SendGump( new CraftGump( from, craftSystem, tool, badCraft ) );
 							}
 						}
 						else
 						{
-                            craftSystem.stopCraftAction(pm);
+                            craftSystem.StopCraftAction(pm);
                             from.EndAction( typeof( CraftSystem ) );
 							from.SendGump( new CraftGump( from, craftSystem, tool, 1072847 ) ); // You must learn that recipe from a scroll.
 						}
 					}
 					else
 					{
-                        craftSystem.stopCraftAction(pm);
+                        craftSystem.StopCraftAction(pm);
                         from.EndAction( typeof( CraftSystem ) );
 						from.SendGump( new CraftGump( from, craftSystem, tool, 1044153 ) ); // You don't have the required skills to attempt this item.
 					}
 				}
 				else
 				{
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
                     from.EndAction( typeof( CraftSystem ) );
 					from.SendGump( new CraftGump( from, craftSystem, tool, RequiredExpansionMessage( RequiredExpansion ) ) ); //The {0} expansion is required to attempt this item.
 				}
@@ -1003,7 +1003,7 @@ namespace Server.Engines.Craft
 				else
 				{
                     from.SendLocalizedMessage(badCraft);
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
                 }
 				return;
 			}
@@ -1021,7 +1021,7 @@ namespace Server.Engines.Craft
 				else if ( checkMessage is string )
 					from.SendMessage( (string)checkMessage );
 
-                craftSystem.stopCraftAction(pm);
+                craftSystem.StopCraftAction(pm);
 
                 return;
 			}
@@ -1034,7 +1034,7 @@ namespace Server.Engines.Craft
 				else if ( checkMessage is string )
 					from.SendMessage( (string)checkMessage );
 
-                craftSystem.stopCraftAction(pm);
+                craftSystem.StopCraftAction(pm);
 
                 return;
 			}
@@ -1064,7 +1064,7 @@ namespace Server.Engines.Craft
 					else if (message is string)
 						from.SendMessage((string)message);
 
-					craftSystem.stopCraftAction(pm);
+					craftSystem.StopCraftAction(pm);
 
 					return;
 				}
@@ -1077,7 +1077,7 @@ namespace Server.Engines.Craft
 					else if (message is string)
 						from.SendMessage((string)message);
 
-					craftSystem.stopCraftAction(pm);
+					craftSystem.StopCraftAction(pm);
 
 					return;
 				}
@@ -1093,7 +1093,7 @@ namespace Server.Engines.Craft
 						if (hammer.UsesRemaining < 1)
 						{
 							hammer.Delete();
-							craftSystem.stopCraftAction(pm);
+							craftSystem.StopCraftAction(pm);
 						}
 
 					}
@@ -1105,7 +1105,7 @@ namespace Server.Engines.Craft
 				if (toolBroken)
 				{
 					tool.Delete();
-					craftSystem.stopCraftAction(pm);
+					craftSystem.StopCraftAction(pm);
 				}
 
 
@@ -2156,7 +2156,7 @@ namespace Server.Engines.Craft
 				if (tool != null && !tool.Deleted && tool.UsesRemaining > 0)
 					from.SendGump(new CraftGump(from, craftSystem, tool, num));
 				else if (num > 0) { 
-					from.SendLocalizedMessage(num); craftSystem.stopCraftAction(pm);
+					from.SendLocalizedMessage(num); craftSystem.StopCraftAction(pm);
                 }
 			}
 			else if ( !allRequiredSkills )
@@ -2166,7 +2166,7 @@ namespace Server.Engines.Craft
 				else 
 				{
                     from.SendLocalizedMessage(1044153); // You don't have the required skills to attempt this item.
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
                 }
 					
 			}
@@ -2188,7 +2188,7 @@ namespace Server.Engines.Craft
 					else if ( message is string )
 						from.SendMessage( (string)message );
 
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
                     return;
 				}
 
@@ -2200,7 +2200,7 @@ namespace Server.Engines.Craft
 				if (toolBroken) 
 				{
                     tool.Delete();
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
                 }
 
                 // SkillCheck failed.
@@ -2213,7 +2213,7 @@ namespace Server.Engines.Craft
 					from.SendLocalizedMessage( num );
 
 
-                    craftSystem.stopCraftAction(pm);
+                    craftSystem.StopCraftAction(pm);
 				}
         }
 		}
@@ -2263,7 +2263,7 @@ namespace Server.Engines.Craft
 							m_From.SendLocalizedMessage( badCraft );
 
                         PlayerMobile pm = m_From as PlayerMobile;
-                        m_CraftSystem.stopCraftAction(pm);
+                        m_CraftSystem.StopCraftAction(pm);
                         return;
 					}
 
