@@ -192,17 +192,8 @@ namespace Server.Engines.Craft
 		/// <summary>Message ID for sub-resource skill error</summary>
 		public const int MSG_SUB_RESOURCE_SKILL_ERROR = 1044268;
 
-		/// <summary>Message ID for red scales name</summary>
-		public const int MSG_RED_SCALES_NAME = 1060875;
-
-		/// <summary>Message ID for scale resource error</summary>
-		public const int MSG_SCALE_RESOURCE_ERROR = 1053137;
-
 		/// <summary>Message ID for scale skill error</summary>
 		public const int MSG_SCALE_SKILL_ERROR = 1054018;
-
-		/// <summary>Message ID for dinosaur scales name</summary>
-		public const int MSG_DINOSAUR_SCALES_NAME = 1054017;
 
 		/// <summary>Message ID for harpoon resource error</summary>
 		public const int MSG_HARPOON_RESOURCE_ERROR = 1044351;
@@ -244,26 +235,7 @@ namespace Server.Engines.Craft
 		/// <summary>Message ID for platinum ingot name (custom)</summary>
 		public const int MSG_PLATINUM_INGOT = 6663000;
 
-		#endregion
-
-		#region Scale Message IDs
-
-		/// <summary>Message ID for yellow scales name</summary>
-		public const int MSG_YELLOW_SCALES = 1060876;
-
-		/// <summary>Message ID for black scales name</summary>
-		public const int MSG_BLACK_SCALES = 1060877;
-
-		/// <summary>Message ID for green scales name</summary>
-		public const int MSG_GREEN_SCALES = 1060878;
-
-		/// <summary>Message ID for white scales name</summary>
-		public const int MSG_WHITE_SCALES = 1060879;
-
-		/// <summary>Message ID for blue scales name</summary>
-		public const int MSG_BLUE_SCALES = 1060880;
-
-		#endregion
+	#endregion
 	}
 }
 

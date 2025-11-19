@@ -90,47 +90,47 @@ namespace Server.Engines.Craft
             //SetUseAllRes( index, true );
 
             // 1
-            AddCraft(typeof(NewArmoireG), "Armários", "Armário de Ripas", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredArmoireB), "Armários", "Armário Bonito", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredArmoireA), "Armários", "Cristaleira", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(FancyArmoire), "Armários", "Guarda-Roupa", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(Armoire), "Armários", "Roupeiro", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredCabinetB), "Armários", "Armário de Cozinha", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(ColoredCabinetF), "Armários", "Armário Elegante (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
-            AddCraft(typeof(ColoredCabinetM), "Armários", "Armário Elegante (Médio)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredCabinetE), "Armários", "Armário Simples (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
-            AddCraft(typeof(ColoredCabinetC), "Armários", "Armário Simples (Médio)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(ColoredCabinetG), "Armários", "Armário Curto", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
-            AddCraft(typeof(ColoredCabinetD), "Armários", "Armário de Livros (Estreito)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(ColoredCabinetA), "Armários", "Armário de Livros (Grande)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(ColoredCabinetN), "Armários", "Armário de Armazenamento (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredCabinetH), "Armários", "Armário de Armazenamento (Grande)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredCabinetK), "Armários", "Armário Alto Simples", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ColoredCabinetL), "Armários", "Armário Alto Elegante", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
-            /*AddCraft( typeof( NewArmoireA ), 		"Armários", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
-			AddCraft( typeof( NewArmoireB ), 		"Armários", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
-			AddCraft( typeof( NewArmoireC ), 		"Armários", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
-            /*AddCraft( typeof( NewArmoireD ), 		"Armários", "armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
-            /*AddCraft( typeof( NewArmoireE ),		"Armários", "empty armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
-			AddCraft( typeof( NewArmoireF ), 		"Armários", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
-            /*AddCraft( typeof( NewArmoireH ), 		"Armários", "empty armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
-			AddCraft( typeof( NewArmoireI ), 		"Armários", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
-			AddCraft( typeof( NewArmoireJ ), 		"Armários", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
+            AddCraft(typeof(NewArmoireG), "Armï¿½rios", "Armï¿½rio de Ripas", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredArmoireB), "Armï¿½rios", "Armï¿½rio Bonito", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredArmoireA), "Armï¿½rios", "Cristaleira", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(FancyArmoire), "Armï¿½rios", "Guarda-Roupa", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(Armoire), "Armï¿½rios", "Roupeiro", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredCabinetB), "Armï¿½rios", "Armï¿½rio de Cozinha", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(ColoredCabinetF), "Armï¿½rios", "Armï¿½rio Elegante (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
+            AddCraft(typeof(ColoredCabinetM), "Armï¿½rios", "Armï¿½rio Elegante (Mï¿½dio)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredCabinetE), "Armï¿½rios", "Armï¿½rio Simples (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
+            AddCraft(typeof(ColoredCabinetC), "Armï¿½rios", "Armï¿½rio Simples (Mï¿½dio)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(ColoredCabinetG), "Armï¿½rios", "Armï¿½rio Curto", 51.5, 76.5, typeof(Board), 1015101, 25, 1044351);
+            AddCraft(typeof(ColoredCabinetD), "Armï¿½rios", "Armï¿½rio de Livros (Estreito)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(ColoredCabinetA), "Armï¿½rios", "Armï¿½rio de Livros (Grande)", 51.5, 76.5, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(ColoredCabinetN), "Armï¿½rios", "Armï¿½rio de Armazenamento (Pequeno)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredCabinetH), "Armï¿½rios", "Armï¿½rio de Armazenamento (Grande)", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredCabinetK), "Armï¿½rios", "Armï¿½rio Alto Simples", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ColoredCabinetL), "Armï¿½rios", "Armï¿½rio Alto Elegante", 51.5, 76.5, typeof(Board), 1015101, 35, 1044351);
+            /*AddCraft( typeof( NewArmoireA ), 		"Armï¿½rios", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
+			AddCraft( typeof( NewArmoireB ), 		"Armï¿½rios", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
+			AddCraft( typeof( NewArmoireC ), 		"Armï¿½rios", "bamboo armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
+            /*AddCraft( typeof( NewArmoireD ), 		"Armï¿½rios", "armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
+            /*AddCraft( typeof( NewArmoireE ),		"Armï¿½rios", "empty armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
+			AddCraft( typeof( NewArmoireF ), 		"Armï¿½rios", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
+            /*AddCraft( typeof( NewArmoireH ), 		"Armï¿½rios", "empty armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
+			AddCraft( typeof( NewArmoireI ), 		"Armï¿½rios", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
+			AddCraft( typeof( NewArmoireJ ), 		"Armï¿½rios", "open armoire", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
             /*AddCraft( typeof( ColoredCabinetI ), "Gabinetes", "tall fancy cabinet*", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );
 			AddCraft( typeof( ColoredCabinetJ ), "Gabinetes", "tall medium cabinet*", 51.5, 76.5, typeof( Board ), 1015101, 35, 1044351 );*/
 
             // 2
-            AddCraft(typeof(SmallCrate), "Baús & Caixas", "Caixa Simples (Pequena)", 10.0, 35.0, typeof(Board), 1015101, 8, 1044351);
-            AddCraft(typeof(MediumCrate), "Baús & Caixas", "Caixa Simples (Média)", 31.0, 56.0, typeof(Board), 1015101, 15, 1044351);
-            AddCraft(typeof(LargeCrate), "Baús & Caixas", "Caixa Simples (Grande)", 47.3, 72.3, typeof(Board), 1015101, 18, 1044351);
-            AddCraft(typeof(WoodenBox), "Baús & Caixas", "Baú de Madeira (Pequeno)", 21.0, 46.0, typeof(Board), 1015101, 10, 1044351);
-            AddCraft(typeof(WoodenChest), "Baús & Caixas", "Baú de Madeira (Médio)", 73.6, 98.6, typeof(Board), 1015101, 20, 1044351);
-            AddCraft(typeof(FinishedWoodenChest), "Baús & Caixas", "Baú de Madeira (Grande)", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(GildedWoodenChest), "Baús & Caixas", "Baú de Madeira Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(WoodenFootLocker), "Baús & Caixas", "Baú de Madeira (Baixo)", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
-            index = AddCraft(typeof(WoodenCoffin), "Baús & Caixas", "Caixão Simples", 85.0, 90.0, typeof(Board), 1015101, 40, 1044351);
+            AddCraft(typeof(SmallCrate), "Baï¿½s & Caixas", "Caixa Simples (Pequena)", 10.0, 35.0, typeof(Board), 1015101, 8, 1044351);
+            AddCraft(typeof(MediumCrate), "Baï¿½s & Caixas", "Caixa Simples (Mï¿½dia)", 31.0, 56.0, typeof(Board), 1015101, 15, 1044351);
+            AddCraft(typeof(LargeCrate), "Baï¿½s & Caixas", "Caixa Simples (Grande)", 47.3, 72.3, typeof(Board), 1015101, 18, 1044351);
+            AddCraft(typeof(WoodenBox), "Baï¿½s & Caixas", "Baï¿½ de Madeira (Pequeno)", 21.0, 46.0, typeof(Board), 1015101, 10, 1044351);
+            AddCraft(typeof(WoodenChest), "Baï¿½s & Caixas", "Baï¿½ de Madeira (Mï¿½dio)", 73.6, 98.6, typeof(Board), 1015101, 20, 1044351);
+            AddCraft(typeof(FinishedWoodenChest), "Baï¿½s & Caixas", "Baï¿½ de Madeira (Grande)", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(GildedWoodenChest), "Baï¿½s & Caixas", "Baï¿½ de Madeira Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(WoodenFootLocker), "Baï¿½s & Caixas", "Baï¿½ de Madeira (Baixo)", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
+            index = AddCraft(typeof(WoodenCoffin), "Baï¿½s & Caixas", "Caixï¿½o Simples", 85.0, 90.0, typeof(Board), 1015101, 40, 1044351);
             AddSkill(index, SkillName.Forensics, 60.0, 70.0);
-            index = AddCraft(typeof(WoodenCasket), "Baús & Caixas", "Caixão Elegante", 90.0, 95.0, typeof(Board), 1015101, 40, 1044351);
+            index = AddCraft(typeof(WoodenCasket), "Baï¿½s & Caixas", "Caixï¿½o Elegante", 90.0, 95.0, typeof(Board), 1015101, 40, 1044351);
             AddSkill(index, SkillName.Forensics, 70.0, 80.0);
 
             // 3
@@ -141,13 +141,13 @@ namespace Server.Engines.Craft
             AddCraft(typeof(BeekeeperCrate), "Caixas", "Caixa de Apicultor", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(BlacksmithCrate), "Caixas", "Caixa de Ferreiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(BowyerCrate), "Caixas", "Caixa de Arqueiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
-            AddCraft(typeof(ButcherCrate), "Caixas", "Caixa de Açougueiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
+            AddCraft(typeof(ButcherCrate), "Caixas", "Caixa de Aï¿½ougueiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(CarpenterCrate), "Caixas", "Caixa de Carpinteiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(FletcherCrate), "Caixas", "Caixa de Flecheiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(HealerCrate), "Caixas", "Caixa de Curandeiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(JewelerCrate), "Caixas", "Caixa de Joalheiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
-            AddCraft(typeof(LibrarianCrate), "Caixas", "Caixa de Bibliotecário", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
-            AddCraft(typeof(MusicianCrate), "Caixas", "Caixa de Músico", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
+            AddCraft(typeof(LibrarianCrate), "Caixas", "Caixa de Bibliotecï¿½rio", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
+            AddCraft(typeof(MusicianCrate), "Caixas", "Caixa de Mï¿½sico", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(SailorCrate), "Caixas", "Caixa de Marinheiro", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(TailorCrate), "Caixas", "Caixa de Alfaiate", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
             AddCraft(typeof(TinkerCrate), "Caixas", "Caixa de Inventor", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);
@@ -162,34 +162,34 @@ namespace Server.Engines.Craft
             /*AddCraft(typeof(TreasureCrate), "Caixas", "treasure Caixa de ", 47.3, 72.3, typeof(Board), 1015101, 20, 1044351);*/
 
             // 4
-            AddCraft(typeof(TallCabinet), "Cômodas & Gaveteiros", "Gabinete Alto", 90.0, 115.0, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(ShortCabinet), "Cômodas & Gaveteiros", "Gabinete Baixo", 90.0, 115.0, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(MapleArmoire), "Cômodas & Gaveteiros", "Cômoda Simples", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
-            AddCraft(typeof(CherryArmoire), "Cômodas & Gaveteiros", "Cômoda Grande", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
-            AddCraft(typeof(OrnateWoodenChest), "Cômodas & Gaveteiros", "Cômoda Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
-            AddCraft(typeof(RedArmoire), "Cômodas & Gaveteiros", "Gaveteiro Simples", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
-            AddCraft(typeof(ElegantArmoire), "Cômodas & Gaveteiros", "Gaveteiro Elegante", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
-            AddCraft(typeof(PlainWoodenChest), "Cômodas & Gaveteiros", "Gaveteiro Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(TallCabinet), "Cï¿½modas & Gaveteiros", "Gabinete Alto", 90.0, 115.0, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(ShortCabinet), "Cï¿½modas & Gaveteiros", "Gabinete Baixo", 90.0, 115.0, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(MapleArmoire), "Cï¿½modas & Gaveteiros", "Cï¿½moda Simples", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
+            AddCraft(typeof(CherryArmoire), "Cï¿½modas & Gaveteiros", "Cï¿½moda Grande", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
+            AddCraft(typeof(OrnateWoodenChest), "Cï¿½modas & Gaveteiros", "Cï¿½moda Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
+            AddCraft(typeof(RedArmoire), "Cï¿½modas & Gaveteiros", "Gaveteiro Simples", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
+            AddCraft(typeof(ElegantArmoire), "Cï¿½modas & Gaveteiros", "Gaveteiro Elegante", 90.0, 115.0, typeof(Board), 1015101, 40, 1044351);
+            AddCraft(typeof(PlainWoodenChest), "Cï¿½modas & Gaveteiros", "Gaveteiro Real", 90.0, 115.0, typeof(Board), 1015101, 30, 1044351);
 
             // 5
             AddCraft(typeof(NewShelfA), "Estantes", "Estante de Bambu (Pequena)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
             AddCraft(typeof(NewShelfB), "Estantes", "Estante de Bambu (Grande)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(NewShelfE), "Estantes", "Estante Rústica (Pequena)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(NewShelfF), "Estantes", "Estante Rústica (Grande)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(NewShelfD), "Estantes", "Estante Maciça (Pequena)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
-            AddCraft(typeof(EmptyBookcase), "Estantes", "Estante Maciça (Grande)", 41.5, 66.5, typeof(Board), 1015101, 25, 1044351);
+            AddCraft(typeof(NewShelfE), "Estantes", "Estante Rï¿½stica (Pequena)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(NewShelfF), "Estantes", "Estante Rï¿½stica (Grande)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(NewShelfD), "Estantes", "Estante Maciï¿½a (Pequena)", 41.5, 66.5, typeof(Board), 1015101, 35, 1044351);
+            AddCraft(typeof(EmptyBookcase), "Estantes", "Estante Maciï¿½a (Grande)", 41.5, 66.5, typeof(Board), 1015101, 25, 1044351);
 
             // 6 - Furniture
             AddCraft(typeof(FootStool), "Mesas & Assentos", "Banquinho", 11.0, 28.0, typeof(Board), 1015101, 9, 1044351);
             AddCraft(typeof(Stool), "Mesas & Assentos", "Banco", 27.0, 36.0, typeof(Board), 1015101, 9, 1044351);
-            AddCraft(typeof(WoodenBench), "Mesas & Assentos", "Banco Rústico", 35.6, 47.6, typeof(Board), 1015101, 17, 1044351);
+            AddCraft(typeof(WoodenBench), "Mesas & Assentos", "Banco Rï¿½stico", 35.6, 47.6, typeof(Board), 1015101, 17, 1044351);
             AddCraft(typeof(BambooChair), "Mesas & Assentos", "Cadeira de Palha", 46.0, 50.0, typeof(Board), 1015101, 13, 1044351);
             AddCraft(typeof(WoodenChair), "Mesas & Assentos", "Cadeira Simples", 49.0, 56.0, typeof(Board), 1015101, 13, 1044351);
             AddCraft(typeof(WoodenChairCushion), "Mesas & Assentos", "Cadeira Normal", 52.1, 59.1, typeof(Board), 1015101, 13, 1044351);
             AddCraft(typeof(FancyWoodenChairCushion), "Mesas & Assentos", "Cadeira Elegante", 58.1, 67.1, typeof(Board), 1015101, 15, 1044351);
             AddCraft(typeof(Throne), "Mesas & Assentos", "Trono Simples", 66.6, 71.6, typeof(Board), 1015101, 19, 1044351);
             AddCraft(typeof(WoodenThrone), "Mesas & Assentos", "Trono Elegante", 70.6, 77.6, typeof(Board), 1015101, 17, 1044351);
-            index = AddCraft(typeof(OrnateElvenChair), "Mesas & Assentos", "Trono Élfico", 77.0, 82.0, typeof(Board), 1044041, 30, 1044351);
+            index = AddCraft(typeof(OrnateElvenChair), "Mesas & Assentos", "Trono ï¿½lfico", 77.0, 82.0, typeof(Board), 1044041, 30, 1044351);
 
             AddCraft(typeof(Nightstand), "Mesas & Assentos", "Mesa de Cabeceira", 42.1, 57.1, typeof(Board), 1015101, 17, 1044351);
             AddCraft(typeof(PlainLargeTable), "Mesas & Assentos", "Mesa Larga", 55.1, 67.1, typeof(Board), 1015101, 23, 1044351);
@@ -229,7 +229,7 @@ namespace Server.Engines.Craft
             AddSkill(index, SkillName.Musicianship, 65.0, 70.0);
             AddRes(index, typeof(IronIngot), 1044036, 10, 1044037);
 
-            index = AddCraft(typeof(Lute), "Instrumentos Musicais", "Alaúde", 92.4, 96.3, typeof(Board), 1015101, 24, 1044351);
+            index = AddCraft(typeof(Lute), "Instrumentos Musicais", "Alaï¿½de", 92.4, 96.3, typeof(Board), 1015101, 24, 1044351);
             AddSkill(index, SkillName.Musicianship, 75.0, 80.0);
             AddRes(index, typeof(IronIngot), 1044036, 7, 1044037);
 
@@ -248,8 +248,8 @@ namespace Server.Engines.Craft
             index = AddCraft(typeof(WildStaff), 1044295, "cajado druida", 56.9, 60.9, typeof(Board), 1015101, 8, 1044351);
             AddRes(index, typeof(Feather), 1044562, 4, 1044563);
 
-            AddCraft(typeof(QuarterStaff), 1044295, "bastão", 60.6, 65.6, typeof(Board), 1015101, 8, 1044351);
-            AddCraft(typeof(GnarledStaff), 1044295, "bastão retorciddo", 64.9, 70.9, typeof(Board), 1015101, 7, 1044351);
+            AddCraft(typeof(QuarterStaff), 1044295, "bastï¿½o", 60.6, 65.6, typeof(Board), 1015101, 8, 1044351);
+            AddCraft(typeof(GnarledStaff), 1044295, "bastï¿½o retorciddo", 64.9, 70.9, typeof(Board), 1015101, 7, 1044351);
             AddCraft(typeof(WoodenShield), 1044295, "escudo de madeira", 70.6, 75.6, typeof(Board), 1015101, 12, 1044351);
 
             index = AddCraft(typeof(Bokuto), 1044295, 1030227, 73.0, 78.5, typeof(Board), 1015101, 9, 1044351);
@@ -260,28 +260,28 @@ namespace Server.Engines.Craft
             AddRes(index, typeof(IronIngot), 1044036, 5, 1044037);
 
             // Armor
-            index = AddCraft(typeof(WoodenPlateArms), 1044295, "ombreiras de madeira", 66.3, 116.3, typeof(ReaperOil), "óleo ceifador", 2, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 2, 1042081);
+            index = AddCraft(typeof(WoodenPlateArms), 1044295, "ombreiras de madeira", 66.3, 116.3, typeof(ReaperOil), "ï¿½leo ceifador", 2, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 2, 1042081);
             AddRes(index, typeof(Board), 1015101, 18, 1044351);
 
-            index = AddCraft(typeof(WoodenPlateHelm), 1044295, "elmo de madeira", 62.6, 112.6, typeof(ReaperOil), "óleo ceifador", 1, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 1, 1042081);
+            index = AddCraft(typeof(WoodenPlateHelm), 1044295, "elmo de madeira", 62.6, 112.6, typeof(ReaperOil), "ï¿½leo ceifador", 1, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 1, 1042081);
             AddRes(index, typeof(Board), 1015101, 15, 1044351);
 
-            index = AddCraft(typeof(WoodenPlateGloves), 1044295, "manoplas de madeira", 58.9, 108.9, typeof(ReaperOil), "óleo ceifador", 1, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 1, 1042081);
+            index = AddCraft(typeof(WoodenPlateGloves), 1044295, "manoplas de madeira", 58.9, 108.9, typeof(ReaperOil), "ï¿½leo ceifador", 1, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 1, 1042081);
             AddRes(index, typeof(Board), 1015101, 12, 1044351);
 
-            index = AddCraft(typeof(WoodenPlateGorget), 1044295, "gorgel de madeira", 56.4, 106.4, typeof(ReaperOil), "óleo ceifador", 1, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 1, 1042081);
+            index = AddCraft(typeof(WoodenPlateGorget), 1044295, "gorgel de madeira", 56.4, 106.4, typeof(ReaperOil), "ï¿½leo ceifador", 1, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 1, 1042081);
             AddRes(index, typeof(Board), 1015101, 10, 1044351);
 
-            index = AddCraft(typeof(WoodenPlateLegs), 1044295, "calça de madeira", 68.8, 118.8, typeof(ReaperOil), "óleo ceifador", 3, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 3, 1042081);
+            index = AddCraft(typeof(WoodenPlateLegs), 1044295, "calï¿½a de madeira", 68.8, 118.8, typeof(ReaperOil), "ï¿½leo ceifador", 3, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 3, 1042081);
             AddRes(index, typeof(Board), 1015101, 20, 1044351);
 
-            index = AddCraft(typeof(WoodenPlateChest), 1044295, "peitoral de madeira", 75.0, 125.0, typeof(ReaperOil), "óleo ceifador", 3, 1042081);
-            AddRes(index, typeof(MysticalTreeSap), "seiva de árvore mística", 3, 1042081);
+            index = AddCraft(typeof(WoodenPlateChest), 1044295, "peitoral de madeira", 75.0, 125.0, typeof(ReaperOil), "ï¿½leo ceifador", 3, 1042081);
+            AddRes(index, typeof(MysticalTreeSap), "seiva de ï¿½rvore mï¿½stica", 3, 1042081);
             AddRes(index, typeof(Board), 1015101, 25, 1044351);
 
             
@@ -378,20 +378,20 @@ namespace Server.Engines.Craft
             index = AddCraft(typeof(Kindling), "Outros & Variados", "lote de gravetos", 9.0, 15.0, typeof(Log), 1015101, 1, 1044351);
             SetUseAllRes(index, true);
 
-            index = AddCraft(typeof(BarkFragment), "Outros & Variados", "casca de árvore", 14.0, 20.0, typeof(Board), 1015101, 2, 1044465);
+            index = AddCraft(typeof(BarkFragment), "Outros & Variados", "casca de ï¿½rvore", 14.0, 20.0, typeof(Board), 1015101, 2, 1044465);
             SetUseAllRes(index, true);
 
             AddCraft(typeof(BarrelStaves), "Outros & Variados", 1027857, 18.0, 25.0, typeof(Board), 1015101, 5, 1044351);
             AddCraft(typeof(BarrelLid), "Outros & Variados", 1027608, 23.0, 30.2, typeof(Board), 1015101, 4, 1044351);
 
-            AddCraft(typeof(MixingSpoon), "Outros & Variados", "misturador de caldeirão", 30.0, 40.0, typeof(Board), 1015101, 5, 1044351);
+            AddCraft(typeof(MixingSpoon), "Outros & Variados", "misturador de caldeirï¿½o", 30.0, 40.0, typeof(Board), 1015101, 5, 1044351);
 
             index = AddCraft(typeof(Keg), "Outros & Variados", 1023711, 75.0, 80.8, typeof(BarrelStaves), 1044288, 4, 1044253);
             AddRes(index, typeof(BarrelHoops), 1044289, 1, 1044253);
             AddRes(index, typeof(BarrelLid), 1044251, 2, 1044253);
             AddRes(index, typeof(BarrelTap), 1044252, 1, 1044253);
 
-            index = AddCraft(typeof(AlchemyTub), "Outros & Variados", "caldeirão de alquimia", 87.8, 102.8, typeof(BarrelStaves), 1044288, 4, 1044253);
+            index = AddCraft(typeof(AlchemyTub), "Outros & Variados", "caldeirï¿½o de alquimia", 87.8, 102.8, typeof(BarrelStaves), 1044288, 4, 1044253);
             AddRes(index, typeof(BarrelHoops), 1044289, 1, 1044253);
             AddRes(index, typeof(BarrelLid), 1044251, 1, 1044253);
 
@@ -419,18 +419,18 @@ namespace Server.Engines.Craft
 			MarkOption = true;
 			CanEnhance = Core.AOS;
 
-			SetSubRes( typeof( Board ), 1072643 );
+		SetSubRes( typeof( Board ), "Madeira Comum" );
 
-			// Add every material you want the player to be able to choose from
-			// This will override the overridable material	TODO: Verify the required skill amount
-			AddSubRes( typeof( Board ), 1072643, 00.0, 1015101, 1072652 );
-			AddSubRes( typeof( AshBoard ), 1095379, 60.0, 1015101, 1072652 );
-			AddSubRes( typeof( EbonyBoard ), 1095381, 70.0, 1015101, 1072652 );
-            AddSubRes(typeof(ElvenBoard), 1095535, 80.0, 1015101, 1072652);
-            AddSubRes(typeof(GoldenOakBoard), 1095382, 85.0, 1015101, 1072652);
-            AddSubRes(typeof(CherryBoard), 1095380, 90.0, 1015101, 1072652);
-            AddSubRes(typeof(RosewoodBoard), 1095387, 95.0, 1015101, 1072652);
-            AddSubRes(typeof(HickoryBoard), 1095383, 100.0, 1015101, 1072652);
+		// Add every material you want the player to be able to choose from
+		// This will override the overridable material	TODO: Verify the required skill amount
+		AddSubRes( typeof( Board ), "Madeira Comum", 00.0, 1072652 );
+		AddSubRes( typeof( AshBoard ), "Carvalho Cinza", 60.0, 1072652 );
+		AddSubRes( typeof( EbonyBoard ), "Ã‰bano", 70.0, 1072652 );
+        AddSubRes(typeof(ElvenBoard), "Ã‰lfica", 80.0, 1072652);
+        AddSubRes(typeof(GoldenOakBoard), "IpÃª-Amarelo", 85.0, 1072652);
+        AddSubRes(typeof(CherryBoard), "Cerejeira", 90.0, 1072652);
+        AddSubRes(typeof(RosewoodBoard), "Pau-Brasil", 95.0, 1072652);
+        AddSubRes(typeof(HickoryBoard), "Nogueira Branca", 100.0, 1072652);
 
             /*AddSubRes( typeof( MahoganyBoard ), 1095384, 90.0, 1015101, 1072652 );
 			AddSubRes( typeof( OakBoard ), 1095385, 95.0, 1015101, 1072652 );

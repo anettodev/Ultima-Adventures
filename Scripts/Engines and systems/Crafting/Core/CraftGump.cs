@@ -222,24 +222,21 @@ namespace Server.Engines.Craft
                         resourceCount += items[i].Amount;
                 }
 
-				AddButton( 15, 362, 4005, 4007, GetButtonID( 6, 0 ), GumpButtonType.Reply, 0 );
+			AddButton( 15, 362, 4005, 4007, GetButtonID( 6, 0 ), GumpButtonType.Reply, 0 );
 
-				if ( nameNumber > 0 )
-				{
-					// Display resource name with localized message, then green colored count (white if zero)
-					AddHtmlLocalized( 50, 365, 200, 18, nameNumber, LabelColor, false, false );
-					int countColor = LabelGreen;
-					string countHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>({1})</BASEFONT>", countColor, resourceCount );
-					AddHtml( 250, 365, 50, 18, countHtml, false, false );
-				}
-				else
-				{
-					// Display resource name with green colored count (white if zero)
-					int countColor = FontColor;
-					string htmlText = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT> <BASEFONT COLOR=#{2:X6}>({3})</BASEFONT>", 
-						FontColor, nameString, countColor, resourceCount );
-					AddHtml( 50, 362, 250, 18, htmlText, false, false );
-				}
+			if ( nameNumber > 0 )
+			{
+				// Display resource name with localized message including count (replaces ~1_AMT~ placeholder)
+				AddHtmlLocalized( 50, 365, 200, 18, nameNumber, resourceCount.ToString(), FontColor, false, false );
+			}
+			else
+			{
+				// Display resource name with green colored count (white if zero)
+				int countColor = FontColor;
+				string htmlText = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT> <BASEFONT COLOR=#{2:X6}>({3})</BASEFONT>", 
+					FontColor, nameString, countColor, resourceCount );
+				AddHtml( 50, 362, 250, 18, htmlText, false, false );
+			}
 			}
 			// ****************************************
 
@@ -393,7 +390,7 @@ namespace Server.Engines.Craft
 					AddButton( 220, 60 + (index * 20), 4005, 4007, GetButtonID( 3, i ), GumpButtonType.Reply, 0 );
 
 					if ( craftItem.NameNumber > 0 )
-						AddHtmlLocalized( 255, 63 + (index * 20), 220, 18, craftItem.NameNumber, LabelColor, false, false );
+						AddHtmlLocalized( 255, 63 + (index * 20), 220, 18, craftItem.NameNumber, FontColor, false, false );
 					else
 						AddLabel( 255, 60 + (index * 20), LabelHue, craftItem.NameString );
 
@@ -438,18 +435,18 @@ namespace Server.Engines.Craft
 
 					AddPage( (i / 10) + 1 );
 
-					if ( i > 0 )
-					{
-						AddButton( 220, 263, 4014, 4015, 0, GumpButtonType.Page, i / 10 );
-						string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_PREV_PAGE );
-						AddHtml( 255, 266, 100, 18, prevPageHtml, false, false );
-					}
+				if ( i > 0 )
+				{
+					AddButton( 220, 263, 4014, 4015, 0, GumpButtonType.Page, i / 10 );
+					string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_PREV_PAGE );
+					AddHtml( 255, 266, 100, 18, prevPageHtml, false, false );
 				}
+			}
 
 				AddButton( 220, 63 + (index * 20), 4005, 4007, GetButtonID( 1, i ), GumpButtonType.Reply, 0 );
 
 				if ( craftItem.NameNumber > 0 )
-					AddHtmlLocalized( 255, 66 + (index * 20), 220, 18, craftItem.NameNumber, LabelColor, false, false );
+					AddHtmlLocalized( 255, 66 + (index * 20), 220, 18, craftItem.NameNumber, FontColor, false, false );
 				else
 					AddLabel( 255, 63 + (index * 20), LabelHue, craftItem.NameString );
 
@@ -472,7 +469,7 @@ namespace Server.Engines.Craft
 				AddButton( 15, 87 + (i * 20), 4005, 4007, GetButtonID( 0, i ), GumpButtonType.Reply, 0 );
 
 				if ( craftGroup.NameNumber > 0 )
-					AddHtmlLocalized( 50, 90 + (i * 20), 150, 18, craftGroup.NameNumber, LabelColor, false, false );
+					AddHtmlLocalized( 50, 90 + (i * 20), 150, 18, craftGroup.NameNumber, FontColor, false, false );
 				else
 					AddLabel( 50, 87 + (i * 20), LabelHue, craftGroup.NameString );
 			}
@@ -514,10 +511,18 @@ namespace Server.Engines.Craft
 					return CraftGumpStringConstants.NOTICE_CANNOT_SMELT;
 				case 502925: // You don't have the resources required to make that item.
 					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_RESOURCES;
-				case 1044037: // You do not have sufficient metal to make that.
-					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_METAL;
-				case 1042081: // You don't have the resources required to make that item. (Dragon Scales)
-					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_DRAGON_SCALES;
+			case 1044037: // You do not have sufficient metal to make that.
+				return CraftGumpStringConstants.NOTICE_INSUFFICIENT_METAL;
+			case 1044351: // You do not have sufficient wood to make that.
+				return CraftGumpStringConstants.NOTICE_INSUFFICIENT_WOOD;
+			case 1044253: // You don't have the components needed to make that.
+				return CraftGumpStringConstants.NOTICE_INSUFFICIENT_COMPONENTS;
+			case 1044465: // You don't have any logs.
+				return CraftGumpStringConstants.NOTICE_INSUFFICIENT_LOGS;
+			case 1048176: // Makes as many as possible at once
+				return CraftGumpStringConstants.NOTICE_MAKES_AS_MANY_AS_POSSIBLE;
+			case 1042081: // You don't have the resources required to make that item. (Dragon Scales)
+				return CraftGumpStringConstants.NOTICE_INSUFFICIENT_DRAGON_SCALES;
 				case 1061011: // You cannot enhance this type of item with the properties of the selected special material.
 					return CraftGumpStringConstants.NOTICE_CANNOT_ENHANCE_TYPE;
 				case 1044277: // That item cannot be repaired.

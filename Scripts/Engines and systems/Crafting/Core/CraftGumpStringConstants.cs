@@ -113,11 +113,23 @@ namespace Server.Engines.Craft
 		/// <summary>Message: "You don't have the resources required to make that item." / "You do not have enough resources to make that item." (cliloc 502925)</summary>
 		public const string NOTICE_INSUFFICIENT_RESOURCES = "Você não tem recursos suficientes para fazer esse item.";
 
-		/// <summary>Message: "You do not have sufficient metal to make that." (cliloc 1044037)</summary>
-		public const string NOTICE_INSUFFICIENT_METAL = "Você não tem metal suficiente para fazer isso.";
+	/// <summary>Message: "You do not have sufficient metal to make that." (cliloc 1044037)</summary>
+	public const string NOTICE_INSUFFICIENT_METAL = "Você não tem metal suficiente para fazer isso.";
 
-		/// <summary>Message: "You don't have the resources required to make that item." (cliloc 1042081 - Dragon Scales)</summary>
-		public const string NOTICE_INSUFFICIENT_DRAGON_SCALES = "Você não tem recursos suficientes para fazer esse item.";
+	/// <summary>Message: "You do not have sufficient wood to make that." (cliloc 1044351)</summary>
+	public const string NOTICE_INSUFFICIENT_WOOD = "Você não possui madeira suficiente para fazer isso.";
+
+	/// <summary>Message: "You don't have the components needed to make that." (cliloc 1044253)</summary>
+	public const string NOTICE_INSUFFICIENT_COMPONENTS = "Você não tem os componentes necessários para fazer isso.";
+
+	/// <summary>Message: "You don't have any logs." (cliloc 1044465)</summary>
+	public const string NOTICE_INSUFFICIENT_LOGS = "Você não possui toras de madeira.";
+
+	/// <summary>Message: "Makes as many as possible at once" (cliloc 1048176)</summary>
+	public const string NOTICE_MAKES_AS_MANY_AS_POSSIBLE = "Faz o maior número possível de uma vez";
+
+	/// <summary>Message: "You don't have the resources required to make that item." (cliloc 1042081 - Dragon Scales)</summary>
+	public const string NOTICE_INSUFFICIENT_DRAGON_SCALES = "Você não tem recursos suficientes para fazer esse item.";
 
 		/// <summary>Message: "You cannot enhance this type of item with the properties of the selected special material." (cliloc 1061011)</summary>
 		public const string NOTICE_CANNOT_ENHANCE_TYPE = "Você não pode aprimorar este tipo de item com as propriedades do material especial selecionado.";

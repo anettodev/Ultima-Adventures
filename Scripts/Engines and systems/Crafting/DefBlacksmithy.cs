@@ -629,15 +629,15 @@ namespace Server.Engines.Craft
 			AddSubRes( typeof( TitaniumIngot ), BlacksmithyStringConstants.INGOT_TITANIUM, 100.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
 			AddSubRes( typeof( RoseniumIngot ), BlacksmithyStringConstants.INGOT_ROSENIUM, 100.0, BlacksmithyConstants.MSG_SUB_RESOURCE_SKILL_ERROR );
 
-			SetSubRes2( typeof( RedScales ), BlacksmithyConstants.MSG_RED_SCALES_NAME );
+			SetSubRes2( typeof( RedScales ), "Escamas Vermelhas" );
 
-			AddSubRes2( typeof( RedScales ),		BlacksmithyConstants.MSG_RED_SCALES_NAME, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof(YellowScales),		BlacksmithyConstants.MSG_YELLOW_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof( BlackScales ),		BlacksmithyConstants.MSG_BLACK_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof( GreenScales ),		BlacksmithyConstants.MSG_GREEN_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof( WhiteScales ),		BlacksmithyConstants.MSG_WHITE_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof( BlueScales ),		BlacksmithyConstants.MSG_BLUE_SCALES, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
-			AddSubRes2( typeof( DinosaurScales ),	BlacksmithyConstants.MSG_DINOSAUR_SCALES_NAME, 0.0, BlacksmithyConstants.MSG_SCALE_RESOURCE_ERROR, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( RedScales ),	"Escamas Vermelhas", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof(YellowScales),	"Escamas Amarelas", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( BlackScales ),	"Escamas Negras", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( GreenScales ),	"Escamas Verdes", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( WhiteScales ),	"Escamas Brancas", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( BlueScales ),	"Escamas Azuis", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
+			AddSubRes2( typeof( DinosaurScales ),"Escamas de Dinossauro", 0.0, BlacksmithyConstants.MSG_SCALE_SKILL_ERROR );
 
 			Resmelt = true;
 			Repair = true;
