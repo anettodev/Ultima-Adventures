@@ -167,11 +167,13 @@ namespace Server.Engines.Craft
 			}
 			// ****************************************
 
+			// Notices
 			if ( notice is int && (int)notice > 0 )
-				AddHtmlLocalized( 170, 295, 350, 40, (int)notice, LabelColor, false, false );
+				AddHtmlLocalized( 170, 295, 350, 40, (int)notice, FontColor, false, false );
 			else if ( notice is string )
 				AddHtml( 170, 295, 350, 40, String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, notice ), false, false );
-
+			// ****************************************
+			
 			// If the system has more than one resource
 			if ( craftSystem.CraftSubRes.Init )
 			{
@@ -207,14 +209,14 @@ namespace Server.Engines.Craft
 				{
 					// Display resource name with localized message, then green colored count (white if zero)
 					AddHtmlLocalized( 50, 365, 200, 18, nameNumber, LabelColor, false, false );
-					int countColor = (resourceCount > 0) ? 0x00FF00 : FontColor;
+					int countColor = FontColor;
 					string countHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>({1})</BASEFONT>", countColor, resourceCount );
 					AddHtml( 250, 365, 50, 18, countHtml, false, false );
 				}
 				else
 				{
 					// Display resource name with green colored count (white if zero)
-					int countColor = (resourceCount > 0) ? 0x00FF00 : FontColor;
+					int countColor = FontColor;
 					string htmlText = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT> <BASEFONT COLOR=#{2:X6}>({3})</BASEFONT>", 
 						FontColor, nameString, countColor, resourceCount );
 					AddHtml( 50, 362, 250, 18, htmlText, false, false );
@@ -255,7 +257,7 @@ namespace Server.Engines.Craft
 
 				if ( nameNumber > 0 )
 				{
-					AddHtmlLocalized( 50, 385, 250, 18, nameNumber, resourceCount.ToString(), LabelColor, false, false );
+					AddHtmlLocalized( 50, 385, 250, 18, nameNumber, resourceCount.ToString(), FontColor, false, false );
 				}
 				else
 				{
@@ -296,12 +298,16 @@ namespace Server.Engines.Craft
 
 					CraftContext context = m_CraftSystem.GetContext( m_From );
 
-					AddButton( 220, 260, 4005, 4007, GetButtonID( 6, 4 ), GumpButtonType.Reply, 0 );
+					// USE COLOR BUTTON DISABLED FOR NOW	
+					/*AddButton( 220, 260, 4005, 4007, GetButtonID( 6, 4 ), GumpButtonType.Reply, 0 );
 					string colorLabel = (context == null || !context.DoNotColor) 
 						? CraftGumpStringConstants.BUTTON_USE_RESOURCE_COLOR 
 						: CraftGumpStringConstants.BUTTON_DO_NOT_USE_RESOURCE_COLOR;
-					string colorHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelCyan, colorLabel );
-					AddHtml( 255, 263, 200, 18, colorHtml, false, false );
+					int colorLabelColorHex = (context != null && context.DoNotColor) 
+						? FontColor 
+						: LabelCyan;
+					string colorHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", colorLabelColorHex, colorLabel );
+					AddHtml( 255, 263, 200, 18, colorHtml, false, false );*/
 				}
 
 				int resourceCount = 0;
@@ -317,9 +323,15 @@ namespace Server.Engines.Craft
 				AddButton( 220, 60 + (index * 20), 4005, 4007, GetButtonID( 5, i ), GumpButtonType.Reply, 0 );
 
 				if ( subResource.NameNumber > 0 )
-					AddHtmlLocalized( 255, 63 + (index * 20), 250, 18, subResource.NameNumber, resourceCount.ToString(), LabelColor, false, false );
+					AddHtmlLocalized( 255, 63 + (index * 20), 250, 18, subResource.NameNumber, resourceCount.ToString(), FontColor, false, false );
 				else
-					AddLabel( 255, 60 + ( index * 20 ), LabelHue, String.Format( "{0} ({1})", subResource.NameString, resourceCount ) );
+				{
+					// Display resource name with green colored count (white if zero)
+					int countColor = (resourceCount > 0) ? LabelColor : FontColor;
+					string htmlText = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT> <BASEFONT COLOR=#{2:X6}>({3})</BASEFONT>", 
+						FontColor, subResource.NameString, countColor, resourceCount );
+					AddHtml( 255, 60 + ( index * 20 ), 250, 18, htmlText, false, false );
+				}
 			}
 		}
 
@@ -345,7 +357,7 @@ namespace Server.Engines.Craft
 						if ( i > 0 )
 						{
 							AddButton( 370, 260, 4005, 4007, 0, GumpButtonType.Page, (i / 10) + 1 );
-							string nextPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelYellow, CraftGumpStringConstants.BUTTON_NEXT_PAGE );
+							string nextPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_NEXT_PAGE );
 							AddHtml( 405, 263, 100, 18, nextPageHtml, false, false );
 						}
 
@@ -354,7 +366,7 @@ namespace Server.Engines.Craft
 						if ( i > 0 )
 						{
 							AddButton( 220, 260, 4014, 4015, 0, GumpButtonType.Page, i / 10 );
-							string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelYellow, CraftGumpStringConstants.BUTTON_PREV_PAGE );
+							string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_PREV_PAGE );
 							AddHtml( 255, 263, 100, 18, prevPageHtml, false, false );
 						}
 					}
@@ -400,7 +412,7 @@ namespace Server.Engines.Craft
 					if ( i > 0 )
 					{
 						AddButton( 370, 263, 4005, 4007, 0, GumpButtonType.Page, (i / 10) + 1 );
-						string nextPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelYellow, CraftGumpStringConstants.BUTTON_NEXT_PAGE );
+						string nextPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_NEXT_PAGE );
 						AddHtml( 405, 266, 100, 18, nextPageHtml, false, false );
 					}
 
@@ -409,7 +421,7 @@ namespace Server.Engines.Craft
 					if ( i > 0 )
 					{
 						AddButton( 220, 263, 4014, 4015, 0, GumpButtonType.Page, i / 10 );
-						string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelYellow, CraftGumpStringConstants.BUTTON_PREV_PAGE );
+						string prevPageHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, CraftGumpStringConstants.BUTTON_PREV_PAGE );
 						AddHtml( 255, 266, 100, 18, prevPageHtml, false, false );
 					}
 				}
