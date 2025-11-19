@@ -76,16 +76,14 @@ namespace Server.Engines.Craft
 
 		#region Skill Level Thresholds
 
-		/// <summary>High skill threshold (90.0) - weakens by 1</summary>
-		public const double SKILL_HIGH = 90.0;
+		/// <summary>Minimum weaken amount (best skill - 100.0+) - no reduction</summary>
+		public const int WEAKEN_MIN_AMOUNT = 0;
 
-		/// <summary>Medium skill threshold (70.0) - weakens by 2</summary>
-		public const double SKILL_MEDIUM = 70.0;
+		/// <summary>Maximum weaken amount (worst skill - 0.0)</summary>
+		public const int WEAKEN_MAX_AMOUNT = 8;
 
-		/// <summary>Low skill - weakens by 3</summary>
-		public const int WEAKEN_HIGH_SKILL = 1;
-		public const int WEAKEN_MEDIUM_SKILL = 2;
-		public const int WEAKEN_LOW_SKILL = 3;
+		/// <summary>Skill level at which no reduction occurs (100.0+)</summary>
+		public const double SKILL_NO_REDUCTION = 100.0;
 
 		/// <summary>Minimum skill to create repair deed (50.0)</summary>
 		public const double SKILL_MIN_FOR_DEED = 50.0;
@@ -153,6 +151,19 @@ namespace Server.Engines.Craft
 
 		/// <summary>Message number for forge/anvil requirement check</summary>
 		public const int MSG_FORGE_ANVIL_CHECK = 1044267;
+
+		#endregion
+
+		#region Repair Delay and Effects
+
+		/// <summary>Repair delay in seconds</summary>
+		public const double REPAIR_DELAY_SECONDS = 1.5;
+
+		/// <summary>Number of repair effect animations</summary>
+		public const int REPAIR_EFFECT_COUNT = 2;
+
+		/// <summary>Sound effect played during repair (blacksmith hammer sound)</summary>
+		public const int SOUND_REPAIR = 0x541;
 
 		#endregion
 	}

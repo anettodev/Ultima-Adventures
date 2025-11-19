@@ -54,8 +54,8 @@ namespace Server.Engines.Craft
 		/// <summary>Button gump ID (pressed state)</summary>
 		private const int BUTTON_PRESSED = 4007;
 
-		/// <summary>Localized message: "Do you wish to place your maker's mark on this item?"</summary>
-		private const int MSG_QUERY_MARK = 1018317;
+		/// <summary>Localized message: "Do you wish to place your maker's mark on this item?" (cliloc 1018317)</summary>
+		private const int MSG_QUERY_MARK = 1018317; // Kept for reference, but using PT-BR string instead
 
 		/// <summary>Localized message: "CONTINUE"</summary>
 		private const int MSG_CONTINUE = 1011011;
@@ -109,12 +109,17 @@ namespace Server.Engines.Craft
 			AddBackground( 0, 0, GUMP_WIDTH, GUMP_HEIGHT, BACKGROUND_OUTER );
 			AddBackground( INNER_X, INNER_Y, INNER_WIDTH, INNER_HEIGHT, BACKGROUND_INNER );
 
-			AddHtmlLocalized( 20, 20, 180, 80, MSG_QUERY_MARK, false, false );
+			// Use PT-BR string instead of cliloc (black color)
+			string queryHtml = String.Format( "<BASEFONT COLOR=#000000>{0}</BASEFONT>", CraftGumpStringConstants.QUERY_MAKERS_MARK );
+			AddHtml( 20, 20, 180, 80, queryHtml, false, false );
 
-			AddHtmlLocalized( 55, 100, 140, 25, MSG_CONTINUE, false, false );
+			// Use PT-BR strings for buttons (black color)
+			string continueHtml = String.Format( "<BASEFONT COLOR=#000000>{0}</BASEFONT>", CraftGumpStringConstants.BUTTON_CONTINUE );
+			AddHtml( 55, 100, 140, 25, continueHtml, false, false );
 			AddButton( 20, 100, BUTTON_NORMAL, BUTTON_PRESSED, BUTTON_CONTINUE, GumpButtonType.Reply, 0 );
 
-			AddHtmlLocalized( 55, 125, 140, 25, MSG_CANCEL, false, false );
+			string cancelHtml = String.Format( "<BASEFONT COLOR=#000000>{0}</BASEFONT>", CraftGumpStringConstants.BUTTON_CANCEL );
+			AddHtml( 55, 125, 140, 25, cancelHtml, false, false );
 			AddButton( 20, 125, BUTTON_NORMAL, BUTTON_PRESSED, BUTTON_CANCEL, GumpButtonType.Reply, 0 );
 		}
 

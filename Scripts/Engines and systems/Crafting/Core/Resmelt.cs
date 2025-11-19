@@ -92,9 +92,12 @@ namespace Server.Engines.Craft
 			/// <param name="from">The mobile attempting to resmelt</param>
 			/// <param name="item">The item to resmelt</param>
 			/// <param name="resource">The resource type of the item</param>
+			/// <param name="ingotAmount">Output parameter: the amount of ingots created (only valid if result is Success)</param>
 			/// <returns>The result of the resmelting operation</returns>
-			private SmeltResult Resmelt( Mobile from, Item item, CraftResource resource )
+			private SmeltResult Resmelt( Mobile from, Item item, CraftResource resource, out int ingotAmount )
 			{
+				ingotAmount = 0;
+				
 				try
 				{
 					if ( CraftResources.GetType( resource ) != CraftResourceType.Metal )
@@ -128,6 +131,8 @@ namespace Server.Engines.Craft
 						ingot.Amount = craftResource.Amount / ResmeltConstants.PLAYER_CONSTRUCTED_DIVISOR;
 					else
 						ingot.Amount = ResmeltConstants.STORE_BOUGHT_AMOUNT;
+
+					ingotAmount = ingot.Amount;
 
 					item.Delete();
 					from.AddToBackpack( ingot );
@@ -234,28 +239,29 @@ namespace Server.Engines.Craft
 				{
 					SmeltResult result = SmeltResult.Invalid;
 					bool isStoreBought = false;
-					int message;
+					int ingotAmount = 0;
+					object message;
 
 					if ( targeted is BaseArmor )
 					{
 						BaseArmor armor = (BaseArmor)targeted;
-						result = Resmelt( from, armor, armor.Resource );
+						result = Resmelt( from, armor, armor.Resource, out ingotAmount );
 						isStoreBought = !armor.PlayerConstructed;
 					}
 					else if ( targeted is BaseWeapon )
 					{
 						BaseWeapon weapon = (BaseWeapon)targeted;
-						result = Resmelt( from, weapon, weapon.Resource );
+						result = Resmelt( from, weapon, weapon.Resource, out ingotAmount );
 						isStoreBought = !weapon.PlayerConstructed;
 					}
 					else if ( targeted is DragonBardingDeed )
 					{
 						DragonBardingDeed deed = (DragonBardingDeed)targeted;
-						result = Resmelt( from, deed, deed.Resource );
+						result = Resmelt( from, deed, deed.Resource, out ingotAmount );
 						isStoreBought = false;
 					}
 
-					message = GetResultMessage( result, isStoreBought );
+					message = GetResultMessage( result, isStoreBought, ingotAmount );
 					from.SendGump( new CraftGump( from, m_CraftSystem, m_Tool, message ) );
 				}
 			}
@@ -265,8 +271,9 @@ namespace Server.Engines.Craft
 			/// </summary>
 			/// <param name="result">The resmelt result</param>
 			/// <param name="isStoreBought">Whether the item was store-bought</param>
-			/// <returns>The localized message number</returns>
-			private int GetResultMessage( SmeltResult result, bool isStoreBought )
+			/// <param name="ingotAmount">The amount of ingots created (only used for success messages)</param>
+			/// <returns>The message (int for cliloc, or string for PT-BR with amount)</returns>
+			private object GetResultMessage( SmeltResult result, bool isStoreBought, int ingotAmount )
 			{
 				switch ( result )
 				{
@@ -274,7 +281,8 @@ namespace Server.Engines.Craft
 						return ResmeltConstants.MSG_NO_SKILL;
 
 					case SmeltResult.Success:
-						return isStoreBought ? ResmeltConstants.MSG_SMELT_SUCCESS_STORE_BOUGHT : ResmeltConstants.MSG_SMELT_SUCCESS;
+						// Return PT-BR string with ingot amount instead of cliloc
+						return String.Format( CraftGumpStringConstants.NOTICE_SMELT_SUCCESS, ingotAmount );
 
 					case SmeltResult.Invalid:
 					default:

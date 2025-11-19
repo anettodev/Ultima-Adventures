@@ -120,6 +120,7 @@ namespace Server.Engines.Craft
 
 			/// <summary>
 			/// Checks if an item should be weakened during repair
+			/// At 100+ skill, there's a 50% chance to completely bypass weakening
 			/// </summary>
 			/// <param name="mob">The mobile performing the repair</param>
 			/// <param name="skill">The skill being used</param>
@@ -128,6 +129,15 @@ namespace Server.Engines.Craft
 			/// <returns>True if the item should be weakened</returns>
 			private bool CheckWeaken( Mobile mob, SkillName skill, int curHits, int maxHits )
 			{
+				double skillLevel = ( m_Deed != null ) ? m_Deed.SkillLevel : mob.Skills[skill].Value;
+
+				// At 100+ skill, 50% chance to completely bypass weakening
+				if ( skillLevel >= RepairConstants.SKILL_NO_REDUCTION )
+				{
+					if ( Utility.Random( 2 ) == 0 ) // 50% chance (0 or 1, returns false for 0)
+						return false; // Skip weakening entirely
+				}
+
 				return GetWeakenChance( mob, skill, curHits, maxHits ) > Utility.Random( RepairConstants.WEAKEN_RANDOM_MAX );
 			}
 
@@ -176,20 +186,32 @@ namespace Server.Engines.Craft
 
 			/// <summary>
 			/// Gets the amount an item should be weakened based on skill level
+			/// Linear formula: reduction = 8 - (skill / 100) * 8
+			/// Higher skill = less reduction (0 at 100+ skill, 8 at 0 skill)
 			/// </summary>
 			/// <param name="from">The mobile performing the repair</param>
 			/// <param name="skill">The skill being used</param>
-			/// <returns>The weaken amount (1, 2, or 3)</returns>
+			/// <returns>The weaken amount (0 to 8, linearly distributed by skill, 0 at 100+ skill)</returns>
 			private int GetWeakenAmount( Mobile from, SkillName skill )
 			{
 				double skillLevel = ( m_Deed != null ) ? m_Deed.SkillLevel : from.Skills[skill].Base;
 
-				if ( skillLevel >= RepairConstants.SKILL_HIGH )
-					return RepairConstants.WEAKEN_HIGH_SKILL;
-				else if ( skillLevel >= RepairConstants.SKILL_MEDIUM )
-					return RepairConstants.WEAKEN_MEDIUM_SKILL;
-				else
-					return RepairConstants.WEAKEN_LOW_SKILL;
+				// If skill is 100 or higher, no reduction
+				if ( skillLevel >= RepairConstants.SKILL_NO_REDUCTION )
+					return RepairConstants.WEAKEN_MIN_AMOUNT;
+
+				// Clamp skill level between 0 and 100 for calculation
+				skillLevel = Math.Max( 0.0, Math.Min( RepairConstants.SKILL_NO_REDUCTION, skillLevel ) );
+
+				// Linear formula: reduction = 8 - (skill / 100) * 8
+				// At skill 0: 8 - 0 = 8
+				// At skill 50: 8 - 4 = 4
+				// At skill 100: 8 - 8 = 0
+				double reduction = RepairConstants.WEAKEN_MAX_AMOUNT - ( skillLevel / RepairConstants.SKILL_NO_REDUCTION ) * ( RepairConstants.WEAKEN_MAX_AMOUNT - RepairConstants.WEAKEN_MIN_AMOUNT );
+
+				// Round to nearest integer and clamp between min and max
+				int weakenAmount = (int)Math.Round( reduction );
+				return Math.Max( RepairConstants.WEAKEN_MIN_AMOUNT, Math.Min( RepairConstants.WEAKEN_MAX_AMOUNT, weakenAmount ) );
 			}
 
 			/// <summary>
@@ -405,16 +427,19 @@ namespace Server.Engines.Craft
 					number = RepairConstants.MSG_CANNOT_REPAIR_GENERIC;
 				}
 
-				// Send result to player
-				if ( !usingDeed )
+				// Send result to player (only if not using timer - timer will send its own message)
+				if ( number != 0 )
 				{
-					CraftContext context = m_CraftSystem.GetContext( from );
-					from.SendGump( new CraftGump( from, m_CraftSystem, m_Tool, number ) );
-				}
-				else if ( toDelete )
-				{
-					from.SendLocalizedMessage( number );
-					m_Deed.Delete();
+					if ( !usingDeed )
+					{
+						CraftContext context = m_CraftSystem.GetContext( from );
+						from.SendGump( new CraftGump( from, m_CraftSystem, m_Tool, number ) );
+					}
+					else if ( toDelete )
+					{
+						from.SendLocalizedMessage( number );
+						m_Deed.Delete();
+					}
 				}
 			}
 
@@ -424,6 +449,7 @@ namespace Server.Engines.Craft
 
 			/// <summary>
 			/// Attempts to repair an item with hit points (BaseJewel, BaseWeapon, BaseArmor, BaseClothing)
+			/// Starts a repair timer with delay, sound, and visual effects
 			/// </summary>
 			/// <param name="from">The mobile performing the repair</param>
 			/// <param name="item">The item to repair (must implement IEntityWithHitPoints)</param>
@@ -431,7 +457,7 @@ namespace Server.Engines.Craft
 			/// <param name="toWeaken">The amount to weaken if repair fails</param>
 			/// <param name="usingDeed">Whether a repair deed is being used</param>
 			/// <param name="toDelete">Output parameter indicating if deed should be deleted</param>
-			/// <returns>The message number to display</returns>
+			/// <returns>The message number to display (0 if timer started successfully)</returns>
 			private int TryRepairItem( Mobile from, Item item, SkillName skill, int toWeaken, bool usingDeed, ref bool toDelete )
 			{
 				// Get item hit points (all repairable items implement MaxHitPoints/HitPoints)
@@ -479,9 +505,80 @@ namespace Server.Engines.Craft
 					return RepairConstants.MSG_TOO_MANY_REPAIRS;
 				}
 
+				// Start repair timer with delay, sound, and visual effects
+				new RepairTimer( from, item, skill, toWeaken, usingDeed, m_CraftSystem, m_Tool, m_Deed ).Start();
+				return 0; // Timer started, message will be sent by timer
+			}
+
+			/// <summary>
+			/// Performs the actual repair logic (called by RepairTimer after delay)
+			/// </summary>
+			/// <param name="from">The mobile performing the repair</param>
+			/// <param name="item">The item to repair</param>
+			/// <param name="skill">The skill being used</param>
+			/// <param name="toWeaken">The amount to weaken if repair fails</param>
+			/// <param name="usingDeed">Whether a repair deed is being used</param>
+			/// <param name="toDelete">Output parameter indicating if deed should be deleted</param>
+			/// <returns>The message number to display</returns>
+			private int PerformRepair( Mobile from, Item item, SkillName skill, int toWeaken, bool usingDeed, ref bool toDelete )
+			{
+				// Get item hit points
+				int maxHits = 0;
+				int curHits = 0;
+
+				if ( item is BaseJewel )
+				{
+					BaseJewel jewel = (BaseJewel)item;
+					maxHits = jewel.MaxHitPoints;
+					curHits = jewel.HitPoints;
+				}
+				else if ( item is BaseWeapon )
+				{
+					BaseWeapon weapon = (BaseWeapon)item;
+					maxHits = weapon.MaxHitPoints;
+					curHits = weapon.HitPoints;
+				}
+				else if ( item is BaseArmor )
+				{
+					BaseArmor armor = (BaseArmor)item;
+					maxHits = armor.MaxHitPoints;
+					curHits = armor.HitPoints;
+				}
+				else if ( item is BaseClothing )
+				{
+					BaseClothing clothing = (BaseClothing)item;
+					maxHits = clothing.MaxHitPoints;
+					curHits = clothing.HitPoints;
+				}
+
+				// Re-validate (item might have been moved/deleted during delay)
+				if ( item.Deleted || !item.IsChildOf( from.Backpack ) )
+				{
+					return RepairConstants.MSG_MUST_BE_IN_BACKPACK;
+				}
+
+				if ( maxHits <= 0 || curHits == maxHits )
+				{
+					return RepairConstants.MSG_FULL_REPAIR;
+				}
+
 				// Attempt repair
 				if ( CheckWeaken( from, skill, curHits, maxHits ) )
 				{
+					// Check if reduction is zero (no actual reduction)
+					if ( toWeaken == 0 )
+					{
+						// No durability reduction - send message and play woohoo emote
+						from.SendMessage( CraftGumpStringConstants.NOTICE_NO_DURABILITY_REDUCTION );
+						from.PlaySound( from.Female ? 783 : 1054 );
+						from.Say( "*woohoo!*" );
+					}
+					else
+					{
+						// Durability was reduced - send message with amount
+						from.SendMessage( String.Format( CraftGumpStringConstants.NOTICE_DURABILITY_REDUCED, toWeaken ) );
+					}
+
 					maxHits -= toWeaken;
 					curHits = Math.Max( 0, curHits - toWeaken );
 
@@ -646,6 +743,280 @@ namespace Server.Engines.Craft
 			}
 
 			#endregion
+		}
+
+		#endregion
+
+		#region Repair Timer
+
+		/// <summary>
+		/// Timer class for repair actions with delay, sound, and visual feedback
+		/// </summary>
+		private class RepairTimer : Timer
+		{
+			private Mobile m_From;
+			private Item m_Item;
+			private SkillName m_Skill;
+			private int m_ToWeaken;
+			private bool m_UsingDeed;
+			private CraftSystem m_CraftSystem;
+			private BaseTool m_Tool;
+			private RepairDeed m_Deed;
+			private int m_Count;
+			private int m_CountMax;
+
+			/// <summary>
+			/// Initializes a new instance of the RepairTimer class
+			/// </summary>
+			/// <param name="from">The mobile performing the repair</param>
+			/// <param name="item">The item to repair</param>
+			/// <param name="skill">The skill being used</param>
+			/// <param name="toWeaken">The amount to weaken if repair fails</param>
+			/// <param name="usingDeed">Whether a repair deed is being used</param>
+			/// <param name="craftSystem">The crafting system</param>
+			/// <param name="tool">The crafting tool</param>
+			/// <param name="deed">The repair deed (if using deed)</param>
+			public RepairTimer( Mobile from, Item item, SkillName skill, int toWeaken, bool usingDeed, CraftSystem craftSystem, BaseTool tool, RepairDeed deed )
+				: base( TimeSpan.Zero, TimeSpan.FromSeconds( RepairConstants.REPAIR_DELAY_SECONDS ), RepairConstants.REPAIR_EFFECT_COUNT )
+			{
+				m_From = from;
+				m_Item = item;
+				m_Skill = skill;
+				m_ToWeaken = toWeaken;
+				m_UsingDeed = usingDeed;
+				m_CraftSystem = craftSystem;
+				m_Tool = tool;
+				m_Deed = deed;
+				m_Count = 0;
+				m_CountMax = RepairConstants.REPAIR_EFFECT_COUNT;
+			}
+
+			/// <summary>
+			/// Called on each timer tick
+			/// </summary>
+			protected override void OnTick()
+			{
+				m_Count++;
+
+				// Check if item or mobile is still valid
+				if ( m_From == null || m_From.Deleted || m_Item == null || m_Item.Deleted )
+				{
+					Stop();
+					return;
+				}
+
+				m_From.DisruptiveAction();
+
+				if ( m_Count < m_CountMax )
+				{
+					// Play sound effect during delay
+					m_From.PlaySound( RepairConstants.SOUND_REPAIR );
+				}
+				else
+				{
+					// Delay complete - perform actual repair
+					Stop();
+
+					// Get reference to InternalTarget to call PerformRepair
+					// We need to access the private method, so we'll use reflection or make it accessible
+					// For now, let's create a helper method in InternalTarget that we can call
+					
+					// Actually, we need to restructure this - let's make PerformRepair accessible
+					// For simplicity, we'll duplicate the repair logic here or make it a static helper
+					
+					// Perform the repair
+					bool toDelete = false;
+					int number = PerformRepairLogic( m_From, m_Item, m_Skill, m_ToWeaken, m_UsingDeed, ref toDelete );
+
+					// Send result to player
+					if ( !m_UsingDeed )
+					{
+						CraftContext context = m_CraftSystem.GetContext( m_From );
+						m_From.SendGump( new CraftGump( m_From, m_CraftSystem, m_Tool, number ) );
+					}
+					else if ( toDelete )
+					{
+						m_From.SendLocalizedMessage( number );
+						if ( m_Deed != null && !m_Deed.Deleted )
+							m_Deed.Delete();
+					}
+				}
+			}
+
+			/// <summary>
+			/// Performs the repair logic (extracted from PerformRepair for timer use)
+			/// </summary>
+			private int PerformRepairLogic( Mobile from, Item item, SkillName skill, int toWeaken, bool usingDeed, ref bool toDelete )
+			{
+				// Get item hit points
+				int maxHits = 0;
+				int curHits = 0;
+
+				if ( item is BaseJewel )
+				{
+					BaseJewel jewel = (BaseJewel)item;
+					maxHits = jewel.MaxHitPoints;
+					curHits = jewel.HitPoints;
+				}
+				else if ( item is BaseWeapon )
+				{
+					BaseWeapon weapon = (BaseWeapon)item;
+					maxHits = weapon.MaxHitPoints;
+					curHits = weapon.HitPoints;
+				}
+				else if ( item is BaseArmor )
+				{
+					BaseArmor armor = (BaseArmor)item;
+					maxHits = armor.MaxHitPoints;
+					curHits = armor.HitPoints;
+				}
+				else if ( item is BaseClothing )
+				{
+					BaseClothing clothing = (BaseClothing)item;
+					maxHits = clothing.MaxHitPoints;
+					curHits = clothing.HitPoints;
+				}
+
+				// Re-validate
+				if ( item.Deleted || !item.IsChildOf( from.Backpack ) )
+				{
+					return RepairConstants.MSG_MUST_BE_IN_BACKPACK;
+				}
+
+				if ( maxHits <= 0 || curHits == maxHits )
+				{
+					return RepairConstants.MSG_FULL_REPAIR;
+				}
+
+				// Calculate weaken chance
+				double skillValue = ( m_Deed != null ) ? m_Deed.SkillLevel : from.Skills[skill].Value;
+				
+				// At 100+ skill, 50% chance to completely bypass weakening
+				bool shouldWeaken = false;
+				if ( skillValue >= RepairConstants.SKILL_NO_REDUCTION )
+				{
+					// 50% chance to skip weakening entirely
+					if ( Utility.Random( 2 ) != 0 ) // If not bypassed (50% chance)
+					{
+						int weakenChance = RepairConstants.WEAKEN_BASE_CHANCE + (maxHits - curHits) - (int)(skillValue / RepairConstants.WEAKEN_SKILL_DIVISOR);
+						shouldWeaken = weakenChance > Utility.Random( RepairConstants.WEAKEN_RANDOM_MAX );
+					}
+				}
+				else
+				{
+					int weakenChance = RepairConstants.WEAKEN_BASE_CHANCE + (maxHits - curHits) - (int)(skillValue / RepairConstants.WEAKEN_SKILL_DIVISOR);
+					shouldWeaken = weakenChance > Utility.Random( RepairConstants.WEAKEN_RANDOM_MAX );
+				}
+
+				// Attempt repair
+				if ( shouldWeaken )
+				{
+					// Check if reduction is zero (no actual reduction)
+					if ( toWeaken == 0 )
+					{
+						// No durability reduction - send message and play woohoo emote
+						from.SendMessage( CraftGumpStringConstants.NOTICE_NO_DURABILITY_REDUCTION );
+						from.PlaySound( from.Female ? 783 : 1054 );
+						from.Say( "*woohoo!*" );
+					}
+					else
+					{
+						// Durability was reduced - send message with amount
+						from.SendMessage( String.Format( CraftGumpStringConstants.NOTICE_DURABILITY_REDUCED, toWeaken ) );
+					}
+
+					maxHits -= toWeaken;
+					curHits = Math.Max( 0, curHits - toWeaken );
+
+					// Update item hit points
+					if ( item is BaseJewel )
+					{
+						BaseJewel jewel = (BaseJewel)item;
+						jewel.MaxHitPoints = maxHits;
+						jewel.HitPoints = curHits;
+					}
+					else if ( item is BaseWeapon )
+					{
+						BaseWeapon weapon = (BaseWeapon)item;
+						weapon.MaxHitPoints = maxHits;
+						weapon.HitPoints = curHits;
+					}
+					else if ( item is BaseArmor )
+					{
+						BaseArmor armor = (BaseArmor)item;
+						armor.MaxHitPoints = maxHits;
+						armor.HitPoints = curHits;
+					}
+					else if ( item is BaseClothing )
+					{
+						BaseClothing clothing = (BaseClothing)item;
+						clothing.MaxHitPoints = maxHits;
+						clothing.HitPoints = curHits;
+					}
+				}
+
+				// Check repair success
+				double difficulty = (((maxHits - curHits) * RepairConstants.DIFFICULTY_MULTIPLIER) / Math.Max( maxHits, 1 )) - RepairConstants.DIFFICULTY_SUBTRACTOR;
+				difficulty *= RepairConstants.DIFFICULTY_SCALAR;
+
+				bool repairSuccess = false;
+				if ( m_Deed != null )
+				{
+					double value = m_Deed.SkillLevel;
+					double minSkill = difficulty - RepairConstants.DIFFICULTY_VARIANCE;
+					double maxSkill = difficulty + RepairConstants.DIFFICULTY_VARIANCE;
+
+					if ( value < minSkill )
+						repairSuccess = false;
+					else if ( value >= maxSkill )
+						repairSuccess = true;
+					else
+					{
+						double chance = (value - minSkill) / (maxSkill - minSkill);
+						repairSuccess = (chance >= Utility.RandomDouble());
+					}
+				}
+				else
+				{
+					repairSuccess = from.CheckSkill( skill, difficulty - RepairConstants.DIFFICULTY_VARIANCE, difficulty + RepairConstants.DIFFICULTY_VARIANCE );
+				}
+
+				if ( repairSuccess )
+				{
+					// Repair successful - restore to full
+					if ( item is BaseJewel )
+					{
+						BaseJewel jewel = (BaseJewel)item;
+						jewel.HitPoints = jewel.MaxHitPoints;
+					}
+					else if ( item is BaseWeapon )
+					{
+						BaseWeapon weapon = (BaseWeapon)item;
+						weapon.HitPoints = weapon.MaxHitPoints;
+					}
+					else if ( item is BaseArmor )
+					{
+						BaseArmor armor = (BaseArmor)item;
+						armor.HitPoints = armor.MaxHitPoints;
+					}
+					else if ( item is BaseClothing )
+					{
+						BaseClothing clothing = (BaseClothing)item;
+						clothing.HitPoints = clothing.MaxHitPoints;
+					}
+
+					m_CraftSystem.PlayCraftEffect( from );
+					toDelete = true;
+					return RepairConstants.MSG_REPAIR_SUCCESS;
+				}
+				else
+				{
+					// Repair failed
+					m_CraftSystem.PlayCraftEffect( from );
+					toDelete = true;
+					return usingDeed ? RepairConstants.MSG_REPAIR_FAILURE_DEED : RepairConstants.MSG_REPAIR_FAILURE;
+				}
+			}
 		}
 
 		#endregion

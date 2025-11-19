@@ -1017,7 +1017,13 @@ namespace Server.Engines.Craft
 				if ( tool != null && !tool.Deleted && tool.UsesRemaining > 0 )
 					from.SendGump( new CraftGump( from, craftSystem, tool, checkMessage ) );
 				else if ( checkMessage is int && (int)checkMessage > 0 )
-					from.SendLocalizedMessage( (int)checkMessage );
+				{
+					string ptbrMessage = CraftGump.ConvertClilocToPTBR( (int)checkMessage );
+					if ( ptbrMessage != null )
+						from.SendMessage( ptbrMessage );
+					else
+						from.SendLocalizedMessage( (int)checkMessage );
+				}
 				else if ( checkMessage is string )
 					from.SendMessage( (string)checkMessage );
 
@@ -1030,7 +1036,13 @@ namespace Server.Engines.Craft
 				if ( tool != null && !tool.Deleted && tool.UsesRemaining > 0 )
 					from.SendGump( new CraftGump( from, craftSystem, tool, checkMessage ) );
 				else if ( checkMessage is int && (int)checkMessage > 0 )
-					from.SendLocalizedMessage( (int)checkMessage );
+				{
+					string ptbrMessage = CraftGump.ConvertClilocToPTBR( (int)checkMessage );
+					if ( ptbrMessage != null )
+						from.SendMessage( ptbrMessage );
+					else
+						from.SendLocalizedMessage( (int)checkMessage );
+				}
 				else if ( checkMessage is string )
 					from.SendMessage( (string)checkMessage );
 
@@ -1060,7 +1072,13 @@ namespace Server.Engines.Craft
 					if (tool != null && !tool.Deleted && tool.UsesRemaining > 0)
 						from.SendGump(new CraftGump(from, craftSystem, tool, message));
 					else if (message is int && (int)message > 0)
-						from.SendLocalizedMessage((int)message);
+					{
+						string ptbrMessage = CraftGump.ConvertClilocToPTBR( (int)message );
+						if ( ptbrMessage != null )
+							from.SendMessage( ptbrMessage );
+						else
+							from.SendLocalizedMessage( (int)message );
+					}
 					else if (message is string)
 						from.SendMessage((string)message);
 
@@ -1073,7 +1091,13 @@ namespace Server.Engines.Craft
 					if (tool != null && !tool.Deleted && tool.UsesRemaining > 0)
 						from.SendGump(new CraftGump(from, craftSystem, tool, message));
 					else if (message is int && (int)message > 0)
-						from.SendLocalizedMessage((int)message);
+					{
+						string ptbrMessage = CraftGump.ConvertClilocToPTBR( (int)message );
+						if ( ptbrMessage != null )
+							from.SendMessage( ptbrMessage );
+						else
+							from.SendLocalizedMessage( (int)message );
+					}
 					else if (message is string)
 						from.SendMessage((string)message);
 
@@ -2184,7 +2208,13 @@ namespace Server.Engines.Craft
 					if ( tool != null && !tool.Deleted && tool.UsesRemaining > 0 )
 						from.SendGump( new CraftGump( from, craftSystem, tool, message ) );
 					else if ( message is int && (int)message > 0 )
-						from.SendLocalizedMessage( (int)message );
+					{
+						string ptbrMessage = CraftGump.ConvertClilocToPTBR( (int)message );
+						if ( ptbrMessage != null )
+							from.SendMessage( ptbrMessage );
+						else
+							from.SendLocalizedMessage( (int)message );
+					}
 					else if ( message is string )
 						from.SendMessage( (string)message );
 

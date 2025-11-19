@@ -29,7 +29,9 @@ namespace Server.Engines.Craft
         private const int LabelRed = 0xFF0000;
         private const int LabelCyan = 0x00FFFF;
         private const int LabelColor = 0x00FF00;
-
+        private const int LabelGreen = 0x7CA;
+        private const int LabelYellowHue = 0x35;
+		
         private enum CraftPage
 		{
 			None,
@@ -160,18 +162,35 @@ namespace Server.Engines.Craft
 
 			// Enhance option
 			if ( craftSystem.CanEnhance )
-			{
+			{/* DISABLED FOR NOW
 				AddButton( 270, 382, 4005, 4007, GetButtonID( 6, 8 ), GumpButtonType.Reply, 0 );
 				string enhanceHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelCyan, CraftGumpStringConstants.BUTTON_ENHANCE_ITEM );
 				AddHtml( 305, 385, 150, 18, enhanceHtml, false, false );
+				*/
 			}
 			// ****************************************
 
 			// Notices
+			string noticeText = null;
 			if ( notice is int && (int)notice > 0 )
-				AddHtmlLocalized( 170, 295, 350, 40, (int)notice, FontColor, false, false );
+			{
+				// Convert cliloc number to PT-BR string
+				noticeText = ConvertClilocToPTBR( (int)notice );
+				if ( noticeText == null )
+				{
+					// Fallback to localized display for unknown cliloc numbers
+					AddHtmlLocalized( 170, 295, 350, 40, (int)notice, LabelYellowHue, false, false );
+				}
+			}
 			else if ( notice is string )
-				AddHtml( 170, 295, 350, 40, String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", FontColor, notice ), false, false );
+			{
+				noticeText = (string)notice;
+			}
+
+			if ( noticeText != null )
+			{
+				AddHtml( 170, 295, 350, 40, String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelYellow, noticeText ), false, false );
+			}
 			// ****************************************
 			
 			// If the system has more than one resource
@@ -209,7 +228,7 @@ namespace Server.Engines.Craft
 				{
 					// Display resource name with localized message, then green colored count (white if zero)
 					AddHtmlLocalized( 50, 365, 200, 18, nameNumber, LabelColor, false, false );
-					int countColor = FontColor;
+					int countColor = LabelGreen;
 					string countHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>({1})</BASEFONT>", countColor, resourceCount );
 					AddHtml( 250, 365, 50, 18, countHtml, false, false );
 				}
@@ -385,7 +404,8 @@ namespace Server.Engines.Craft
 			{
 				// NOTE: This is not as OSI; it is an intentional difference
 
-				AddHtmlLocalized( 230, 62, 200, 22, 1044165, LabelColor, false, false ); // You haven't made anything yet.
+				string noItemsHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelRed, CraftGumpStringConstants.NOTICE_HAVENT_MADE_ANYTHING );
+				AddHtml( 230, 62, 200, 22, noItemsHtml, false, false );
 			}
 		}
 
@@ -463,6 +483,64 @@ namespace Server.Engines.Craft
 		public static int GetButtonID( int type, int index )
 		{
 			return 1 + type + (index * 8);
+		}
+
+		/// <summary>
+		/// Converts cliloc number to PT-BR string message
+		/// </summary>
+		/// <param name="clilocNumber">The cliloc number to convert</param>
+		/// <returns>PT-BR string message, or null if not found</returns>
+		public static string ConvertClilocToPTBR( int clilocNumber )
+		{
+			switch ( clilocNumber )
+			{
+				case 1044153: // You don't have the required skills to attempt this item.
+					return CraftGumpStringConstants.NOTICE_NO_SKILL;
+				case 1044165: // You haven't made anything yet.
+					return CraftGumpStringConstants.NOTICE_HAVENT_MADE_ANYTHING;
+				case 1044267: // You must be near an anvil and a forge to smith items.
+					return CraftGumpStringConstants.NOTICE_MUST_BE_NEAR_ANVIL_AND_FORGE;
+				case 1072847: // You must learn that recipe from a scroll.
+					return CraftGumpStringConstants.NOTICE_MUST_LEARN_RECIPE;
+				case 1044266: // You must be near an anvil
+					return CraftGumpStringConstants.NOTICE_MUST_BE_NEAR_ANVIL;
+				case 1044265: // You must be near a forge.
+					return CraftGumpStringConstants.NOTICE_MUST_BE_NEAR_FORGE;
+				case 1044268: // You cannot work this strange and unusual metal.
+					return CraftGumpStringConstants.NOTICE_CANNOT_WORK_STRANGE_METAL;
+				case 1044269: // You have no idea how to work this metal.
+					return CraftGumpStringConstants.NOTICE_NO_SKILL_METAL;
+				case 1044272: // You can't melt that down into ingots.
+					return CraftGumpStringConstants.NOTICE_CANNOT_SMELT;
+				case 502925: // You don't have the resources required to make that item.
+					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_RESOURCES;
+				case 1044037: // You do not have sufficient metal to make that.
+					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_METAL;
+				case 1042081: // You don't have the resources required to make that item. (Dragon Scales)
+					return CraftGumpStringConstants.NOTICE_INSUFFICIENT_DRAGON_SCALES;
+				case 1061011: // You cannot enhance this type of item with the properties of the selected special material.
+					return CraftGumpStringConstants.NOTICE_CANNOT_ENHANCE_TYPE;
+				case 1044277: // That item cannot be repaired.
+					return CraftGumpStringConstants.NOTICE_CANNOT_REPAIR;
+				case 1061136: // You cannot repair that item with this type of repair contract.
+					return CraftGumpStringConstants.NOTICE_CANNOT_REPAIR_WITH_DEED;
+				case 500426: // You can't repair that.
+					return CraftGumpStringConstants.NOTICE_CANNOT_REPAIR_GENERIC;
+			case 1061010: // You must select a special material in order to enhance an item with its properties.
+				return CraftGumpStringConstants.NOTICE_SELECT_SPECIAL_MATERIAL;
+			case 1044279: // You repair the item.
+				return CraftGumpStringConstants.NOTICE_REPAIR_SUCCESS;
+			case 1044280: // You fail to repair the item.
+				return CraftGumpStringConstants.NOTICE_REPAIR_FAILURE;
+			case 1044270: // You melt the item down into ingots.
+				return CraftGumpStringConstants.NOTICE_SMELT_SUCCESS;
+			case 1044281: // That item is in full repair
+				return CraftGumpStringConstants.NOTICE_FULL_REPAIR;
+			case 1044043: // You failed to create the item, and some of your materials are lost.
+				return CraftGumpStringConstants.NOTICE_CRAFT_FAILED_MATERIALS_LOST;
+			default:
+				return null; // Unknown cliloc, will fall back to localized display
+			}
 		}
 
 		public void CraftItem( CraftItem item)

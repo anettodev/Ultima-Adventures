@@ -24,10 +24,14 @@ namespace Server.Engines.Craft
 		private const int RedLabelColor = 0x6400;
 
 		private const int GreyLabelColor = 0x3DEF;
-
+		private const int LabelYellow = 0xfcd219; // Hex color for HTML
+		private const int LabelYellowHue = 0x35; // Yellow hue for AddHtmlLocalized/AddLabel
         private const int LabelPurple = 0xfcd219;
-        private const int LabelBlue = 0x7BB;
-        private const int LabelGreen = 0x7CA;
+        private const int LabelBlue = 0x7BB; // Blue hue for AddHtmlLocalized/AddLabel
+        private const int LabelBlueHex = 0x0077BB; // Blue hex color for HTML
+        private const int LabelGreen = 0x7CA; // Green hue for AddHtmlLocalized/AddLabel
+        private const int LabelCyan = 0x00FFFF; // Hex color for HTML
+        private const int LabelCyanHue = 0x5A; // Cyan hue for AddHtmlLocalized/AddLabel
 
         private int m_OtherCount;
 
@@ -57,36 +61,43 @@ namespace Server.Engines.Craft
 			AddImageTiled( 10, 387, 510, 22, 2624 );
 			AddAlphaRegion( 10, 10, 510, 399 );
 
-			AddHtmlLocalized( 170, 40, 150, 20, 1044053, LabelPurple, false, false ); // ITEM
-			AddHtmlLocalized( 10, 192, 150, 22, 1044054, LabelPurple, false, false ); // <CENTER>SKILLS</CENTER>
-			AddHtmlLocalized( 10, 277, 150, 22, 1044055, LabelPurple, false, false ); // <CENTER>MATERIALS</CENTER>
-			AddHtmlLocalized( 10, 362, 150, 22, 1044056, LabelPurple, false, false ); // <CENTER>OTHER</CENTER>
+			string itemHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>Item</BASEFONT>", LabelYellow );
+			AddHtml( 170, 40, 150, 20, itemHtml, false, false ); // ITEM
+			string skillsHtml = String.Format( "<BASEFONT COLOR=#{0:X6}><CENTER>Habilidades</CENTER></BASEFONT>", LabelYellow );
+			AddHtml( 10, 192, 150, 22, skillsHtml, false, false ); // <CENTER>SKILLS</CENTER>
+			string materialsHtml = String.Format( "<BASEFONT COLOR=#{0:X6}><CENTER>Materiais</CENTER></BASEFONT>", LabelYellow );
+			AddHtml( 10, 277, 150, 22, materialsHtml, false, false ); // <CENTER>MATERIALS</CENTER>
+			string otherHtml = String.Format( "<BASEFONT COLOR=#{0:X6}><CENTER>Outros</CENTER></BASEFONT>", LabelYellow );
+			AddHtml( 10, 362, 150, 22, otherHtml, false, false ); // <CENTER>OTHER</CENTER>
 
 			if ( craftSystem.GumpTitleNumber > 0 )
-				AddHtmlLocalized( 10, 12, 510, 20, craftSystem.GumpTitleNumber, LabelBlue, false, false );
+				AddHtmlLocalized( 10, 12, 510, 20, craftSystem.GumpTitleNumber, LabelPurple, false, false );
 			else
 				AddHtml( 10, 12, 510, 20, craftSystem.GumpTitleString, false, false );
 
 			AddButton( 15, 387, 4014, 4016, 0, GumpButtonType.Reply, 0 );
-			AddHtmlLocalized( 50, 390, 150, 18, 1044150, LabelBlue, false, false ); // BACK
+			string backHtml = String.Format( "<BASEFONT COLOR=#FFFFFF>Voltar</BASEFONT>" );
+			AddHtml( 50, 390, 150, 18, backHtml, false, false ); // BACK
 
 			bool needsRecipe = ( craftItem.Recipe != null && from is PlayerMobile && !((PlayerMobile)from).HasRecipe( craftItem.Recipe ) );
 
 			if( needsRecipe )
 			{
 				AddButton( 270, 387, 4005, 4007, 0, GumpButtonType.Page, 0 );
-				AddHtmlLocalized( 305, 390, 150, 18, 1044151, GreyLabelColor, false, false ); // MAKE NOW
+				string makeNowHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>Fazer Agora</BASEFONT>", LabelCyan );
+				AddHtml( 305, 390, 150, 18, makeNowHtml, false, false ); // MAKE NOW
 			}
 			else
 			{
 				AddButton( 270, 387, 4005, 4007, 1, GumpButtonType.Reply, 0 );
-				AddHtmlLocalized( 305, 390, 150, 18, 1044151, LabelGreen, false, false ); // MAKE NOW
+				string makeNowHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>Fazer Agora</BASEFONT>", LabelCyan );
+				AddHtml( 305, 390, 150, 18, makeNowHtml, false, false ); // MAKE NOW
 			}
 
 			if ( craftItem.NameNumber > 0 )
-				AddHtmlLocalized( 330, 40, 180, 18, craftItem.NameNumber, LabelPurple, false, false );
+				AddHtmlLocalized( 330, 40, 180, 18, craftItem.NameNumber, LabelColor, false, false );
 			else
-				AddLabel( 330, 40, LabelHue, craftItem.NameString );
+				AddLabel( 330, 40, LabelCyanHue, craftItem.NameString );
 
 			if ( craftItem.UseAllRes )
 				AddHtmlLocalized( 170, 302 + (m_OtherCount++ * 20), 310, 18, 1048176, RedLabelColor, false, false ); // Makes as many as possible at once
@@ -174,8 +185,20 @@ namespace Server.Engines.Craft
 			else if ( chance > 1.0 )
 				chance = 1.0;
 
-			AddHtmlLocalized( 170, 80, 250, 18, 1044057, LabelGreen, false, false ); // Success Chance:
-			AddLabel( 430, 80, LabelHue, String.Format( "{0:F1}%", chance * 100 ) );
+			string successChanceHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelCyan, CraftGumpStringConstants.LABEL_SUCCESS_CHANCE );
+			AddHtml( 170, 80, 250, 18, successChanceHtml, false, false ); // Success Chance:
+			
+			// Determine color based on success chance percentage
+			double successPercent = chance * 100;
+			int percentColor;
+			if ( successPercent > 70.0 )
+				percentColor = LabelGreen; // 0x7CA - Green hue
+			else if ( successPercent > 35.0 )
+				percentColor = LabelBlue; // 0x7BB - Blue hue
+			else
+				percentColor = RedLabelHue; // 0x20 - Red hue (correct for AddLabel)
+			
+			AddLabel( 430, 80, percentColor, String.Format( "{0:F1}%", successPercent ) );
 
 			if ( m_ShowExceptionalChance )
 			{
@@ -241,7 +264,8 @@ namespace Server.Engines.Craft
 				if ( !retainedColor && m_CraftItem.RetainsColorFrom( m_CraftSystem, type ) )
 				{
 					retainedColor = true;
-					AddHtmlLocalized( 170, 302 + (m_OtherCount++ * 20), 310, 18, 1044152, LabelBlue, false, false ); // * The item retains the color of this material
+					string retainsColorHtml = String.Format( "<BASEFONT COLOR=#{0:X6}>{1}</BASEFONT>", LabelCyan, CraftGumpStringConstants.MESSAGE_RETAINS_COLOR );
+					AddHtml( 170, 302 + (m_OtherCount++ * 20), 310, 18, retainsColorHtml, false, false ); // * The item retains the color of this material
 					AddLabel( 500, 219 + (i * 20), LabelBlue, "*" );
 				}
 

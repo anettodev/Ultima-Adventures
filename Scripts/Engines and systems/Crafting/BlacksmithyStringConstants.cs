@@ -15,7 +15,7 @@ namespace Server.Engines.Craft
 		public const string GROUP_PLATEMAIL = "Armadura de Metal";
 
 		/// <summary>Title for Royal armor group</summary>
-		public const string GROUP_ROYAL = "Armadura de Real";
+		public const string GROUP_ROYAL = "Armadura Real";
 
 		/// <summary>Title for Dragon Scale armor group</summary>
 		public const string GROUP_SCALEMAIL = "Armadura de Escamas";

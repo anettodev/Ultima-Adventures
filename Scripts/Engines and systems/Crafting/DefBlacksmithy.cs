@@ -462,7 +462,7 @@ namespace Server.Engines.Craft
 
             #endregion
 
-            #region Royal
+            /* #region Royal - HIDDEN
             string royalTitle = BlacksmithyStringConstants.GROUP_ROYAL;
 
             index = AddCraft( typeof( RoyalGloves ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_GLOVES, 70.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 12, BlacksmithyConstants.MSG_MISSING_RESOURCE );
@@ -479,7 +479,7 @@ namespace Server.Engines.Craft
 			AddRoyalArmorSkills( index );
             index = AddCraft( typeof( RoyalChest ), royalTitle, BlacksmithyStringConstants.ITEM_ROYAL_CHEST, 90.0, 140.1, typeof( IronIngot ), BlacksmithyConstants.MSG_IRON_INGOT, 24, BlacksmithyConstants.MSG_MISSING_RESOURCE );
 			AddRoyalArmorSkills( index );
-            #endregion
+            #endregion */
 
             #region Dragon Scale Armor
 
