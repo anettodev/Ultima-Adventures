@@ -518,14 +518,14 @@ namespace Server.Engines.Craft
 
 						if (CraftSystem.PlayerLoc != null && CraftSystem.PlayerLoc.ContainsKey(pm))
 						{
-							pm.SendMessage(55, "Voc� ainda t�m " + (qtd) + " item(s) para criar.");
+							pm.SendMessage(55, CraftGumpStringConstants.MESSAGE_ITEMS_REMAINING);
 							m_CraftSystem.CreateItem(m_From, item.ItemType, type, m_Tool, item);
 							qtd -= 1;
 
 							if (qtd == 0)
 							{
 								CraftSystem.PlayerLoc.Remove(pm);
-								pm.SendMessage(55, "Voc� terminou de criar o(s) item(s) da lista.");
+								pm.SendMessage(55, CraftGumpStringConstants.MESSAGE_CRAFTING_COMPLETE);
 								return;
 							}
 						}

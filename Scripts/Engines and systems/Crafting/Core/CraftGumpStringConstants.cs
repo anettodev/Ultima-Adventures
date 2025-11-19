@@ -64,6 +64,16 @@ namespace Server.Engines.Craft
 		public const string BUTTON_DO_NOT_USE_RESOURCE_COLOR = "NÃO USAR COR";
 
 		#endregion
+
+		#region Crafting Messages
+
+		/// <summary>Message displayed when player still has items to craft (format: {0} = remaining quantity)</summary>
+		public const string MESSAGE_ITEMS_REMAINING = "Você ainda tem {0} item(s) para criar.";
+
+		/// <summary>Message displayed when player finishes crafting all items</summary>
+		public const string MESSAGE_CRAFTING_COMPLETE = "Você terminou de criar o(s) item(s) da lista.";
+
+		#endregion
 	}
 }
 
