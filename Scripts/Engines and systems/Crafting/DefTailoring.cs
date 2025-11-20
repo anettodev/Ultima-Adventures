@@ -1,465 +1,449 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Server.Items;
 
 namespace Server.Engines.Craft
 {
+	/// <summary>
+	/// Defines the Tailoring craft system for creating clothing, leather armor, and bags.
+	/// </summary>
 	public class DefTailoring : CraftSystem
 	{
+		#region Properties
+
+		/// <summary>
+		/// Gets the main skill for this craft system (Tailoring).
+		/// </summary>
 		public override SkillName MainSkill
 		{
-			get	{ return SkillName.Tailoring; }
+			get { return SkillName.Tailoring; }
 		}
 
+		/// <summary>
+		/// Gets the gump title number for the crafting menu.
+		/// </summary>
 		public override int GumpTitleNumber
 		{
-			get { return 1044005; } // <CENTER>TAILORING MENU</CENTER>
+			get { return TailoringConstants.MSG_GUMP_TITLE; }
 		}
+
+		/// <summary>
+		/// Gets the Exceptional Chance Adjustment type for this craft system.
+		/// </summary>
+		public override CraftECA ECA
+		{
+			get { return CraftECA.ChanceMinusSixtyToFourtyFive; }
+		}
+
+		#endregion
+
+		#region Singleton
 
 		private static CraftSystem m_CraftSystem;
 
+		/// <summary>
+		/// Gets the singleton instance of the Tailoring craft system.
+		/// </summary>
 		public static CraftSystem CraftSystem
 		{
 			get
 			{
-				if ( m_CraftSystem == null )
+				if (m_CraftSystem == null)
 					m_CraftSystem = new DefTailoring();
 
 				return m_CraftSystem;
 			}
 		}
 
-		public override CraftECA ECA{ get{ return CraftECA.ChanceMinusSixtyToFourtyFive; } }
+		#endregion
 
-		public override double GetChanceAtMin( CraftItem item )
+		#region Type Collections
+
+		/// <summary>
+		/// Set of non-colorable tailoring items.
+		/// </summary>
+		private static readonly HashSet<Type> m_TailorNonColorables = new HashSet<Type>
 		{
-			return 0.5; // 50%
+			typeof(MinersPouch), typeof(LumberjackPouch),
+			typeof(OrcHelm), typeof(BoneHelm),
+			typeof(BoneGloves), typeof(BoneArms),
+			typeof(BoneLegs), typeof(BoneChest)
+		};
+
+		/// <summary>
+		/// Array of colorable tailoring items.
+		/// </summary>
+		private static Type[] m_TailorColorables = new Type[]
+		{
+			typeof(GozaMatEastDeed), typeof(GozaMatSouthDeed),
+			typeof(SquareGozaMatEastDeed), typeof(SquareGozaMatSouthDeed),
+			typeof(BrocadeGozaMatEastDeed), typeof(BrocadeGozaMatSouthDeed),
+			typeof(BrocadeSquareGozaMatEastDeed), typeof(BrocadeSquareGozaMatSouthDeed)
+		};
+
+		/// <summary>
+		/// Checks if a type is non-colorable.
+		/// </summary>
+		public static bool IsNonColorable(Type type)
+		{
+			return m_TailorNonColorables.Contains(type);
 		}
 
-		private DefTailoring() : base( 1, 1, 1.25 )// base( 1, 1, 4.5 )
+		/// <summary>
+		/// Determines if an item retains color from the specified material type.
+		/// </summary>
+		public override bool RetainsColorFrom(CraftItem item, Type type)
+		{
+			if (type != typeof(CottonCloth) && type != typeof(PoliesterCloth))
+				return false;
+
+			return m_TailorColorables.Contains(item.ItemType);
+		}
+
+		#endregion
+
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the DefTailoring class.
+		/// </summary>
+		private DefTailoring() : base(
+			TailoringConstants.MIN_CRAFT_EFFECT,
+			TailoringConstants.MAX_CRAFT_EFFECT,
+			TailoringConstants.CRAFT_DELAY_MULTIPLIER)
 		{
 		}
 
-		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
+		#endregion
+
+		#region Craft System Overrides
+
+		/// <summary>
+		/// Gets the minimum chance of success at minimum skill level.
+		/// </summary>
+		public override double GetChanceAtMin(CraftItem item)
 		{
-			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
-			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+			return TailoringConstants.CHANCE_AT_MIN_SKILL;
+		}
+
+		/// <summary>
+		/// Checks if the player can craft with the given tool.
+		/// </summary>
+		public override int CanCraft(Mobile from, BaseTool tool, Type itemType)
+		{
+			if (tool == null || tool.Deleted || tool.UsesRemaining < 0)
+				return TailoringConstants.MSG_TOOL_WORN_OUT;
+
+			if (!BaseTool.CheckAccessible(tool, from))
+				return TailoringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
 			return 0;
 		}
 
-		public static bool IsNonColorable(Type type)
+		/// <summary>
+		/// Plays the crafting sound effect.
+		/// </summary>
+		public override void PlayCraftEffect(Mobile from)
 		{
-			for (int i = 0; i < m_TailorNonColorables.Length; ++i)
-			{
-				if (m_TailorNonColorables[i] == type)
-				{
-					return true;
-				}
-			}
-
-			return false;
+			from.PlaySound(TailoringConstants.SOUND_TAILORING_CRAFT);
 		}
 
-		private static Type[] m_TailorNonColorables = new Type[]
-			{
-				//
-				typeof( MinersPouch ), typeof( LumberjackPouch ), 
-				typeof( OrcHelm ), typeof( BoneHelm ),typeof( BoneGloves ),typeof( BoneArms ),typeof( BoneLegs ),typeof( BoneChest )
-            };
-
-		private static Type[] m_TailorColorables = new Type[]
-			{
-				typeof( GozaMatEastDeed ), typeof( GozaMatSouthDeed ),
-				typeof( SquareGozaMatEastDeed ), typeof( SquareGozaMatSouthDeed ),
-				typeof( BrocadeGozaMatEastDeed ), typeof( BrocadeGozaMatSouthDeed ),
-				typeof( BrocadeSquareGozaMatEastDeed ), typeof( BrocadeSquareGozaMatSouthDeed )
-			};
-
-		public override bool RetainsColorFrom( CraftItem item, Type type )
+		/// <summary>
+		/// Displays the appropriate message when crafting ends.
+		/// </summary>
+		public override int PlayEndingEffect(Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item)
 		{
-			if ( type != typeof( CottonCloth ) && type != typeof( PoliesterCloth ) )
-				return false;
+			if (toolBroken)
+				from.SendLocalizedMessage(TailoringConstants.MSG_TOOL_WORN_OUT);
 
-			type = item.ItemType;
-
-			bool contains = false;
-
-			for ( int i = 0; !contains && i < m_TailorColorables.Length; ++i )
-				contains = ( m_TailorColorables[i] == type );
-
-			return contains;
-		}
-
-		public override void PlayCraftEffect( Mobile from )
-		{
-			from.PlaySound( 0x248 );
-		}
-
-		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
-		{
-			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
-
-			if ( failed )
+			if (failed)
 			{
-				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+				if (lostMaterial)
+					return TailoringConstants.MSG_FAILED_LOST_MATERIALS;
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return TailoringConstants.MSG_FAILED_NO_MATERIALS_LOST;
 			}
-			else
+
+			if (quality == TailoringConstants.QUALITY_BELOW_AVERAGE)
+				return TailoringConstants.MSG_BARELY_MADE_ITEM;
+
+			if (quality == TailoringConstants.QUALITY_EXCEPTIONAL)
 			{
-				if ( quality == 0 )
-					return 502785; // You were barely able to make this item.  It's quality is below average.
-				else if ( makersMark && quality == 2 )
-					return 1044156; // You create an exceptional quality item and affix your maker's mark.
-				else if ( quality == 2 )
-					return 1044155; // You create an exceptional quality item.
-				else				
-					return 1044154; // You create the item.
+				if (makersMark)
+					return TailoringConstants.MSG_EXCEPTIONAL_WITH_MARK;
+				else
+					return TailoringConstants.MSG_EXCEPTIONAL_QUALITY;
 			}
+
+			return TailoringConstants.MSG_ITEM_CREATED;
 		}
 
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Adds a cloth craft with automatic cotton cloth requirement.
+		/// </summary>
+		private void AddClothCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int clothAmount)
+		{
+			AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
+				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
+				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
+		}
+
+		/// <summary>
+		/// Adds a cloth craft using a custom name string.
+		/// </summary>
+		private void AddClothCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int clothAmount)
+		{
+			AddCraft(itemType, groupName, customName, minSkill, maxSkill,
+				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
+				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
+		}
+
+		/// <summary>
+		/// Adds a leather craft with automatic leather requirement and SubRes2 setting.
+		/// </summary>
+		private int AddLeatherCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int leatherAmount)
+		{
+			int index = AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
+				typeof(Leather), TailoringConstants.MSG_LEATHER,
+				leatherAmount, TailoringConstants.MSG_INSUFFICIENT_LEATHER);
+			SetUseSubRes2(index, true);
+			return index;
+		}
+
+		/// <summary>
+		/// Adds a leather craft using a custom name string.
+		/// </summary>
+		private int AddLeatherCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int leatherAmount)
+		{
+			int index = AddCraft(itemType, groupName, customName, minSkill, maxSkill,
+				typeof(Leather), TailoringConstants.MSG_LEATHER,
+				leatherAmount, TailoringConstants.MSG_INSUFFICIENT_LEATHER);
+			SetUseSubRes2(index, true);
+			return index;
+		}
+
+		#endregion
+
+		#region Craft List Initialization
+
+		/// <summary>
+		/// Initializes the list of craftable items for this craft system.
+		/// </summary>
 		public override void InitCraftList()
 		{
-			int index = -1;
+			AddHats();
+			AddClothing();
+			AddPants();
+			AddFootwear();
+			AddMisc();
+			AddLeatherArmor();
+			AddBoneArmor();
+			AddBags();
 
-			#region Hats
-			AddCraft( typeof( SkullCap ), "Máscara/Chapéu/Boné", 1025444, 0.0, 25.0, typeof( CottonCloth ), 1044286, 3, 1044287 );
-			AddCraft( typeof( Bandana ), "Máscara/Chapéu/Boné", 1025440, 0.0, 18.0, typeof( CottonCloth ), 1044286, 2, 1044287 );
-			AddCraft( typeof( FloppyHat ), "Máscara/Chapéu/Boné", 1025907, 16.2, 31.2, typeof( CottonCloth ), 1044286, 9, 1044287 );
-			AddCraft( typeof( Cap ), "Máscara/Chapéu/Boné", 1025909, 16.2, 31.2, typeof( CottonCloth ), 1044286, 9, 1044287 );
-            index = AddCraft( typeof( WideBrimHat ), "Máscara/Chapéu/Boné", 1025908, 16.2, 31.2, typeof( CottonCloth ), 1044286, 10, 1044287 );
-            AddRes(index, typeof(Leather), "Couro ou Peles", 3, 1042081);
-            AddCraft( typeof( StrawHat ), "Máscara/Chapéu/Boné", 1025911, 16.2, 31.2, typeof( CottonCloth ), 1044286, 10, 1044287 );
-			AddCraft( typeof( TallStrawHat ), "Máscara/Chapéu/Boné", 1025910, 16.7, 31.7, typeof( CottonCloth ), 1044286, 12, 1044287 );
-			
-			AddCraft( typeof( Bonnet ), "Máscara/Chapéu/Boné", 1025913, 16.2, 31.2, typeof( CottonCloth ), 1044286, 9, 1044287 );
-			AddCraft( typeof( FeatheredHat ), "Máscara/Chapéu/Boné", 1025914, 16.2, 31.2, typeof( CottonCloth ), 1044286, 12, 1044287 );
-			AddCraft( typeof( TricorneHat ), "Máscara/Chapéu/Boné", 1025915, 16.2, 31.2, typeof( CottonCloth ), 1044286, 12, 1044287 );
-			AddCraft( typeof( PirateHat ), "Máscara/Chapéu/Boné", "chapéu de pirata", 16.2, 31.2, typeof( CottonCloth ), 1044286, 12, 1044287 );
-			AddCraft( typeof( JesterHat ), "Máscara/Chapéu/Boné", 1025916, 27.2, 42.2, typeof( CottonCloth ), 1044286, 15, 1044287 );
+			// Configure material sub-resources
+			InitializeClothTypes();
+			InitializeLeatherTypes();
 
-            index = AddCraft(typeof(WizardsHat), "Máscara/Chapéu/Boné", 1025912, 77.2, 92.2, typeof(CottonCloth), 1044286, 21, 1044287);
-            AddSkill(index, SkillName.Magery, 90.0, 100.0);
-            // TODO: ADD SCROLL
-            index = AddCraft(typeof(WitchHat), "Máscara/Chapéu/Boné", "chapéu de bruxa", 77.2, 92.2, typeof(CottonCloth), 1044286, 21, 1044287);
-            AddSkill(index, SkillName.Magery, 90.0, 100.0);
-
-
-            /*AddCraft(typeof(ClothHood), "Máscara/Chapéu/Boné", "cloth hood", 7.2, 32.2, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddCraft(typeof(FancyHood), "Máscara/Chapéu/Boné", "fancy hood", 7.2, 32.2, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddCraft(typeof(ClothCowl), "Máscara/Chapéu/Boné", "cloth cowl", 7.2, 32.2, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddCraft(typeof(WizardHood), "Máscara/Chapéu/Boné", "wizard hood", 7.2, 32.2, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddCraft(typeof(FurCap), "Máscara/Chapéu/Boné", "fur cap", 0.0, 25.0, typeof(Furs), "Fur", 2, 1042081);
-            AddCraft(typeof(WhiteFurCap), "Máscara/Chapéu/Boné", "white fur cap", 12.0, 48.0, typeof(FursWhite), "White Fur", 9, 1042081);
-
-            AddCraft( typeof( FlowerGarland ), "Máscara/Chapéu/Boné", 1028965, 10.0, 35.0, typeof( CottonCloth ), 1044286, 5, 1044287 );
-			AddCraft( typeof( ClothNinjaHood ), "Máscara/Chapéu/Boné", 1030202, 80.0, 105.0, typeof( CottonCloth ), 1044286, 13, 1044287 );
-			AddCraft( typeof( Kasa ), "Máscara/Chapéu/Boné", 1030211, 60.0, 85.0, typeof( CottonCloth ), 1044286, 12, 1044287 );
-
-            
-            index = AddCraft(typeof(DeadMask), "Máscara/Chapéu/Boné", "mask of the dead", 7.2, 32.2, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddRes(index, typeof(PolishedSkull), "Polished Skull", 1, 1049063);*/
-            #endregion
-
-            #region Shirts
-            AddCraft( typeof( Doublet ), "Robes/Camisas/Capas", 1028059, 0, 25.0, typeof( CottonCloth ), 1044286, 7, 1044287 );
-			AddCraft( typeof( Shirt ), "Robes/Camisas/Capas", 1025399, 20.7, 45.7, typeof( CottonCloth ), 1044286, 8, 1044287 );
-			
-			AddCraft( typeof( Tunic ), "Robes/Camisas/Capas", 1028097, 00.0, 25.0, typeof( CottonCloth ), 1044286, 12, 1044287 );
-			AddCraft( typeof( Surcoat ), "Robes/Camisas/Capas", 1028189, 8.2, 33.2, typeof( CottonCloth ), 1044286, 14, 1044287 );
-			AddCraft( typeof( PlainDress ), "Robes/Camisas/Capas", 1027937, 12.4, 37.4, typeof( CottonCloth ), 1044286, 16, 1044287 );
-			AddCraft( typeof( FancyDress ), "Robes/Camisas/Capas", 1027935, 33.1, 58.1, typeof( CottonCloth ), 1044286, 18, 1044287 );
-			
-			AddCraft( typeof( Cloak ), "Robes/Camisas/Capas", 1025397, 41.4, 66.4, typeof( CottonCloth ), 1044286, 15, 1044287 );
-			AddCraft( typeof( Robe ), "Robes/Camisas/Capas", 1027939, 53.9, 78.9, typeof( CottonCloth ), 1044286, 18, 1044287 );
-			AddCraft( typeof( FoolsCoat ), "Robes/Camisas/Capas", "camisa de palhaço", 70.0, 95.0, typeof( CottonCloth ), 1044286, 13, 1044287 );
-			AddCraft( typeof( FancyShirt ), "Robes/Camisas/Capas", 1027933, 24.8, 49.8, typeof( CottonCloth ), 1044286, 10, 1044287 );
-			
-
-/*            AddCraft(typeof(BeggarVest), "Robes/Camisas/Capas", "beggar vest", 20.7, 45.7, typeof(CottonCloth), 1044286, 8, 1044287);
-            AddCraft(typeof(RoyalVest), "Robes/Camisas/Capas", "royal vest", 20.7, 45.7, typeof(CottonCloth), 1044286, 8, 1044287);
-            AddCraft(typeof(RusticVest), "Robes/Camisas/Capas", "rustic vest", 20.7, 45.7, typeof(CottonCloth), 1044286, 8, 1044287);
-            AddCraft(typeof(GildedDress), "Robes/Camisas/Capas", 1028973, 37.5, 62.5, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(RoyalCape), "Robes/Camisas/Capas", "royal cloak", 91.4, 120.4, typeof(CottonCloth), 1044286, 14, 1044287);
-            AddCraft(typeof(ArchmageRobe), "Robes/Camisas/Capas", "archmage robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(AssassinRobe), "Robes/Camisas/Capas", "assassin robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(AssassinShroud), "Robes/Camisas/Capas", "assassin shroud", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(ChaosRobe), "Robes/Camisas/Capas", "chaos robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(CultistRobe), "Robes/Camisas/Capas", "cultist robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(DragonRobe), "Robes/Camisas/Capas", "dragon robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(ElegantRobe), "Robes/Camisas/Capas", "elegant robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(ExquisiteRobe), "Robes/Camisas/Capas", "exquisite robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(FancyRobe), "Robes/Camisas/Capas", "fancy robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(FormalRobe), "Robes/Camisas/Capas", "formal robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(GildedRobe), "Robes/Camisas/Capas", "gilded robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(GildedDarkRobe), "Robes/Camisas/Capas", "gilded dark robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(GildedLightRobe), "Robes/Camisas/Capas", "gilded light robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(JesterGarb), "Robes/Camisas/Capas", "jester garb", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(JesterSuit), "Robes/Camisas/Capas", 1028095, 8.2, 33.2, typeof(CottonCloth), 1044286, 24, 1044287);
-            AddCraft(typeof(JokerRobe), "Robes/Camisas/Capas", "jester coat", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(MagistrateRobe), "Robes/Camisas/Capas", "magistrate robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(NecromancerRobe), "Robes/Camisas/Capas", "necromancer robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(OrnateRobe), "Robes/Camisas/Capas", "ornate robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(PirateCoat), "Robes/Camisas/Capas", "pirate coat", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(PriestRobe), "Robes/Camisas/Capas", "priest robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(ProphetRobe), "Robes/Camisas/Capas", "prophet robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(RoyalRobe), "Robes/Camisas/Capas", "royal robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(SageRobe), "Robes/Camisas/Capas", "sage robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(SorcererRobe), "Robes/Camisas/Capas", "sorcerer robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(SpiderRobe), "Robes/Camisas/Capas", "spider robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(VagabondRobe), "Robes/Camisas/Capas", "vagabond robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(VampireRobe), "Robes/Camisas/Capas", "vampire robe", 70.0, 95.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(FormalShirt), "Robes/Camisas/Capas", 1028975, 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(FormalCoat), "Robes/Camisas/Capas", "formal coat", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(RoyalCoat), "Robes/Camisas/Capas", "royal coat", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(RoyalShirt), "Robes/Camisas/Capas", "royal shirt", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(RusticShirt), "Robes/Camisas/Capas", "rustic shirt", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(SquireShirt), "Robes/Camisas/Capas", "squire shirt", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(WizardShirt), "Robes/Camisas/Capas", "wizard shirt", 26.0, 51.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(ClothNinjaJacket), "Robes/Camisas/Capas", 1030207, 75.0, 100.0, typeof(CottonCloth), 1044286, 12, 1044287);
-            AddCraft(typeof(Kamishimo), "Robes/Camisas/Capas", 1030212, 75.0, 100.0, typeof(CottonCloth), 1044286, 15, 1044287);
-            AddCraft(typeof(HakamaShita), "Robes/Camisas/Capas", 1030215, 40.0, 65.0, typeof(CottonCloth), 1044286, 14, 1044287);
-            AddCraft(typeof(MaleKimono), "Robes/Camisas/Capas", 1030189, 50.0, 75.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(FemaleKimono), "Robes/Camisas/Capas", 1030190, 50.0, 75.0, typeof(CottonCloth), 1044286, 16, 1044287);
-            AddCraft(typeof(JinBaori), "Robes/Camisas/Capas", 1030220, 30.0, 55.0, typeof(CottonCloth), 1044286, 12, 1044287);
-
-            AddCraft(typeof(WhiteFurTunic), "Robes/Camisas/Capas", "white fur tunic", 70.5, 95.5, typeof(FursWhite), "White Fur", 12, 1042081);
-            AddCraft(typeof(WhiteFurCape), "Robes/Camisas/Capas", "white fur cape", 35.0, 60.0, typeof(FursWhite), "White Fur", 13, 1042081);
-            AddCraft(typeof(WhiteFurRobe), "Robes/Camisas/Capas", "white fur robe", 55.0, 80.0, typeof(FursWhite), "White Fur", 16, 1042081);
-            AddCraft(typeof(FurTunic), "Robes/Camisas/Capas", "fur tunic", 70.5, 95.5, typeof(Furs), "Fur", 12, 1042081);
-            AddCraft(typeof(FurCape), "Robes/Camisas/Capas", "fur cape", 35.0, 60.0, typeof(Furs), "Fur", 13, 1042081);
-            AddCraft(typeof(FurRobe), "Robes/Camisas/Capas", "fur robe", 55.0, 80.0, typeof(Furs), "Fur", 16, 1042081);*/
-
-            #endregion
-
-            #region Pants
-            AddCraft( typeof( ShortPants ), "Calças/Shorts", 1025422, 24.8, 49.8, typeof( CottonCloth ), 1044286, 8, 1044287 );
-			AddCraft( typeof( LongPants ), "Calças/Shorts", 1025433, 24.8, 49.8, typeof( CottonCloth ), 1044286, 10, 1044287 );
-						
-			AddCraft( typeof( Kilt ), "Calças/Shorts", 1025431, 20.7, 45.7, typeof( CottonCloth ), 1044286, 8, 1044287 );
-			AddCraft( typeof( Skirt ), "Calças/Shorts", 1025398, 29.0, 54.0, typeof( CottonCloth ), 1044286, 10, 1044287 );
-			AddCraft( typeof( RoyalSkirt ), "Calças/Shorts", "mini-saia", 20.7, 45.7, typeof( CottonCloth ), 1044286, 6, 1044287 );
-			//AddCraft( typeof( RoyalLongSkirt ), "Calças/Shorts", "saia longa", 29.0, 54.0, typeof( CottonCloth ), 1044286, 10, 1044287 );
-
-            /*AddCraft(typeof(SailorPants), "Calças/Shorts", "sailor pants", 24.8, 49.8, typeof(CottonCloth), 1044286, 6, 1044287);
-            AddCraft(typeof(PiratePants), "Calças/Shorts", "pirate pants", 24.8, 49.8, typeof(CottonCloth), 1044286, 8, 1044287);
-            AddCraft( typeof( Hakama ), "Calças/Shorts", 1030213, 50.0, 75.0, typeof( CottonCloth ), 1044286, 16, 1044287 );
-			AddCraft( typeof( TattsukeHakama ), "Calças/Shorts", 1030214, 50.0, 75.0, typeof( CottonCloth ), 1044286, 16, 1044287 );*/
-            #endregion
-
-            #region Footwear
-
-            AddCraft(typeof(Sandals), "Calçados", 1025901, 22.4, 37.4, typeof(Leather), 1044462, 6, 1044463);
-            AddCraft(typeof(Shoes), "Calçados", 1025904, 26.5, 41.5, typeof(Leather), 1044462, 8, 1044463);
-            AddCraft(typeof(Boots), "Calçados", 1025899, 33.1, 58.1, typeof(Leather), 1044462, 10, 1044463);
-            //AddCraft(typeof(ThighBoots), "Calçados", 1025906, 41.4, 66.4, typeof(Leather), 1044462, 13, 1044463);
-
-            AddCraft(typeof(LeatherSandals), "Calçados", "sandálias de couro", 42.4, 67.4, typeof(Leather), 1044462, 5, 1044463);
-            AddCraft(typeof(LeatherShoes), "Calçados", "sapatos de couro", 56.5, 71.5, typeof(Leather), 1044462, 7, 1044463);
-            AddCraft(typeof(LeatherBoots), "Calçados", "botas de couro", 63.1, 88.1, typeof(Leather), 1044462, 9, 1044463);
-            AddCraft(typeof(LeatherThighBoots), "Calçados", "botas de cano alto", 71.4, 96.4, typeof(Leather), 1044462, 12, 1044463);
-            //AddCraft(typeof(LeatherSoftBoots), "Calçados", "soft leather boots", 81.4, 106.4, typeof(Leather), 1044462, 8, 1044463);
-
-            /*AddCraft(typeof(FurBoots), "Calçados", 1028967, 50.0, 75.0, typeof(Furs), "Fur", 12, 1042081);
-            AddCraft(typeof(WhiteFurBoots), "Calçados", "white fur boots", 50.0, 75.0, typeof(FursWhite), "White Fur", 12, 1042081);
-            AddCraft(typeof(NinjaTabi), "Calçados", 1030210, 70.0, 95.0, typeof(CottonCloth), 1044286, 10, 1044287);
-            AddCraft(typeof(SamuraiTabi), "Calçados", 1030209, 20.0, 45.0, typeof(CottonCloth), 1044286, 6, 1044287);
-            AddCraft(typeof(BarbarianBoots), "Calçados", "barbarian boots", 50.0, 75.0, typeof(Furs), "Fur", 12, 1042081);*/
-            
-            #endregion
-
-            #region Misc
-            AddCraft( typeof( BodySash ), "Variados", 1025441, 20.0, 29.1, typeof( CottonCloth ), 1044286, 4, 1044287 );
-			AddCraft( typeof( HalfApron ), "Variados", 1025435, 25.7, 45.7, typeof( CottonCloth ), 1044286, 6, 1044287 );
-			AddCraft( typeof( FullApron ), "Variados", 1025437, 29.0, 54.0, typeof( CottonCloth ), 1044286, 12, 1044287 );
-            AddCraft(typeof(OilCloth), "Variados", "pano para óleos", 74.6, 99.6, typeof(CottonCloth), 1044286, 1, 1044287);
-            
-            /*
-                        AddCraft(typeof(Obi), "Variados", 1030219, 20.0, 45.0, typeof(CottonCloth), 1044286, 6, 1044287);
-                        AddCraft(typeof(HarpoonRope), "Variados", "harpoon rope", 0.0, 40.0, typeof(CottonCloth), 1044286, 1, 1044287);
-                        AddCraft( typeof( GozaMatEastDeed ), "Variados", 1030404, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( GozaMatSouthDeed ), "Variados", 1030405, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( SquareGozaMatEastDeed ), "Variados", 1030407, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( SquareGozaMatSouthDeed ), "Variados", 1030406, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( BrocadeGozaMatEastDeed ), "Variados", 1030408, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( BrocadeGozaMatSouthDeed ), "Variados", 1030409, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( BrocadeSquareGozaMatEastDeed ), "Variados", 1030411, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-                        AddCraft( typeof( BrocadeSquareGozaMatSouthDeed ), "Variados", 1030410, 55.0, 80.0, typeof( CottonCloth ), 1044286, 25, 1044287 );
-
-                        AddCraft(typeof(LoinCloth), "Variados", "loin cloth", 20.7, 45.7, typeof(CottonCloth), 1044286, 6, 1044287);*/
-
-            /*            AddCraft(typeof(FurArms), "Variados", "fur arms", 53.9, 78.9, typeof(Furs), "Fur", 4, 1042081);
-                        AddCraft(typeof(FurLegs), "Variados", "fur leggings", 66.3, 91.3, typeof(Furs), "Fur", 10, 1042081);
-                        AddCraft(typeof(FurSarong), "Variados", "fur sarong", 35.0, 60.0, typeof(Furs), "Fur", 13, 1042081);
-
-                        AddCraft(typeof(WhiteFurArms), "Variados", "white fur arms", 53.9, 78.9, typeof(FursWhite), "White Fur", 4, 1042081);
-                        AddCraft(typeof(WhiteFurLegs), "Variados", "white fur leggings", 66.3, 91.3, typeof(FursWhite), "White Fur", 10, 1042081);
-                        AddCraft(typeof(WhiteFurSarong), "Variados", "white fur sarong", 35.0, 60.0, typeof(FursWhite), "White Fur", 13, 1042081);*/
-            #endregion
-
-            #region Leather Armor
-            // Couro 
-            index = AddCraft(typeof(LeatherCap), "Armadura de Couro", 1027609, 50.0, 55.2, typeof(Leather), 1044462, 4, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( LeatherGorget ), "Armadura de Couro", 1025063, 53.9, 58.9, typeof( Leather ), 1044462, 4, 1044463 );
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherGloves), "Armadura de Couro", 1025062, 61.8, 66.8, typeof(Leather), 1044462, 6, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherArms), "Armadura de Couro", 1025061, 63.9, 68.9, typeof(Leather), 1044462, 10, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherLegs), "Armadura de Couro", 1025067, 66.3, 71.3, typeof(Leather), 1044462, 12, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherChest), "Armadura de Couro", 1025068, 70.5, 75.5, typeof(Leather), 1044462, 16, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherSkirt), "Armadura de Couro", 1027176, 74.0, 78.0, typeof(Leather), 1044462, 7, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherShorts), "Armadura de Couro", 1027168, 72.2, 77.2, typeof(Leather), 1044462, 8, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(LeatherBustierArms), "Armadura de Couro", 1027178, 78.0, 83.0, typeof(Leather), 1044462, 9, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(FemaleLeatherChest), "Armadura de Couro", 1027174, 82.2, 87.2, typeof(Leather), 1044462, 11, 1044463);
-            SetUseSubRes2(index, true);
-
-            // Couro-Reforçado
-            index = AddCraft(typeof(StuddedGorget), "Armadura de Couro", 1025078, 68.8, 73.8, typeof(Leather), 1044462, 6, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedGloves), "Armadura de Couro", 1025077, 72.9, 77.9, typeof(Leather), 1044462, 8, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedArms), "Armadura de Couro", 1025076, 77.1, 82.1, typeof(Leather), 1044462, 12, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedLegs), "Armadura de Couro", 1025082, 81.2, 86.2, typeof(Leather), 1044462, 14, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedChest), "Armadura de Couro", 1025083, 84.0, 89.0, typeof(Leather), 1044462, 18, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedSkirt), "Armadura de Couro", "saia de couro-reforçado", 71.2, 76.2, typeof(Leather), 1044462, 9, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(StuddedBustierArms), "Armadura de Couro", 1027180, 82.9, 87.9, typeof(Leather), 1044462, 11, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(FemaleStuddedChest), "Armadura de Couro", 1027170, 87.1, 92.1, typeof(Leather), 1044462, 13, 1044463);
-            SetUseSubRes2(index, true);
-            
-
-
-            /*AddCraft(typeof(LeatherCloak), "Armadura de Couro", "leather cloak", 66.3, 91.3, typeof(Leather), 1044462, 10, 1044463);
-			AddCraft(typeof(LeatherRobe), "Armadura de Couro", "leather robe", 76.3, 101.3, typeof(Leather), 1044462, 18, 1044463);
-            AddCraft(typeof(PugilistMits), "Armadura de Couro", "pugilist gloves", 32.9, 57.9, typeof(Leather), 1044462, 8, 1044463);
-            AddCraft(typeof(ThrowingGloves), "Armadura de Couro", "throwing gloves", 32.9, 57.9, typeof(Leather), 1044462, 8, 1044463);
-
-            AddCraft(typeof(LeatherJingasa), "Armadura de Couro", 1030177, 45.0, 70.0, typeof(Leather), 1044462, 4, 1044463);
-			AddCraft(typeof(LeatherMempo), "Armadura de Couro", 1030181, 80.0, 105.0, typeof(Leather), 1044462, 8, 1044463);
-			AddCraft(typeof(LeatherDo), "Armadura de Couro", 1030182, 75.0, 100.0, typeof(Leather), 1044462, 12, 1044463);
-			AddCraft(typeof(LeatherHiroSode), "Armadura de Couro", 1030185, 55.0, 80.0, typeof(Leather), 1044462, 5, 1044463);
-			AddCraft(typeof(LeatherSuneate), "Armadura de Couro", 1030193, 68.0, 93.0, typeof(Leather), 1044462, 12, 1044463);
-			AddCraft(typeof(LeatherHaidate), "Armadura de Couro", 1030197, 68.0, 93.0, typeof(Leather), 1044462, 12, 1044463);
-			
-			AddCraft(typeof(StuddedMempo), "Armadura de Couro", 1030216, 80.0, 105.0, typeof(Leather), 1044462, 8, 1044463);
-			AddCraft(typeof(StuddedDo), "Armadura de Couro", 1030183, 95.0, 120.0, typeof(Leather), 1044462, 14, 1044463);
-			AddCraft(typeof(StuddedHiroSode), "Armadura de Couro", 1030186, 85.0, 110.0, typeof(Leather), 1044462, 8, 1044463);
-			AddCraft(typeof(StuddedSuneate), "Armadura de Couro", 1030194, 92.0, 117.0, typeof(Leather), 1044462, 14, 1044463);
-			AddCraft(typeof(StuddedHaidate), "Armadura de Couro", 1030198, 92.0, 117.0, typeof(Leather), 1044462, 14, 1044463);
-
-            AddCraft(typeof(LeatherNinjaPants), "Armadura de Couro", 1030204, 80.0, 105.0, typeof(Leather), 1044462, 13, 1044463);
-            AddCraft(typeof(LeatherNinjaJacket), "Armadura de Couro", 1030206, 85.0, 110.0, typeof(Leather), 1044462, 13, 1044463);
-            AddCraft(typeof(LeatherNinjaBelt), "Armadura de Couro", 1030203, 50.0, 75.0, typeof(Leather), 1044462, 5, 1044463);
-            AddCraft(typeof(LeatherNinjaMitts), "Armadura de Couro", 1030205, 65.0, 90.0, typeof(Leather), 1044462, 12, 1044463);
-            AddCraft(typeof(LeatherNinjaHood), "Armadura de Couro", 1030201, 90.0, 115.0, typeof(Leather), 1044462, 14, 1044463);*/
-
-            #endregion
-
-            #region Bone Armor
-            index = AddCraft( typeof( BoneHelm ), "Armadura de Ossos", 1025206, 35.0, 40.1, typeof( Leather ), 1044462, 4, 1044463 );
-				AddRes( index, typeof( PolishedSkull ), "Caveira Polida", 1, 1049063 );
-				AddRes( index, typeof( PolishedBone ), "Osso Polido", 1, 1049063 );
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(OrcHelm), "Armadura de Ossos", "elmo com chifres", 40.0, 45.1, typeof(Leather), 1044462, 5, 1044463);
-				AddRes(index, typeof(PolishedSkull), "Caveira Polida", 1, 1049063);
-				AddRes(index, typeof(PolishedBone), "Osso Polido", 3, 1049063);
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( BoneGloves ), "Armadura de Ossos", 1025205, 39.0, 44.1, typeof( Leather ), 1044462, 6, 1044463 );
-				AddRes( index, typeof( PolishedBone ), "Osso Polido", 4, 1049063 );
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( BoneArms ), "Armadura de Ossos", 1025203, 52.0, 57.1, typeof( Leather ), 1044462, 10, 1044463 );
-				AddRes( index, typeof( PolishedBone ), "Osso Polido", 8, 1049063 );
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( BoneLegs ), "Armadura de Ossos", 1025202, 45.0, 50.1, typeof( Leather ), 1044462, 10, 1044463 );
-				AddRes( index, typeof( PolishedBone ), "Osso Polido", 12, 1049063 );
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( BoneChest ), "Armadura de Ossos", 1025199, 56.0, 61.0, typeof( Leather ), 1044462, 12, 1044463 );
-				AddRes( index, typeof( PolishedBone ), "Osso Polido", 16, 1049063 );
-            SetUseSubRes2(index, true);
-            /*index = AddCraft( typeof( BoneSkirt ), "Armadura de Ossos", "bone skirt", 95.0, 120.0, typeof( Leather ), 1044462, 10, 1044463 );
-				AddRes( index, typeof( PolishedBone ), "Polished Bone", 6, 1049063 );*/
-
-            #endregion
-
-            #region "Sacos/Sacolas/Mochilas"
-
-            index = AddCraft( typeof( Bag ), "Bolsas/Sacolas/Mochilas", "sacola", 30.0, 40.1, typeof( Leather ), 1044462, 11, 1044463 );
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( LargeBag ), "Bolsas/Sacolas/Mochilas", "sacola grande", 50.0, 60.1, typeof( Leather ), 1044462, 21, 1044463 );
-            SetUseSubRes2(index, true);
-            index = AddCraft( typeof( GiantBag ), "Bolsas/Sacolas/Mochilas", "sacola gigante", 70.0, 80.1, typeof(GoliathLeather), 1061740, 20, 1044463 );
-            SetUseSubRes2(index, true);
-
-            index = AddCraft(typeof(Backpack), "Bolsas/Sacolas/Mochilas", "mochila", 50.0, 60.1, typeof(Leather), 1044462, 15, 1044463);
-            SetUseSubRes2(index, true);
-            index = AddCraft(typeof(RuggedBackpack), "Bolsas/Sacolas/Mochilas", "mochila reforçada", 60.0, 70.1, typeof(Leather), 1044462, 25, 1044463);
-            SetUseSubRes2(index, true);
-
-            index = AddCraft(typeof(MinersPouch), "Bolsas/Sacolas/Mochilas", "bolsa mágica de minérios", 90.0, 100.1, typeof(GoliathLeather), 1061740, 50, 1049311);
-				AddSkill(index, SkillName.Magery, 90.0, 100.0);
-				AddRes(index, typeof(PlatinumIngot), "Lingotes de Platina", 8, 1042081);
-            SetUseSubRes2(index, true);
-
-            index = AddCraft(typeof(LumberjackPouch), "Bolsas/Sacolas/Mochilas", "bolsa mágica de madeiras", 90.0, 100.1, typeof(GoliathLeather), 1061740, 50, 1049311);
-				AddSkill(index, SkillName.Magery, 90.0, 100.0);
-				AddRes(index, typeof(RosewoodBoard), "Tábuas de Pau-Brasil", 8, 1042081);
-            SetUseSubRes2(index, true);
-
-            /*AddCraft(typeof(Pouch), "Sacos/Sacolas/Mochilas", "pouch", 0.0, 25.0, typeof(Leather), 1044462, 2, 1044463);
-            AddCraft(typeof(LargeSack), "Sacos/Sacolas/Mochilas", "rucksack", 20.7, 45.7, typeof(Leather), 1044462, 7, 1044463);
-            AddCraft(typeof(CoinPouch), "Sacos/Sacolas/Mochilas", "Coin Pouch", 90.0, 115.0, typeof(GoliathLeather), 1044462, 25, 1049311);
-            AddCraft(typeof(AlchemyPouch), "Sacos/Sacolas/Mochilas", "Alchemy Rucksack", 90.0, 115.0, typeof(GoliathLeather), 1044462, 25, 1049311);*/
-
-            #endregion
-
-
-            // Set the overridable material
-            SetSubRes(typeof(CottonCloth), 1067440);
-            // Add every material you want the player to be able to choose from
-            // This will override the overridable material
-            AddSubRes(typeof(CottonCloth), 1067440, 0.0, 1044458, 1054019);
-            AddSubRes(typeof(WoolCloth), 1067443, 60.0, 1044458, 1054019);
-            AddSubRes(typeof(FlaxCloth), 1067441, 70.0, 1044458, 1054019);
-            AddSubRes(typeof(SilkCloth), 1067442, 80.0, 1044458, 1054019);
-            AddSubRes(typeof(PoliesterCloth), 1067444, 80.0, 1044458, 1054019);
-
-            // Set the overridable material
-            SetSubRes2(typeof(Leather), 1049150);
-            // Add every material you want the player to be able to choose from
-            // This will override the overridable material
-            AddSubRes2(typeof(Leather), 1049150, 00.0, 1044462, 1049311);
-            AddSubRes2(typeof(SpinedLeather), 1049151, 70.0, 1044462, 1049311);
-            AddSubRes2(typeof(HornedLeather), 1049152, 85.0, 1044462, 1049311);
-            AddSubRes2(typeof(BarbedLeather), 1049153, 80.0, 1044462, 1049311);
-            //AddSubRes2(typeof(AlienLeather), 1034444, 110.0, 1044462, 1049311);
-            /* AddSubRes2(typeof(NecroticLeather), 1034403, 90.0, 1044462, 1049311);
-            AddSubRes2(typeof(VolcanicLeather), 1034414, 90.0, 1044462, 1049311);
-            AddSubRes2(typeof(FrozenLeather), 1034425, 95.0, 1044462, 1049311);
-            AddSubRes2(typeof(GoliathLeather), 1034370, 95.0, 1044462, 1049311);
-            AddSubRes2(typeof(DraconicLeather), 1034381, 100.0, 1044462, 1049311);
-            AddSubRes2(typeof(HellishLeather), 1034392, 100.0, 1044462, 1049311);
-            AddSubRes2(typeof(DinosaurLeather), 1036104, 105.0, 1044462, 1049311); */
-
-                    
-
-            MarkOption = true;
+			// Configuration
+			MarkOption = true;
 			Repair = Core.AOS;
 			CanEnhance = Core.AOS;
 		}
+
+		/// <summary>
+		/// Adds hat crafts.
+		/// </summary>
+		private void AddHats()
+		{
+			AddClothCraft(typeof(SkullCap), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_SKULL_CAP, 0.0, 25.0, 3);
+			AddClothCraft(typeof(Bandana), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_BANDANA, 0.0, 18.0, 2);
+			AddClothCraft(typeof(FloppyHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_FLOPPY_HAT, 16.2, 31.2, 9);
+			AddClothCraft(typeof(Cap), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_CAP, 16.2, 31.2, 9);
+
+			int index = AddCraft(typeof(WideBrimHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_WIDE_BRIM_HAT, 16.2, 31.2, typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH, 10, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
+			AddRes(index, typeof(Leather), TailoringStringConstants.RESOURCE_LEATHER_OR_FURS, 3, TailoringConstants.MSG_INSUFFICIENT_RESOURCES);
+
+			AddClothCraft(typeof(StrawHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_STRAW_HAT, 16.2, 31.2, 10);
+			AddClothCraft(typeof(TallStrawHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_TALL_STRAW_HAT, 16.7, 31.7, 12);
+			AddClothCraft(typeof(Bonnet), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_BONNET, 16.2, 31.2, 9);
+			AddClothCraft(typeof(FeatheredHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_FEATHERED_HAT, 16.2, 31.2, 12);
+			AddClothCraft(typeof(TricorneHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_TRICORNE_HAT, 16.2, 31.2, 12);
+			AddClothCraft(typeof(PirateHat), TailoringStringConstants.GROUP_HATS, TailoringStringConstants.ITEM_PIRATE_HAT, 16.2, 31.2, 12);
+			AddClothCraft(typeof(JesterHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_JESTER_HAT, 27.2, 42.2, 15);
+
+			index = AddClothCraft(typeof(WizardsHat), TailoringStringConstants.GROUP_HATS, TailoringConstants.MSG_WIZARDS_HAT, 77.2, 92.2, 21);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_WIZARDS_HAT, TailoringConstants.MAGERY_SKILL_MAX_WIZARDS_HAT);
+
+			index = AddClothCraft(typeof(WitchHat), TailoringStringConstants.GROUP_HATS, TailoringStringConstants.ITEM_WITCH_HAT, 77.2, 92.2, 21);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_WITCH_HAT, TailoringConstants.MAGERY_SKILL_MAX_WITCH_HAT);
+		}
+
+		/// <summary>
+		/// Adds clothing crafts (shirts, robes, cloaks).
+		/// </summary>
+		private void AddClothing()
+		{
+			AddClothCraft(typeof(Doublet), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_DOUBLET, 0, 25.0, 7);
+			AddClothCraft(typeof(Shirt), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_SHIRT, 20.7, 45.7, 8);
+			AddClothCraft(typeof(Tunic), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_TUNIC, 0.0, 25.0, 12);
+			AddClothCraft(typeof(Surcoat), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_SURCOAT, 8.2, 33.2, 14);
+			AddClothCraft(typeof(PlainDress), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_PLAIN_DRESS, 12.4, 37.4, 16);
+			AddClothCraft(typeof(FancyDress), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_FANCY_DRESS, 33.1, 58.1, 18);
+			AddClothCraft(typeof(Cloak), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_CLOAK, 41.4, 66.4, 15);
+			AddClothCraft(typeof(Robe), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_ROBE, 53.9, 78.9, 18);
+			AddClothCraft(typeof(FoolsCoat), TailoringStringConstants.GROUP_CLOTHING, TailoringStringConstants.ITEM_FOOLS_COAT, 70.0, 95.0, 13);
+			AddClothCraft(typeof(FancyShirt), TailoringStringConstants.GROUP_CLOTHING, TailoringConstants.MSG_FANCY_SHIRT, 24.8, 49.8, 10);
+		}
+
+		/// <summary>
+		/// Adds pants and skirt crafts.
+		/// </summary>
+		private void AddPants()
+		{
+			AddClothCraft(typeof(ShortPants), TailoringStringConstants.GROUP_PANTS, TailoringConstants.MSG_SHORT_PANTS, 24.8, 49.8, 8);
+			AddClothCraft(typeof(LongPants), TailoringStringConstants.GROUP_PANTS, TailoringConstants.MSG_LONG_PANTS, 24.8, 49.8, 10);
+			AddClothCraft(typeof(Kilt), TailoringStringConstants.GROUP_PANTS, TailoringConstants.MSG_KILT, 20.7, 45.7, 8);
+			AddClothCraft(typeof(Skirt), TailoringStringConstants.GROUP_PANTS, TailoringConstants.MSG_SKIRT, 29.0, 54.0, 10);
+			AddClothCraft(typeof(RoyalSkirt), TailoringStringConstants.GROUP_PANTS, TailoringStringConstants.ITEM_ROYAL_SKIRT, 20.7, 45.7, 6);
+		}
+
+		/// <summary>
+		/// Adds footwear crafts.
+		/// </summary>
+		private void AddFootwear()
+		{
+			AddLeatherCraft(typeof(Sandals), TailoringStringConstants.GROUP_FOOTWEAR, TailoringConstants.MSG_SANDALS, 22.4, 37.4, 6);
+			AddLeatherCraft(typeof(Shoes), TailoringStringConstants.GROUP_FOOTWEAR, TailoringConstants.MSG_SHOES, 26.5, 41.5, 8);
+			AddLeatherCraft(typeof(Boots), TailoringStringConstants.GROUP_FOOTWEAR, TailoringConstants.MSG_BOOTS, 33.1, 58.1, 10);
+
+			AddLeatherCraft(typeof(LeatherSandals), TailoringStringConstants.GROUP_FOOTWEAR, TailoringStringConstants.ITEM_LEATHER_SANDALS, 42.4, 67.4, 5);
+			AddLeatherCraft(typeof(LeatherShoes), TailoringStringConstants.GROUP_FOOTWEAR, TailoringStringConstants.ITEM_LEATHER_SHOES, 56.5, 71.5, 7);
+			AddLeatherCraft(typeof(LeatherBoots), TailoringStringConstants.GROUP_FOOTWEAR, TailoringStringConstants.ITEM_LEATHER_BOOTS, 63.1, 88.1, 9);
+			AddLeatherCraft(typeof(LeatherThighBoots), TailoringStringConstants.GROUP_FOOTWEAR, TailoringStringConstants.ITEM_LEATHER_THIGH_BOOTS, 71.4, 96.4, 12);
+		}
+
+		/// <summary>
+		/// Adds miscellaneous crafts (sashes, aprons).
+		/// </summary>
+		private void AddMisc()
+		{
+			AddClothCraft(typeof(BodySash), TailoringStringConstants.GROUP_MISC, TailoringConstants.MSG_BODY_SASH, 20.0, 29.1, 4);
+			AddClothCraft(typeof(HalfApron), TailoringStringConstants.GROUP_MISC, TailoringConstants.MSG_HALF_APRON, 25.7, 45.7, 6);
+			AddClothCraft(typeof(FullApron), TailoringStringConstants.GROUP_MISC, TailoringConstants.MSG_FULL_APRON, 29.0, 54.0, 12);
+			AddClothCraft(typeof(OilCloth), TailoringStringConstants.GROUP_MISC, TailoringStringConstants.ITEM_OIL_CLOTH, 74.6, 99.6, 1);
+		}
+
+		/// <summary>
+		/// Adds leather armor crafts.
+		/// </summary>
+		private void AddLeatherArmor()
+		{
+			// Leather armor
+			AddLeatherCraft(typeof(LeatherCap), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_CAP, 50.0, 55.2, 4);
+			AddLeatherCraft(typeof(LeatherGorget), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_GORGET, 53.9, 58.9, 4);
+			AddLeatherCraft(typeof(LeatherGloves), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_GLOVES, 61.8, 66.8, 6);
+			AddLeatherCraft(typeof(LeatherArms), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_ARMS, 63.9, 68.9, 10);
+			AddLeatherCraft(typeof(LeatherLegs), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_LEGS, 66.3, 71.3, 12);
+			AddLeatherCraft(typeof(LeatherChest), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_CHEST, 70.5, 75.5, 16);
+			AddLeatherCraft(typeof(LeatherSkirt), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_SKIRT, 74.0, 78.0, 7);
+			AddLeatherCraft(typeof(LeatherShorts), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_SHORTS, 72.2, 77.2, 8);
+			AddLeatherCraft(typeof(LeatherBustierArms), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_LEATHER_BUSTIER_ARMS, 78.0, 83.0, 9);
+			AddLeatherCraft(typeof(FemaleLeatherChest), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_FEMALE_LEATHER_CHEST, 82.2, 87.2, 11);
+
+			// Studded armor
+			AddLeatherCraft(typeof(StuddedGorget), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_GORGET, 68.8, 73.8, 6);
+			AddLeatherCraft(typeof(StuddedGloves), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_GLOVES, 72.9, 77.9, 8);
+			AddLeatherCraft(typeof(StuddedArms), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_ARMS, 77.1, 82.1, 12);
+			AddLeatherCraft(typeof(StuddedLegs), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_LEGS, 81.2, 86.2, 14);
+			AddLeatherCraft(typeof(StuddedChest), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_CHEST, 84.0, 89.0, 18);
+			AddLeatherCraft(typeof(StuddedSkirt), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringStringConstants.ITEM_STUDDED_SKIRT, 71.2, 76.2, 9);
+			AddLeatherCraft(typeof(StuddedBustierArms), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_STUDDED_BUSTIER_ARMS, 82.9, 87.9, 11);
+			AddLeatherCraft(typeof(FemaleStuddedChest), TailoringStringConstants.GROUP_LEATHER_ARMOR, TailoringConstants.MSG_FEMALE_STUDDED_CHEST, 87.1, 92.1, 13);
+		}
+
+		/// <summary>
+		/// Adds bone armor crafts.
+		/// </summary>
+		private void AddBoneArmor()
+		{
+			int index = AddLeatherCraft(typeof(BoneHelm), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringConstants.MSG_BONE_HELM, 35.0, 40.1, 4);
+			AddRes(index, typeof(PolishedSkull), TailoringStringConstants.RESOURCE_POLISHED_SKULL, 1, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 1, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+
+			index = AddLeatherCraft(typeof(OrcHelm), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringStringConstants.ITEM_ORC_HELM, 40.0, 45.1, 5);
+			AddRes(index, typeof(PolishedSkull), TailoringStringConstants.RESOURCE_POLISHED_SKULL, 1, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 3, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+
+			index = AddLeatherCraft(typeof(BoneGloves), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringConstants.MSG_BONE_GLOVES, 39.0, 44.1, 6);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 4, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+
+			index = AddLeatherCraft(typeof(BoneArms), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringConstants.MSG_BONE_ARMS, 52.0, 57.1, 10);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 8, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+
+			index = AddLeatherCraft(typeof(BoneLegs), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringConstants.MSG_BONE_LEGS, 45.0, 50.1, 10);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 12, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+
+			index = AddLeatherCraft(typeof(BoneChest), TailoringStringConstants.GROUP_BONE_ARMOR, TailoringConstants.MSG_BONE_CHEST, 56.0, 61.0, 12);
+			AddRes(index, typeof(PolishedBone), TailoringStringConstants.RESOURCE_POLISHED_BONE, 16, TailoringConstants.MSG_INSUFFICIENT_SKILL);
+		}
+
+		/// <summary>
+		/// Adds bag and pouch crafts.
+		/// </summary>
+		private void AddBags()
+		{
+			AddLeatherCraft(typeof(Bag), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_BAG, 30.0, 40.1, 11);
+			AddLeatherCraft(typeof(LargeBag), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_LARGE_BAG, 50.0, 60.1, 21);
+
+			int index = AddCraft(typeof(GiantBag), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_GIANT_BAG, 70.0, 80.1, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, 20, TailoringConstants.MSG_INSUFFICIENT_LEATHER);
+			SetUseSubRes2(index, true);
+
+			AddLeatherCraft(typeof(Backpack), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_BACKPACK, 50.0, 60.1, 15);
+			AddLeatherCraft(typeof(RuggedBackpack), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_RUGGED_BACKPACK, 60.0, 70.1, 25);
+
+			index = AddCraft(typeof(MinersPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_MINERS_POUCH, 90.0, 100.1, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, 50, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_MINERS_POUCH, TailoringConstants.MAGERY_SKILL_MAX_MINERS_POUCH);
+			AddRes(index, typeof(PlatinumIngot), TailoringStringConstants.RESOURCE_PLATINUM_INGOTS, 8, TailoringConstants.MSG_INSUFFICIENT_RESOURCES);
+			SetUseSubRes2(index, true);
+
+			index = AddCraft(typeof(LumberjackPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_LUMBERJACK_POUCH, 90.0, 100.1, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, 50, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_LUMBERJACK_POUCH, TailoringConstants.MAGERY_SKILL_MAX_LUMBERJACK_POUCH);
+			AddRes(index, typeof(RosewoodBoard), TailoringStringConstants.RESOURCE_ROSEWOOD_BOARDS, 8, TailoringConstants.MSG_INSUFFICIENT_RESOURCES);
+			SetUseSubRes2(index, true);
+		}
+
+		/// <summary>
+		/// Initializes cloth type sub-resources.
+		/// </summary>
+		private void InitializeClothTypes()
+		{
+			SetSubRes(typeof(CottonCloth), TailoringConstants.MSG_CLOTH_COTTON);
+
+			AddSubRes(typeof(CottonCloth), TailoringConstants.MSG_CLOTH_COTTON, TailoringConstants.SKILL_REQ_CLOTH_COTTON, TailoringConstants.MSG_NO_CLOTH_MATERIAL, TailoringConstants.MSG_CANNOT_WORK_CLOTH);
+			AddSubRes(typeof(WoolCloth), TailoringConstants.MSG_CLOTH_WOOL, TailoringConstants.SKILL_REQ_CLOTH_WOOL, TailoringConstants.MSG_NO_CLOTH_MATERIAL, TailoringConstants.MSG_CANNOT_WORK_CLOTH);
+			AddSubRes(typeof(FlaxCloth), TailoringConstants.MSG_CLOTH_FLAX, TailoringConstants.SKILL_REQ_CLOTH_FLAX, TailoringConstants.MSG_NO_CLOTH_MATERIAL, TailoringConstants.MSG_CANNOT_WORK_CLOTH);
+			AddSubRes(typeof(SilkCloth), TailoringConstants.MSG_CLOTH_SILK, TailoringConstants.SKILL_REQ_CLOTH_SILK, TailoringConstants.MSG_NO_CLOTH_MATERIAL, TailoringConstants.MSG_CANNOT_WORK_CLOTH);
+			AddSubRes(typeof(PoliesterCloth), TailoringConstants.MSG_CLOTH_POLIESTER, TailoringConstants.SKILL_REQ_CLOTH_POLIESTER, TailoringConstants.MSG_NO_CLOTH_MATERIAL, TailoringConstants.MSG_CANNOT_WORK_CLOTH);
+		}
+
+		/// <summary>
+		/// Initializes leather type sub-resources.
+		/// </summary>
+		private void InitializeLeatherTypes()
+		{
+			SetSubRes2(typeof(Leather), TailoringConstants.MSG_LEATHER_REGULAR);
+
+			AddSubRes2(typeof(Leather), TailoringConstants.MSG_LEATHER_REGULAR, TailoringConstants.SKILL_REQ_LEATHER_REGULAR, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSubRes2(typeof(SpinedLeather), TailoringConstants.MSG_LEATHER_SPINED, TailoringConstants.SKILL_REQ_LEATHER_SPINED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSubRes2(typeof(HornedLeather), TailoringConstants.MSG_LEATHER_HORNED, TailoringConstants.SKILL_REQ_LEATHER_HORNED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSubRes2(typeof(BarbedLeather), TailoringConstants.MSG_LEATHER_BARBED, TailoringConstants.SKILL_REQ_LEATHER_BARBED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+		}
+
+		#endregion
 	}
 }

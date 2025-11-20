@@ -3,149 +3,428 @@ using Server.Items;
 
 namespace Server.Engines.Craft
 {
+	/// <summary>
+	/// Defines the Bow Fletching craft system for creating bows, crossbows, arrows, and related items.
+	/// </summary>
 	public class DefBowFletching : CraftSystem
 	{
+		#region Properties
+
+		/// <summary>
+		/// Gets the main skill for this craft system (Fletching).
+		/// </summary>
 		public override SkillName MainSkill
 		{
-			get	{ return SkillName.Fletching; }
+			get { return SkillName.Fletching; }
 		}
 
+		/// <summary>
+		/// Gets the gump title number for the crafting menu.
+		/// </summary>
 		public override int GumpTitleNumber
 		{
-			get { return 1044006; } // <CENTER>BOWCRAFT AND FLETCHING MENU</CENTER>
+			get { return BowFletchingConstants.MSG_GUMP_TITLE; }
 		}
+
+		/// <summary>
+		/// Gets the Exceptional Chance Adjustment type for this craft system.
+		/// </summary>
+		public override CraftECA ECA
+		{
+			get { return CraftECA.FiftyPercentChanceMinusTenPercent; }
+		}
+
+		#endregion
+
+		#region Singleton
 
 		private static CraftSystem m_CraftSystem;
 
+		/// <summary>
+		/// Gets the singleton instance of the Bow Fletching craft system.
+		/// </summary>
 		public static CraftSystem CraftSystem
 		{
 			get
 			{
-				if ( m_CraftSystem == null )
+				if (m_CraftSystem == null)
 					m_CraftSystem = new DefBowFletching();
 
 				return m_CraftSystem;
 			}
 		}
 
-		public override double GetChanceAtMin( CraftItem item )
+		#endregion
+
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the DefBowFletching class.
+		/// </summary>
+		private DefBowFletching() : base(
+			BowFletchingConstants.MIN_CRAFT_EFFECT,
+			BowFletchingConstants.MAX_CRAFT_EFFECT,
+			BowFletchingConstants.CRAFT_DELAY_MULTIPLIER)
 		{
-			return 0.5; // 50%
 		}
 
-		private DefBowFletching() : base( 1, 1, 1.25 )// base( 1, 2, 1.7 )
+		#endregion
+
+		#region Craft System Overrides
+
+		/// <summary>
+		/// Gets the minimum chance of success at minimum skill level.
+		/// </summary>
+		public override double GetChanceAtMin(CraftItem item)
 		{
+			return BowFletchingConstants.CHANCE_AT_MIN_SKILL;
 		}
 
-		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
+		/// <summary>
+		/// Checks if the player can craft with the given tool.
+		/// </summary>
+		public override int CanCraft(Mobile from, BaseTool tool, Type itemType)
 		{
-			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
-			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+			if (tool == null || tool.Deleted || tool.UsesRemaining < 0)
+				return BowFletchingConstants.MSG_TOOL_WORN_OUT;
+
+			if (!BaseTool.CheckAccessible(tool, from))
+				return BowFletchingConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
 			return 0;
 		}
 
-		public override void PlayCraftEffect( Mobile from )
+		/// <summary>
+		/// Plays the crafting sound effect.
+		/// </summary>
+		public override void PlayCraftEffect(Mobile from)
 		{
-			from.PlaySound( 0x55 );
+			from.PlaySound(BowFletchingConstants.SOUND_FLETCHING_CRAFT);
 		}
 
-		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
+		/// <summary>
+		/// Displays the appropriate message when crafting ends.
+		/// </summary>
+		public override int PlayEndingEffect(Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item)
 		{
-			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+			if (toolBroken)
+				from.SendLocalizedMessage(BowFletchingConstants.MSG_TOOL_WORN_OUT);
 
-			if ( failed )
+			if (failed)
 			{
-				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+				if (lostMaterial)
+					return BowFletchingConstants.MSG_FAILED_LOST_MATERIALS;
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return BowFletchingConstants.MSG_FAILED_NO_MATERIALS_LOST;
 			}
-			else
+
+			if (quality == BowFletchingConstants.QUALITY_BELOW_AVERAGE)
+				return BowFletchingConstants.MSG_BARELY_MADE_ITEM;
+
+			if (quality == BowFletchingConstants.QUALITY_EXCEPTIONAL)
 			{
-				if ( quality == 0 )
-					return 502785; // You were barely able to make this item.  It's quality is below average.
-				else if ( makersMark && quality == 2 )
-					return 1044156; // You create an exceptional quality item and affix your maker's mark.
-				else if ( quality == 2 )
-					return 1044155; // You create an exceptional quality item.
-				else				
-					return 1044154; // You create the item.
+				if (makersMark)
+					return BowFletchingConstants.MSG_EXCEPTIONAL_WITH_MARK;
+				else
+					return BowFletchingConstants.MSG_EXCEPTIONAL_QUALITY;
 			}
+
+			return BowFletchingConstants.MSG_ITEM_CREATED;
 		}
 
-		public override CraftECA ECA{ get{ return CraftECA.FiftyPercentChanceMinusTenPercent; } }
+		#endregion
 
+		#region Craft List Initialization
+
+		/// <summary>
+		/// Initializes the list of craftable items for this craft system.
+		/// </summary>
 		public override void InitCraftList()
 		{
-			int index = -1;
+			AddMaterialCrafts();
+			AddAmmunitionCrafts();
+			AddWeaponCrafts();
 
-			// Materials
-			AddCraft( typeof( Kindling ), 1044457, "gravetos", 0.0, 30.0, typeof( Log ), 1015101, 1, 1044351 );
-
-			index = AddCraft( typeof( Kindling ), 1044457, "lote de gravetos", 15.0, 40.0, typeof( Log ), 1015101, 1, 1044351 );
-			SetUseAllRes( index, true );
-
-			index = AddCraft( typeof( Shaft ), 1044457, 1027124, 0.0, 30.0, typeof( Log ), 1015101, 1, 1044351 );
-			//SetUseAllRes( index, true );
-
-			// Ammunition
-			index = AddCraft( typeof( Arrow ), 1044565, 1023903, 30.0, 60.0, typeof( Shaft ), 1044560, 1, 1044561 );
-			AddRes( index, typeof( Feather ), 1044562, 1, 1044563 );
-			//SetUseAllRes( index, true );
-
-			index = AddCraft( typeof( Bolt ), 1044565, 1027163, 50.0, 70.0, typeof( Shaft ), 1044560, 1, 1044561 );
-			AddRes( index, typeof( Feather ), 1044562, 1, 1044563 );
-            AddRes(index, typeof(IronIngot), 1044562, 1, 1044563);
-            //SetUseAllRes( index, true );
-
-            if ( Core.SE )
-			{
-				index = AddCraft( typeof( FukiyaDarts ), 1044565, 1030246, 60.0, 80.0, typeof( Log ), 1015101, 1, 1044351 );
-				//SetUseAllRes( index, true );
-                index = AddCraft(typeof(ThrowingWeapon), 1044565, 1044117, 70.0, 90.0, typeof(IronIngot), 1074904, 1, 1044037);
-                //SetUseAllRes(index, true);
-            }
-
-			// Weapons
-			AddCraft( typeof( Bow ), 1044566, 1025042, 40.0, 75.0, typeof( Board ), 1015101, 8, 1044351 );
-			AddCraft( typeof( Crossbow ), 1044566, 1023919, 60.0, 90.0, typeof( Board ), 1015101, 12, 1044351 );
-			AddCraft( typeof( HeavyCrossbow ), 1044566, 1025117, 80.0, 110.0, typeof( Board ), 1015101, 15, 1044351);
-
-			if ( Core.AOS )
-			{
-				AddCraft( typeof( CompositeBow ), 1044566, 1029922, 70.0, 100.0, typeof( Board ), 1015101, 11, 1044351 );
-				AddCraft( typeof( RepeatingCrossbow ), 1044566, 1029923, 90.0, 110.0, typeof( Board ), 1015101, 14, 1044351 );
-			}
-
-			if( Core.SE )
-			{
-				index = AddCraft( typeof( Yumi ), 1044566, 1030224, 90.0, 120.0, typeof( Board ), 1015101, 13, 1044351 );
-				 
-			}
-
-			AddCraft( typeof( MagicalShortbow ), 1044566, "Arco curto da floresta", 55.0, 85.0, typeof( Board ), 1015101, 9, 1044351 );
-			AddCraft( typeof( ElvenCompositeLongbow ), 1044566, "Arco longo da floresta", 70.0, 95.0, typeof( Board ), 1015101, 16, 1044351 );
-
+			// Configuration
 			Repair = true;
 			MarkOption = true;
 			CanEnhance = Core.AOS;
 
-			SetSubRes( typeof( Board ), 1072643 );
+			// Initialize wood type sub-resources
+			InitializeWoodTypes();
+		}
 
-            // Add every material you want the player to be able to choose from
-            // This will override the overridable material	TODO: Verify the required skill amount
-            AddSubRes(typeof(Board), 1072643, 00.0, 1015101, 1072652);
-            AddSubRes(typeof(AshBoard), 1095379, 60.0, 1015101, 1072652);
-            AddSubRes(typeof(EbonyBoard), 1095381, 70.0, 1015101, 1072652);
-            AddSubRes(typeof(ElvenBoard), 1095535, 80.0, 1015101, 1072652);
-            AddSubRes(typeof(GoldenOakBoard), 1095382, 85.0, 1015101, 1072652);
-            AddSubRes(typeof(CherryBoard), 1095380, 90.0, 1015101, 1072652);
-            AddSubRes(typeof(RosewoodBoard), 1095387, 95.0, 1015101, 1072652);
-            AddSubRes(typeof(HickoryBoard), 1095383, 100.0, 1015101, 1072652);
-        }
+		/// <summary>
+		/// Adds basic material crafts (kindling, shafts).
+		/// </summary>
+		private void AddMaterialCrafts()
+		{
+			// Kindling
+			AddCraft(
+				typeof(Kindling),
+				BowFletchingConstants.MSG_GROUP_MATERIALS,
+				BowFletchingStringConstants.ITEM_KINDLING,
+				BowFletchingConstants.SKILL_MIN_KINDLING,
+				BowFletchingConstants.SKILL_MAX_KINDLING,
+				typeof(Log),
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.RESOURCE_LOGS_KINDLING,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+			// Kindling batch (uses all resources)
+			int index = AddCraft(
+				typeof(Kindling),
+				BowFletchingConstants.MSG_GROUP_MATERIALS,
+				BowFletchingStringConstants.ITEM_KINDLING_BATCH,
+				BowFletchingConstants.SKILL_MIN_KINDLING_BATCH,
+				BowFletchingConstants.SKILL_MAX_KINDLING_BATCH,
+				typeof(Log),
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.RESOURCE_LOGS_KINDLING,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+			SetUseAllRes(index, true);
+
+			// Shaft
+			AddCraft(
+				typeof(Shaft),
+				BowFletchingConstants.MSG_GROUP_MATERIALS,
+				BowFletchingConstants.MSG_SHAFT_ITEM,
+				BowFletchingConstants.SKILL_MIN_SHAFT,
+				BowFletchingConstants.SKILL_MAX_SHAFT,
+				typeof(Log),
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.RESOURCE_LOGS_SHAFT,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+		}
+
+		/// <summary>
+		/// Adds ammunition crafts (arrows, bolts, darts).
+		/// </summary>
+		private void AddAmmunitionCrafts()
+		{
+			// Arrow
+			int index = AddCraft(
+				typeof(Arrow),
+				BowFletchingConstants.MSG_GROUP_AMMUNITION,
+				BowFletchingConstants.MSG_ARROW,
+				BowFletchingConstants.SKILL_MIN_ARROW,
+				BowFletchingConstants.SKILL_MAX_ARROW,
+				typeof(Shaft),
+				BowFletchingConstants.MSG_SHAFT_RESOURCE,
+				BowFletchingConstants.RESOURCE_SHAFTS_ARROW,
+				BowFletchingConstants.MSG_INSUFFICIENT_SHAFTS);
+			AddRes(index, typeof(Feather), BowFletchingConstants.MSG_FEATHER, BowFletchingConstants.RESOURCE_FEATHERS_ARROW, BowFletchingConstants.MSG_INSUFFICIENT_FEATHERS);
+
+			// Bolt
+			index = AddCraft(
+				typeof(Bolt),
+				BowFletchingConstants.MSG_GROUP_AMMUNITION,
+				BowFletchingConstants.MSG_BOLT,
+				BowFletchingConstants.SKILL_MIN_BOLT,
+				BowFletchingConstants.SKILL_MAX_BOLT,
+				typeof(Shaft),
+				BowFletchingConstants.MSG_SHAFT_RESOURCE,
+				BowFletchingConstants.RESOURCE_SHAFTS_BOLT,
+				BowFletchingConstants.MSG_INSUFFICIENT_SHAFTS);
+			AddRes(index, typeof(Feather), BowFletchingConstants.MSG_FEATHER, BowFletchingConstants.RESOURCE_FEATHERS_BOLT, BowFletchingConstants.MSG_INSUFFICIENT_FEATHERS);
+			AddRes(index, typeof(IronIngot), BowFletchingConstants.MSG_IRON_INGOT, BowFletchingConstants.RESOURCE_IRON_INGOTS_BOLT, BowFletchingConstants.MSG_INSUFFICIENT_METAL);
+
+			// SE-specific ammunition
+			if (Core.SE)
+			{
+				AddCraft(
+					typeof(FukiyaDarts),
+					BowFletchingConstants.MSG_GROUP_AMMUNITION,
+					BowFletchingConstants.MSG_FUKIYA_DARTS,
+					BowFletchingConstants.SKILL_MIN_FUKIYA_DARTS,
+					BowFletchingConstants.SKILL_MAX_FUKIYA_DARTS,
+					typeof(Log),
+					BowFletchingConstants.MSG_LOG,
+					BowFletchingConstants.RESOURCE_LOGS_FUKIYA_DARTS,
+					BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+				AddCraft(
+					typeof(ThrowingWeapon),
+					BowFletchingConstants.MSG_GROUP_AMMUNITION,
+					BowFletchingConstants.MSG_THROWING_WEAPON,
+					BowFletchingConstants.SKILL_MIN_THROWING_WEAPON,
+					BowFletchingConstants.SKILL_MAX_THROWING_WEAPON,
+					typeof(IronIngot),
+					BowFletchingConstants.MSG_IRON_INGOT,
+					BowFletchingConstants.RESOURCE_IRON_INGOTS_THROWING_WEAPON,
+					BowFletchingConstants.MSG_INSUFFICIENT_METAL);
+			}
+		}
+
+		/// <summary>
+		/// Adds weapon crafts (bows, crossbows).
+		/// </summary>
+		private void AddWeaponCrafts()
+		{
+			// Standard weapons
+			AddCraft(
+				typeof(Bow),
+				BowFletchingConstants.MSG_GROUP_WEAPONS,
+				BowFletchingConstants.MSG_BOW,
+				BowFletchingConstants.SKILL_MIN_BOW,
+				BowFletchingConstants.SKILL_MAX_BOW,
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD,
+				BowFletchingConstants.RESOURCE_BOARDS_BOW,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+			AddCraft(
+				typeof(Crossbow),
+				BowFletchingConstants.MSG_GROUP_WEAPONS,
+				BowFletchingConstants.MSG_CROSSBOW,
+				BowFletchingConstants.SKILL_MIN_CROSSBOW,
+				BowFletchingConstants.SKILL_MAX_CROSSBOW,
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD,
+				BowFletchingConstants.RESOURCE_BOARDS_CROSSBOW,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+			AddCraft(
+				typeof(HeavyCrossbow),
+				BowFletchingConstants.MSG_GROUP_WEAPONS,
+				BowFletchingConstants.MSG_HEAVY_CROSSBOW,
+				BowFletchingConstants.SKILL_MIN_HEAVY_CROSSBOW,
+				BowFletchingConstants.SKILL_MAX_HEAVY_CROSSBOW,
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD,
+				BowFletchingConstants.RESOURCE_BOARDS_HEAVY_CROSSBOW,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+			// AOS weapons
+			if (Core.AOS)
+			{
+				AddCraft(
+					typeof(CompositeBow),
+					BowFletchingConstants.MSG_GROUP_WEAPONS,
+					BowFletchingConstants.MSG_COMPOSITE_BOW,
+					BowFletchingConstants.SKILL_MIN_COMPOSITE_BOW,
+					BowFletchingConstants.SKILL_MAX_COMPOSITE_BOW,
+					typeof(Board),
+					BowFletchingConstants.MSG_BOARD,
+					BowFletchingConstants.RESOURCE_BOARDS_COMPOSITE_BOW,
+					BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+				AddCraft(
+					typeof(RepeatingCrossbow),
+					BowFletchingConstants.MSG_GROUP_WEAPONS,
+					BowFletchingConstants.MSG_REPEATING_CROSSBOW,
+					BowFletchingConstants.SKILL_MIN_REPEATING_CROSSBOW,
+					BowFletchingConstants.SKILL_MAX_REPEATING_CROSSBOW,
+					typeof(Board),
+					BowFletchingConstants.MSG_BOARD,
+					BowFletchingConstants.RESOURCE_BOARDS_REPEATING_CROSSBOW,
+					BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+			}
+
+			// SE weapons
+			if (Core.SE)
+			{
+				AddCraft(
+					typeof(Yumi),
+					BowFletchingConstants.MSG_GROUP_WEAPONS,
+					BowFletchingConstants.MSG_YUMI,
+					BowFletchingConstants.SKILL_MIN_YUMI,
+					BowFletchingConstants.SKILL_MAX_YUMI,
+					typeof(Board),
+					BowFletchingConstants.MSG_BOARD,
+					BowFletchingConstants.RESOURCE_BOARDS_YUMI,
+					BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+			}
+
+			// Custom weapons
+			AddCraft(
+				typeof(MagicalShortbow),
+				BowFletchingConstants.MSG_GROUP_WEAPONS,
+				BowFletchingStringConstants.ITEM_MAGICAL_SHORTBOW,
+				BowFletchingConstants.SKILL_MIN_MAGICAL_SHORTBOW,
+				BowFletchingConstants.SKILL_MAX_MAGICAL_SHORTBOW,
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD,
+				BowFletchingConstants.RESOURCE_BOARDS_MAGICAL_SHORTBOW,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+
+			AddCraft(
+				typeof(ElvenCompositeLongbow),
+				BowFletchingConstants.MSG_GROUP_WEAPONS,
+				BowFletchingStringConstants.ITEM_ELVEN_COMPOSITE_LONGBOW,
+				BowFletchingConstants.SKILL_MIN_ELVEN_COMPOSITE_LONGBOW,
+				BowFletchingConstants.SKILL_MAX_ELVEN_COMPOSITE_LONGBOW,
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD,
+				BowFletchingConstants.RESOURCE_BOARDS_ELVEN_COMPOSITE_LONGBOW,
+				BowFletchingConstants.MSG_INSUFFICIENT_WOOD);
+		}
+
+		/// <summary>
+		/// Initializes wood type sub-resources for material selection.
+		/// </summary>
+		private void InitializeWoodTypes()
+		{
+			SetSubRes(typeof(Board), BowFletchingConstants.MSG_BOARD_MATERIAL);
+
+			// Add each wood type with skill requirements
+			AddSubRes(
+				typeof(Board),
+				BowFletchingConstants.MSG_BOARD_MATERIAL,
+				BowFletchingConstants.SKILL_REQ_WOOD_COMMON,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(AshBoard),
+				BowFletchingConstants.MSG_ASH_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_ASH,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(EbonyBoard),
+				BowFletchingConstants.MSG_EBONY_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_EBONY,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(ElvenBoard),
+				BowFletchingConstants.MSG_ELVEN_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_ELVEN,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(GoldenOakBoard),
+				BowFletchingConstants.MSG_GOLDEN_OAK_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_GOLDEN_OAK,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(CherryBoard),
+				BowFletchingConstants.MSG_CHERRY_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_CHERRY,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(RosewoodBoard),
+				BowFletchingConstants.MSG_ROSEWOOD_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_ROSEWOOD,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+
+			AddSubRes(
+				typeof(HickoryBoard),
+				BowFletchingConstants.MSG_HICKORY_BOARD,
+				BowFletchingConstants.SKILL_REQ_WOOD_HICKORY,
+				BowFletchingConstants.MSG_LOG,
+				BowFletchingConstants.MSG_CANNOT_WORK_WOOD);
+		}
+
+		#endregion
 	}
 }

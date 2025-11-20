@@ -150,6 +150,12 @@ namespace Server.Engines.Craft
 		/// <summary>Item name: "Armário Bonito"</summary>
 		public const string ITEM_ARMOIRE_NICE = "Armário Bonito";
 
+		/// <summary>Item name: "Armário Elegante (Médio)"</summary>
+		public const string ITEM_FANCY_CABINET_MEDIUM = "Armário Elegante (Médio)";
+
+		/// <summary>Item name: "Armário Simples (Médio)"</summary>
+		public const string ITEM_SIMPLE_CABINET_MEDIUM = "Armário Simples (Médio)";
+
 		/// <summary>Item name: "Cristaleira"</summary>
 		public const string ITEM_DISPLAY_CABINET = "Cristaleira";
 
@@ -356,7 +362,24 @@ namespace Server.Engines.Craft
 		/// <summary>Item name: "Violino"</summary>
 		public const string ITEM_FIDDLE = "Violino";
 
-		// Staves and Shields
+		// Staves and Shields (Weapons)
+		/// <summary>Item name: "bastão"</summary>
+		public const string ITEM_QUARTER_STAFF = "bastão";
+
+		/// <summary>Item name: "bastão retorcido"</summary>
+		public const string ITEM_GNARLED_STAFF = "bastão retorcido";
+
+		// Crates (Special - Commented Items)
+		/// <summary>Item name: "Caixa de Açougueiro"</summary>
+		public const string ITEM_BUTCHER_CRATE = "Caixa de Açougueiro";
+
+		/// <summary>Item name: "Caixa de Bibliotecário"</summary>
+		public const string ITEM_LIBRARIAN_CRATE = "Caixa de Bibliotecário";
+
+		/// <summary>Item name: "Caixa de Músico"</summary>
+		public const string ITEM_MUSICIAN_CRATE = "Caixa de Músico";
+
+		// Continued Staves and Shields
 		/// <summary>Item name: "cajado de pastor"</summary>
 		public const string ITEM_SHEPHERDS_CROOK = "cajado de pastor";
 
