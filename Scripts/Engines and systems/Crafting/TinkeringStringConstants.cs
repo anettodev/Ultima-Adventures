@@ -505,98 +505,98 @@ namespace Server.Engines.Craft
 
 		#region Metal Type Names
 
-		/// <summary>Metal type: "agapite"</summary>
-		public const string METAL_AGAPITE = "agapite";
+		/// <summary>Metal type: "Agapite"</summary>
+		public const string METAL_AGAPITE = "Agapite";
 
-		/// <summary>Metal type: "ametista"</summary>
-		public const string METAL_AMETHYST = "ametista";
+		/// <summary>Metal type: "Ametista"</summary>
+		public const string METAL_AMETHYST = "Ametista";
 
-		/// <summary>Metal type: "latão"</summary>
-		public const string METAL_BRASS = "latão";
+		/// <summary>Metal type: "Latão"</summary>
+		public const string METAL_BRASS = "Latão";
 
-		/// <summary>Metal type: "bronze"</summary>
-		public const string METAL_BRONZE = "bronze";
+		/// <summary>Metal type: "Bronze"</summary>
+		public const string METAL_BRONZE = "Bronze";
 
-		/// <summary>Metal type: "caddellite"</summary>
-		public const string METAL_CADDELLITE = "caddellite";
+		/// <summary>Metal type: "Caddellite"</summary>
+		public const string METAL_CADDELLITE = "Caddellite";
 
-		/// <summary>Metal type: "cobre"</summary>
-		public const string METAL_COPPER = "cobre";
+		/// <summary>Metal type: "Cobre"</summary>
+		public const string METAL_COPPER = "Cobre";
 
-		/// <summary>Metal type: "cobre opaco"</summary>
-		public const string METAL_DULL_COPPER = "cobre opaco";
+		/// <summary>Metal type: "Cobre Rústico"</summary>
+		public const string METAL_DULL_COPPER = "Cobre Rústico";
 
-		/// <summary>Metal type: "anão"</summary>
-		public const string METAL_DWARVEN = "anão";
+		/// <summary>Metal type: "Dwarven"</summary>
+		public const string METAL_DWARVEN = "Dwarven";
 
-		/// <summary>Metal type: "granada"</summary>
-		public const string METAL_GARNET = "granada";
+		/// <summary>Metal type: "Granada"</summary>
+		public const string METAL_GARNET = "Granada";
 
-		/// <summary>Metal type: "ouro"</summary>
-		public const string METAL_GOLD = "ouro";
+		/// <summary>Metal type: "Dourado"</summary>
+		public const string METAL_GOLD = "Dourado";
 
-		/// <summary>Metal type: "dourado"</summary>
-		public const string METAL_GOLDEN = "dourado";
+		/// <summary>Metal type: "Dourado"</summary>
+		public const string METAL_GOLDEN = "Dourado";
 
-		/// <summary>Metal type: "jade"</summary>
-		public const string METAL_JADE = "jade";
+		/// <summary>Metal type: "Jade"</summary>
+		public const string METAL_JADE = "Jade";
 
-		/// <summary>Metal type: "mithril"</summary>
-		public const string METAL_MITHRIL = "mithril";
+		/// <summary>Metal type: "Mithril"</summary>
+		public const string METAL_MITHRIL = "Mithril";
 
-		/// <summary>Metal type: "nepturite"</summary>
-		public const string METAL_NEPTURITE = "nepturite";
+		/// <summary>Metal type: "Nepturite"</summary>
+		public const string METAL_NEPTURITE = "Nepturite";
 
-		/// <summary>Metal type: "obsidiana"</summary>
-		public const string METAL_OBSIDIAN = "obsidiana";
+		/// <summary>Metal type: "Obsidiana"</summary>
+		public const string METAL_OBSIDIAN = "Obsidiana";
 
-		/// <summary>Metal type: "ônix"</summary>
-		public const string METAL_ONYX = "ônix";
+		/// <summary>Metal type: "Ônix"</summary>
+		public const string METAL_ONYX = "Ônix";
 
-		/// <summary>Metal type: "quartzo"</summary>
-		public const string METAL_QUARTZ = "quartzo";
+		/// <summary>Metal type: "Quartzo"</summary>
+		public const string METAL_QUARTZ = "Quartzo";
 
-		/// <summary>Metal type: "ferro sombrio"</summary>
-		public const string METAL_SHADOW_IRON = "ferro sombrio";
+		/// <summary>Metal type: "Ferro Sombrio"</summary>
+		public const string METAL_SHADOW_IRON = "Ferro Sombrio";
 
-		/// <summary>Metal type: "prata"</summary>
-		public const string METAL_SILVER = "prata";
+		/// <summary>Metal type: "Prata"</summary>
+		public const string METAL_SILVER = "Prata";
 
-		/// <summary>Metal type: "prateado"</summary>
-		public const string METAL_SILVERY = "prateado";
+		/// <summary>Metal type: "Prateado"</summary>
+		public const string METAL_SILVERY = "Prateado";
 
-		/// <summary>Metal type: "espinélio"</summary>
-		public const string METAL_SPINEL = "espinélio";
+		/// <summary>Metal type: "Espinélio"</summary>
+		public const string METAL_SPINEL = "Espinélio";
 
-		/// <summary>Metal type: "rubi estelar"</summary>
-		public const string METAL_STAR_RUBY = "rubi estelar";
+		/// <summary>Metal type: "Rubi Estelar"</summary>
+		public const string METAL_STAR_RUBY = "Rubi Estelar";
 
-		/// <summary>Metal type: "aço"</summary>
-		public const string METAL_STEEL = "aço";
+		/// <summary>Metal type: "Aço"</summary>
+		public const string METAL_STEEL = "Aço";
 
-		/// <summary>Metal type: "topázio"</summary>
-		public const string METAL_TOPAZ = "topázio";
+		/// <summary>Metal type: "Topázio"</summary>
+		public const string METAL_TOPAZ = "Topázio";
 
-		/// <summary>Metal type: "valorite"</summary>
-		public const string METAL_VALORITE = "valorite";
+		/// <summary>Metal type: "Valorite"</summary>
+		public const string METAL_VALORITE = "Valorite";
 
-		/// <summary>Metal type: "verite"</summary>
-		public const string METAL_VERITE = "verite";
+		/// <summary>Metal type: "Verite"</summary>
+		public const string METAL_VERITE = "Verite";
 
-		/// <summary>Metal type: "ferro"</summary>
-		public const string METAL_IRON = "ferro";
+		/// <summary>Metal type: "Ferro"</summary>
+		public const string METAL_IRON = "Ferro";
 
-		/// <summary>Metal type: "titânio"</summary>
-		public const string METAL_TITANIUM = "titânio";
+		/// <summary>Metal type: "Titânio"</summary>
+		public const string METAL_TITANIUM = "Titânio";
 
-		/// <summary>Metal type: "rosenium"</summary>
-		public const string METAL_ROSENIUM = "rosenium";
+		/// <summary>Metal type: "Rosenium"</summary>
+		public const string METAL_ROSENIUM = "Rosenium";
 
-		/// <summary>Metal type: "platina"</summary>
-		public const string METAL_PLATINUM = "platina";
+		/// <summary>Metal type: "Platina"</summary>
+		public const string METAL_PLATINUM = "Platina";
 
-		/// <summary>Metal type: "xormite"</summary>
-		public const string METAL_XORMITE = "xormite";
+		/// <summary>Metal type: "Xormite"</summary>
+		public const string METAL_XORMITE = "Xormite";
 
 		#endregion
 
@@ -630,89 +630,90 @@ namespace Server.Engines.Craft
 
 		#region Ingot Type Names
 
-		/// <summary>Ingot name: "lingote de agapite"</summary>
-		public const string INGOT_AGAPITE = "lingote de agapite";
+		/// <summary>Ingot name: "Lingote de Agapite"</summary>
+		public const string INGOT_AGAPITE = "Lingote de Agapite";
 
-		/// <summary>Ingot name: "lingote de ametista"</summary>
-		public const string INGOT_AMETHYST = "lingote de ametista";
+		/// <summary>Ingot name: "Lingote de Ametista"</summary>
+		public const string INGOT_AMETHYST = "Lingote de Ametista";
 
-		/// <summary>Ingot name: "lingote de latão"</summary>
-		public const string INGOT_BRASS = "lingote de latão";
+		/// <summary>Ingot name: "Lingote de Latão"</summary>
+		public const string INGOT_BRASS = "Lingote de Latão";
 
-		/// <summary>Ingot name: "lingote de bronze"</summary>
-		public const string INGOT_BRONZE = "lingote de bronze";
+		/// <summary>Ingot name: "Lingote de Bronze"</summary>
+		public const string INGOT_BRONZE = "Lingote de Bronze";
 
-		/// <summary>Ingot name: "lingote de caddellite"</summary>
-		public const string INGOT_CADDELLITE = "lingote de caddellite";
+		/// <summary>Ingot name: "Lingote de Caddellite"</summary>
+		public const string INGOT_CADDELLITE = "Lingote de Caddellite";
 
-		/// <summary>Ingot name: "lingote de cobre"</summary>
-		public const string INGOT_COPPER = "lingote de cobre";
+		/// <summary>Ingot name: "Lingote de Cobre"</summary>
+		public const string INGOT_COPPER = "Lingote de Cobre";
 
-		/// <summary>Ingot name: "lingote de cobre opaco"</summary>
-		public const string INGOT_DULL_COPPER = "lingote de cobre opaco";
+		/// <summary>Ingot name: "Lingote de Cobre Rústico"</summary>
+		public const string INGOT_DULL_COPPER = "Lingote de Cobre Rústico";
 
-		/// <summary>Ingot name: "lingote de anão"</summary>
-		public const string INGOT_DWARVEN = "lingote de anão";
+		/// <summary>Ingot name: "Lingote de Dwarven"</summary>
+		public const string INGOT_DWARVEN = "Lingote de Dwarven";
 
-		/// <summary>Ingot name: "lingote de granada"</summary>
-		public const string INGOT_GARNET = "lingote de granada";
+		/// <summary>Ingot name: "Lingote de Granada"</summary>
+		public const string INGOT_GARNET = "Lingote de Granada";
 
-		/// <summary>Ingot name: "lingote de ouro"</summary>
-		public const string INGOT_GOLD = "lingote de ouro";
+		/// <summary>Ingot name: "Lingote de Platina"</summary>
+		public const string INGOT_PLATINUM = "Lingote de Platina";
 
-		/// <summary>Ingot name: "lingote de ferro"</summary>
-		public const string INGOT_IRON = "lingote de ferro";
+		/// <summary>Ingot name: "Lingote de Dourado"</summary>
+		public const string INGOT_GOLD = "Lingote de Dourado";
 
-		/// <summary>Ingot name: "lingote de jade"</summary>
-		public const string INGOT_JADE = "lingote de jade";
+		/// <summary>Ingot name: "Lingote de Ferro"</summary>
+		public const string INGOT_IRON = "Lingote de Ferro";
 
-		/// <summary>Ingot name: "lingote de mithril"</summary>
-		public const string INGOT_MITHRIL = "lingote de mithril";
+		/// <summary>Ingot name: "Lingote de Jade"</summary>
+		public const string INGOT_JADE = "Lingote de Jade";
 
-		/// <summary>Ingot name: "lingote de nepturite"</summary>
-		public const string INGOT_NEPTURITE = "lingote de nepturite";
+		/// <summary>Ingot name: "Lingote de Mithril"</summary>
+		public const string INGOT_MITHRIL = "Lingote de Mithril";
 
-		/// <summary>Ingot name: "lingote de obsidiana"</summary>
-		public const string INGOT_OBSIDIAN = "lingote de obsidiana";
+		/// <summary>Ingot name: "Lingote de Nepturite"</summary>
+		public const string INGOT_NEPTURITE = "Lingote de Nepturite";
 
-		/// <summary>Ingot name: "lingote de ônix"</summary>
-		public const string INGOT_ONYX = "lingote de ônix";
+		/// <summary>Ingot name: "Lingote de Obsidiana"</summary>
+		public const string INGOT_OBSIDIAN = "Lingote de Obsidiana";
 
-		/// <summary>Ingot name: "lingote de quartzo"</summary>
-		public const string INGOT_QUARTZ = "lingote de quartzo";
+		/// <summary>Ingot name: "Lingote de Ônix"</summary>
+		public const string INGOT_ONYX = "Lingote de Ônix";
 
-		/// <summary>Ingot name: "lingote de ferro sombrio"</summary>
-		public const string INGOT_SHADOW_IRON = "lingote de ferro sombrio";
+		/// <summary>Ingot name: "Lingote de Quartzo"</summary>
+		public const string INGOT_QUARTZ = "Lingote de Quartzo";
 
-		/// <summary>Ingot name: "lingote de prata"</summary>
-		public const string INGOT_SILVER = "lingote de prata";
+		/// <summary>Ingot name: "Lingote de Ferro Sombrio"</summary>
+		public const string INGOT_SHADOW_IRON = "Lingote de Ferro Sombrio";
 
-		/// <summary>Ingot name: "lingote de espinélio"</summary>
-		public const string INGOT_SPINEL = "lingote de espinélio";
+		/// <summary>Ingot name: "Lingote de Prata"</summary>
+		public const string INGOT_SILVER = "Lingote de Prata";
 
-		/// <summary>Ingot name: "lingote de rubi estelar"</summary>
-		public const string INGOT_STAR_RUBY = "lingote de rubi estelar";
+		/// <summary>Ingot name: "Lingote de Espinélio"</summary>
+		public const string INGOT_SPINEL = "Lingote de Espinélio";
 
-		/// <summary>Ingot name: "lingote de aço"</summary>
-		public const string INGOT_STEEL = "lingote de aço";
+		/// <summary>Ingot name: "Lingote de Rubi Estelar"</summary>
+		public const string INGOT_STAR_RUBY = "Lingote de Rubi Estelar";
 
-		/// <summary>Ingot name: "lingote de topázio"</summary>
-		public const string INGOT_TOPAZ = "lingote de topázio";
+		/// <summary>Ingot name: "Lingote de Aço"</summary>
+		public const string INGOT_STEEL = "Lingote de Aço";
 
-		/// <summary>Ingot name: "lingote de valorite"</summary>
-		public const string INGOT_VALORITE = "lingote de valorite";
+		/// <summary>Ingot name: "Lingote de Topázio"</summary>
+		public const string INGOT_TOPAZ = "Lingote de Topázio";
 
-		/// <summary>Ingot name: "lingote de verite"</summary>
-		public const string INGOT_VERITE = "lingote de verite";
+		/// <summary>Ingot name: "Lingote de Valorite"</summary>
+		public const string INGOT_VALORITE = "Lingote de Valorite";
 
-		/// <summary>Ingot name: "lingote de titânio"</summary>
-		public const string INGOT_TITANIUM = "lingote de titânio";
+		/// <summary>Ingot name: "Lingote de Verite"</summary>
+		public const string INGOT_VERITE = "Lingote de Verite";
 
-		/// <summary>Ingot name: "lingote de rosenium"</summary>
-		public const string INGOT_ROSENIUM = "lingote de rosenium";
+		/// <summary>Ingot name: "Lingote de Titânio"</summary>
+		public const string INGOT_TITANIUM = "Lingote de Titânio";
 
-		/// <summary>Ingot name: "lingote de platina"</summary>
-		public const string INGOT_PLATINUM = "lingote de platina";
+		/// <summary>Ingot name: "Lingote de Rosenium"</summary>
+		public const string INGOT_ROSENIUM = "Lingote de Rosenium";
+
 
 		#endregion
 

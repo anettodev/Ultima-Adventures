@@ -1071,6 +1071,10 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_REQ_METAL_BRONZE, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
 
+			AddSubRes( typeof( PlatinumIngot ), TinkeringConstants.MSG_METAL_PLATINUM,
+				TinkeringConstants.SKILL_REQ_METAL_PLATINUM, TinkeringConstants.MSG_IRON_INGOTS,
+				TinkeringConstants.MSG_MATERIAL_SELECTION );
+
 			AddSubRes( typeof( GoldIngot ), TinkeringConstants.MSG_METAL_GOLD,
 				TinkeringConstants.SKILL_REQ_METAL_GOLD, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
@@ -1093,10 +1097,6 @@ namespace Server.Engines.Craft
 
 			AddSubRes( typeof( RoseniumIngot ), TinkeringConstants.MSG_METAL_ROSENIUM,
 				TinkeringConstants.SKILL_REQ_METAL_ROSENIUM, TinkeringConstants.MSG_IRON_INGOTS,
-				TinkeringConstants.MSG_MATERIAL_SELECTION );
-
-			AddSubRes( typeof( PlatinumIngot ), TinkeringConstants.MSG_METAL_PLATINUM,
-				TinkeringConstants.SKILL_REQ_METAL_PLATINUM, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
 
 			// GATED RESOURCES: These metals are not yet available to players
@@ -1128,8 +1128,7 @@ namespace Server.Engines.Craft
 			AddSubRes( typeof( DwarvenIngot ), TinkeringConstants.MSG_METAL_DWARVEN,
 				TinkeringConstants.SKILL_REQ_METAL_DWARVEN, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
-			*/</ antml:parameter>
-</invoke>
+			*/
 		}
 
 		#endregion

@@ -410,6 +410,9 @@ namespace Server.Engines.Craft
 		/// <summary>Bronze</summary>
 		public const string MSG_METAL_BRONZE = TinkeringStringConstants.METAL_BRONZE;
 
+		/// <summary>Platinum</summary>
+		public const string MSG_METAL_PLATINUM = TinkeringStringConstants.METAL_PLATINUM;
+
 		/// <summary>Gold</summary>
 		public const string MSG_METAL_GOLD = TinkeringStringConstants.METAL_GOLD;
 
@@ -427,9 +430,7 @@ namespace Server.Engines.Craft
 
 		/// <summary>Rosenium</summary>
 		public const string MSG_METAL_ROSENIUM = TinkeringStringConstants.METAL_ROSENIUM;
-
-		/// <summary>Platinum</summary>
-		public const string MSG_METAL_PLATINUM = TinkeringStringConstants.METAL_PLATINUM;
+	
 
 		/// <summary>Nepturite</summary>
 		public const string MSG_METAL_NEPTURITE = TinkeringStringConstants.METAL_NEPTURITE;

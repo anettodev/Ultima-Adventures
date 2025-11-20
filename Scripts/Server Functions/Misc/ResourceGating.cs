@@ -31,16 +31,18 @@ namespace Server.Misc
 
 			// Alloy metals - crafting recipes disabled
 			CraftResource.Steel,
-			CraftResource.Brass,
+			CraftResource.Brass
 
 			// Unknown woods - not yet introduced to players
-			CraftResource.MahoganyTree,
-			CraftResource.OakTree,
-			CraftResource.PineTree,
-			CraftResource.GhostTree,
-			CraftResource.WalnutTree,
-			CraftResource.PetrifiedTree,
-			CraftResource.DriftwoodTree
+			// NOTE: These wood types are commented out in CraftResource enum (ResourceInfo.cs)
+			// and will be enabled when the enum values are uncommented
+			//CraftResource.MahoganyTree,
+			//CraftResource.OakTree,
+			//CraftResource.PineTree,
+			//CraftResource.GhostTree,
+			//CraftResource.WalnutTree,
+			//CraftResource.PetrifiedTree,
+			//CraftResource.DriftwoodTree
 		};
 
 		/// <summary>
