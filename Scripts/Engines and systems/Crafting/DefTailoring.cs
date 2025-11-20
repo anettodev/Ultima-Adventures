@@ -133,10 +133,16 @@ namespace Server.Engines.Craft
 		public override int CanCraft(Mobile from, BaseTool tool, Type itemType)
 		{
 			if (tool == null || tool.Deleted || tool.UsesRemaining < 0)
-				return TailoringConstants.MSG_TOOL_WORN_OUT;
+			{
+				from.SendMessage( 55, TailoringConstants.MSG_TOOL_WORN_OUT );
+				return 500295; // Generic error number
+			}
 
 			if (!BaseTool.CheckAccessible(tool, from))
-				return TailoringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
+			{
+				from.SendMessage( 55, TailoringConstants.MSG_TOOL_MUST_BE_ON_PERSON );
+				return 500295; // Generic error number
+			}
 
 			return 0;
 		}
@@ -155,28 +161,34 @@ namespace Server.Engines.Craft
 		public override int PlayEndingEffect(Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item)
 		{
 			if (toolBroken)
-				from.SendLocalizedMessage(TailoringConstants.MSG_TOOL_WORN_OUT);
+				from.SendMessage( 55, TailoringConstants.MSG_TOOL_WORN_OUT );
 
 			if (failed)
 			{
 				if (lostMaterial)
-					return TailoringConstants.MSG_FAILED_LOST_MATERIALS;
+					from.SendMessage( 55, TailoringConstants.MSG_FAILED_LOST_MATERIALS );
 				else
-					return TailoringConstants.MSG_FAILED_NO_MATERIALS_LOST;
+					from.SendMessage( 55, TailoringConstants.MSG_FAILED_NO_MATERIALS_LOST );
+				return 0;
 			}
 
 			if (quality == TailoringConstants.QUALITY_BELOW_AVERAGE)
-				return TailoringConstants.MSG_BARELY_MADE_ITEM;
-
-			if (quality == TailoringConstants.QUALITY_EXCEPTIONAL)
+			{
+				from.SendMessage( 33, TailoringConstants.MSG_BARELY_MADE_ITEM );
+			}
+			else if (quality == TailoringConstants.QUALITY_EXCEPTIONAL)
 			{
 				if (makersMark)
-					return TailoringConstants.MSG_EXCEPTIONAL_WITH_MARK;
+					from.SendMessage( 95, TailoringConstants.MSG_EXCEPTIONAL_WITH_MARK );
 				else
-					return TailoringConstants.MSG_EXCEPTIONAL_QUALITY;
+					from.SendMessage( 95, TailoringConstants.MSG_EXCEPTIONAL_QUALITY );
+			}
+			else
+			{
+				from.SendMessage( 95, TailoringConstants.MSG_ITEM_CREATED );
 			}
 
-			return TailoringConstants.MSG_ITEM_CREATED;
+			return 0;
 		}
 
 		#endregion
@@ -186,9 +198,9 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Adds a cloth craft with automatic cotton cloth requirement.
 		/// </summary>
-		private void AddClothCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int clothAmount)
+		private int AddClothCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int clothAmount)
 		{
-			AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
+			return AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
 				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
 				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
 		}
@@ -196,9 +208,9 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Adds a cloth craft using a custom name string.
 		/// </summary>
-		private void AddClothCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int clothAmount)
+		private int AddClothCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int clothAmount)
 		{
-			AddCraft(itemType, groupName, customName, minSkill, maxSkill,
+			return AddCraft(itemType, groupName, customName, minSkill, maxSkill,
 				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
 				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
 		}

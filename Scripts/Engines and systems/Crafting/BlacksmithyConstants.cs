@@ -139,101 +139,101 @@ namespace Server.Engines.Craft
 
 		#endregion
 
-		#region Message IDs
+		#region Message Numbers (Cliloc)
 
-		/// <summary>Gump title: "BLACKSMITHY MENU"</summary>
+		/// <summary>Gump title: "MENU DE FERRARIA" (cliloc 1044002)</summary>
 		public const int MSG_GUMP_TITLE = 1044002;
 
-		/// <summary>Message: "You have worn out your tool!"</summary>
-		public const int MSG_TOOL_WORN_OUT = 1044038;
+		/// <summary>Message: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = BlacksmithyStringConstants.MSG_TOOL_WORN_OUT;
 
-		/// <summary>Message: "If you have a tool equipped, you must use that tool."</summary>
-		public const int MSG_MUST_USE_EQUIPPED_TOOL = 1048146;
+		/// <summary>Message: "Se você tiver uma ferramenta equipada, deve usar essa ferramenta."</summary>
+		public const string MSG_MUST_USE_EQUIPPED_TOOL = BlacksmithyStringConstants.MSG_MUST_USE_EQUIPPED_TOOL;
 
-		/// <summary>Message: "The tool must be on your person to use."</summary>
-		public const int MSG_TOOL_MUST_BE_ON_PERSON = 1044263;
+		/// <summary>Message: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = BlacksmithyStringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
-		/// <summary>Message: "You must be near an anvil and a forge to smith items."</summary>
-		public const int MSG_MUST_BE_NEAR_ANVIL_AND_FORGE = 1044267;
+		/// <summary>Message: "Você deve estar perto de uma bigorna e uma forja para fazer isso."</summary>
+		public const string MSG_MUST_BE_NEAR_ANVIL_AND_FORGE = BlacksmithyStringConstants.MSG_MUST_BE_NEAR_ANVIL_AND_FORGE;
 
-		/// <summary>Message: "You failed to create the item, and some of your materials are lost."</summary>
-		public const int MSG_FAILED_WITH_MATERIAL_LOSS = 1044043;
+		/// <summary>Message: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_WITH_MATERIAL_LOSS = BlacksmithyStringConstants.MSG_FAILED_LOST_MATERIALS;
 
-		/// <summary>Message: "You failed to create the item, but no materials were lost."</summary>
-		public const int MSG_FAILED_WITHOUT_MATERIAL_LOSS = 1044157;
+		/// <summary>Message: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_WITHOUT_MATERIAL_LOSS = BlacksmithyStringConstants.MSG_FAILED_NO_MATERIALS_LOST;
 
-		/// <summary>Message: "You were barely able to make this item. It's quality is below average."</summary>
-		public const int MSG_BELOW_AVERAGE_QUALITY = 502785;
+		/// <summary>Message: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BELOW_AVERAGE_QUALITY = BlacksmithyStringConstants.MSG_BARELY_MADE_ITEM;
 
-		/// <summary>Message: "You create an exceptional quality item and affix your maker's mark."</summary>
-		public const int MSG_EXCEPTIONAL_WITH_MARK = 1044156;
+		/// <summary>Message: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = BlacksmithyStringConstants.MSG_EXCEPTIONAL_WITH_MARK;
 
-		/// <summary>Message: "You create an exceptional quality item."</summary>
-		public const int MSG_EXCEPTIONAL_QUALITY = 1044155;
+		/// <summary>Message: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = BlacksmithyStringConstants.MSG_EXCEPTIONAL_QUALITY;
 
-		/// <summary>Message: "You create the item."</summary>
-		public const int MSG_ITEM_CREATED = 1044154;
+		/// <summary>Message: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = BlacksmithyStringConstants.MSG_ITEM_CREATED;
 
-		/// <summary>Message ID for iron ingot resource</summary>
-		public const int MSG_IRON_INGOT = 1044036;
+		/// <summary>Resource name: "Lingote de Ferro"</summary>
+		public const string MSG_IRON_INGOT = BlacksmithyStringConstants.RESOURCE_IRON_INGOT;
 
-		/// <summary>Message ID for missing resource</summary>
-		public const int MSG_MISSING_RESOURCE = 1044037;
+		/// <summary>Error: "Você não tem o recurso necessário."</summary>
+		public const string MSG_MISSING_RESOURCE = BlacksmithyStringConstants.MSG_MISSING_RESOURCE;
 
-		/// <summary>Message ID for dragon scales resource</summary>
-		public const int MSG_DRAGON_SCALES = 1042081;
+		/// <summary>Resource name: "Escamas Reptilianas"</summary>
+		public const string MSG_DRAGON_SCALES = BlacksmithyStringConstants.RESOURCE_DRAGON_SCALES;
 
-		/// <summary>Message ID for iron ingot name</summary>
-		public const int MSG_IRON_INGOT_NAME = 1044022;
+		/// <summary>Resource name: "Lingote de Ferro"</summary>
+		public const string MSG_IRON_INGOT_NAME = BlacksmithyStringConstants.INGOT_IRON;
 
-		/// <summary>Message ID for sub-resource error</summary>
-		public const int MSG_SUB_RESOURCE_ERROR = 1044267;
+		/// <summary>Error: "Você não tem o sub-recurso necessário."</summary>
+		public const string MSG_SUB_RESOURCE_ERROR = BlacksmithyStringConstants.MSG_SUB_RESOURCE_ERROR;
 
-		/// <summary>Message ID for sub-resource skill error</summary>
-		public const int MSG_SUB_RESOURCE_SKILL_ERROR = 1044268;
+		/// <summary>Error: "Você não tem habilidade suficiente para trabalhar com este sub-recurso."</summary>
+		public const string MSG_SUB_RESOURCE_SKILL_ERROR = BlacksmithyStringConstants.MSG_SUB_RESOURCE_SKILL_ERROR;
 
-		/// <summary>Message ID for scale skill error</summary>
-		public const int MSG_SCALE_SKILL_ERROR = 1054018;
+		/// <summary>Error: "Você não tem escamas reptilianas suficientes."</summary>
+		public const string MSG_SCALE_SKILL_ERROR = BlacksmithyStringConstants.MSG_SCALE_SKILL_ERROR;
 
-		/// <summary>Message ID for harpoon resource error</summary>
-		public const int MSG_HARPOON_RESOURCE_ERROR = 1044351;
+		/// <summary>Error: "Você não tem madeira suficiente para fazer isso."</summary>
+		public const string MSG_HARPOON_RESOURCE_ERROR = BlacksmithyStringConstants.MSG_HARPOON_RESOURCE_ERROR;
 
 		#endregion
 
-		#region Ingot Message IDs
+		#region Ingot Names (PT-BR)
 
-		/// <summary>Message ID for dull copper ingot name</summary>
-		public const int MSG_DULL_COPPER_INGOT = 1044023;
+		/// <summary>Dull copper ingot name</summary>
+		public const string MSG_DULL_COPPER_INGOT = BlacksmithyStringConstants.INGOT_DULL_COPPER;
 
-		/// <summary>Message ID for shadow iron ingot name</summary>
-		public const int MSG_SHADOW_IRON_INGOT = 1044024;
+		/// <summary>Shadow iron ingot name</summary>
+		public const string MSG_SHADOW_IRON_INGOT = BlacksmithyStringConstants.INGOT_SHADOW_IRON;
 
-		/// <summary>Message ID for copper ingot name</summary>
-		public const int MSG_COPPER_INGOT = 1044025;
+		/// <summary>Copper ingot name</summary>
+		public const string MSG_COPPER_INGOT = BlacksmithyStringConstants.INGOT_COPPER;
 
-		/// <summary>Message ID for bronze ingot name</summary>
-		public const int MSG_BRONZE_INGOT = 1044026;
+		/// <summary>Bronze ingot name</summary>
+		public const string MSG_BRONZE_INGOT = BlacksmithyStringConstants.INGOT_BRONZE;
 
-		/// <summary>Message ID for gold ingot name</summary>
-		public const int MSG_GOLD_INGOT = 1044027;
+		/// <summary>Gold ingot name</summary>
+		public const string MSG_GOLD_INGOT = BlacksmithyStringConstants.INGOT_GOLD;
 
-		/// <summary>Message ID for agapite ingot name</summary>
-		public const int MSG_AGAPITE_INGOT = 1044028;
+		/// <summary>Agapite ingot name</summary>
+		public const string MSG_AGAPITE_INGOT = BlacksmithyStringConstants.INGOT_AGAPITE;
 
-		/// <summary>Message ID for verite ingot name</summary>
-		public const int MSG_VERITE_INGOT = 1044029;
+		/// <summary>Verite ingot name</summary>
+		public const string MSG_VERITE_INGOT = BlacksmithyStringConstants.INGOT_VERITE;
 
-		/// <summary>Message ID for valorite ingot name</summary>
-		public const int MSG_VALORITE_INGOT = 1044030;
+		/// <summary>Valorite ingot name</summary>
+		public const string MSG_VALORITE_INGOT = BlacksmithyStringConstants.INGOT_VALORITE;
 
-		/// <summary>Message ID for titanium ingot name (custom)</summary>
-		public const int MSG_TITANIUM_INGOT = 6661000;
+		/// <summary>Titanium ingot name</summary>
+		public const string MSG_TITANIUM_INGOT = BlacksmithyStringConstants.INGOT_TITANIUM;
 
-		/// <summary>Message ID for rosenium ingot name (custom)</summary>
-		public const int MSG_ROSENIUM_INGOT = 6662000;
+		/// <summary>Rosenium ingot name</summary>
+		public const string MSG_ROSENIUM_INGOT = BlacksmithyStringConstants.INGOT_ROSENIUM;
 
-		/// <summary>Message ID for platinum ingot name (custom)</summary>
-		public const int MSG_PLATINUM_INGOT = 6663000;
+		/// <summary>Platinum ingot name</summary>
+		public const string MSG_PLATINUM_INGOT = BlacksmithyStringConstants.INGOT_PLATINUM;
 
 	#endregion
 	}

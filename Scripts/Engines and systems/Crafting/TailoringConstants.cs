@@ -27,62 +27,62 @@ namespace Server.Engines.Craft
 
 		#region Message Numbers (Cliloc)
 
-		/// <summary>Gump title: "TAILORING MENU" (cliloc 1044005)</summary>
+		/// <summary>Gump title: "MENU DE ALFAIATARIA" (cliloc 1044005)</summary>
 		public const int MSG_GUMP_TITLE = 1044005;
 
-		/// <summary>Message: "You have worn out your tool!" (cliloc 1044038)</summary>
-		public const int MSG_TOOL_WORN_OUT = 1044038;
+		/// <summary>Message: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = TailoringStringConstants.MSG_TOOL_WORN_OUT;
 
-		/// <summary>Message: "The tool must be on your person to use." (cliloc 1044263)</summary>
-		public const int MSG_TOOL_MUST_BE_ON_PERSON = 1044263;
+		/// <summary>Message: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = TailoringStringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
-		/// <summary>Message: "You failed to create the item, and some of your materials are lost." (cliloc 1044043)</summary>
-		public const int MSG_FAILED_LOST_MATERIALS = 1044043;
+		/// <summary>Message: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = TailoringStringConstants.MSG_FAILED_LOST_MATERIALS;
 
-		/// <summary>Message: "You failed to create the item, but no materials were lost." (cliloc 1044157)</summary>
-		public const int MSG_FAILED_NO_MATERIALS_LOST = 1044157;
+		/// <summary>Message: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_NO_MATERIALS_LOST = TailoringStringConstants.MSG_FAILED_NO_MATERIALS_LOST;
 
-		/// <summary>Message: "You were barely able to make this item. It's quality is below average." (cliloc 502785)</summary>
-		public const int MSG_BARELY_MADE_ITEM = 502785;
+		/// <summary>Message: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BARELY_MADE_ITEM = TailoringStringConstants.MSG_BARELY_MADE_ITEM;
 
-		/// <summary>Message: "You create an exceptional quality item and affix your maker's mark." (cliloc 1044156)</summary>
-		public const int MSG_EXCEPTIONAL_WITH_MARK = 1044156;
+		/// <summary>Message: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = TailoringStringConstants.MSG_EXCEPTIONAL_WITH_MARK;
 
-		/// <summary>Message: "You create an exceptional quality item." (cliloc 1044155)</summary>
-		public const int MSG_EXCEPTIONAL_QUALITY = 1044155;
+		/// <summary>Message: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = TailoringStringConstants.MSG_EXCEPTIONAL_QUALITY;
 
-		/// <summary>Message: "You create the item." (cliloc 1044154)</summary>
-		public const int MSG_ITEM_CREATED = 1044154;
+		/// <summary>Message: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = TailoringStringConstants.MSG_ITEM_CREATED;
 
-		/// <summary>Resource name: "Cotton Cloth" (cliloc 1044286)</summary>
-		public const int MSG_COTTON_CLOTH = 1044286;
+		/// <summary>Resource name: "Tecido de Algodão"</summary>
+		public const string MSG_COTTON_CLOTH = TailoringStringConstants.RESOURCE_COTTON_CLOTH;
 
-		/// <summary>Error: "You don't have enough cloth." (cliloc 1044287)</summary>
-		public const int MSG_INSUFFICIENT_CLOTH = 1044287;
+		/// <summary>Error: "Você não tem tecido suficiente."</summary>
+		public const string MSG_INSUFFICIENT_CLOTH = TailoringStringConstants.MSG_INSUFFICIENT_CLOTH;
 
-		/// <summary>Resource name: "Leather" (cliloc 1044462)</summary>
-		public const int MSG_LEATHER = 1044462;
+		/// <summary>Resource name: "Couro"</summary>
+		public const string MSG_LEATHER = TailoringStringConstants.RESOURCE_LEATHER;
 
-		/// <summary>Error: "You don't have enough leather." (cliloc 1044463)</summary>
-		public const int MSG_INSUFFICIENT_LEATHER = 1044463;
+		/// <summary>Error: "Você não tem couro suficiente."</summary>
+		public const string MSG_INSUFFICIENT_LEATHER = TailoringStringConstants.MSG_INSUFFICIENT_LEATHER;
 
-		/// <summary>Error: "You don't have the required items." (cliloc 1042081)</summary>
-		public const int MSG_INSUFFICIENT_RESOURCES = 1042081;
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = TailoringStringConstants.MSG_INSUFFICIENT_RESOURCES;
 
-		/// <summary>Error: "You don't have the required skill." (cliloc 1049063)</summary>
-		public const int MSG_INSUFFICIENT_SKILL = 1049063;
+		/// <summary>Error: "Você não tem a habilidade necessária."</summary>
+		public const string MSG_INSUFFICIENT_SKILL = TailoringStringConstants.MSG_INSUFFICIENT_SKILL;
 
-		/// <summary>Message: "You do not have enough cloth material." (cliloc 1044458)</summary>
-		public const int MSG_NO_CLOTH_MATERIAL = 1044458;
+		/// <summary>Message: "Você não tem material de tecido suficiente."</summary>
+		public const string MSG_NO_CLOTH_MATERIAL = TailoringStringConstants.MSG_NO_CLOTH_MATERIAL;
 
-		/// <summary>Message: "You cannot work this cloth." (cliloc 1054019)</summary>
-		public const int MSG_CANNOT_WORK_CLOTH = 1054019;
+		/// <summary>Message: "Você não pode trabalhar este tecido."</summary>
+		public const string MSG_CANNOT_WORK_CLOTH = TailoringStringConstants.MSG_CANNOT_WORK_CLOTH;
 
-		/// <summary>Message: "Goliath Leather" (cliloc 1061740)</summary>
-		public const int MSG_GOLIATH_LEATHER = 1061740;
+		/// <summary>Message: "Couro Golias"</summary>
+		public const string MSG_GOLIATH_LEATHER = TailoringStringConstants.RESOURCE_GOLIATH_LEATHER;
 
-		/// <summary>Error: "You don't have enough goliath leather." (cliloc 1049311)</summary>
-		public const int MSG_INSUFFICIENT_GOLIATH_LEATHER = 1049311;
+		/// <summary>Error: "Você não tem couro golias suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GOLIATH_LEATHER = TailoringStringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER;
 
 		#endregion
 
@@ -96,225 +96,225 @@ namespace Server.Engines.Craft
 
 		#endregion
 
-		#region Cloth Types (Cliloc)
+		#region Cloth Types (PT-BR)
 
-		/// <summary>Cotton Cloth (cliloc 1067440)</summary>
-		public const int MSG_CLOTH_COTTON = 1067440;
+		/// <summary>Cotton Cloth</summary>
+		public const string MSG_CLOTH_COTTON = TailoringStringConstants.CLOTH_COTTON;
 
-		/// <summary>Wool Cloth (cliloc 1067443)</summary>
-		public const int MSG_CLOTH_WOOL = 1067443;
+		/// <summary>Wool Cloth</summary>
+		public const string MSG_CLOTH_WOOL = TailoringStringConstants.CLOTH_WOOL;
 
-		/// <summary>Flax Cloth (cliloc 1067441)</summary>
-		public const int MSG_CLOTH_FLAX = 1067441;
+		/// <summary>Flax Cloth</summary>
+		public const string MSG_CLOTH_FLAX = TailoringStringConstants.CLOTH_FLAX;
 
-		/// <summary>Silk Cloth (cliloc 1067442)</summary>
-		public const int MSG_CLOTH_SILK = 1067442;
+		/// <summary>Silk Cloth</summary>
+		public const string MSG_CLOTH_SILK = TailoringStringConstants.CLOTH_SILK;
 
-		/// <summary>Poliester Cloth (cliloc 1067444)</summary>
-		public const int MSG_CLOTH_POLIESTER = 1067444;
-
-		#endregion
-
-		#region Leather Types (Cliloc)
-
-		/// <summary>Leather (cliloc 1049150)</summary>
-		public const int MSG_LEATHER_REGULAR = 1049150;
-
-		/// <summary>Spined Leather (cliloc 1049151)</summary>
-		public const int MSG_LEATHER_SPINED = 1049151;
-
-		/// <summary>Horned Leather (cliloc 1049152)</summary>
-		public const int MSG_LEATHER_HORNED = 1049152;
-
-		/// <summary>Barbed Leather (cliloc 1049153)</summary>
-		public const int MSG_LEATHER_BARBED = 1049153;
+		/// <summary>Poliester Cloth</summary>
+		public const string MSG_CLOTH_POLIESTER = TailoringStringConstants.CLOTH_POLIESTER;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Hats
+		#region Leather Types (PT-BR)
 
-		/// <summary>Skull Cap (cliloc 1025444)</summary>
-		public const int MSG_SKULL_CAP = 1025444;
+		/// <summary>Leather</summary>
+		public const string MSG_LEATHER_REGULAR = TailoringStringConstants.LEATHER_REGULAR;
 
-		/// <summary>Bandana (cliloc 1025440)</summary>
-		public const int MSG_BANDANA = 1025440;
+		/// <summary>Spined Leather</summary>
+		public const string MSG_LEATHER_SPINED = TailoringStringConstants.LEATHER_SPINED;
 
-		/// <summary>Floppy Hat (cliloc 1025907)</summary>
-		public const int MSG_FLOPPY_HAT = 1025907;
+		/// <summary>Horned Leather</summary>
+		public const string MSG_LEATHER_HORNED = TailoringStringConstants.LEATHER_HORNED;
 
-		/// <summary>Cap (cliloc 1025909)</summary>
-		public const int MSG_CAP = 1025909;
-
-		/// <summary>Wide Brim Hat (cliloc 1025908)</summary>
-		public const int MSG_WIDE_BRIM_HAT = 1025908;
-
-		/// <summary>Straw Hat (cliloc 1025911)</summary>
-		public const int MSG_STRAW_HAT = 1025911;
-
-		/// <summary>Tall Straw Hat (cliloc 1025910)</summary>
-		public const int MSG_TALL_STRAW_HAT = 1025910;
-
-		/// <summary>Bonnet (cliloc 1025913)</summary>
-		public const int MSG_BONNET = 1025913;
-
-		/// <summary>Feathered Hat (cliloc 1025914)</summary>
-		public const int MSG_FEATHERED_HAT = 1025914;
-
-		/// <summary>Tricorne Hat (cliloc 1025915)</summary>
-		public const int MSG_TRICORNE_HAT = 1025915;
-
-		/// <summary>Jester Hat (cliloc 1025916)</summary>
-		public const int MSG_JESTER_HAT = 1025916;
-
-		/// <summary>Wizard's Hat (cliloc 1025912)</summary>
-		public const int MSG_WIZARDS_HAT = 1025912;
+		/// <summary>Barbed Leather</summary>
+		public const string MSG_LEATHER_BARBED = TailoringStringConstants.LEATHER_BARBED;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Shirts/Robes
+		#region Item Names (PT-BR) - Hats
 
-		/// <summary>Doublet (cliloc 1028059)</summary>
-		public const int MSG_DOUBLET = 1028059;
+		/// <summary>Skull Cap</summary>
+		public const string MSG_SKULL_CAP = TailoringStringConstants.ITEM_SKULL_CAP;
 
-		/// <summary>Shirt (cliloc 1025399)</summary>
-		public const int MSG_SHIRT = 1025399;
+		/// <summary>Bandana</summary>
+		public const string MSG_BANDANA = TailoringStringConstants.ITEM_BANDANA;
 
-		/// <summary>Tunic (cliloc 1028097)</summary>
-		public const int MSG_TUNIC = 1028097;
+		/// <summary>Floppy Hat</summary>
+		public const string MSG_FLOPPY_HAT = TailoringStringConstants.ITEM_FLOPPY_HAT;
 
-		/// <summary>Surcoat (cliloc 1028189)</summary>
-		public const int MSG_SURCOAT = 1028189;
+		/// <summary>Cap</summary>
+		public const string MSG_CAP = TailoringStringConstants.ITEM_CAP;
 
-		/// <summary>Plain Dress (cliloc 1027937)</summary>
-		public const int MSG_PLAIN_DRESS = 1027937;
+		/// <summary>Wide Brim Hat</summary>
+		public const string MSG_WIDE_BRIM_HAT = TailoringStringConstants.ITEM_WIDE_BRIM_HAT;
 
-		/// <summary>Fancy Dress (cliloc 1027935)</summary>
-		public const int MSG_FANCY_DRESS = 1027935;
+		/// <summary>Straw Hat</summary>
+		public const string MSG_STRAW_HAT = TailoringStringConstants.ITEM_STRAW_HAT;
 
-		/// <summary>Cloak (cliloc 1025397)</summary>
-		public const int MSG_CLOAK = 1025397;
+		/// <summary>Tall Straw Hat</summary>
+		public const string MSG_TALL_STRAW_HAT = TailoringStringConstants.ITEM_TALL_STRAW_HAT;
 
-		/// <summary>Robe (cliloc 1027939)</summary>
-		public const int MSG_ROBE = 1027939;
+		/// <summary>Bonnet</summary>
+		public const string MSG_BONNET = TailoringStringConstants.ITEM_BONNET;
 
-		/// <summary>Fancy Shirt (cliloc 1027933)</summary>
-		public const int MSG_FANCY_SHIRT = 1027933;
+		/// <summary>Feathered Hat</summary>
+		public const string MSG_FEATHERED_HAT = TailoringStringConstants.ITEM_FEATHERED_HAT;
 
-		#endregion
+		/// <summary>Tricorne Hat</summary>
+		public const string MSG_TRICORNE_HAT = TailoringStringConstants.ITEM_TRICORNE_HAT;
 
-		#region Item Names (Cliloc) - Pants
+		/// <summary>Jester Hat</summary>
+		public const string MSG_JESTER_HAT = TailoringStringConstants.ITEM_JESTER_HAT;
 
-		/// <summary>Short Pants (cliloc 1025422)</summary>
-		public const int MSG_SHORT_PANTS = 1025422;
-
-		/// <summary>Long Pants (cliloc 1025433)</summary>
-		public const int MSG_LONG_PANTS = 1025433;
-
-		/// <summary>Kilt (cliloc 1025431)</summary>
-		public const int MSG_KILT = 1025431;
-
-		/// <summary>Skirt (cliloc 1025398)</summary>
-		public const int MSG_SKIRT = 1025398;
+		/// <summary>Wizard's Hat</summary>
+		public const string MSG_WIZARDS_HAT = TailoringStringConstants.ITEM_WIZARDS_HAT;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Footwear
+		#region Item Names (PT-BR) - Shirts/Robes
 
-		/// <summary>Sandals (cliloc 1025901)</summary>
-		public const int MSG_SANDALS = 1025901;
+		/// <summary>Doublet</summary>
+		public const string MSG_DOUBLET = TailoringStringConstants.ITEM_DOUBLET;
 
-		/// <summary>Shoes (cliloc 1025904)</summary>
-		public const int MSG_SHOES = 1025904;
+		/// <summary>Shirt</summary>
+		public const string MSG_SHIRT = TailoringStringConstants.ITEM_SHIRT;
 
-		/// <summary>Boots (cliloc 1025899)</summary>
-		public const int MSG_BOOTS = 1025899;
+		/// <summary>Tunic</summary>
+		public const string MSG_TUNIC = TailoringStringConstants.ITEM_TUNIC;
 
-		#endregion
+		/// <summary>Surcoat</summary>
+		public const string MSG_SURCOAT = TailoringStringConstants.ITEM_SURCOAT;
 
-		#region Item Names (Cliloc) - Misc
+		/// <summary>Plain Dress</summary>
+		public const string MSG_PLAIN_DRESS = TailoringStringConstants.ITEM_PLAIN_DRESS;
 
-		/// <summary>Body Sash (cliloc 1025441)</summary>
-		public const int MSG_BODY_SASH = 1025441;
+		/// <summary>Fancy Dress</summary>
+		public const string MSG_FANCY_DRESS = TailoringStringConstants.ITEM_FANCY_DRESS;
 
-		/// <summary>Half Apron (cliloc 1025435)</summary>
-		public const int MSG_HALF_APRON = 1025435;
+		/// <summary>Cloak</summary>
+		public const string MSG_CLOAK = TailoringStringConstants.ITEM_CLOAK;
 
-		/// <summary>Full Apron (cliloc 1025437)</summary>
-		public const int MSG_FULL_APRON = 1025437;
+		/// <summary>Robe</summary>
+		public const string MSG_ROBE = TailoringStringConstants.ITEM_ROBE;
 
-		#endregion
-
-		#region Item Names (Cliloc) - Leather Armor
-
-		/// <summary>Leather Cap (cliloc 1027609)</summary>
-		public const int MSG_LEATHER_CAP = 1027609;
-
-		/// <summary>Leather Gorget (cliloc 1025063)</summary>
-		public const int MSG_LEATHER_GORGET = 1025063;
-
-		/// <summary>Leather Gloves (cliloc 1025062)</summary>
-		public const int MSG_LEATHER_GLOVES = 1025062;
-
-		/// <summary>Leather Arms (cliloc 1025061)</summary>
-		public const int MSG_LEATHER_ARMS = 1025061;
-
-		/// <summary>Leather Legs (cliloc 1025067)</summary>
-		public const int MSG_LEATHER_LEGS = 1025067;
-
-		/// <summary>Leather Chest (cliloc 1025068)</summary>
-		public const int MSG_LEATHER_CHEST = 1025068;
-
-		/// <summary>Leather Skirt (cliloc 1027176)</summary>
-		public const int MSG_LEATHER_SKIRT = 1027176;
-
-		/// <summary>Leather Shorts (cliloc 1027168)</summary>
-		public const int MSG_LEATHER_SHORTS = 1027168;
-
-		/// <summary>Leather Bustier Arms (cliloc 1027178)</summary>
-		public const int MSG_LEATHER_BUSTIER_ARMS = 1027178;
-
-		/// <summary>Female Leather Chest (cliloc 1027174)</summary>
-		public const int MSG_FEMALE_LEATHER_CHEST = 1027174;
-
-		/// <summary>Studded Gorget (cliloc 1025078)</summary>
-		public const int MSG_STUDDED_GORGET = 1025078;
-
-		/// <summary>Studded Gloves (cliloc 1025077)</summary>
-		public const int MSG_STUDDED_GLOVES = 1025077;
-
-		/// <summary>Studded Arms (cliloc 1025076)</summary>
-		public const int MSG_STUDDED_ARMS = 1025076;
-
-		/// <summary>Studded Legs (cliloc 1025082)</summary>
-		public const int MSG_STUDDED_LEGS = 1025082;
-
-		/// <summary>Studded Chest (cliloc 1025083)</summary>
-		public const int MSG_STUDDED_CHEST = 1025083;
-
-		/// <summary>Studded Bustier Arms (cliloc 1027180)</summary>
-		public const int MSG_STUDDED_BUSTIER_ARMS = 1027180;
-
-		/// <summary>Female Studded Chest (cliloc 1027170)</summary>
-		public const int MSG_FEMALE_STUDDED_CHEST = 1027170;
+		/// <summary>Fancy Shirt</summary>
+		public const string MSG_FANCY_SHIRT = TailoringStringConstants.ITEM_FANCY_SHIRT;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Bone Armor
+		#region Item Names (PT-BR) - Pants
 
-		/// <summary>Bone Helm (cliloc 1025206)</summary>
-		public const int MSG_BONE_HELM = 1025206;
+		/// <summary>Short Pants</summary>
+		public const string MSG_SHORT_PANTS = TailoringStringConstants.ITEM_SHORT_PANTS;
 
-		/// <summary>Bone Gloves (cliloc 1025205)</summary>
-		public const int MSG_BONE_GLOVES = 1025205;
+		/// <summary>Long Pants</summary>
+		public const string MSG_LONG_PANTS = TailoringStringConstants.ITEM_LONG_PANTS;
 
-		/// <summary>Bone Arms (cliloc 1025203)</summary>
-		public const int MSG_BONE_ARMS = 1025203;
+		/// <summary>Kilt</summary>
+		public const string MSG_KILT = TailoringStringConstants.ITEM_KILT;
 
-		/// <summary>Bone Legs (cliloc 1025202)</summary>
-		public const int MSG_BONE_LEGS = 1025202;
+		/// <summary>Skirt</summary>
+		public const string MSG_SKIRT = TailoringStringConstants.ITEM_SKIRT;
 
-		/// <summary>Bone Chest (cliloc 1025199)</summary>
-		public const int MSG_BONE_CHEST = 1025199;
+		#endregion
+
+		#region Item Names (PT-BR) - Footwear
+
+		/// <summary>Sandals</summary>
+		public const string MSG_SANDALS = TailoringStringConstants.ITEM_SANDALS;
+
+		/// <summary>Shoes</summary>
+		public const string MSG_SHOES = TailoringStringConstants.ITEM_SHOES;
+
+		/// <summary>Boots</summary>
+		public const string MSG_BOOTS = TailoringStringConstants.ITEM_BOOTS;
+
+		#endregion
+
+		#region Item Names (PT-BR) - Misc
+
+		/// <summary>Body Sash</summary>
+		public const string MSG_BODY_SASH = TailoringStringConstants.ITEM_BODY_SASH;
+
+		/// <summary>Half Apron</summary>
+		public const string MSG_HALF_APRON = TailoringStringConstants.ITEM_HALF_APRON;
+
+		/// <summary>Full Apron</summary>
+		public const string MSG_FULL_APRON = TailoringStringConstants.ITEM_FULL_APRON;
+
+		#endregion
+
+		#region Item Names (PT-BR) - Leather Armor
+
+		/// <summary>Leather Cap</summary>
+		public const string MSG_LEATHER_CAP = TailoringStringConstants.ITEM_LEATHER_CAP;
+
+		/// <summary>Leather Gorget</summary>
+		public const string MSG_LEATHER_GORGET = TailoringStringConstants.ITEM_LEATHER_GORGET;
+
+		/// <summary>Leather Gloves</summary>
+		public const string MSG_LEATHER_GLOVES = TailoringStringConstants.ITEM_LEATHER_GLOVES;
+
+		/// <summary>Leather Arms</summary>
+		public const string MSG_LEATHER_ARMS = TailoringStringConstants.ITEM_LEATHER_ARMS;
+
+		/// <summary>Leather Legs</summary>
+		public const string MSG_LEATHER_LEGS = TailoringStringConstants.ITEM_LEATHER_LEGS;
+
+		/// <summary>Leather Chest</summary>
+		public const string MSG_LEATHER_CHEST = TailoringStringConstants.ITEM_LEATHER_CHEST;
+
+		/// <summary>Leather Skirt</summary>
+		public const string MSG_LEATHER_SKIRT = TailoringStringConstants.ITEM_LEATHER_SKIRT;
+
+		/// <summary>Leather Shorts</summary>
+		public const string MSG_LEATHER_SHORTS = TailoringStringConstants.ITEM_LEATHER_SHORTS;
+
+		/// <summary>Leather Bustier Arms</summary>
+		public const string MSG_LEATHER_BUSTIER_ARMS = TailoringStringConstants.ITEM_LEATHER_BUSTIER_ARMS;
+
+		/// <summary>Female Leather Chest</summary>
+		public const string MSG_FEMALE_LEATHER_CHEST = TailoringStringConstants.ITEM_FEMALE_LEATHER_CHEST;
+
+		/// <summary>Studded Gorget</summary>
+		public const string MSG_STUDDED_GORGET = TailoringStringConstants.ITEM_STUDDED_GORGET;
+
+		/// <summary>Studded Gloves</summary>
+		public const string MSG_STUDDED_GLOVES = TailoringStringConstants.ITEM_STUDDED_GLOVES;
+
+		/// <summary>Studded Arms</summary>
+		public const string MSG_STUDDED_ARMS = TailoringStringConstants.ITEM_STUDDED_ARMS;
+
+		/// <summary>Studded Legs</summary>
+		public const string MSG_STUDDED_LEGS = TailoringStringConstants.ITEM_STUDDED_LEGS;
+
+		/// <summary>Studded Chest</summary>
+		public const string MSG_STUDDED_CHEST = TailoringStringConstants.ITEM_STUDDED_CHEST;
+
+		/// <summary>Studded Bustier Arms</summary>
+		public const string MSG_STUDDED_BUSTIER_ARMS = TailoringStringConstants.ITEM_STUDDED_BUSTIER_ARMS;
+
+		/// <summary>Female Studded Chest</summary>
+		public const string MSG_FEMALE_STUDDED_CHEST = TailoringStringConstants.ITEM_FEMALE_STUDDED_CHEST;
+
+		#endregion
+
+		#region Item Names (PT-BR) - Bone Armor
+
+		/// <summary>Bone Helm</summary>
+		public const string MSG_BONE_HELM = TailoringStringConstants.ITEM_BONE_HELM;
+
+		/// <summary>Bone Gloves</summary>
+		public const string MSG_BONE_GLOVES = TailoringStringConstants.ITEM_BONE_GLOVES;
+
+		/// <summary>Bone Arms</summary>
+		public const string MSG_BONE_ARMS = TailoringStringConstants.ITEM_BONE_ARMS;
+
+		/// <summary>Bone Legs</summary>
+		public const string MSG_BONE_LEGS = TailoringStringConstants.ITEM_BONE_LEGS;
+
+		/// <summary>Bone Chest</summary>
+		public const string MSG_BONE_CHEST = TailoringStringConstants.ITEM_BONE_CHEST;
 
 		#endregion
 

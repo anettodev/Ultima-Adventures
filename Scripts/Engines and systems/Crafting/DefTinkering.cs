@@ -56,8 +56,9 @@ namespace Server.Engines.Craft
 		/// </summary>
 		public override double GetChanceAtMin( CraftItem item )
 		{
-			if ( item.NameNumber == TinkeringConstants.MSG_POTION_KEG ||
-			     item.NameNumber == 1046445 ) // faction trap removal kit
+			string itemName = item.NameString;
+			if ( itemName == TinkeringConstants.MSG_POTION_KEG ||
+			     itemName == "kit de remoção de armadilha de facção" ) // faction trap removal kit
 				return TinkeringConstants.CHANCE_AT_MIN_SPECIAL;
 
 			return TinkeringConstants.CHANCE_AT_MIN_STANDARD;
@@ -69,9 +70,15 @@ namespace Server.Engines.Craft
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return TinkeringConstants.MSG_TOOL_WORN_OUT;
+			{
+				from.SendMessage( 55, TinkeringConstants.MSG_TOOL_WORN_OUT );
+				return 500295; // Generic error number
+			}
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return TinkeringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
+			{
+				from.SendMessage( 55, TinkeringConstants.MSG_TOOL_MUST_BE_ON_PERSON );
+				return 500295; // Generic error number
+			}
 
 			return 0;
 		}
@@ -91,12 +98,12 @@ namespace Server.Engines.Craft
 			int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( TinkeringConstants.MSG_TOOL_WORN_OUT );
+				from.SendMessage( 55, TinkeringConstants.MSG_TOOL_WORN_OUT );
 
 			if ( failed )
-				return HandleCraftFailure( lostMaterial );
+				return HandleCraftFailure( from, lostMaterial );
 
-			return HandleCraftSuccess( quality, makersMark );
+			return HandleCraftSuccess( from, quality, makersMark );
 		}
 
 		/// <summary>
@@ -139,29 +146,38 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Handles craft failure message selection
 		/// </summary>
-		private int HandleCraftFailure( bool lostMaterial )
+		private int HandleCraftFailure( Mobile from, bool lostMaterial )
 		{
-			return lostMaterial
-				? TinkeringConstants.MSG_FAILED_LOST_MATERIALS
-				: TinkeringConstants.MSG_FAILED_NO_MATERIALS_LOST;
+			if ( lostMaterial )
+				from.SendMessage( 55, TinkeringConstants.MSG_FAILED_LOST_MATERIALS );
+			else
+				from.SendMessage( 55, TinkeringConstants.MSG_FAILED_NO_MATERIALS_LOST );
+
+			return 0;
 		}
 
 		/// <summary>
 		/// Handles craft success message selection
 		/// </summary>
-		private int HandleCraftSuccess( int quality, bool makersMark )
+		private int HandleCraftSuccess( Mobile from, int quality, bool makersMark )
 		{
 			if ( quality == TinkeringConstants.QUALITY_BELOW_AVERAGE )
-				return TinkeringConstants.MSG_BARELY_MADE_ITEM;
-
-			if ( quality == TinkeringConstants.QUALITY_EXCEPTIONAL )
 			{
-				return makersMark
-					? TinkeringConstants.MSG_EXCEPTIONAL_WITH_MARK
-					: TinkeringConstants.MSG_EXCEPTIONAL_QUALITY;
+				from.SendMessage( 33, TinkeringConstants.MSG_BARELY_MADE_ITEM );
+			}
+			else if ( quality == TinkeringConstants.QUALITY_EXCEPTIONAL )
+			{
+				if ( makersMark )
+					from.SendMessage( 95, TinkeringConstants.MSG_EXCEPTIONAL_WITH_MARK );
+				else
+					from.SendMessage( 95, TinkeringConstants.MSG_EXCEPTIONAL_QUALITY );
+			}
+			else
+			{
+				from.SendMessage( 95, TinkeringConstants.MSG_ITEM_CREATED );
 			}
 
-			return TinkeringConstants.MSG_ITEM_CREATED;
+			return 0;
 		}
 
 		#endregion
@@ -244,10 +260,10 @@ namespace Server.Engines.Craft
 		/// Adds a lockpicking training chest
 		/// </summary>
 		private void AddLockpickingChest( Type chestType, string chestName, double minSkill,
-			Type ingotType, int clilocIngot, int ingotAmount, int gemAmount )
+			Type ingotType, TextDefinition ingotName, int ingotAmount, int gemAmount )
 		{
 			int index = AddCraft( chestType, TinkeringConstants.MSG_GROUP_MULTI_COMPONENT, chestName,
-				minSkill, TinkeringConstants.SKILL_MAX_LOCKPICKING_CHEST, ingotType, clilocIngot,
+				minSkill, TinkeringConstants.SKILL_MAX_LOCKPICKING_CHEST, ingotType, ingotName,
 				ingotAmount, TinkeringConstants.MSG_INSUFFICIENT_INGOTS );
 			AddRes( index, typeof( ArcaneGem ), TinkeringConstants.MSG_ARCANE_GEM, gemAmount,
 				TinkeringConstants.MSG_INSUFFICIENT_RESOURCES );

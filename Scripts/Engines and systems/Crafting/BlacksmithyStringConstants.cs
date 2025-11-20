@@ -299,45 +299,116 @@ namespace Server.Engines.Craft
 		/// <summary>Platinum ingots resource name</summary>
 		public const string RESOURCE_PLATINUM_INGOTS = "Lingotes de Platina";
 
+		/// <summary>Resource name: "Lingotes de Ferro"</summary>
+		public const string RESOURCE_IRON_INGOTS = "Lingotes de Ferro";
+
+		/// <summary>Error: "Você não tem lingotes suficientes."</summary>
+		public const string MSG_INSUFFICIENT_INGOTS = "Você não tem lingotes suficientes.";
+
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = "Você não tem os itens necessários.";
+
+		/// <summary>Error: "Você não tem escamas reptilianas suficientes."</summary>
+		public const string MSG_INSUFFICIENT_DRAGON_SCALES = "Você não tem escamas reptilianas suficientes.";
+
+		#endregion
+
+		#region Menu and System Messages
+
+		/// <summary>Menu title: "MENU DE FERRARIA"</summary>
+		public const string MSG_GUMP_TITLE = "MENU DE FERRARIA";
+
+		/// <summary>Error: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = "Você quebrou sua ferramenta!";
+
+		/// <summary>Error: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = "A ferramenta deve estar com você para usar.";
+
+		/// <summary>Error: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = "Você falhou ao criar o item, e alguns de seus materiais foram perdidos.";
+
+		/// <summary>Error: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_NO_MATERIALS_LOST = "Você falhou ao criar o item, mas nenhum material foi perdido.";
+
+		/// <summary>Warning: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BARELY_MADE_ITEM = "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média.";
+
+		/// <summary>Success: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = "Você cria um item de qualidade excepcional e assina a sua marca nele.";
+
+		/// <summary>Success: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = "Você cria um item de qualidade excepcional.";
+
+		/// <summary>Success: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = "Você cria o item.";
+
 		#endregion
 
 		#region Ingot Names
 
 		/// <summary>Iron ingot name</summary>
-		public const string INGOT_IRON = "Lingotes de Ferro";
+		public const string INGOT_IRON = "Ferro";
 
 		/// <summary>Dull copper ingot name</summary>
-		public const string INGOT_DULL_COPPER = "Lingotes de Cobre Fosco";
+		public const string INGOT_DULL_COPPER = "Cobre Rústico";
 
 		/// <summary>Shadow iron ingot name</summary>
-		public const string INGOT_SHADOW_IRON = "Lingotes de Ferro Sombrio";
+		public const string INGOT_SHADOW_IRON = "Ferro Sombrio";
 
 		/// <summary>Copper ingot name</summary>
-		public const string INGOT_COPPER = "Lingotes de Cobre";
+		public const string INGOT_COPPER = "Cobre";
 
 		/// <summary>Bronze ingot name</summary>
-		public const string INGOT_BRONZE = "Lingotes de Bronze";
+		public const string INGOT_BRONZE = "Bronze";
 
 		/// <summary>Platinum ingot name</summary>
-		public const string INGOT_PLATINUM = "Lingotes de Platina";
+		public const string INGOT_PLATINUM = "Platina";
 
 		/// <summary>Gold ingot name</summary>
-		public const string INGOT_GOLD = "Lingotes de Ouro";
+		public const string INGOT_GOLD = "Dourado";
 
 		/// <summary>Agapite ingot name</summary>
-		public const string INGOT_AGAPITE = "Lingotes de Agapite";
+		public const string INGOT_AGAPITE = "Agapite";
 
 		/// <summary>Verite ingot name</summary>
-		public const string INGOT_VERITE = "Lingotes de Verite";
+		public const string INGOT_VERITE = "Verite";
 
 		/// <summary>Valorite ingot name</summary>
-		public const string INGOT_VALORITE = "Lingotes de Valorite";
+		public const string INGOT_VALORITE = "Valorite";
 
 		/// <summary>Titanium ingot name</summary>
-		public const string INGOT_TITANIUM = "Lingotes de Titânio";
+		public const string INGOT_TITANIUM = "Titânio";
 
 		/// <summary>Rosenium ingot name</summary>
-		public const string INGOT_ROSENIUM = "Lingotes de Rosenium";
+		public const string INGOT_ROSENIUM = "Rosenium";
+
+		#endregion
+
+		#region Error Messages
+
+		/// <summary>Error: "Você deve usar a ferramenta equipada."</summary>
+		public const string MSG_MUST_USE_EQUIPPED_TOOL = "Você deve usar a ferramenta equipada.";
+
+		/// <summary>Error: "Você deve estar perto de uma bigorna e uma forja para fazer isso."</summary>
+		public const string MSG_MUST_BE_NEAR_ANVIL_AND_FORGE = "Você deve estar perto de uma bigorna e uma forja para fazer isso.";
+
+		/// <summary>Error: "Você não tem o recurso necessário."</summary>
+		public const string MSG_MISSING_RESOURCE = "Você não tem o recurso necessário.";
+
+		/// <summary>Error: "Você não tem escamas reptilianas suficientes."</summary>
+		public const string MSG_SCALE_SKILL_ERROR = "Você não tem escamas reptilianas suficientes.";
+
+		/// <summary>Error: "Você não tem madeira suficiente para fazer isso."</summary>
+		public const string MSG_HARPOON_RESOURCE_ERROR = "Você não tem madeira suficiente para fazer isso.";
+
+		/// <summary>Error: "Você não tem o sub-recurso necessário."</summary>
+		public const string MSG_SUB_RESOURCE_ERROR = "Você não tem o sub-recurso necessário.";
+
+		/// <summary>Error: "Você não tem habilidade suficiente para trabalhar com este sub-recurso."</summary>
+		public const string MSG_SUB_RESOURCE_SKILL_ERROR = "Você não tem habilidade suficiente para trabalhar com este sub-recurso.";
+
+		/// <summary>Resource name: "Lingote de Ferro"</summary>
+		public const string RESOURCE_IRON_INGOT = "Lingote de Ferro";
 
 		#endregion
 	}

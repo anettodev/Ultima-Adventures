@@ -342,11 +342,20 @@ namespace Server.Engines.Craft
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if ( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return BlacksmithyConstants.MSG_TOOL_WORN_OUT;
+			{
+				from.SendMessage( 55, BlacksmithyConstants.MSG_TOOL_WORN_OUT );
+				return 500295; // Generic error number
+			}
 			else if ( !BaseTool.CheckTool( tool, from ) )
-				return BlacksmithyConstants.MSG_MUST_USE_EQUIPPED_TOOL;
+			{
+				from.SendMessage( 55, BlacksmithyConstants.MSG_MUST_USE_EQUIPPED_TOOL );
+				return 500295; // Generic error number
+			}
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return BlacksmithyConstants.MSG_TOOL_MUST_BE_ON_PERSON;
+			{
+				from.SendMessage( 55, BlacksmithyConstants.MSG_TOOL_MUST_BE_ON_PERSON );
+				return 500295; // Generic error number
+			}
 
 			bool anvil, forge;
 
@@ -355,7 +364,8 @@ namespace Server.Engines.Craft
 			if ( anvil && forge )
 				return 0;
 
-			return BlacksmithyConstants.MSG_MUST_BE_NEAR_ANVIL_AND_FORGE;
+			from.SendMessage( 55, BlacksmithyConstants.MSG_MUST_BE_NEAR_ANVIL_AND_FORGE );
+			return 500295; // Generic error number
 		}
 
 		/// <summary>
@@ -381,26 +391,29 @@ namespace Server.Engines.Craft
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( BlacksmithyConstants.MSG_TOOL_WORN_OUT );
+				from.SendMessage( 55, BlacksmithyConstants.MSG_TOOL_WORN_OUT );
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return BlacksmithyConstants.MSG_FAILED_WITH_MATERIAL_LOSS;
+					from.SendMessage( 55, BlacksmithyConstants.MSG_FAILED_WITH_MATERIAL_LOSS );
 				else
-					return BlacksmithyConstants.MSG_FAILED_WITHOUT_MATERIAL_LOSS;
+					from.SendMessage( 55, BlacksmithyConstants.MSG_FAILED_WITHOUT_MATERIAL_LOSS );
+				return 0;
 			}
 			else
 			{
 				if ( quality == 0 )
-					return BlacksmithyConstants.MSG_BELOW_AVERAGE_QUALITY;
+					from.SendMessage( 33, BlacksmithyConstants.MSG_BELOW_AVERAGE_QUALITY );
 				else if ( makersMark && quality == 2 )
-					return BlacksmithyConstants.MSG_EXCEPTIONAL_WITH_MARK;
+					from.SendMessage( 95, BlacksmithyConstants.MSG_EXCEPTIONAL_WITH_MARK );
 				else if ( quality == 2 )
-					return BlacksmithyConstants.MSG_EXCEPTIONAL_QUALITY;
+					from.SendMessage( 95, BlacksmithyConstants.MSG_EXCEPTIONAL_QUALITY );
 				else
-					return BlacksmithyConstants.MSG_ITEM_CREATED;
+					from.SendMessage( 95, BlacksmithyConstants.MSG_ITEM_CREATED );
 			}
+
+			return 0;
 		}
 
 		#region Craft List Initialization
