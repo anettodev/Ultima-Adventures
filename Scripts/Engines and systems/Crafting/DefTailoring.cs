@@ -186,9 +186,9 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Adds a cloth craft with automatic cotton cloth requirement.
 		/// </summary>
-		private void AddClothCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int clothAmount)
+		private int AddClothCraft(Type itemType, string groupName, int nameCliloc, double minSkill, double maxSkill, int clothAmount)
 		{
-			AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
+			return AddCraft(itemType, groupName, nameCliloc, minSkill, maxSkill,
 				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
 				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
 		}
@@ -196,9 +196,9 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Adds a cloth craft using a custom name string.
 		/// </summary>
-		private void AddClothCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int clothAmount)
+		private int AddClothCraft(Type itemType, string groupName, string customName, double minSkill, double maxSkill, int clothAmount)
 		{
-			AddCraft(itemType, groupName, customName, minSkill, maxSkill,
+			return AddCraft(itemType, groupName, customName, minSkill, maxSkill,
 				typeof(CottonCloth), TailoringConstants.MSG_COTTON_CLOTH,
 				clothAmount, TailoringConstants.MSG_INSUFFICIENT_CLOTH);
 		}

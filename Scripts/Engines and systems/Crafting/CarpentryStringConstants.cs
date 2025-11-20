@@ -171,14 +171,8 @@ namespace Server.Engines.Craft
 		/// <summary>Item name: "Armário Elegante (Pequeno)"</summary>
 		public const string ITEM_FANCY_CABINET_SMALL = "Armário Elegante (Pequeno)";
 
-		/// <summary>Item name: "Armário Elegante (Médio)"</summary>
-		public const string ITEM_FANCY_CABINET_MEDIUM = "Armário Elegante (Médio)";
-
 		/// <summary>Item name: "Armário Simples (Pequeno)"</summary>
 		public const string ITEM_SIMPLE_CABINET_SMALL = "Armário Simples (Pequeno)";
-
-		/// <summary>Item name: "Armário Simples (Médio)"</summary>
-		public const string ITEM_SIMPLE_CABINET_MEDIUM = "Armário Simples (Médio)";
 
 		/// <summary>Item name: "Armário Curto"</summary>
 		public const string ITEM_SHORT_CABINET = "Armário Curto";
@@ -237,7 +231,7 @@ namespace Server.Engines.Craft
 		public const string ITEM_TALL_CABINET = "Gabinete Alto";
 
 		/// <summary>Item name: "Gabinete Baixo"</summary>
-		public const string ITEM_SHORT_CABINET = "Gabinete Baixo";
+		public const string ITEM_SHORT_CABINET_DRESSER = "Gabinete Baixo";
 
 		/// <summary>Item name: "Cômoda Simples"</summary>
 		public const string ITEM_SIMPLE_DRESSER = "Cômoda Simples";
@@ -385,12 +379,6 @@ namespace Server.Engines.Craft
 
 		/// <summary>Item name: "cajado druida"</summary>
 		public const string ITEM_WILD_STAFF = "cajado druida";
-
-		/// <summary>Item name: "bastão"</summary>
-		public const string ITEM_QUARTER_STAFF = "bastão";
-
-		/// <summary>Item name: "bastão retorcido"</summary>
-		public const string ITEM_GNARLED_STAFF = "bastão retorcido";
 
 		/// <summary>Item name: "escudo de madeira"</summary>
 		public const string ITEM_WOODEN_SHIELD = "escudo de madeira";

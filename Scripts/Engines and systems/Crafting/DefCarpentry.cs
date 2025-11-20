@@ -228,7 +228,7 @@ namespace Server.Engines.Craft
             #region Cômodas & Gaveteiros (Dressers and Drawers)
 
             AddCraft(typeof(TallCabinet), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_TALL_CABINET, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_SHELF_LARGE, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
-            AddCraft(typeof(ShortCabinet), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_SHORT_CABINET, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_SHELF_LARGE, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
+            AddCraft(typeof(ShortCabinet), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_SHORT_CABINET_DRESSER, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_SHELF_LARGE, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
             AddCraft(typeof(MapleArmoire), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_SIMPLE_DRESSER, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_COFFIN, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
             AddCraft(typeof(CherryArmoire), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_LARGE_DRESSER, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_COFFIN, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
             AddCraft(typeof(OrnateWoodenChest), CarpentryStringConstants.GROUP_DRESSERS_AND_DRAWERS, CarpentryStringConstants.ITEM_ROYAL_DRESSER, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MIN, CarpentryConstants.SKILL_REQ_FINISHED_CHEST_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_FINISHED_CHEST, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
@@ -311,7 +311,7 @@ namespace Server.Engines.Craft
             AddSkill(index, SkillName.Musicianship, 80.0, 90.0);
             AddRes(index, typeof(IronIngot), CarpentryStringConstants.RESOURCE_IRON_INGOTS, 6, CarpentryStringConstants.ERROR_INSUFFICIENT_METAL);
 
-            index = AddCraft(typeof(Fiddle), CarpentryStringConstants.GROUP_MUSICAL_INSTRUMENTS, CarpentryStringConstants.ITEM_FIDDLE, CarpentryConstants.SKILL_REQ_FIDDLE_MIN, CarpentryConstants.SKILL_REQ_FIDDLE_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryStringConstants.RESOURCE_BOARDS_FIDDLE, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
+            index = AddCraft(typeof(Fiddle), CarpentryStringConstants.GROUP_MUSICAL_INSTRUMENTS, CarpentryStringConstants.ITEM_FIDDLE, CarpentryConstants.SKILL_REQ_FIDDLE_MIN, CarpentryConstants.SKILL_REQ_FIDDLE_MAX, typeof(Board), CarpentryStringConstants.RESOURCE_BOARDS, CarpentryConstants.RESOURCE_BOARDS_FIDDLE, CarpentryStringConstants.ERROR_INSUFFICIENT_WOOD);
             AddSkill(index, SkillName.Musicianship, 90.0, 100.0);
             AddRes(index, typeof(IronIngot), CarpentryStringConstants.RESOURCE_IRON_INGOTS, 8, CarpentryStringConstants.ERROR_INSUFFICIENT_METAL);
             AddRes(index, typeof(Shaft), CarpentryStringConstants.RESOURCE_SHAFTS, 2, CarpentryStringConstants.ERROR_INSUFFICIENT_SHAFTS);
@@ -543,6 +543,8 @@ namespace Server.Engines.Craft
 			AddSubRes( typeof( DriftwoodBoard ), 1095409, 105.0, CarpentryStringConstants.RESOURCE_BOARDS, CarpentryStringConstants.ERROR_CANNOT_WORK_WOOD );
 			AddSubRes( typeof( GhostBoard ), 1095511, 110.0, CarpentryStringConstants.RESOURCE_BOARDS, CarpentryStringConstants.ERROR_CANNOT_WORK_WOOD );
 			AddSubRes( typeof( PetrifiedBoard ), 1095532, 115.0, CarpentryStringConstants.RESOURCE_BOARDS, CarpentryStringConstants.ERROR_CANNOT_WORK_WOOD );*/
+
+            #endregion
 
             #endregion
 
