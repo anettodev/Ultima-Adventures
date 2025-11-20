@@ -30,92 +30,92 @@ namespace Server.Engines.Craft
 
 		#region Message Numbers (Cliloc)
 
-		/// <summary>Gump title: "ALCHEMY MENU" (cliloc 1044001)</summary>
+		/// <summary>Gump title: "MENU DE ALQUIMIA" (cliloc 1044006)</summary>
 		public const int MSG_GUMP_TITLE = 1044001;
 
-		/// <summary>Message: "You have worn out your tool!" (cliloc 1044038)</summary>
-		public const int MSG_TOOL_WORN_OUT = 1044038;
+		/// <summary>Message: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = AlchemyStringConstants.MSG_TOOL_WORN_OUT;
 
-		/// <summary>Message: "The tool must be on your person to use." (cliloc 1044263)</summary>
-		public const int MSG_TOOL_MUST_BE_ON_PERSON = 1044263;
+		/// <summary>Message: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = AlchemyStringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
-		/// <summary>Message: "You failed to create the item, and some of your materials are lost." (cliloc 1044043)</summary>
-		public const int MSG_FAILED_LOST_MATERIALS = 1044043;
+		/// <summary>Message: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = AlchemyStringConstants.MSG_FAILED_LOST_MATERIALS;
 
-		/// <summary>Message: "You fail to create a useful potion." (cliloc 500287)</summary>
-		public const int MSG_FAILED_POTION = 500287;
+		/// <summary>Message: "Você falhou ao criar uma poção útil."</summary>
+		public const string MSG_FAILED_POTION = AlchemyStringConstants.MSG_FAILED_POTION;
 
-		/// <summary>Message: "You create the item." (cliloc 1044154)</summary>
-		public const int MSG_ITEM_CREATED = 1044154;
+		/// <summary>Message: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = AlchemyStringConstants.MSG_ITEM_CREATED;
 
-		/// <summary>Message: "You create the potion and pour it into a keg." (cliloc 1048136)</summary>
-		public const int MSG_POTION_TO_KEG = 1048136;
+		/// <summary>Message: "Você cria a poção e a despeja em um barril."</summary>
+		public const string MSG_POTION_TO_KEG = AlchemyStringConstants.MSG_POTION_TO_KEG;
 
-		/// <summary>Message: "You pour the potion into a bottle..." (cliloc 500279)</summary>
-		public const int MSG_POTION_TO_BOTTLE = 500279;
+		/// <summary>Message: "Você despeja a poção em uma garrafa..."</summary>
+		public const string MSG_POTION_TO_BOTTLE = AlchemyStringConstants.MSG_POTION_TO_BOTTLE;
 
-		/// <summary>Resource name: "Bottle" (cliloc 1044529)</summary>
-		public const int MSG_BOTTLE = 1044529;
+		/// <summary>Resource name: "Garrafa"</summary>
+		public const string MSG_BOTTLE = AlchemyStringConstants.RESOURCE_BOTTLE;
 
-		/// <summary>Error: "You don't have enough bottles." (cliloc 500315)</summary>
-		public const int MSG_INSUFFICIENT_BOTTLES = 500315;
+		/// <summary>Error: "Você não tem garrafas suficientes."</summary>
+		public const string MSG_INSUFFICIENT_BOTTLES = AlchemyStringConstants.MSG_INSUFFICIENT_BOTTLES;
 
-		/// <summary>Resource name: "Bloodmoss" (cliloc 1044354)</summary>
-		public const int MSG_BLOODMOSS = 1044354;
+		/// <summary>Resource name: "Musgo Sanguíneo"</summary>
+		public const string MSG_BLOODMOSS = AlchemyStringConstants.RESOURCE_BLOODMOSS;
 
-		/// <summary>Error: "You don't have enough bloodmoss." (cliloc 1044362)</summary>
-		public const int MSG_INSUFFICIENT_BLOODMOSS = 1044362;
+		/// <summary>Error: "Você não tem musgo sanguíneo suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BLOODMOSS = AlchemyStringConstants.MSG_INSUFFICIENT_BLOODMOSS;
 
-		/// <summary>Resource name: "Garlic" (cliloc 1044355)</summary>
-		public const int MSG_GARLIC = 1044355;
+		/// <summary>Resource name: "Alho"</summary>
+		public const string MSG_GARLIC = AlchemyStringConstants.RESOURCE_GARLIC;
 
-		/// <summary>Error: "You don't have enough garlic." (cliloc 1044363)</summary>
-		public const int MSG_INSUFFICIENT_GARLIC = 1044363;
+		/// <summary>Error: "Você não tem alho suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GARLIC = AlchemyStringConstants.MSG_INSUFFICIENT_GARLIC;
 
-		/// <summary>Resource name: "Ginseng" (cliloc 1044356)</summary>
-		public const int MSG_GINSENG = 1044356;
+		/// <summary>Resource name: "Ginseng"</summary>
+		public const string MSG_GINSENG = AlchemyStringConstants.RESOURCE_GINSENG;
 
-		/// <summary>Error: "You don't have enough ginseng." (cliloc 1044364)</summary>
-		public const int MSG_INSUFFICIENT_GINSENG = 1044364;
+		/// <summary>Error: "Você não tem ginseng suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GINSENG = AlchemyStringConstants.MSG_INSUFFICIENT_GINSENG;
 
-		/// <summary>Resource name: "Mandrake Root" (cliloc 1044357)</summary>
-		public const int MSG_MANDRAKE_ROOT = 1044357;
+		/// <summary>Resource name: "Raiz de Mandrágora"</summary>
+		public const string MSG_MANDRAKE_ROOT = AlchemyStringConstants.RESOURCE_MANDRAKE_ROOT;
 
-		/// <summary>Error: "You don't have enough mandrake root." (cliloc 1044365)</summary>
-		public const int MSG_INSUFFICIENT_MANDRAKE_ROOT = 1044365;
+		/// <summary>Error: "Você não tem raiz de mandrágora suficiente."</summary>
+		public const string MSG_INSUFFICIENT_MANDRAKE_ROOT = AlchemyStringConstants.MSG_INSUFFICIENT_MANDRAKE_ROOT;
 
-		/// <summary>Resource name: "Nightshade" (cliloc 1044358)</summary>
-		public const int MSG_NIGHTSHADE = 1044358;
+		/// <summary>Resource name: "Meimendro"</summary>
+		public const string MSG_NIGHTSHADE = AlchemyStringConstants.RESOURCE_NIGHTSHADE;
 
-		/// <summary>Error: "You don't have enough nightshade." (cliloc 1044366)</summary>
-		public const int MSG_INSUFFICIENT_NIGHTSHADE = 1044366;
+		/// <summary>Error: "Você não tem meimendro suficiente."</summary>
+		public const string MSG_INSUFFICIENT_NIGHTSHADE = AlchemyStringConstants.MSG_INSUFFICIENT_NIGHTSHADE;
 
-		/// <summary>Resource name: "Sulfurous Ash" (cliloc 1044359)</summary>
-		public const int MSG_SULFUROUS_ASH = 1044359;
+		/// <summary>Resource name: "Cinza Sulfurosa"</summary>
+		public const string MSG_SULFUROUS_ASH = AlchemyStringConstants.RESOURCE_SULFUROUS_ASH;
 
-		/// <summary>Error: "You don't have enough sulfurous ash." (cliloc 1044367)</summary>
-		public const int MSG_INSUFFICIENT_SULFUROUS_ASH = 1044367;
+		/// <summary>Error: "Você não tem cinza sulfurosa suficiente."</summary>
+		public const string MSG_INSUFFICIENT_SULFUROUS_ASH = AlchemyStringConstants.MSG_INSUFFICIENT_SULFUROUS_ASH;
 
-		/// <summary>Resource name: "Spider's Silk" (cliloc 1044360)</summary>
-		public const int MSG_SPIDERS_SILK = 1044360;
+		/// <summary>Resource name: "Seda de Aranha"</summary>
+		public const string MSG_SPIDERS_SILK = AlchemyStringConstants.RESOURCE_SPIDERS_SILK;
 
-		/// <summary>Error: "You don't have enough spider's silk." (cliloc 1044368)</summary>
-		public const int MSG_INSUFFICIENT_SPIDERS_SILK = 1044368;
+		/// <summary>Error: "Você não tem seda de aranha suficiente."</summary>
+		public const string MSG_INSUFFICIENT_SPIDERS_SILK = AlchemyStringConstants.MSG_INSUFFICIENT_SPIDERS_SILK;
 
-		/// <summary>Resource name: "Black Pearl" (cliloc 1044353)</summary>
-		public const int MSG_BLACK_PEARL = 1044353;
+		/// <summary>Resource name: "Pérola Negra"</summary>
+		public const string MSG_BLACK_PEARL = AlchemyStringConstants.RESOURCE_BLACK_PEARL;
 
-		/// <summary>Error: "You don't have enough black pearl." (cliloc 1044361)</summary>
-		public const int MSG_INSUFFICIENT_BLACK_PEARL = 1044361;
+		/// <summary>Error: "Você não tem pérola negra suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BLACK_PEARL = AlchemyStringConstants.MSG_INSUFFICIENT_BLACK_PEARL;
 
-		/// <summary>Resource name: "Nox Crystal" (cliloc 1023982)</summary>
-		public const int MSG_NOX_CRYSTAL = 1023982;
+		/// <summary>Resource name: "Cristal Nox"</summary>
+		public const string MSG_NOX_CRYSTAL = AlchemyStringConstants.RESOURCE_NOX_CRYSTAL;
 
-		/// <summary>Error: "You don't have enough nox crystal." (cliloc 1017346)</summary>
-		public const int MSG_INSUFFICIENT_NOX_CRYSTAL = 1017346;
+		/// <summary>Error: "Você não tem cristal nox suficiente."</summary>
+		public const string MSG_INSUFFICIENT_NOX_CRYSTAL = AlchemyStringConstants.MSG_INSUFFICIENT_NOX_CRYSTAL;
 
-		/// <summary>Error: "You don't have the required items." (cliloc 1042081)</summary>
-		public const int MSG_INSUFFICIENT_RESOURCES = 1042081;
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = AlchemyStringConstants.MSG_INSUFFICIENT_RESOURCES;
 
 		#endregion
 

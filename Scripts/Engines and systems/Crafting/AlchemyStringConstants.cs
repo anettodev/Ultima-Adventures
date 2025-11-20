@@ -121,5 +121,100 @@ namespace Server.Engines.Craft
 		public const string ITEM_HAIR_DYE_POTION = "tinta de cabelo";
 
 		#endregion
+
+		#region Menu and System Messages
+
+		/// <summary>Menu title: "MENU DE ALQUIMIA"</summary>
+		public const string MSG_GUMP_TITLE = "MENU DE ALQUIMIA";
+
+		/// <summary>Error: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = "Você quebrou sua ferramenta!";
+
+		/// <summary>Error: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = "A ferramenta deve estar com você para usar.";
+
+		/// <summary>Error: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = "Você falhou ao criar o item, e alguns de seus materiais foram perdidos.";
+
+		/// <summary>Error: "Você falhou ao criar uma poção útil."</summary>
+		public const string MSG_FAILED_POTION = "Você falhou ao criar uma poção útil.";
+
+		/// <summary>Success: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = "Você cria o item.";
+
+		/// <summary>Success: "Você cria a poção e a despeja em um barril."</summary>
+		public const string MSG_POTION_TO_KEG = "Você cria a poção e a despeja em um barril.";
+
+		/// <summary>Success: "Você despeja a poção em uma garrafa..."</summary>
+		public const string MSG_POTION_TO_BOTTLE = "Você despeja a poção em uma garrafa...";
+
+		#endregion
+
+		#region Resource Names
+
+		/// <summary>Resource name: "Garrafa"</summary>
+		public const string RESOURCE_BOTTLE = "Garrafa";
+
+		/// <summary>Error: "Você não tem garrafas suficientes."</summary>
+		public const string MSG_INSUFFICIENT_BOTTLES = "Você não tem garrafas suficientes.";
+
+		/// <summary>Resource name: "Musgo Sanguíneo"</summary>
+		public const string RESOURCE_BLOODMOSS = "Musgo Sanguíneo";
+
+		/// <summary>Error: "Você não tem musgo sanguíneo suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BLOODMOSS = "Você não tem musgo sanguíneo suficiente.";
+
+		/// <summary>Resource name: "Alho"</summary>
+		public const string RESOURCE_GARLIC = "Alho";
+
+		/// <summary>Error: "Você não tem alho suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GARLIC = "Você não tem alho suficiente.";
+
+		/// <summary>Resource name: "Ginseng"</summary>
+		public const string RESOURCE_GINSENG = "Ginseng";
+
+		/// <summary>Error: "Você não tem ginseng suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GINSENG = "Você não tem ginseng suficiente.";
+
+		/// <summary>Resource name: "Raiz de Mandrágora"</summary>
+		public const string RESOURCE_MANDRAKE_ROOT = "Raiz de Mandrágora";
+
+		/// <summary>Error: "Você não tem raiz de mandrágora suficiente."</summary>
+		public const string MSG_INSUFFICIENT_MANDRAKE_ROOT = "Você não tem raiz de mandrágora suficiente.";
+
+		/// <summary>Resource name: "Meimendro"</summary>
+		public const string RESOURCE_NIGHTSHADE = "Meimendro";
+
+		/// <summary>Error: "Você não tem meimendro suficiente."</summary>
+		public const string MSG_INSUFFICIENT_NIGHTSHADE = "Você não tem meimendro suficiente.";
+
+		/// <summary>Resource name: "Cinza Sulfurosa"</summary>
+		public const string RESOURCE_SULFUROUS_ASH = "Cinza Sulfurosa";
+
+		/// <summary>Error: "Você não tem cinza sulfurosa suficiente."</summary>
+		public const string MSG_INSUFFICIENT_SULFUROUS_ASH = "Você não tem cinza sulfurosa suficiente.";
+
+		/// <summary>Resource name: "Seda de Aranha"</summary>
+		public const string RESOURCE_SPIDERS_SILK = "Seda de Aranha";
+
+		/// <summary>Error: "Você não tem seda de aranha suficiente."</summary>
+		public const string MSG_INSUFFICIENT_SPIDERS_SILK = "Você não tem seda de aranha suficiente.";
+
+		/// <summary>Resource name: "Pérola Negra"</summary>
+		public const string RESOURCE_BLACK_PEARL = "Pérola Negra";
+
+		/// <summary>Error: "Você não tem pérola negra suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BLACK_PEARL = "Você não tem pérola negra suficiente.";
+
+		/// <summary>Resource name: "Cristal Nox"</summary>
+		public const string RESOURCE_NOX_CRYSTAL = "Cristal Nox";
+
+		/// <summary>Error: "Você não tem cristal nox suficiente."</summary>
+		public const string MSG_INSUFFICIENT_NOX_CRYSTAL = "Você não tem cristal nox suficiente.";
+
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = "Você não tem os itens necessários.";
+
+		#endregion
 	}
 }

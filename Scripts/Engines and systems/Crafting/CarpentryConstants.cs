@@ -147,8 +147,8 @@ namespace Server.Engines.Craft
 		/// <summary>Error: "Você não tem recursos suficientes para fazer esse item." (cliloc 1042081)</summary>
 		public const int MSG_INSUFFICIENT_RESOURCES = 1042081;
 
-		/// <summary>Group name: "Armas & Escudos" (cliloc 1044295)</summary>
-		public const int MSG_WEAPONS_AND_SHIELDS = 1044295;
+		/// <summary>Group name: "Armas & Escudos"</summary>
+		public const string MSG_WEAPONS_AND_SHIELDS = CarpentryStringConstants.GROUP_WEAPONS_AND_SHIELDS;
 
 		/// <summary>Item name: "Bokuto" (cliloc 1030227)</summary>
 		public const int MSG_BOKUTO = 1030227;

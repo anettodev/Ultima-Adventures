@@ -27,128 +27,128 @@ namespace Server.Engines.Craft
 
 		#region Message Numbers (Cliloc)
 
-		/// <summary>Gump title: "BOWCRAFT AND FLETCHING MENU" (cliloc 1044006)</summary>
+		/// <summary>Gump title: "MENU DE ARQUEIRIA E FLECHARIA" (cliloc 1044010)</summary>
 		public const int MSG_GUMP_TITLE = 1044006;
 
-		/// <summary>Message: "You have worn out your tool!" (cliloc 1044038)</summary>
-		public const int MSG_TOOL_WORN_OUT = 1044038;
+		/// <summary>Message: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = BowFletchingStringConstants.MSG_TOOL_WORN_OUT;
 
-		/// <summary>Message: "The tool must be on your person to use." (cliloc 1044263)</summary>
-		public const int MSG_TOOL_MUST_BE_ON_PERSON = 1044263;
+		/// <summary>Message: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = BowFletchingStringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
-		/// <summary>Message: "You failed to create the item, and some of your materials are lost." (cliloc 1044043)</summary>
-		public const int MSG_FAILED_LOST_MATERIALS = 1044043;
+		/// <summary>Message: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = BowFletchingStringConstants.MSG_FAILED_LOST_MATERIALS;
 
-		/// <summary>Message: "You failed to create the item, but no materials were lost." (cliloc 1044157)</summary>
-		public const int MSG_FAILED_NO_MATERIALS_LOST = 1044157;
+		/// <summary>Message: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_NO_MATERIALS_LOST = BowFletchingStringConstants.MSG_FAILED_NO_MATERIALS_LOST;
 
-		/// <summary>Message: "You were barely able to make this item. It's quality is below average." (cliloc 502785)</summary>
-		public const int MSG_BARELY_MADE_ITEM = 502785;
+		/// <summary>Message: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BARELY_MADE_ITEM = BowFletchingStringConstants.MSG_BARELY_MADE_ITEM;
 
-		/// <summary>Message: "You create an exceptional quality item and affix your maker's mark." (cliloc 1044156)</summary>
-		public const int MSG_EXCEPTIONAL_WITH_MARK = 1044156;
+		/// <summary>Message: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = BowFletchingStringConstants.MSG_EXCEPTIONAL_WITH_MARK;
 
-		/// <summary>Message: "You create an exceptional quality item." (cliloc 1044155)</summary>
-		public const int MSG_EXCEPTIONAL_QUALITY = 1044155;
+		/// <summary>Message: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = BowFletchingStringConstants.MSG_EXCEPTIONAL_QUALITY;
 
-		/// <summary>Message: "You create the item." (cliloc 1044154)</summary>
-		public const int MSG_ITEM_CREATED = 1044154;
+		/// <summary>Message: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = BowFletchingStringConstants.MSG_ITEM_CREATED;
 
-		/// <summary>Group name: "Materials" (cliloc 1044457)</summary>
-		public const int MSG_GROUP_MATERIALS = 1044457;
+		/// <summary>Group name: "Materiais"</summary>
+		public const string MSG_GROUP_MATERIALS = BowFletchingStringConstants.GROUP_MATERIALS;
 
-		/// <summary>Group name: "Ammunition" (cliloc 1044565)</summary>
-		public const int MSG_GROUP_AMMUNITION = 1044565;
+		/// <summary>Group name: "Munição"</summary>
+		public const string MSG_GROUP_AMMUNITION = BowFletchingStringConstants.GROUP_AMMUNITION;
 
-		/// <summary>Group name: "Weapons" (cliloc 1044566)</summary>
-		public const int MSG_GROUP_WEAPONS = 1044566;
+		/// <summary>Group name: "Armas"</summary>
+		public const string MSG_GROUP_WEAPONS = BowFletchingStringConstants.GROUP_WEAPONS;
 
-		/// <summary>Resource name: "Log" (cliloc 1015101)</summary>
-		public const int MSG_LOG = 1015101;
+		/// <summary>Resource name: "Tora"</summary>
+		public const string MSG_LOG = BowFletchingStringConstants.RESOURCE_LOG;
 
-		/// <summary>Resource name: "Board" (cliloc 1015101)</summary>
-		public const int MSG_BOARD = 1015101;
+		/// <summary>Resource name: "Tábuas"</summary>
+		public const string MSG_BOARD = BowFletchingStringConstants.RESOURCE_BOARDS;
 
-		/// <summary>Error: "You don't have enough wood to make that." (cliloc 1044351)</summary>
-		public const int MSG_INSUFFICIENT_WOOD = 1044351;
+		/// <summary>Error: "Você não tem madeira suficiente para fazer isso."</summary>
+		public const string MSG_INSUFFICIENT_WOOD = BowFletchingStringConstants.MSG_INSUFFICIENT_WOOD;
 
-		/// <summary>Item name: "Shaft" (cliloc 1027124)</summary>
-		public const int MSG_SHAFT_ITEM = 1027124;
+		/// <summary>Item name: "haste"</summary>
+		public const string MSG_SHAFT_ITEM = BowFletchingStringConstants.ITEM_SHAFT;
 
-		/// <summary>Resource name: "Shaft" (cliloc 1044560)</summary>
-		public const int MSG_SHAFT_RESOURCE = 1044560;
+		/// <summary>Resource name: "Haste"</summary>
+		public const string MSG_SHAFT_RESOURCE = BowFletchingStringConstants.RESOURCE_SHAFT;
 
-		/// <summary>Error: "You don't have enough shafts." (cliloc 1044561)</summary>
-		public const int MSG_INSUFFICIENT_SHAFTS = 1044561;
+		/// <summary>Error: "Você não tem hastes suficientes."</summary>
+		public const string MSG_INSUFFICIENT_SHAFTS = BowFletchingStringConstants.MSG_INSUFFICIENT_SHAFTS;
 
-		/// <summary>Resource name: "Feather" (cliloc 1044562)</summary>
-		public const int MSG_FEATHER = 1044562;
+		/// <summary>Resource name: "Pena"</summary>
+		public const string MSG_FEATHER = BowFletchingStringConstants.RESOURCE_FEATHER;
 
-		/// <summary>Error: "You don't have enough feathers." (cliloc 1044563)</summary>
-		public const int MSG_INSUFFICIENT_FEATHERS = 1044563;
+		/// <summary>Error: "Você não tem penas suficientes."</summary>
+		public const string MSG_INSUFFICIENT_FEATHERS = BowFletchingStringConstants.MSG_INSUFFICIENT_FEATHERS;
 
-		/// <summary>Item name: "Arrow" (cliloc 1023903)</summary>
-		public const int MSG_ARROW = 1023903;
+		/// <summary>Item name: "flecha"</summary>
+		public const string MSG_ARROW = BowFletchingStringConstants.ITEM_ARROW;
 
-		/// <summary>Item name: "Bolt" (cliloc 1027163)</summary>
-		public const int MSG_BOLT = 1027163;
+		/// <summary>Item name: "virote"</summary>
+		public const string MSG_BOLT = BowFletchingStringConstants.ITEM_BOLT;
 
-		/// <summary>Item name: "Fukiya Darts" (cliloc 1030246)</summary>
-		public const int MSG_FUKIYA_DARTS = 1030246;
+		/// <summary>Item name: "dardos fukiya"</summary>
+		public const string MSG_FUKIYA_DARTS = BowFletchingStringConstants.ITEM_FUKIYA_DARTS;
 
-		/// <summary>Item name: "Throwing Weapon" (cliloc 1044117)</summary>
-		public const int MSG_THROWING_WEAPON = 1044117;
+		/// <summary>Item name: "arma de arremesso"</summary>
+		public const string MSG_THROWING_WEAPON = BowFletchingStringConstants.ITEM_THROWING_WEAPON;
 
-		/// <summary>Resource name: "Iron Ingot" (cliloc 1074904)</summary>
-		public const int MSG_IRON_INGOT = 1074904;
+		/// <summary>Resource name: "Lingote de Ferro"</summary>
+		public const string MSG_IRON_INGOT = BowFletchingStringConstants.RESOURCE_IRON_INGOT;
 
-		/// <summary>Error: "You don't have enough metal." (cliloc 1044037)</summary>
-		public const int MSG_INSUFFICIENT_METAL = 1044037;
+		/// <summary>Error: "Você não tem metal suficiente."</summary>
+		public const string MSG_INSUFFICIENT_METAL = BowFletchingStringConstants.MSG_INSUFFICIENT_METAL;
 
-		/// <summary>Item name: "Bow" (cliloc 1025042)</summary>
-		public const int MSG_BOW = 1025042;
+		/// <summary>Item name: "arco"</summary>
+		public const string MSG_BOW = BowFletchingStringConstants.ITEM_BOW;
 
-		/// <summary>Item name: "Crossbow" (cliloc 1023919)</summary>
-		public const int MSG_CROSSBOW = 1023919;
+		/// <summary>Item name: "besta"</summary>
+		public const string MSG_CROSSBOW = BowFletchingStringConstants.ITEM_CROSSBOW;
 
-		/// <summary>Item name: "Heavy Crossbow" (cliloc 1025117)</summary>
-		public const int MSG_HEAVY_CROSSBOW = 1025117;
+		/// <summary>Item name: "besta pesada"</summary>
+		public const string MSG_HEAVY_CROSSBOW = BowFletchingStringConstants.ITEM_HEAVY_CROSSBOW;
 
-		/// <summary>Item name: "Composite Bow" (cliloc 1029922)</summary>
-		public const int MSG_COMPOSITE_BOW = 1029922;
+		/// <summary>Item name: "arco composto"</summary>
+		public const string MSG_COMPOSITE_BOW = BowFletchingStringConstants.ITEM_COMPOSITE_BOW;
 
-		/// <summary>Item name: "Repeating Crossbow" (cliloc 1029923)</summary>
-		public const int MSG_REPEATING_CROSSBOW = 1029923;
+		/// <summary>Item name: "besta repetidora"</summary>
+		public const string MSG_REPEATING_CROSSBOW = BowFletchingStringConstants.ITEM_REPEATING_CROSSBOW;
 
-		/// <summary>Item name: "Yumi" (cliloc 1030224)</summary>
-		public const int MSG_YUMI = 1030224;
+		/// <summary>Item name: "yumi"</summary>
+		public const string MSG_YUMI = BowFletchingStringConstants.ITEM_YUMI;
 
-		/// <summary>Message: "Board Material" (cliloc 1072643)</summary>
-		public const int MSG_BOARD_MATERIAL = 1072643;
+		/// <summary>Message: "Material de Tábuas"</summary>
+		public const string MSG_BOARD_MATERIAL = BowFletchingStringConstants.MSG_BOARD_MATERIAL;
 
-		/// <summary>Error: "You cannot work this strange and unusual wood." (cliloc 1072652)</summary>
-		public const int MSG_CANNOT_WORK_WOOD = 1072652;
+		/// <summary>Error: "Você não pode trabalhar esta madeira estranha e incomum."</summary>
+		public const string MSG_CANNOT_WORK_WOOD = BowFletchingStringConstants.MSG_CANNOT_WORK_WOOD;
 
-		/// <summary>Resource name: "Ash Board" (cliloc 1095379)</summary>
-		public const int MSG_ASH_BOARD = 1095379;
+		/// <summary>Resource name: "Tábuas de Carvalho Cinza"</summary>
+		public const string MSG_ASH_BOARD = BowFletchingStringConstants.RESOURCE_ASH_BOARD;
 
-		/// <summary>Resource name: "Ebony Board" (cliloc 1095381)</summary>
-		public const int MSG_EBONY_BOARD = 1095381;
+		/// <summary>Resource name: "Tábuas de Ébano"</summary>
+		public const string MSG_EBONY_BOARD = BowFletchingStringConstants.RESOURCE_EBONY_BOARD;
 
-		/// <summary>Resource name: "Elven Board" (cliloc 1095535)</summary>
-		public const int MSG_ELVEN_BOARD = 1095535;
+		/// <summary>Resource name: "Tábuas Élficas"</summary>
+		public const string MSG_ELVEN_BOARD = BowFletchingStringConstants.RESOURCE_ELVEN_BOARD;
 
-		/// <summary>Resource name: "Golden Oak Board" (cliloc 1095382)</summary>
-		public const int MSG_GOLDEN_OAK_BOARD = 1095382;
+		/// <summary>Resource name: "Tábuas de Ipê-Amarelo"</summary>
+		public const string MSG_GOLDEN_OAK_BOARD = BowFletchingStringConstants.RESOURCE_GOLDEN_OAK_BOARD;
 
-		/// <summary>Resource name: "Cherry Board" (cliloc 1095380)</summary>
-		public const int MSG_CHERRY_BOARD = 1095380;
+		/// <summary>Resource name: "Tábuas de Cerejeira"</summary>
+		public const string MSG_CHERRY_BOARD = BowFletchingStringConstants.RESOURCE_CHERRY_BOARD;
 
-		/// <summary>Resource name: "Rosewood Board" (cliloc 1095387)</summary>
-		public const int MSG_ROSEWOOD_BOARD = 1095387;
+		/// <summary>Resource name: "Tábuas de Pau-Brasil"</summary>
+		public const string MSG_ROSEWOOD_BOARD = BowFletchingStringConstants.RESOURCE_ROSEWOOD_BOARD;
 
-		/// <summary>Resource name: "Hickory Board" (cliloc 1095383)</summary>
-		public const int MSG_HICKORY_BOARD = 1095383;
+		/// <summary>Resource name: "Tábuas de Nogueira Branca"</summary>
+		public const string MSG_HICKORY_BOARD = BowFletchingStringConstants.RESOURCE_HICKORY_BOARD;
 
 		#endregion
 

@@ -139,6 +139,9 @@ namespace Server.Engines.Craft
 		/// <summary>Group name: "Outros & Variados"</summary>
 		public const string GROUP_MISC = "Outros & Variados";
 
+		/// <summary>Group name: "Armas & Escudos"</summary>
+		public const string GROUP_WEAPONS_AND_SHIELDS = "Armas & Armaduras";
+
 		#endregion
 
 		#region Item Names (Portuguese)

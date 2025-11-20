@@ -136,10 +136,16 @@ namespace Server.Engines.Craft
 		public override int CanCraft(Mobile from, BaseTool tool, Type itemType)
 		{
 			if (tool == null || tool.Deleted || tool.UsesRemaining < 0)
-				return AlchemyConstants.MSG_TOOL_WORN_OUT;
+			{
+				from.SendMessage( 55, AlchemyConstants.MSG_TOOL_WORN_OUT );
+				return 500295; // Generic error number
+			}
 
 			if (!BaseTool.CheckAccessible(tool, from))
-				return AlchemyConstants.MSG_TOOL_MUST_BE_ON_PERSON;
+			{
+				from.SendMessage( 55, AlchemyConstants.MSG_TOOL_MUST_BE_ON_PERSON );
+				return 500295; // Generic error number
+			}
 
 			return 0;
 		}
@@ -160,7 +166,7 @@ namespace Server.Engines.Craft
 			Server.Gumps.MReagentGump.XReagentGump(from);
 
 			if (toolBroken)
-				from.SendLocalizedMessage(AlchemyConstants.MSG_TOOL_WORN_OUT);
+				from.SendMessage( 55, AlchemyConstants.MSG_TOOL_WORN_OUT );
 
 			if (failed)
 				return HandleCraftFailure(from, item);
@@ -181,16 +187,19 @@ namespace Server.Engines.Craft
 			{
 				AddEmptyBottle(from);
 				AddEmptyJar(from);
-				return AlchemyConstants.MSG_FAILED_POTION;
+				from.SendMessage( 55, AlchemyConstants.MSG_FAILED_POTION );
 			}
-
-			if (IsPotion(item.ItemType))
+			else if (IsPotion(item.ItemType))
 			{
 				AddEmptyBottle(from);
-				return AlchemyConstants.MSG_FAILED_POTION;
+				from.SendMessage( 55, AlchemyConstants.MSG_FAILED_POTION );
+			}
+			else
+			{
+				from.SendMessage( 55, AlchemyConstants.MSG_FAILED_LOST_MATERIALS );
 			}
 
-			return AlchemyConstants.MSG_FAILED_LOST_MATERIALS;
+			return 0;
 		}
 
 		/// <summary>
@@ -205,7 +214,9 @@ namespace Server.Engines.Craft
 
 			CheckPoisoningSkillGain(from, item.ItemType);
 
-			return GetSuccessMessage(item.ItemType, quality);
+			GetSuccessMessage(from, item.ItemType, quality);
+
+			return 0;
 		}
 
 		/// <summary>
@@ -240,17 +251,19 @@ namespace Server.Engines.Craft
 		/// <summary>
 		/// Gets the appropriate success message based on item type and quality.
 		/// </summary>
-		private int GetSuccessMessage(Type itemType, int quality)
+		private void GetSuccessMessage(Mobile from, Type itemType, int quality)
 		{
 			if (IsPotion(itemType))
 			{
 				if (quality == AlchemyConstants.QUALITY_KEG)
-					return AlchemyConstants.MSG_POTION_TO_KEG;
+					from.SendMessage( 95, AlchemyConstants.MSG_POTION_TO_KEG );
 				else
-					return AlchemyConstants.MSG_POTION_TO_BOTTLE;
+					from.SendMessage( 95, AlchemyConstants.MSG_POTION_TO_BOTTLE );
 			}
-
-			return AlchemyConstants.MSG_ITEM_CREATED;
+			else
+			{
+				from.SendMessage( 95, AlchemyConstants.MSG_ITEM_CREATED );
+			}
 		}
 
 		#endregion
@@ -277,7 +290,7 @@ namespace Server.Engines.Craft
 		/// Adds a potion craft with automatic bottle requirement.
 		/// </summary>
 		private void AddPotionCraft(Type potionType, string name, double minSkill, double maxSkill,
-			Type reagent, int reagentNameId, int reagentAmount, int errorId)
+			Type reagent, TextDefinition reagentNameId, int reagentAmount, TextDefinition errorId)
 		{
 			int index = AddCraft(potionType, AlchemyStringConstants.GROUP_POTIONS, name,
 				minSkill, maxSkill, reagent, reagentNameId, reagentAmount, errorId);

@@ -9,12 +9,137 @@ namespace Server.Engines.Craft
 	{
 		#region Craft Group Names
 
+		/// <summary>Group name: "Itens de Madeira"</summary>
+		public const string GROUP_WOODEN_ITEMS = "Itens de Madeira";
+
+		/// <summary>Group name: "Ferramentas"</summary>
+		public const string GROUP_TOOLS = "Ferramentas";
+
+		/// <summary>Group name: "Peças"</summary>
+		public const string GROUP_PARTS = "Peças";
+
+		/// <summary>Group name: "Utensílios"</summary>
+		public const string GROUP_UTENSILS = "Utensílios";
+
+		/// <summary>Group name: "Joias"</summary>
+		public const string GROUP_JEWELRY = "Joias";
+
+		/// <summary>Group name: "Variados"</summary>
+		public const string GROUP_MISC = "Variados";
+
+		/// <summary>Group name: "Montagens"</summary>
+		public const string GROUP_MULTI_COMPONENT = "Montagens";
+
 		/// <summary>Group name: "Hospitalidade"</summary>
 		public const string GROUP_HOSPITALITY = "Hospitalidade";
 
 		#endregion
 
+		#region Menu and System Messages
+
+		/// <summary>Menu title: "MENU DE INVENTARIA"</summary>
+		public const string MSG_GUMP_TITLE = "MENU DE INVENTARIA";
+
+		/// <summary>Error: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = "Você quebrou sua ferramenta!";
+
+		/// <summary>Error: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = "A ferramenta deve estar com você para usar.";
+
+		/// <summary>Error: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = "Você falhou ao criar o item, e alguns de seus materiais foram perdidos.";
+
+		/// <summary>Error: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_NO_MATERIALS_LOST = "Você falhou ao criar o item, mas nenhum material foi perdido.";
+
+		/// <summary>Warning: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BARELY_MADE_ITEM = "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média.";
+
+		/// <summary>Success: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = "Você cria um item de qualidade excepcional e assina a sua marca nele.";
+
+		/// <summary>Success: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = "Você cria um item de qualidade excepcional.";
+
+		/// <summary>Success: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = "Você cria o item.";
+
+		#endregion
+
+		#region Resource Names
+
+		/// <summary>Resource name: "Lingotes de Ferro"</summary>
+		public const string RESOURCE_IRON_INGOTS = "Lingotes de Ferro";
+
+		/// <summary>Error: "Você não tem lingotes suficientes."</summary>
+		public const string MSG_INSUFFICIENT_INGOTS = "Você não tem lingotes suficientes.";
+
+		/// <summary>Resource name: "Toras"</summary>
+		public const string RESOURCE_LOGS = "Toras";
+
+		/// <summary>Error: "Você não tem toras suficientes."</summary>
+		public const string MSG_INSUFFICIENT_LOGS = "Você não tem toras suficientes.";
+
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = "Você não tem os itens necessários.";
+
+		/// <summary>Resource name: "Granito"</summary>
+		public const string RESOURCE_GRANITE = "Granito";
+
+		/// <summary>Error: "Você não tem granito suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GRANITE = "Você não tem granito suficiente.";
+
+		/// <summary>Resource name: "Couro"</summary>
+		public const string RESOURCE_LEATHER = "Couro";
+
+		/// <summary>Error: "Você não tem couro suficiente."</summary>
+		public const string MSG_INSUFFICIENT_LEATHER = "Você não tem couro suficiente.";
+
+		/// <summary>Resource name: "Cera de Abelha"</summary>
+		public const string RESOURCE_BEESWAX = "Cera de Abelha";
+
+		/// <summary>Error: "Você não tem cera de abelha suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BEESWAX = "Você não tem cera de abelha suficiente.";
+
+		/// <summary>Resource name: "Gema Arcana"</summary>
+		public const string RESOURCE_ARCANE_GEM = "Gema Arcana";
+
+		/// <summary>Resource name: "Garrafa"</summary>
+		public const string RESOURCE_BOTTLE = "Garrafa";
+
+		/// <summary>Resource name: "Tampa de Barril"</summary>
+		public const string RESOURCE_BARREL_LID = "Tampa de Barril";
+
+		/// <summary>Resource name: "Torneira de Barril"</summary>
+		public const string RESOURCE_BARREL_TAP = "Torneira de Barril";
+
+		/// <summary>Resource name: "Tocha"</summary>
+		public const string RESOURCE_TORCH = "Tocha";
+
+		#endregion
+
 		#region Item Names - Wooden Items
+
+		/// <summary>Item name: "plaina de junção"</summary>
+		public const string ITEM_JOINTING_PLANE = "plaina de junção";
+
+		/// <summary>Item name: "plaina de moldura"</summary>
+		public const string ITEM_MOULDING_PLANE = "plaina de moldura";
+
+		/// <summary>Item name: "plaina de alisamento"</summary>
+		public const string ITEM_SMOOTHING_PLANE = "plaina de alisamento";
+
+		/// <summary>Item name: "estrutura de relógio"</summary>
+		public const string ITEM_CLOCK_FRAME = "estrutura de relógio";
+
+		/// <summary>Item name: "eixo"</summary>
+		public const string ITEM_AXLE = "eixo";
+
+		/// <summary>Item name: "rolo de massa"</summary>
+		public const string ITEM_ROLLING_PIN = "rolo de massa";
+
+		/// <summary>Item name: "nunchaku"</summary>
+		public const string ITEM_NUNCHAKU = "nunchaku";
 
 		/// <summary>Item name: "serraria (sul)"</summary>
 		public const string ITEM_SAW_MILL_SOUTH = "serraria (sul)";
@@ -25,6 +150,75 @@ namespace Server.Engines.Craft
 		#endregion
 
 		#region Item Names - Tools
+
+		/// <summary>Item name: "tesoura"</summary>
+		public const string ITEM_SCISSORS = "tesoura";
+
+		/// <summary>Item name: "almofariz e pilão"</summary>
+		public const string ITEM_MORTAR_PESTLE = "almofariz e pilão";
+
+		/// <summary>Item name: "escorp"</summary>
+		public const string ITEM_SCORP = "escorp";
+
+		/// <summary>Item name: "ferramentas de inventor"</summary>
+		public const string ITEM_TINKER_TOOLS = "ferramentas de inventor";
+
+		/// <summary>Item name: "machadinha"</summary>
+		public const string ITEM_HATCHET = "machadinha";
+
+		/// <summary>Item name: "faca de desenho"</summary>
+		public const string ITEM_DRAW_KNIFE = "faca de desenho";
+
+		/// <summary>Item name: "kit de costura"</summary>
+		public const string ITEM_SEWING_KIT = "kit de costura";
+
+		/// <summary>Item name: "serra"</summary>
+		public const string ITEM_SAW = "serra";
+
+		/// <summary>Item name: "serra de cauda de andorinha"</summary>
+		public const string ITEM_DOVETAIL_SAW = "serra de cauda de andorinha";
+
+		/// <summary>Item name: "froe"</summary>
+		public const string ITEM_FROE = "froe";
+
+		/// <summary>Item name: "pá"</summary>
+		public const string ITEM_SHOVEL = "pá";
+
+		/// <summary>Item name: "martelo"</summary>
+		public const string ITEM_HAMMER = "martelo";
+
+		/// <summary>Item name: "tenazes"</summary>
+		public const string ITEM_TONGS = "tenazes";
+
+		/// <summary>Item name: "martelo de ferreiro"</summary>
+		public const string ITEM_SMITH_HAMMER = "martelo de ferreiro";
+
+		/// <summary>Item name: "marreta"</summary>
+		public const string ITEM_SLEDGE_HAMMER = "marreta";
+
+		/// <summary>Item name: "inshave"</summary>
+		public const string ITEM_INSHAVE = "inshave";
+
+		/// <summary>Item name: "picareta"</summary>
+		public const string ITEM_PICKAXE = "picareta";
+
+		/// <summary>Item name: "gazua"</summary>
+		public const string ITEM_LOCKPICK = "gazua";
+
+		/// <summary>Item name: "frigideira"</summary>
+		public const string ITEM_SKILLET = "frigideira";
+
+		/// <summary>Item name: "peneira de farinha"</summary>
+		public const string ITEM_FLOUR_SIFTER = "peneira de farinha";
+
+		/// <summary>Item name: "ferramentas de flecheiro"</summary>
+		public const string ITEM_FLETCHER_TOOLS = "ferramentas de flecheiro";
+
+		/// <summary>Item name: "caneta de cartógrafo"</summary>
+		public const string ITEM_MAPMAKERS_PEN = "caneta de cartógrafo";
+
+		/// <summary>Item name: "caneta de escriba"</summary>
+		public const string ITEM_SCRIBES_PEN = "caneta de escriba";
 
 		/// <summary>Item name: "tesoura de jardinagem"</summary>
 		public const string ITEM_GARDEN_TOOL = "tesoura de jardinagem";
@@ -58,7 +252,138 @@ namespace Server.Engines.Craft
 
 		#endregion
 
+		#region Item Names - Parts
+
+		/// <summary>Item name: "engrenagens"</summary>
+		public const string ITEM_GEARS = "engrenagens";
+
+		/// <summary>Item name: "peças de relógio"</summary>
+		public const string ITEM_CLOCK_PARTS = "peças de relógio";
+
+		/// <summary>Item name: "torneira de barril"</summary>
+		public const string ITEM_BARREL_TAP_ITEM = "torneira de barril";
+
+		/// <summary>Item name: "molas"</summary>
+		public const string ITEM_SPRINGS = "molas";
+
+		/// <summary>Item name: "peças de sextante"</summary>
+		public const string ITEM_SEXTANT_PARTS = "peças de sextante";
+
+		/// <summary>Item name: "aros de barril"</summary>
+		public const string ITEM_BARREL_HOOPS = "aros de barril";
+
+		/// <summary>Item name: "dobradiça"</summary>
+		public const string ITEM_HINGE = "dobradiça";
+
+		/// <summary>Item name: "bola de bola"</summary>
+		public const string ITEM_BOLA_BALL = "bola de bola";
+
+		/// <summary>Item name: "eixo (recurso)"</summary>
+		public const string ITEM_AXLE_RESOURCE = "eixo";
+
+		/// <summary>Item name: "engrenagens de eixo"</summary>
+		public const string ITEM_AXLE_GEARS = "engrenagens de eixo";
+
+		/// <summary>Item name: "molas (recurso)"</summary>
+		public const string ITEM_SPRINGS_RESOURCE = "molas";
+
+		/// <summary>Item name: "dobradiça (recurso)"</summary>
+		public const string ITEM_HINGE_RESOURCE = "dobradiça";
+
+		/// <summary>Item name: "peças de relógio (recurso)"</summary>
+		public const string ITEM_CLOCK_PARTS_RESOURCE = "peças de relógio";
+
+		/// <summary>Item name: "estrutura de relógio (recurso)"</summary>
+		public const string ITEM_CLOCK_FRAME_RESOURCE = "estrutura de relógio";
+
+		/// <summary>Item name: "peças de sextante (recurso)"</summary>
+		public const string ITEM_SEXTANT_PARTS_RESOURCE = "peças de sextante";
+
+		/// <summary>Item name: "engrenagens (recurso)"</summary>
+		public const string ITEM_GEARS_RESOURCE = "engrenagens";
+
+		#endregion
+
+		#region Item Names - Utensils
+
+		/// <summary>Item name: "faca de açougueiro"</summary>
+		public const string ITEM_BUTCHER_KNIFE = "faca de açougueiro";
+
+		/// <summary>Item name: "colher (esquerda)"</summary>
+		public const string ITEM_SPOON_LEFT = "colher (esquerda)";
+
+		/// <summary>Item name: "colher (direita)"</summary>
+		public const string ITEM_SPOON_RIGHT = "colher (direita)";
+
+		/// <summary>Item name: "prato"</summary>
+		public const string ITEM_PLATE = "prato";
+
+		/// <summary>Item name: "garfo (esquerda)"</summary>
+		public const string ITEM_FORK_LEFT = "garfo (esquerda)";
+
+		/// <summary>Item name: "garfo (direita)"</summary>
+		public const string ITEM_FORK_RIGHT = "garfo (direita)";
+
+		/// <summary>Item name: "cutelo"</summary>
+		public const string ITEM_CLEAVER = "cutelo";
+
+		/// <summary>Item name: "faca (esquerda)"</summary>
+		public const string ITEM_KNIFE_LEFT = "faca (esquerda)";
+
+		/// <summary>Item name: "faca (direita)"</summary>
+		public const string ITEM_KNIFE_RIGHT = "faca (direita)";
+
+		/// <summary>Item name: "cálice"</summary>
+		public const string ITEM_GOBLET = "cálice";
+
+		/// <summary>Item name: "caneca de estanho"</summary>
+		public const string ITEM_PEWTER_MUG = "caneca de estanho";
+
+		/// <summary>Item name: "faca de esfolar (utensílios)"</summary>
+		public const string ITEM_SKINNING_KNIFE_UTENSILS = "faca de esfolar";
+
+		#endregion
+
 		#region Item Names - Misc
+
+		/// <summary>Item name: "vela (grande)"</summary>
+		public const string ITEM_CANDLE_LARGE = "vela (grande)";
+
+		/// <summary>Item name: "candelabro"</summary>
+		public const string ITEM_CANDELABRA = "candelabro";
+
+		/// <summary>Item name: "balança"</summary>
+		public const string ITEM_SCALES = "balança";
+
+		/// <summary>Item name: "chave"</summary>
+		public const string ITEM_KEY = "chave";
+
+		/// <summary>Item name: "chaveiro"</summary>
+		public const string ITEM_KEY_RING = "chaveiro";
+
+		/// <summary>Item name: "globo"</summary>
+		public const string ITEM_GLOBE = "globo";
+
+		/// <summary>Item name: "lanterna"</summary>
+		public const string ITEM_LANTERN = "lanterna";
+
+		/// <summary>Item name: "suporte de aquecimento"</summary>
+		public const string ITEM_HEATING_STAND = "suporte de aquecimento";
+
+		/// <summary>Item name: "lanterna shoji"</summary>
+		public const string ITEM_SHOJI_LANTERN = "lanterna shoji";
+
+		/// <summary>Item name: "lanterna de papel"</summary>
+		public const string ITEM_PAPER_LANTERN = "lanterna de papel";
+
+		/// <summary>Item name: "lanterna de papel redonda"</summary>
+		public const string ITEM_ROUND_PAPER_LANTERN = "lanterna de papel redonda";
+
+		/// <summary>Item name: "sino de vento"</summary>
+		public const string ITEM_WIND_CHIMES = "sino de vento";
+
+		/// <summary>Item name: "sino de vento elegante"</summary>
+		public const string ITEM_FANCY_WIND_CHIMES = "sino de vento elegante";
 
 		/// <summary>Item name: "telescópio"</summary>
 		public const string ITEM_SPYGLASS = "telescópio";
@@ -68,6 +393,34 @@ namespace Server.Engines.Craft
 
 		/// <summary>Item name: "tocha de parede colorida"</summary>
 		public const string ITEM_COLORED_WALL_TORCH = "tocha de parede colorida";
+
+		#endregion
+
+		#region Item Names - Multi-Component
+
+		/// <summary>Item name: "engrenagens de eixo (item)"</summary>
+		public const string ITEM_AXLE_GEARS_ITEM = "engrenagens de eixo";
+
+		/// <summary>Item name: "relógio (direita)"</summary>
+		public const string ITEM_CLOCK_RIGHT = "relógio (direita)";
+
+		/// <summary>Item name: "relógio (esquerda)"</summary>
+		public const string ITEM_CLOCK_LEFT = "relógio (esquerda)";
+
+		/// <summary>Item name: "sextante"</summary>
+		public const string ITEM_SEXTANT = "sextante";
+
+		/// <summary>Item name: "bola"</summary>
+		public const string ITEM_BOLA = "bola";
+
+		/// <summary>Item name: "bola de bola (recurso)"</summary>
+		public const string ITEM_BOLA_BALL_RESOURCE = "bola de bola";
+
+		/// <summary>Item name: "barril de poção"</summary>
+		public const string ITEM_POTION_KEG = "barril de poção";
+
+		/// <summary>Error: "Falhou ao criar o item"</summary>
+		public const string MSG_FAILED_CREATE = "Falhou ao criar o item";
 
 		#endregion
 
@@ -230,6 +583,21 @@ namespace Server.Engines.Craft
 		/// <summary>Metal type: "verite"</summary>
 		public const string METAL_VERITE = "verite";
 
+		/// <summary>Metal type: "ferro"</summary>
+		public const string METAL_IRON = "ferro";
+
+		/// <summary>Metal type: "titânio"</summary>
+		public const string METAL_TITANIUM = "titânio";
+
+		/// <summary>Metal type: "rosenium"</summary>
+		public const string METAL_ROSENIUM = "rosenium";
+
+		/// <summary>Metal type: "platina"</summary>
+		public const string METAL_PLATINUM = "platina";
+
+		/// <summary>Metal type: "xormite"</summary>
+		public const string METAL_XORMITE = "xormite";
+
 		#endregion
 
 		#region Gem Type Names
@@ -336,6 +704,25 @@ namespace Server.Engines.Craft
 
 		/// <summary>Ingot name: "lingote de verite"</summary>
 		public const string INGOT_VERITE = "lingote de verite";
+
+		/// <summary>Ingot name: "lingote de titânio"</summary>
+		public const string INGOT_TITANIUM = "lingote de titânio";
+
+		/// <summary>Ingot name: "lingote de rosenium"</summary>
+		public const string INGOT_ROSENIUM = "lingote de rosenium";
+
+		/// <summary>Ingot name: "lingote de platina"</summary>
+		public const string INGOT_PLATINUM = "lingote de platina";
+
+		#endregion
+
+		#region Error Messages
+
+		/// <summary>Error: "Você não tem material suficiente."</summary>
+		public const string MSG_NOT_ENOUGH_MATERIAL = "Você não tem material suficiente.";
+
+		/// <summary>Message: "Selecione o tipo de material"</summary>
+		public const string MSG_MATERIAL_SELECTION = "Selecione o tipo de material";
 
 		#endregion
 

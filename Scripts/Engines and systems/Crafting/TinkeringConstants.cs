@@ -30,454 +30,454 @@ namespace Server.Engines.Craft
 
 		#region Message Numbers (Cliloc)
 
-		/// <summary>Gump title: "TINKERING MENU" (cliloc 1044007)</summary>
+		/// <summary>Gump title: "MENU DE INVENTARIA" (cliloc 1044007)</summary>
 		public const int MSG_GUMP_TITLE = 1044007;
 
-		/// <summary>Message: "You have worn out your tool!" (cliloc 1044038)</summary>
-		public const int MSG_TOOL_WORN_OUT = 1044038;
+		/// <summary>Message: "Você quebrou sua ferramenta!"</summary>
+		public const string MSG_TOOL_WORN_OUT = TinkeringStringConstants.MSG_TOOL_WORN_OUT;
 
-		/// <summary>Message: "The tool must be on your person to use." (cliloc 1044263)</summary>
-		public const int MSG_TOOL_MUST_BE_ON_PERSON = 1044263;
+		/// <summary>Message: "A ferramenta deve estar com você para usar."</summary>
+		public const string MSG_TOOL_MUST_BE_ON_PERSON = TinkeringStringConstants.MSG_TOOL_MUST_BE_ON_PERSON;
 
-		/// <summary>Message: "You failed to create the item, and some of your materials are lost." (cliloc 1044043)</summary>
-		public const int MSG_FAILED_LOST_MATERIALS = 1044043;
+		/// <summary>Message: "Você falhou ao criar o item, e alguns de seus materiais foram perdidos."</summary>
+		public const string MSG_FAILED_LOST_MATERIALS = TinkeringStringConstants.MSG_FAILED_LOST_MATERIALS;
 
-		/// <summary>Message: "You failed to create the item, but no materials were lost." (cliloc 1044157)</summary>
-		public const int MSG_FAILED_NO_MATERIALS_LOST = 1044157;
+		/// <summary>Message: "Você falhou ao criar o item, mas nenhum material foi perdido."</summary>
+		public const string MSG_FAILED_NO_MATERIALS_LOST = TinkeringStringConstants.MSG_FAILED_NO_MATERIALS_LOST;
 
-		/// <summary>Message: "You were barely able to make this item. It's quality is below average." (cliloc 502785)</summary>
-		public const int MSG_BARELY_MADE_ITEM = 502785;
+		/// <summary>Message: "Você mal conseguiu fazer este item. Sua qualidade está abaixo da média."</summary>
+		public const string MSG_BARELY_MADE_ITEM = TinkeringStringConstants.MSG_BARELY_MADE_ITEM;
 
-		/// <summary>Message: "You create an exceptional quality item and affix your maker's mark." (cliloc 1044156)</summary>
-		public const int MSG_EXCEPTIONAL_WITH_MARK = 1044156;
+		/// <summary>Message: "Você cria um item de qualidade excepcional e assina a sua marca nele."</summary>
+		public const string MSG_EXCEPTIONAL_WITH_MARK = TinkeringStringConstants.MSG_EXCEPTIONAL_WITH_MARK;
 
-		/// <summary>Message: "You create an exceptional quality item." (cliloc 1044155)</summary>
-		public const int MSG_EXCEPTIONAL_QUALITY = 1044155;
+		/// <summary>Message: "Você cria um item de qualidade excepcional."</summary>
+		public const string MSG_EXCEPTIONAL_QUALITY = TinkeringStringConstants.MSG_EXCEPTIONAL_QUALITY;
 
-		/// <summary>Message: "You create the item." (cliloc 1044154)</summary>
-		public const int MSG_ITEM_CREATED = 1044154;
+		/// <summary>Message: "Você cria o item."</summary>
+		public const string MSG_ITEM_CREATED = TinkeringStringConstants.MSG_ITEM_CREATED;
 
-		/// <summary>Resource name: "Iron Ingots" (cliloc 1044036)</summary>
-		public const int MSG_IRON_INGOTS = 1044036;
+		/// <summary>Resource name: "Lingotes de Ferro"</summary>
+		public const string MSG_IRON_INGOTS = TinkeringStringConstants.RESOURCE_IRON_INGOTS;
 
-		/// <summary>Error: "You don't have enough ingots." (cliloc 1044037)</summary>
-		public const int MSG_INSUFFICIENT_INGOTS = 1044037;
+		/// <summary>Error: "Você não tem lingotes suficientes."</summary>
+		public const string MSG_INSUFFICIENT_INGOTS = TinkeringStringConstants.MSG_INSUFFICIENT_INGOTS;
 
-		/// <summary>Resource name: "Logs" (cliloc 1015101)</summary>
-		public const int MSG_LOGS = 1015101;
+		/// <summary>Resource name: "Toras"</summary>
+		public const string MSG_LOGS = TinkeringStringConstants.RESOURCE_LOGS;
 
-		/// <summary>Error: "You don't have enough logs." (cliloc 1044351)</summary>
-		public const int MSG_INSUFFICIENT_LOGS = 1044351;
+		/// <summary>Error: "Você não tem toras suficientes."</summary>
+		public const string MSG_INSUFFICIENT_LOGS = TinkeringStringConstants.MSG_INSUFFICIENT_LOGS;
 
-		/// <summary>Error: "You don't have the required items." (cliloc 1044253)</summary>
-		public const int MSG_INSUFFICIENT_RESOURCES = 1044253;
+		/// <summary>Error: "Você não tem os itens necessários."</summary>
+		public const string MSG_INSUFFICIENT_RESOURCES = TinkeringStringConstants.MSG_INSUFFICIENT_RESOURCES;
 
-		/// <summary>Resource name: "Granite" (cliloc 1044514)</summary>
-		public const int MSG_GRANITE = 1044514;
+		/// <summary>Resource name: "Granito"</summary>
+		public const string MSG_GRANITE = TinkeringStringConstants.RESOURCE_GRANITE;
 
-		/// <summary>Error: "You don't have enough granite." (cliloc 1044513)</summary>
-		public const int MSG_INSUFFICIENT_GRANITE = 1044513;
+		/// <summary>Error: "Você não tem granito suficiente."</summary>
+		public const string MSG_INSUFFICIENT_GRANITE = TinkeringStringConstants.MSG_INSUFFICIENT_GRANITE;
 
-		/// <summary>Resource name: "Leather" (cliloc 1044462)</summary>
-		public const int MSG_LEATHER = 1044462;
+		/// <summary>Resource name: "Couro"</summary>
+		public const string MSG_LEATHER = TinkeringStringConstants.RESOURCE_LEATHER;
 
-		/// <summary>Error: "You don't have enough leather." (cliloc 1044463)</summary>
-		public const int MSG_INSUFFICIENT_LEATHER = 1044463;
+		/// <summary>Error: "Você não tem couro suficiente."</summary>
+		public const string MSG_INSUFFICIENT_LEATHER = TinkeringStringConstants.MSG_INSUFFICIENT_LEATHER;
 
-		/// <summary>Resource name: "Beeswax" (cliloc 1025154)</summary>
-		public const int MSG_BEESWAX = 1025154;
+		/// <summary>Resource name: "Cera de Abelha"</summary>
+		public const string MSG_BEESWAX = TinkeringStringConstants.RESOURCE_BEESWAX;
 
-		/// <summary>Error: "You don't have enough beeswax." (cliloc 1053098)</summary>
-		public const int MSG_INSUFFICIENT_BEESWAX = 1053098;
+		/// <summary>Error: "Você não tem cera de abelha suficiente."</summary>
+		public const string MSG_INSUFFICIENT_BEESWAX = TinkeringStringConstants.MSG_INSUFFICIENT_BEESWAX;
 
-		/// <summary>Resource name: "Arcane Gem" (cliloc 1114115)</summary>
-		public const int MSG_ARCANE_GEM = 1114115;
+		/// <summary>Resource name: "Gema Arcana"</summary>
+		public const string MSG_ARCANE_GEM = TinkeringStringConstants.RESOURCE_ARCANE_GEM;
 
-		/// <summary>Resource name: "Bottle" (cliloc 1044250)</summary>
-		public const int MSG_BOTTLE = 1044250;
+		/// <summary>Resource name: "Garrafa"</summary>
+		public const string MSG_BOTTLE = TinkeringStringConstants.RESOURCE_BOTTLE;
 
-		/// <summary>Resource name: "Barrel Lid" (cliloc 1044251)</summary>
-		public const int MSG_BARREL_LID = 1044251;
+		/// <summary>Resource name: "Tampa de Barril"</summary>
+		public const string MSG_BARREL_LID = TinkeringStringConstants.RESOURCE_BARREL_LID;
 
-		/// <summary>Resource name: "Barrel Tap" (cliloc 1044252)</summary>
-		public const int MSG_BARREL_TAP = 1044252;
+		/// <summary>Resource name: "Torneira de Barril"</summary>
+		public const string MSG_BARREL_TAP = TinkeringStringConstants.RESOURCE_BARREL_TAP;
 
-		/// <summary>Resource name: "Torch" (cliloc 1011410)</summary>
-		public const int MSG_TORCH = 1011410;
-
-		#endregion
-
-		#region Craft Group Names (Cliloc)
-
-		/// <summary>Group: "Wooden Items" (cliloc 1044042)</summary>
-		public const int MSG_GROUP_WOODEN_ITEMS = 1044042;
-
-		/// <summary>Group: "Tools" (cliloc 1044046)</summary>
-		public const int MSG_GROUP_TOOLS = 1044046;
-
-		/// <summary>Group: "Parts" (cliloc 1044047)</summary>
-		public const int MSG_GROUP_PARTS = 1044047;
-
-		/// <summary>Group: "Utensils" (cliloc 1044048)</summary>
-		public const int MSG_GROUP_UTENSILS = 1044048;
-
-		/// <summary>Group: "Jewelry" (cliloc 1044049)</summary>
-		public const int MSG_GROUP_JEWELRY = 1044049;
-
-		/// <summary>Group: "Misc" (cliloc 1044050)</summary>
-		public const int MSG_GROUP_MISC = 1044050;
-
-		/// <summary>Group: "Assemblies" (cliloc 1044051)</summary>
-		public const int MSG_GROUP_MULTI_COMPONENT = 1044051;
+		/// <summary>Resource name: "Tocha"</summary>
+		public const string MSG_TORCH = TinkeringStringConstants.RESOURCE_TORCH;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Wooden Items
+		#region Craft Group Names (PT-BR)
 
-		/// <summary>Jointing Plane (cliloc 1024144)</summary>
-		public const int MSG_JOINTING_PLANE = 1024144;
+		/// <summary>Group: "Itens de Madeira"</summary>
+		public const string MSG_GROUP_WOODEN_ITEMS = TinkeringStringConstants.GROUP_WOODEN_ITEMS;
 
-		/// <summary>Moulding Plane (cliloc 1024140)</summary>
-		public const int MSG_MOULDING_PLANE = 1024140;
+		/// <summary>Group: "Ferramentas"</summary>
+		public const string MSG_GROUP_TOOLS = TinkeringStringConstants.GROUP_TOOLS;
 
-		/// <summary>Smoothing Plane (cliloc 1024146)</summary>
-		public const int MSG_SMOOTHING_PLANE = 1024146;
+		/// <summary>Group: "Peças"</summary>
+		public const string MSG_GROUP_PARTS = TinkeringStringConstants.GROUP_PARTS;
 
-		/// <summary>Clock Frame (cliloc 1024173)</summary>
-		public const int MSG_CLOCK_FRAME = 1024173;
+		/// <summary>Group: "Utensílios"</summary>
+		public const string MSG_GROUP_UTENSILS = TinkeringStringConstants.GROUP_UTENSILS;
 
-		/// <summary>Axle (cliloc 1024187)</summary>
-		public const int MSG_AXLE = 1024187;
+		/// <summary>Group: "Joias"</summary>
+		public const string MSG_GROUP_JEWELRY = TinkeringStringConstants.GROUP_JEWELRY;
 
-		/// <summary>Rolling Pin (cliloc 1024163)</summary>
-		public const int MSG_ROLLING_PIN = 1024163;
+		/// <summary>Group: "Variados"</summary>
+		public const string MSG_GROUP_MISC = TinkeringStringConstants.GROUP_MISC;
 
-		/// <summary>Nunchaku (cliloc 1030158)</summary>
-		public const int MSG_NUNCHAKU = 1030158;
-
-		#endregion
-
-		#region Item Names (Cliloc) - Tools
-
-		/// <summary>Scissors (cliloc 1023998)</summary>
-		public const int MSG_SCISSORS = 1023998;
-
-		/// <summary>Mortar and Pestle (cliloc 1023739)</summary>
-		public const int MSG_MORTAR_PESTLE = 1023739;
-
-		/// <summary>Scorp (cliloc 1024327)</summary>
-		public const int MSG_SCORP = 1024327;
-
-		/// <summary>Tinker Tools (cliloc 1044164)</summary>
-		public const int MSG_TINKER_TOOLS = 1044164;
-
-		/// <summary>Hatchet (cliloc 1023907)</summary>
-		public const int MSG_HATCHET = 1023907;
-
-		/// <summary>Draw Knife (cliloc 1024324)</summary>
-		public const int MSG_DRAW_KNIFE = 1024324;
-
-		/// <summary>Sewing Kit (cliloc 1023997)</summary>
-		public const int MSG_SEWING_KIT = 1023997;
-
-		/// <summary>Saw (cliloc 1024148)</summary>
-		public const int MSG_SAW = 1024148;
-
-		/// <summary>Dovetail Saw (cliloc 1024136)</summary>
-		public const int MSG_DOVETAIL_SAW = 1024136;
-
-		/// <summary>Froe (cliloc 1024325)</summary>
-		public const int MSG_FROE = 1024325;
-
-		/// <summary>Shovel (cliloc 1023898)</summary>
-		public const int MSG_SHOVEL = 1023898;
-
-		/// <summary>Hammer (cliloc 1024138)</summary>
-		public const int MSG_HAMMER = 1024138;
-
-		/// <summary>Tongs (cliloc 1024028)</summary>
-		public const int MSG_TONGS = 1024028;
-
-		/// <summary>Smith Hammer (cliloc 1025091)</summary>
-		public const int MSG_SMITH_HAMMER = 1025091;
-
-		/// <summary>Sledge Hammer (cliloc 1024021)</summary>
-		public const int MSG_SLEDGE_HAMMER = 1024021;
-
-		/// <summary>Inshave (cliloc 1024326)</summary>
-		public const int MSG_INSHAVE = 1024326;
-
-		/// <summary>Pickaxe (cliloc 1023718)</summary>
-		public const int MSG_PICKAXE = 1023718;
-
-		/// <summary>Lockpick (cliloc 1025371)</summary>
-		public const int MSG_LOCKPICK = 1025371;
-
-		/// <summary>Skillet (cliloc 1044567)</summary>
-		public const int MSG_SKILLET = 1044567;
-
-		/// <summary>Flour Sifter (cliloc 1024158)</summary>
-		public const int MSG_FLOUR_SIFTER = 1024158;
-
-		/// <summary>Fletcher Tools (cliloc 1044166)</summary>
-		public const int MSG_FLETCHER_TOOLS = 1044166;
-
-		/// <summary>Mapmaker's Pen (cliloc 1044167)</summary>
-		public const int MSG_MAPMAKERS_PEN = 1044167;
-
-		/// <summary>Scribe's Pen (cliloc 1044168)</summary>
-		public const int MSG_SCRIBES_PEN = 1044168;
+		/// <summary>Group: "Montagens"</summary>
+		public const string MSG_GROUP_MULTI_COMPONENT = TinkeringStringConstants.GROUP_MULTI_COMPONENT;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Parts
+		#region Item Names (PT-BR) - Wooden Items
 
-		/// <summary>Gears (cliloc 1024179)</summary>
-		public const int MSG_GEARS = 1024179;
+		/// <summary>Jointing Plane</summary>
+		public const string MSG_JOINTING_PLANE = TinkeringStringConstants.ITEM_JOINTING_PLANE;
 
-		/// <summary>Clock Parts (cliloc 1024175)</summary>
-		public const int MSG_CLOCK_PARTS = 1024175;
+		/// <summary>Moulding Plane</summary>
+		public const string MSG_MOULDING_PLANE = TinkeringStringConstants.ITEM_MOULDING_PLANE;
 
-		/// <summary>Barrel Tap (cliloc 1024100)</summary>
-		public const int MSG_BARREL_TAP_ITEM = 1024100;
+		/// <summary>Smoothing Plane</summary>
+		public const string MSG_SMOOTHING_PLANE = TinkeringStringConstants.ITEM_SMOOTHING_PLANE;
 
-		/// <summary>Springs (cliloc 1024189)</summary>
-		public const int MSG_SPRINGS = 1024189;
+		/// <summary>Clock Frame</summary>
+		public const string MSG_CLOCK_FRAME = TinkeringStringConstants.ITEM_CLOCK_FRAME;
 
-		/// <summary>Sextant Parts (cliloc 1024185)</summary>
-		public const int MSG_SEXTANT_PARTS = 1024185;
+		/// <summary>Axle</summary>
+		public const string MSG_AXLE = TinkeringStringConstants.ITEM_AXLE;
 
-		/// <summary>Barrel Hoops (cliloc 1024321)</summary>
-		public const int MSG_BARREL_HOOPS = 1024321;
+		/// <summary>Rolling Pin</summary>
+		public const string MSG_ROLLING_PIN = TinkeringStringConstants.ITEM_ROLLING_PIN;
 
-		/// <summary>Hinge (cliloc 1024181)</summary>
-		public const int MSG_HINGE = 1024181;
-
-		/// <summary>Bola Ball (cliloc 1023699)</summary>
-		public const int MSG_BOLA_BALL = 1023699;
-
-		/// <summary>Axle (cliloc 1044169)</summary>
-		public const int MSG_AXLE_RESOURCE = 1044169;
-
-		/// <summary>Axle Gears (cliloc 1044170)</summary>
-		public const int MSG_AXLE_GEARS = 1044170;
-
-		/// <summary>Springs (cliloc 1044171)</summary>
-		public const int MSG_SPRINGS_RESOURCE = 1044171;
-
-		/// <summary>Hinge (cliloc 1044172)</summary>
-		public const int MSG_HINGE_RESOURCE = 1044172;
-
-		/// <summary>Clock Parts (cliloc 1044173)</summary>
-		public const int MSG_CLOCK_PARTS_RESOURCE = 1044173;
-
-		/// <summary>Clock Frame (cliloc 1044174)</summary>
-		public const int MSG_CLOCK_FRAME_RESOURCE = 1044174;
-
-		/// <summary>Sextant Parts (cliloc 1044175)</summary>
-		public const int MSG_SEXTANT_PARTS_RESOURCE = 1044175;
-
-		/// <summary>Gears (cliloc 1044254)</summary>
-		public const int MSG_GEARS_RESOURCE = 1044254;
+		/// <summary>Nunchaku</summary>
+		public const string MSG_NUNCHAKU = TinkeringStringConstants.ITEM_NUNCHAKU;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Utensils
+		#region Item Names (PT-BR) - Tools
 
-		/// <summary>Butcher Knife (cliloc 1025110)</summary>
-		public const int MSG_BUTCHER_KNIFE = 1025110;
+		/// <summary>Scissors</summary>
+		public const string MSG_SCISSORS = TinkeringStringConstants.ITEM_SCISSORS;
 
-		/// <summary>Spoon (Left) (cliloc 1044158)</summary>
-		public const int MSG_SPOON_LEFT = 1044158;
+		/// <summary>Mortar and Pestle</summary>
+		public const string MSG_MORTAR_PESTLE = TinkeringStringConstants.ITEM_MORTAR_PESTLE;
 
-		/// <summary>Spoon (Right) (cliloc 1044159)</summary>
-		public const int MSG_SPOON_RIGHT = 1044159;
+		/// <summary>Scorp</summary>
+		public const string MSG_SCORP = TinkeringStringConstants.ITEM_SCORP;
 
-		/// <summary>Plate (cliloc 1022519)</summary>
-		public const int MSG_PLATE = 1022519;
+		/// <summary>Tinker Tools</summary>
+		public const string MSG_TINKER_TOOLS = TinkeringStringConstants.ITEM_TINKER_TOOLS;
 
-		/// <summary>Fork (Left) (cliloc 1044160)</summary>
-		public const int MSG_FORK_LEFT = 1044160;
+		/// <summary>Hatchet</summary>
+		public const string MSG_HATCHET = TinkeringStringConstants.ITEM_HATCHET;
 
-		/// <summary>Fork (Right) (cliloc 1044161)</summary>
-		public const int MSG_FORK_RIGHT = 1044161;
+		/// <summary>Draw Knife</summary>
+		public const string MSG_DRAW_KNIFE = TinkeringStringConstants.ITEM_DRAW_KNIFE;
 
-		/// <summary>Cleaver (cliloc 1023778)</summary>
-		public const int MSG_CLEAVER = 1023778;
+		/// <summary>Sewing Kit</summary>
+		public const string MSG_SEWING_KIT = TinkeringStringConstants.ITEM_SEWING_KIT;
 
-		/// <summary>Knife (Left) (cliloc 1044162)</summary>
-		public const int MSG_KNIFE_LEFT = 1044162;
+		/// <summary>Saw</summary>
+		public const string MSG_SAW = TinkeringStringConstants.ITEM_SAW;
 
-		/// <summary>Knife (Right) (cliloc 1044163)</summary>
-		public const int MSG_KNIFE_RIGHT = 1044163;
+		/// <summary>Dovetail Saw</summary>
+		public const string MSG_DOVETAIL_SAW = TinkeringStringConstants.ITEM_DOVETAIL_SAW;
 
-		/// <summary>Goblet (cliloc 1022458)</summary>
-		public const int MSG_GOBLET = 1022458;
+		/// <summary>Froe</summary>
+		public const string MSG_FROE = TinkeringStringConstants.ITEM_FROE;
 
-		/// <summary>Pewter Mug (cliloc 1024097)</summary>
-		public const int MSG_PEWTER_MUG = 1024097;
+		/// <summary>Shovel</summary>
+		public const string MSG_SHOVEL = TinkeringStringConstants.ITEM_SHOVEL;
 
-		/// <summary>Skinning Knife (cliloc 1023781)</summary>
-		public const int MSG_SKINNING_KNIFE = 1023781;
+		/// <summary>Hammer</summary>
+		public const string MSG_HAMMER = TinkeringStringConstants.ITEM_HAMMER;
 
-		#endregion
+		/// <summary>Tongs</summary>
+		public const string MSG_TONGS = TinkeringStringConstants.ITEM_TONGS;
 
-		#region Item Names (Cliloc) - Misc
+		/// <summary>Smith Hammer</summary>
+		public const string MSG_SMITH_HAMMER = TinkeringStringConstants.ITEM_SMITH_HAMMER;
 
-		/// <summary>Candle (Large) (cliloc 1022598)</summary>
-		public const int MSG_CANDLE_LARGE = 1022598;
+		/// <summary>Sledge Hammer</summary>
+		public const string MSG_SLEDGE_HAMMER = TinkeringStringConstants.ITEM_SLEDGE_HAMMER;
 
-		/// <summary>Candelabra (cliloc 1022599)</summary>
-		public const int MSG_CANDELABRA = 1022599;
+		/// <summary>Inshave</summary>
+		public const string MSG_INSHAVE = TinkeringStringConstants.ITEM_INSHAVE;
 
-		/// <summary>Scales (cliloc 1026225)</summary>
-		public const int MSG_SCALES = 1026225;
+		/// <summary>Pickaxe</summary>
+		public const string MSG_PICKAXE = TinkeringStringConstants.ITEM_PICKAXE;
 
-		/// <summary>Key (cliloc 1024112)</summary>
-		public const int MSG_KEY = 1024112;
+		/// <summary>Lockpick</summary>
+		public const string MSG_LOCKPICK = TinkeringStringConstants.ITEM_LOCKPICK;
 
-		/// <summary>Key Ring (cliloc 1024113)</summary>
-		public const int MSG_KEY_RING = 1024113;
+		/// <summary>Skillet</summary>
+		public const string MSG_SKILLET = TinkeringStringConstants.ITEM_SKILLET;
 
-		/// <summary>Globe (cliloc 1024167)</summary>
-		public const int MSG_GLOBE = 1024167;
+		/// <summary>Flour Sifter</summary>
+		public const string MSG_FLOUR_SIFTER = TinkeringStringConstants.ITEM_FLOUR_SIFTER;
 
-		/// <summary>Lantern (cliloc 1022597)</summary>
-		public const int MSG_LANTERN = 1022597;
+		/// <summary>Fletcher Tools</summary>
+		public const string MSG_FLETCHER_TOOLS = TinkeringStringConstants.ITEM_FLETCHER_TOOLS;
 
-		/// <summary>Heating Stand (cliloc 1026217)</summary>
-		public const int MSG_HEATING_STAND = 1026217;
+		/// <summary>Mapmaker's Pen</summary>
+		public const string MSG_MAPMAKERS_PEN = TinkeringStringConstants.ITEM_MAPMAKERS_PEN;
 
-		/// <summary>Shoji Lantern (cliloc 1029404)</summary>
-		public const int MSG_SHOJI_LANTERN = 1029404;
-
-		/// <summary>Paper Lantern (cliloc 1029406)</summary>
-		public const int MSG_PAPER_LANTERN = 1029406;
-
-		/// <summary>Round Paper Lantern (cliloc 1029418)</summary>
-		public const int MSG_ROUND_PAPER_LANTERN = 1029418;
-
-		/// <summary>Wind Chimes (cliloc 1030290)</summary>
-		public const int MSG_WIND_CHIMES = 1030290;
-
-		/// <summary>Fancy Wind Chimes (cliloc 1030291)</summary>
-		public const int MSG_FANCY_WIND_CHIMES = 1030291;
+		/// <summary>Scribe's Pen</summary>
+		public const string MSG_SCRIBES_PEN = TinkeringStringConstants.ITEM_SCRIBES_PEN;
 
 		#endregion
 
-		#region Item Names (Cliloc) - Multi-Component
+		#region Item Names (PT-BR) - Parts
 
-		/// <summary>Axle Gears (cliloc 1024177)</summary>
-		public const int MSG_AXLE_GEARS_ITEM = 1024177;
+		/// <summary>Gears</summary>
+		public const string MSG_GEARS = TinkeringStringConstants.ITEM_GEARS;
 
-		/// <summary>Clock (Right) (cliloc 1044257)</summary>
-		public const int MSG_CLOCK_RIGHT = 1044257;
+		/// <summary>Clock Parts</summary>
+		public const string MSG_CLOCK_PARTS = TinkeringStringConstants.ITEM_CLOCK_PARTS;
 
-		/// <summary>Clock (Left) (cliloc 1044256)</summary>
-		public const int MSG_CLOCK_LEFT = 1044256;
+		/// <summary>Barrel Tap</summary>
+		public const string MSG_BARREL_TAP_ITEM = TinkeringStringConstants.ITEM_BARREL_TAP_ITEM;
 
-		/// <summary>Sextant (cliloc 1024183)</summary>
-		public const int MSG_SEXTANT = 1024183;
+		/// <summary>Springs</summary>
+		public const string MSG_SPRINGS = TinkeringStringConstants.ITEM_SPRINGS;
 
-		/// <summary>Bola (cliloc 1046441)</summary>
-		public const int MSG_BOLA = 1046441;
+		/// <summary>Sextant Parts</summary>
+		public const string MSG_SEXTANT_PARTS = TinkeringStringConstants.ITEM_SEXTANT_PARTS;
 
-		/// <summary>Bola Ball (cliloc 1046440)</summary>
-		public const int MSG_BOLA_BALL_RESOURCE = 1046440;
+		/// <summary>Barrel Hoops</summary>
+		public const string MSG_BARREL_HOOPS = TinkeringStringConstants.ITEM_BARREL_HOOPS;
 
-		/// <summary>Potion Keg (cliloc 1044258)</summary>
-		public const int MSG_POTION_KEG = 1044258;
+		/// <summary>Hinge</summary>
+		public const string MSG_HINGE = TinkeringStringConstants.ITEM_HINGE;
 
-		/// <summary>Failed to create item (cliloc 1042613)</summary>
-		public const int MSG_FAILED_CREATE = 1042613;
+		/// <summary>Bola Ball</summary>
+		public const string MSG_BOLA_BALL = TinkeringStringConstants.ITEM_BOLA_BALL;
+
+		/// <summary>Axle (resource)</summary>
+		public const string MSG_AXLE_RESOURCE = TinkeringStringConstants.ITEM_AXLE_RESOURCE;
+
+		/// <summary>Axle Gears</summary>
+		public const string MSG_AXLE_GEARS = TinkeringStringConstants.ITEM_AXLE_GEARS;
+
+		/// <summary>Springs (resource)</summary>
+		public const string MSG_SPRINGS_RESOURCE = TinkeringStringConstants.ITEM_SPRINGS_RESOURCE;
+
+		/// <summary>Hinge (resource)</summary>
+		public const string MSG_HINGE_RESOURCE = TinkeringStringConstants.ITEM_HINGE_RESOURCE;
+
+		/// <summary>Clock Parts (resource)</summary>
+		public const string MSG_CLOCK_PARTS_RESOURCE = TinkeringStringConstants.ITEM_CLOCK_PARTS_RESOURCE;
+
+		/// <summary>Clock Frame (resource)</summary>
+		public const string MSG_CLOCK_FRAME_RESOURCE = TinkeringStringConstants.ITEM_CLOCK_FRAME_RESOURCE;
+
+		/// <summary>Sextant Parts (resource)</summary>
+		public const string MSG_SEXTANT_PARTS_RESOURCE = TinkeringStringConstants.ITEM_SEXTANT_PARTS_RESOURCE;
+
+		/// <summary>Gears (resource)</summary>
+		public const string MSG_GEARS_RESOURCE = TinkeringStringConstants.ITEM_GEARS_RESOURCE;
 
 		#endregion
 
-		#region Metal Type Names (Cliloc)
+		#region Item Names (PT-BR) - Utensils
 
-		/// <summary>Iron (cliloc 1044022)</summary>
-		public const int MSG_METAL_IRON = 1044022;
+		/// <summary>Butcher Knife</summary>
+		public const string MSG_BUTCHER_KNIFE = TinkeringStringConstants.ITEM_BUTCHER_KNIFE;
 
-		/// <summary>Dull Copper (cliloc 1044023)</summary>
-		public const int MSG_METAL_DULL_COPPER = 1044023;
+		/// <summary>Spoon (Left)</summary>
+		public const string MSG_SPOON_LEFT = TinkeringStringConstants.ITEM_SPOON_LEFT;
 
-		/// <summary>Shadow Iron (cliloc 1044024)</summary>
-		public const int MSG_METAL_SHADOW_IRON = 1044024;
+		/// <summary>Spoon (Right)</summary>
+		public const string MSG_SPOON_RIGHT = TinkeringStringConstants.ITEM_SPOON_RIGHT;
 
-		/// <summary>Copper (cliloc 1044025)</summary>
-		public const int MSG_METAL_COPPER = 1044025;
+		/// <summary>Plate</summary>
+		public const string MSG_PLATE = TinkeringStringConstants.ITEM_PLATE;
 
-		/// <summary>Bronze (cliloc 1044026)</summary>
-		public const int MSG_METAL_BRONZE = 1044026;
+		/// <summary>Fork (Left)</summary>
+		public const string MSG_FORK_LEFT = TinkeringStringConstants.ITEM_FORK_LEFT;
 
-		/// <summary>Gold (cliloc 1044027)</summary>
-		public const int MSG_METAL_GOLD = 1044027;
+		/// <summary>Fork (Right)</summary>
+		public const string MSG_FORK_RIGHT = TinkeringStringConstants.ITEM_FORK_RIGHT;
 
-		/// <summary>Agapite (cliloc 1044028)</summary>
-		public const int MSG_METAL_AGAPITE = 1044028;
+		/// <summary>Cleaver</summary>
+		public const string MSG_CLEAVER = TinkeringStringConstants.ITEM_CLEAVER;
 
-		/// <summary>Verite (cliloc 1044029)</summary>
-		public const int MSG_METAL_VERITE = 1044029;
+		/// <summary>Knife (Left)</summary>
+		public const string MSG_KNIFE_LEFT = TinkeringStringConstants.ITEM_KNIFE_LEFT;
 
-		/// <summary>Valorite (cliloc 1044030)</summary>
-		public const int MSG_METAL_VALORITE = 1044030;
+		/// <summary>Knife (Right)</summary>
+		public const string MSG_KNIFE_RIGHT = TinkeringStringConstants.ITEM_KNIFE_RIGHT;
 
-		/// <summary>Titanium (cliloc 6661000)</summary>
-		public const int MSG_METAL_TITANIUM = 6661000;
+		/// <summary>Goblet</summary>
+		public const string MSG_GOBLET = TinkeringStringConstants.ITEM_GOBLET;
 
-		/// <summary>Rosenium (cliloc 6662000)</summary>
-		public const int MSG_METAL_ROSENIUM = 6662000;
+		/// <summary>Pewter Mug</summary>
+		public const string MSG_PEWTER_MUG = TinkeringStringConstants.ITEM_PEWTER_MUG;
 
-		/// <summary>Platinum (cliloc 6663000)</summary>
-		public const int MSG_METAL_PLATINUM = 6663000;
+		/// <summary>Skinning Knife</summary>
+		public const string MSG_SKINNING_KNIFE = TinkeringStringConstants.ITEM_SKINNING_KNIFE_UTENSILS;
 
-		/// <summary>Nepturite (cliloc 1036173)</summary>
-		public const int MSG_METAL_NEPTURITE = 1036173;
+		#endregion
 
-		/// <summary>Obsidian (cliloc 1036162)</summary>
-		public const int MSG_METAL_OBSIDIAN = 1036162;
+		#region Item Names (PT-BR) - Misc
 
-		/// <summary>Steel (cliloc 1036144)</summary>
-		public const int MSG_METAL_STEEL = 1036144;
+		/// <summary>Candle (Large)</summary>
+		public const string MSG_CANDLE_LARGE = TinkeringStringConstants.ITEM_CANDLE_LARGE;
 
-		/// <summary>Brass (cliloc 1036152)</summary>
-		public const int MSG_METAL_BRASS = 1036152;
+		/// <summary>Candelabra</summary>
+		public const string MSG_CANDELABRA = TinkeringStringConstants.ITEM_CANDELABRA;
 
-		/// <summary>Mithril (cliloc 1036137)</summary>
-		public const int MSG_METAL_MITHRIL = 1036137;
+		/// <summary>Scales</summary>
+		public const string MSG_SCALES = TinkeringStringConstants.ITEM_SCALES;
 
-		/// <summary>Xormite (cliloc 1034437)</summary>
-		public const int MSG_METAL_XORMITE = 1034437;
+		/// <summary>Key</summary>
+		public const string MSG_KEY = TinkeringStringConstants.ITEM_KEY;
 
-		/// <summary>Dwarven (cliloc 1036181)</summary>
-		public const int MSG_METAL_DWARVEN = 1036181;
+		/// <summary>Key Ring</summary>
+		public const string MSG_KEY_RING = TinkeringStringConstants.ITEM_KEY_RING;
 
-		/// <summary>Not enough material (cliloc 1044267)</summary>
-		public const int MSG_NOT_ENOUGH_MATERIAL = 1044267;
+		/// <summary>Globe</summary>
+		public const string MSG_GLOBE = TinkeringStringConstants.ITEM_GLOBE;
 
-		/// <summary>Material type selection (cliloc 1044268)</summary>
-		public const int MSG_MATERIAL_SELECTION = 1044268;
+		/// <summary>Lantern</summary>
+		public const string MSG_LANTERN = TinkeringStringConstants.ITEM_LANTERN;
 
-		/// <summary>Dull Copper Ingot (cliloc 1074916)</summary>
-		public const int MSG_DULL_COPPER_INGOT = 1074916;
+		/// <summary>Heating Stand</summary>
+		public const string MSG_HEATING_STAND = TinkeringStringConstants.ITEM_HEATING_STAND;
 
-		/// <summary>Shadow Iron Ingot (cliloc 1074917)</summary>
-		public const int MSG_SHADOW_IRON_INGOT = 1074917;
+		/// <summary>Shoji Lantern</summary>
+		public const string MSG_SHOJI_LANTERN = TinkeringStringConstants.ITEM_SHOJI_LANTERN;
 
-		/// <summary>Bronze Ingot (cliloc 1074919)</summary>
-		public const int MSG_BRONZE_INGOT = 1074919;
+		/// <summary>Paper Lantern</summary>
+		public const string MSG_PAPER_LANTERN = TinkeringStringConstants.ITEM_PAPER_LANTERN;
 
-		/// <summary>Gold Ingot (cliloc 1074920)</summary>
-		public const int MSG_GOLD_INGOT = 1074920;
+		/// <summary>Round Paper Lantern</summary>
+		public const string MSG_ROUND_PAPER_LANTERN = TinkeringStringConstants.ITEM_ROUND_PAPER_LANTERN;
 
-		/// <summary>Agapite Ingot (cliloc 1074921)</summary>
-		public const int MSG_AGAPITE_INGOT = 1074921;
+		/// <summary>Wind Chimes</summary>
+		public const string MSG_WIND_CHIMES = TinkeringStringConstants.ITEM_WIND_CHIMES;
 
-		/// <summary>Verite Ingot (cliloc 1074922)</summary>
-		public const int MSG_VERITE_INGOT = 1074922;
+		/// <summary>Fancy Wind Chimes</summary>
+		public const string MSG_FANCY_WIND_CHIMES = TinkeringStringConstants.ITEM_FANCY_WIND_CHIMES;
 
-		/// <summary>Valorite Ingot (cliloc 1074923)</summary>
-		public const int MSG_VALORITE_INGOT = 1074923;
+		#endregion
+
+		#region Item Names (PT-BR) - Multi-Component
+
+		/// <summary>Axle Gears</summary>
+		public const string MSG_AXLE_GEARS_ITEM = TinkeringStringConstants.ITEM_AXLE_GEARS_ITEM;
+
+		/// <summary>Clock (Right)</summary>
+		public const string MSG_CLOCK_RIGHT = TinkeringStringConstants.ITEM_CLOCK_RIGHT;
+
+		/// <summary>Clock (Left)</summary>
+		public const string MSG_CLOCK_LEFT = TinkeringStringConstants.ITEM_CLOCK_LEFT;
+
+		/// <summary>Sextant</summary>
+		public const string MSG_SEXTANT = TinkeringStringConstants.ITEM_SEXTANT;
+
+		/// <summary>Bola</summary>
+		public const string MSG_BOLA = TinkeringStringConstants.ITEM_BOLA;
+
+		/// <summary>Bola Ball (resource)</summary>
+		public const string MSG_BOLA_BALL_RESOURCE = TinkeringStringConstants.ITEM_BOLA_BALL_RESOURCE;
+
+		/// <summary>Potion Keg</summary>
+		public const string MSG_POTION_KEG = TinkeringStringConstants.ITEM_POTION_KEG;
+
+		/// <summary>Failed to create item</summary>
+		public const string MSG_FAILED_CREATE = TinkeringStringConstants.MSG_FAILED_CREATE;
+
+		#endregion
+
+		#region Metal Type Names (PT-BR)
+
+		/// <summary>Iron</summary>
+		public const string MSG_METAL_IRON = TinkeringStringConstants.METAL_IRON;
+
+		/// <summary>Dull Copper</summary>
+		public const string MSG_METAL_DULL_COPPER = TinkeringStringConstants.METAL_DULL_COPPER;
+
+		/// <summary>Shadow Iron</summary>
+		public const string MSG_METAL_SHADOW_IRON = TinkeringStringConstants.METAL_SHADOW_IRON;
+
+		/// <summary>Copper</summary>
+		public const string MSG_METAL_COPPER = TinkeringStringConstants.METAL_COPPER;
+
+		/// <summary>Bronze</summary>
+		public const string MSG_METAL_BRONZE = TinkeringStringConstants.METAL_BRONZE;
+
+		/// <summary>Gold</summary>
+		public const string MSG_METAL_GOLD = TinkeringStringConstants.METAL_GOLD;
+
+		/// <summary>Agapite</summary>
+		public const string MSG_METAL_AGAPITE = TinkeringStringConstants.METAL_AGAPITE;
+
+		/// <summary>Verite</summary>
+		public const string MSG_METAL_VERITE = TinkeringStringConstants.METAL_VERITE;
+
+		/// <summary>Valorite</summary>
+		public const string MSG_METAL_VALORITE = TinkeringStringConstants.METAL_VALORITE;
+
+		/// <summary>Titanium</summary>
+		public const string MSG_METAL_TITANIUM = TinkeringStringConstants.METAL_TITANIUM;
+
+		/// <summary>Rosenium</summary>
+		public const string MSG_METAL_ROSENIUM = TinkeringStringConstants.METAL_ROSENIUM;
+
+		/// <summary>Platinum</summary>
+		public const string MSG_METAL_PLATINUM = TinkeringStringConstants.METAL_PLATINUM;
+
+		/// <summary>Nepturite</summary>
+		public const string MSG_METAL_NEPTURITE = TinkeringStringConstants.METAL_NEPTURITE;
+
+		/// <summary>Obsidian</summary>
+		public const string MSG_METAL_OBSIDIAN = TinkeringStringConstants.METAL_OBSIDIAN;
+
+		/// <summary>Steel</summary>
+		public const string MSG_METAL_STEEL = TinkeringStringConstants.METAL_STEEL;
+
+		/// <summary>Brass</summary>
+		public const string MSG_METAL_BRASS = TinkeringStringConstants.METAL_BRASS;
+
+		/// <summary>Mithril</summary>
+		public const string MSG_METAL_MITHRIL = TinkeringStringConstants.METAL_MITHRIL;
+
+		/// <summary>Xormite</summary>
+		public const string MSG_METAL_XORMITE = TinkeringStringConstants.METAL_XORMITE;
+
+		/// <summary>Dwarven</summary>
+		public const string MSG_METAL_DWARVEN = TinkeringStringConstants.METAL_DWARVEN;
+
+		/// <summary>Not enough material</summary>
+		public const string MSG_NOT_ENOUGH_MATERIAL = TinkeringStringConstants.MSG_NOT_ENOUGH_MATERIAL;
+
+		/// <summary>Material type selection</summary>
+		public const string MSG_MATERIAL_SELECTION = TinkeringStringConstants.MSG_MATERIAL_SELECTION;
+
+		/// <summary>Dull Copper Ingot</summary>
+		public const string MSG_DULL_COPPER_INGOT = TinkeringStringConstants.INGOT_DULL_COPPER;
+
+		/// <summary>Shadow Iron Ingot</summary>
+		public const string MSG_SHADOW_IRON_INGOT = TinkeringStringConstants.INGOT_SHADOW_IRON;
+
+		/// <summary>Bronze Ingot</summary>
+		public const string MSG_BRONZE_INGOT = TinkeringStringConstants.INGOT_BRONZE;
+
+		/// <summary>Gold Ingot</summary>
+		public const string MSG_GOLD_INGOT = TinkeringStringConstants.INGOT_GOLD;
+
+		/// <summary>Agapite Ingot</summary>
+		public const string MSG_AGAPITE_INGOT = TinkeringStringConstants.INGOT_AGAPITE;
+
+		/// <summary>Verite Ingot</summary>
+		public const string MSG_VERITE_INGOT = TinkeringStringConstants.INGOT_VERITE;
+
+		/// <summary>Valorite Ingot</summary>
+		public const string MSG_VALORITE_INGOT = TinkeringStringConstants.INGOT_VALORITE;
 
 		#endregion
 

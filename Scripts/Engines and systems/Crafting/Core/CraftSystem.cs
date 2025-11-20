@@ -609,6 +609,22 @@ namespace Server.Engines.Craft
 		}
 
 		/// <summary>
+		/// Adds a sub-resource to the primary collection with string name and generic name
+		/// </summary>
+		/// <param name="type">Sub-resource type</param>
+		/// <param name="name">Resource name string</param>
+		/// <param name="reqSkill">Required skill to use this resource</param>
+		/// <param name="genericName">Generic name string for display</param>
+		/// <param name="message">Message to display if skill is insufficient</param>
+		public void AddSubRes( Type type, string name, double reqSkill, string genericName, object message )
+		{
+			// Note: CraftSubRes only supports int for genericName, so we ignore the string genericName parameter
+			// This maintains API compatibility while using string names
+			CraftSubRes craftSubRes = new CraftSubRes( type, name, reqSkill, message );
+			m_CraftSubRes.Add( craftSubRes );
+		}
+
+		/// <summary>
 		/// Sets the secondary sub-resource type with a string name
 		/// </summary>
 		/// <param name="type">Base resource type</param>
@@ -668,6 +684,22 @@ namespace Server.Engines.Craft
 		/// <param name="message">Message to display if skill is insufficient</param>
 		public void AddSubRes2( Type type, string name, double reqSkill, object message )
 		{
+			CraftSubRes craftSubRes = new CraftSubRes( type, name, reqSkill, message );
+			m_CraftSubRes2.Add( craftSubRes );
+		}
+
+		/// <summary>
+		/// Adds a sub-resource to the secondary collection with string name and generic name
+		/// </summary>
+		/// <param name="type">Sub-resource type</param>
+		/// <param name="name">Resource name string</param>
+		/// <param name="reqSkill">Required skill to use this resource</param>
+		/// <param name="genericName">Generic name string for display</param>
+		/// <param name="message">Message to display if skill is insufficient</param>
+		public void AddSubRes2( Type type, string name, double reqSkill, string genericName, object message )
+		{
+			// Note: CraftSubRes only supports int for genericName, so we ignore the string genericName parameter
+			// This maintains API compatibility while using string names
 			CraftSubRes craftSubRes = new CraftSubRes( type, name, reqSkill, message );
 			m_CraftSubRes2.Add( craftSubRes );
 		}
