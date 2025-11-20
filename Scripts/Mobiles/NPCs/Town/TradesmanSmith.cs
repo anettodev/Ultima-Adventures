@@ -161,13 +161,14 @@ namespace Server.Items
 				else if ( CrateItem == "agapite" ){ from.AddToBackpack ( new AgapiteIngot( CrateQty ) ); }
 				else if ( CrateItem == "verite" ){ from.AddToBackpack ( new VeriteIngot( CrateQty ) ); }
 				else if ( CrateItem == "valorite" ){ from.AddToBackpack ( new ValoriteIngot( CrateQty ) ); }
-				else if ( CrateItem == "nepturite" ){ from.AddToBackpack ( new NepturiteIngot( CrateQty ) ); }
+				// GATED RESOURCES: These ingots are not yet available to players
+				/*else if ( CrateItem == "nepturite" ){ from.AddToBackpack ( new NepturiteIngot( CrateQty ) ); }
 				else if ( CrateItem == "obsidian" ){ from.AddToBackpack ( new ObsidianIngot( CrateQty ) ); }
 				else if ( CrateItem == "steel" ){ from.AddToBackpack ( new SteelIngot( CrateQty ) ); }
 				else if ( CrateItem == "brass" ){ from.AddToBackpack ( new BrassIngot( CrateQty ) ); }
 				else if ( CrateItem == "mithril" ){ from.AddToBackpack ( new MithrilIngot( CrateQty ) ); }
 				else if ( CrateItem == "xormite" ){ from.AddToBackpack ( new XormiteIngot( CrateQty ) ); }
-				else if ( CrateItem == "dwarven" ){ from.AddToBackpack ( new DwarvenIngot( CrateQty ) ); }
+				else if ( CrateItem == "dwarven" ){ from.AddToBackpack ( new DwarvenIngot( CrateQty ) ); }*/
 				else { from.AddToBackpack ( new IronIngot( CrateQty ) ); }
 
 				from.PrivateOverheadMessage(MessageType.Regular, 0x14C, false, "You separate the ingots into your backpack", from.NetState);

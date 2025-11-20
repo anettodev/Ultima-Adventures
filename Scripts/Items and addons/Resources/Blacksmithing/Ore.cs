@@ -263,6 +263,13 @@ namespace Server.Items
 
 				if ( Server.Engines.Craft.DefBlacksmithy.IsForge( targeted ) )
 				{
+					// Check if ore is gated (unknown metal)
+					if ( Server.Misc.ResourceGating.IsResourceGated( m_Ore.Resource ) )
+					{
+						from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_ORE);
+						return;
+					}
+
 					double difficulty;
 
 					switch ( m_Ore.Resource )
@@ -291,14 +298,14 @@ namespace Server.Items
 					
 					if ( difficulty > 50.0 && difficulty > from.Skills[SkillName.Mining].Value )
 					{
-                        from.SendMessage(55, "Você não sabe como derreter este minério.");
+                        from.SendMessage(55, "Vocï¿½ nï¿½o sabe como derreter este minï¿½rio.");
                         //from.SendLocalizedMessage( 501986 ); // You have no idea how to smelt this strange ore!
 						return;
 					}
 					
 					if ( m_Ore.Amount <= 1 && m_Ore.ItemID == 0x19B7 )
 					{
-                        from.SendMessage(55, "Você há minério suficiente para fazer um lingote.");
+                        from.SendMessage(55, "Vocï¿½ hï¿½ minï¿½rio suficiente para fazer um lingote.");
                         //from.SendLocalizedMessage( 501987 ); // There is not enough metal-bearing ore in this pile to make an ingot.
 						return;
 					}
@@ -307,7 +314,7 @@ namespace Server.Items
 					{
 						if ( m_Ore.Amount <= 0 )
 						{
-                            from.SendMessage(55, "Você há minério suficiente para fazer um lingote.");
+                            from.SendMessage(55, "Vocï¿½ hï¿½ minï¿½rio suficiente para fazer um lingote.");
                             //from.SendLocalizedMessage( 501987 ); // There is not enough metal-bearing ore in this pile to make an ingot.
 						}
 						else
@@ -347,7 +354,7 @@ namespace Server.Items
 							ingot.Amount = amount;
 							from.AddToBackpack( ingot );
 							from.PlaySound( 0x208 );
-                            from.SendMessage(55, "Você fundiu o minério removendo as impurezas e colocou o metal na mochila.");
+                            from.SendMessage(55, "Vocï¿½ fundiu o minï¿½rio removendo as impurezas e colocou o metal na mochila.");
                             //from.SendLocalizedMessage( 501988 ); // You smelt the ore removing the impurities and put the metal in your backpack.
 						}
 					}
@@ -392,7 +399,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.0; } // Density of real iron (~8g/cm³) / 2;
+            get { return 4.0; } // Density of real iron (~8g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -433,7 +440,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.5; } // Density of real copper (~9g/cm³) / 2;
+            get { return 4.5; } // Density of real copper (~9g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -474,7 +481,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4; } // Density of real iron (~8g/cm³) / 2;
+            get { return 4; } // Density of real iron (~8g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -515,7 +522,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.5; } // Density of real copper (~9g/cm³) / 2;
+            get { return 4.5; } // Density of real copper (~9g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -556,7 +563,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.5; } // Density of real bronze (~9g/cm³) / 2;
+            get { return 4.5; } // Density of real bronze (~9g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -597,7 +604,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 9.5; } // Density of real copper (~19g/cm³) / 2;
+            get { return 9.5; } // Density of real copper (~19g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -638,7 +645,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4; } // Density of real iron (~8g/cm³) / 2;
+            get { return 4; } // Density of real iron (~8g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -679,7 +686,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4; } // Density of real iron (~8g/cm³) / 2;
+            get { return 4; } // Density of real iron (~8g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -721,7 +728,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4; } // Density of real iron (~8g/cm³) / 2;
+            get { return 4; } // Density of real iron (~8g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )
@@ -765,7 +772,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 2.25; } // Density of real titanium (~4.5g/cm³) / 2;
+            get { return 2.25; } // Density of real titanium (~4.5g/cmï¿½) / 2;
         }
 
         public virtual int GetLabelNumber()
@@ -813,7 +820,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 2.25; } // Density of real titanium (~4.5g/cm³) / 2;
+            get { return 2.25; } // Density of real titanium (~4.5g/cmï¿½) / 2;
         }
 
         public override void Serialize(GenericWriter writer)
@@ -856,7 +863,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 10.5; } // Density of real platinum (~21.5g/cm³) / 2;
+            get { return 10.5; } // Density of real platinum (~21.5g/cmï¿½) / 2;
         }
 
         public override void Serialize(GenericWriter writer)
@@ -897,7 +904,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 1.5; } // Density of real obsidian (~3.0g/cm³) / 2;
+            get { return 1.5; } // Density of real obsidian (~3.0g/cmï¿½) / 2;
         }
 
         public override void Serialize( GenericWriter writer )

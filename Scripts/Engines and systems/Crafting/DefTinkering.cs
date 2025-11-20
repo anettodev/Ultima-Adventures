@@ -770,9 +770,10 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( AmethystAmulet ), typeof( AmethystBracelet ),
 				typeof( AmethystRing ), typeof( AmethystEarrings ) );
 
-			AddMetalJewelrySet( typeof( BrassIngot ), "brass", TinkeringConstants.SKILL_MIN_JEWELRY,
-				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( BrassAmulet ), typeof( BrassBracelet ),
-				typeof( BrassRing ), typeof( BrassEarrings ) );
+			// GATED RESOURCE: Brass ingots are not yet available to players
+			//AddMetalJewelrySet( typeof( BrassIngot ), "brass", TinkeringConstants.SKILL_MIN_JEWELRY,
+			//	TinkeringConstants.SKILL_MAX_JEWELRY, typeof( BrassAmulet ), typeof( BrassBracelet ),
+			//	typeof( BrassRing ), typeof( BrassEarrings ) );
 
 			AddMetalJewelrySet( typeof( BronzeIngot ), "bronze", TinkeringConstants.SKILL_MIN_JEWELRY,
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( BronzeAmulet ), typeof( BronzeBracelet ),
@@ -802,17 +803,20 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( JadeAmulet ), typeof( JadeBracelet ),
 				typeof( JadeRing ), typeof( JadeEarrings ) );
 
-			AddMetalJewelrySet( typeof( MithrilIngot ), "mithril", TinkeringConstants.SKILL_MIN_JEWELRY,
-				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( MithrilAmulet ), typeof( MithrilBracelet ),
-				typeof( MithrilRing ), typeof( MithrilEarrings ) );
+			// GATED RESOURCE: Mithril ingots are not yet available to players
+			//AddMetalJewelrySet( typeof( MithrilIngot ), "mithril", TinkeringConstants.SKILL_MIN_JEWELRY,
+			//	TinkeringConstants.SKILL_MAX_JEWELRY, typeof( MithrilAmulet ), typeof( MithrilBracelet ),
+			//	typeof( MithrilRing ), typeof( MithrilEarrings ) );
 
-			AddMetalJewelrySet( typeof( NepturiteIngot ), "nepturite", TinkeringConstants.SKILL_MIN_JEWELRY,
-				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( NepturiteAmulet ), typeof( NepturiteBracelet ),
-				typeof( NepturiteRing ), typeof( NepturiteEarrings ) );
+			// GATED RESOURCE: Nepturite ingots are not yet available to players
+			//AddMetalJewelrySet( typeof( NepturiteIngot ), "nepturite", TinkeringConstants.SKILL_MIN_JEWELRY,
+			//	TinkeringConstants.SKILL_MAX_JEWELRY, typeof( NepturiteAmulet ), typeof( NepturiteBracelet ),
+			//	typeof( NepturiteRing ), typeof( NepturiteEarrings ) );
 
-			AddMetalJewelrySet( typeof( ObsidianIngot ), "obsidian", TinkeringConstants.SKILL_MIN_JEWELRY,
-				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( ObsidianAmulet ), typeof( ObsidianBracelet ),
-				typeof( ObsidianRing ), typeof( ObsidianEarrings ) );
+			// GATED RESOURCE: Obsidian ingots are not yet available to players
+			//AddMetalJewelrySet( typeof( ObsidianIngot ), "obsidian", TinkeringConstants.SKILL_MIN_JEWELRY,
+			//	TinkeringConstants.SKILL_MAX_JEWELRY, typeof( ObsidianAmulet ), typeof( ObsidianBracelet ),
+			//	typeof( ObsidianRing ), typeof( ObsidianEarrings ) );
 
 			AddMetalJewelrySet( typeof( OnyxIngot ), "onyx", TinkeringConstants.SKILL_MIN_JEWELRY,
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( OnyxAmulet ), typeof( OnyxBracelet ),
@@ -838,9 +842,10 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( StarRubyAmulet ), typeof( StarRubyBracelet ),
 				typeof( StarRubyRing ), typeof( StarRubyEarrings ) );
 
-			AddMetalJewelrySet( typeof( SteelIngot ), "steel", TinkeringConstants.SKILL_MIN_JEWELRY,
-				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( SteelAmulet ), typeof( SteelBracelet ),
-				typeof( SteelRing ), typeof( SteelEarrings ) );
+			// GATED RESOURCE: Steel ingots are not yet available to players
+			//AddMetalJewelrySet( typeof( SteelIngot ), "steel", TinkeringConstants.SKILL_MIN_JEWELRY,
+			//	TinkeringConstants.SKILL_MAX_JEWELRY, typeof( SteelAmulet ), typeof( SteelBracelet ),
+			//	typeof( SteelRing ), typeof( SteelEarrings ) );
 
 			AddMetalJewelrySet( typeof( TopazIngot ), "topaz", TinkeringConstants.SKILL_MIN_JEWELRY,
 				TinkeringConstants.SKILL_MAX_JEWELRY, typeof( TopazAmulet ), typeof( TopazBracelet ),
@@ -1078,6 +1083,8 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_REQ_METAL_PLATINUM, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
 
+			// GATED RESOURCES: These metals are not yet available to players
+			/*
 			AddSubRes( typeof( NepturiteIngot ), TinkeringConstants.MSG_METAL_NEPTURITE,
 				TinkeringConstants.SKILL_REQ_METAL_NEPTURITE, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
@@ -1105,6 +1112,8 @@ namespace Server.Engines.Craft
 			AddSubRes( typeof( DwarvenIngot ), TinkeringConstants.MSG_METAL_DWARVEN,
 				TinkeringConstants.SKILL_REQ_METAL_DWARVEN, TinkeringConstants.MSG_IRON_INGOTS,
 				TinkeringConstants.MSG_MATERIAL_SELECTION );
+			*/</ antml:parameter>
+</invoke>
 		}
 
 		#endregion

@@ -368,17 +368,19 @@ namespace Server.Engines.Craft
 			AddRes( index, typeof( InvisibilityScroll ), "Invisibility Scroll", 6, 1042081 );
 			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 6, 1042081 );
 
-			index = AddCraft(typeof(MarkMagicStaff), "Sixth Circle", "wand of marking", 70.0, 100.0, typeof(BrassIngot), "Brass Ingot", 3, 1042081);
+			// GATED RESOURCE: Brass ingots are not yet available to players
+			/*index = AddCraft(typeof(MarkMagicStaff), "Sixth Circle", "wand of marking", 70.0, 100.0, typeof(BrassIngot), "Brass Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 70.0, 100.0 );
 			AddRes( index, typeof( Diamond ), "Diamond", 6, 1042081 );
 			AddRes( index, typeof( MarkScroll ), "Mark Scroll", 6, 1042081 );
-			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 6, 1042081 );
+			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 6, 1042081 );*/
 
-			index = AddCraft(typeof(MassCurseMagicStaff), "Sixth Circle", "wand of mass curses", 70.0, 100.0, typeof(SteelIngot), "Steel Ingot", 3, 1042081);
+			// GATED RESOURCE: Steel ingots are not yet available to players
+			/*index = AddCraft(typeof(MassCurseMagicStaff), "Sixth Circle", "wand of mass curses", 70.0, 100.0, typeof(SteelIngot), "Steel Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 70.0, 100.0 );
 			AddRes( index, typeof( Amber ), "Amber", 6, 1042081 );
 			AddRes( index, typeof( MassCurseScroll ), "Mass Curse Scroll", 6, 1042081 );
-			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 6, 1042081 );
+			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 6, 1042081 );*/
 
 			index = AddCraft(typeof(ParalyzeFieldMagicStaff), "Sixth Circle", "wand of paralyzing fields", 70.0, 100.0, typeof(JadeIngot), "Jade Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 70.0, 100.0 );
@@ -404,17 +406,19 @@ namespace Server.Engines.Craft
 			AddRes( index, typeof( EnergyFieldScroll ), "Energy Field Scroll", 7, 1042081 );
 			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );
 
-			index = AddCraft(typeof(FlameStrikeMagicStaff), "Seventh Circle", "wand of flame striking", 80.0, 110.0, typeof(SteelIngot), "Steel Ingot", 3, 1042081);
+			// GATED RESOURCE: Steel ingots are not yet available to players
+			/*index = AddCraft(typeof(FlameStrikeMagicStaff), "Seventh Circle", "wand of flame striking", 80.0, 110.0, typeof(SteelIngot), "Steel Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 80.0, 110.0 );
 			AddRes( index, typeof( Diamond ), "Diamond", 7, 1042081 );
 			AddRes( index, typeof( FlamestrikeScroll ), "Flame Strike Scroll", 7, 1042081 );
-			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );
+			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );*/
 
-			index = AddCraft(typeof(GateTravelMagicStaff), "Seventh Circle", "wand of gate travels", 80.0, 110.0, typeof(MithrilIngot), "Mithril Ingot", 3, 1042081);
+			// GATED RESOURCE: Mithril ingots are not yet available to players
+			/*index = AddCraft(typeof(GateTravelMagicStaff), "Seventh Circle", "wand of gate travels", 80.0, 110.0, typeof(MithrilIngot), "Mithril Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 80.0, 110.0 );
 			AddRes( index, typeof( Citrine ), "Citrine", 7, 1042081 );
 			AddRes( index, typeof( GateTravelScroll ), "Gate Travel Scroll", 7, 1042081 );
-			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );
+			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );*/
 
 			index = AddCraft(typeof(ManaVampireMagicStaff), "Seventh Circle", "wand of mana vampire", 80.0, 110.0, typeof(GarnetIngot), "Garnet Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 80.0, 110.0 );
@@ -434,11 +438,12 @@ namespace Server.Engines.Craft
 			AddRes( index, typeof( MeteorSwarmScroll ), "Meteor Swarm Scroll", 7, 1042081 );
 			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );
 
-			index = AddCraft(typeof(PolymorphMagicStaff), "Seventh Circle", "wand of polymorphing", 80.0, 110.0, typeof(BrassIngot), "Brass Ingot", 3, 1042081);
+			// GATED RESOURCE: Brass ingots are not yet available to players
+			/*index = AddCraft(typeof(PolymorphMagicStaff), "Seventh Circle", "wand of polymorphing", 80.0, 110.0, typeof(BrassIngot), "Brass Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 80.0, 110.0 );
 			AddRes( index, typeof( Emerald ), "Emerald", 7, 1042081 );
 			AddRes( index, typeof( PolymorphScroll ), "Polymorph Scroll", 7, 1042081 );
-			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );
+			AddRes( index, typeof( ArcaneGem ), "Arcane Gem", 7, 1042081 );*/
 
 			index = AddCraft(typeof(AirElementalMagicStaff), "Eighth Circle", "wand of air elementals", 90.0, 120.0, typeof(QuartzIngot), "Quartz Ingot", 3, 1042081);
 			AddSkill( index, SkillName.Magery, 90.0, 120.0 );

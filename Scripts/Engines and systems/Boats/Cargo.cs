@@ -492,12 +492,13 @@ namespace Server.Items
 				CargoVendor = "Blacksmith"; 
 				ItemID = 0x50B5;
 				int rare = Utility.RandomMinMax( 1, 8192 );
-				if ( rare <= 1 ){ CargoMaterial = 14; Name = "crate of dwarven ore"; Hue = MaterialInfo.GetMaterialColor( "dwarven", "", 0 ); 					CargoContains = "DwarvenOre"; 		CargoQty = (int)(CargoValue/96); }
+				// GATED RESOURCES: These ore crates are disabled (ores not yet available to players)
+				/*if ( rare <= 1 ){ CargoMaterial = 14; Name = "crate of dwarven ore"; Hue = MaterialInfo.GetMaterialColor( "dwarven", "", 0 ); 					CargoContains = "DwarvenOre"; 		CargoQty = (int)(CargoValue/96); }
 				else if ( rare <= 2 ){ CargoMaterial = 13; Name = "crate of xormite ore"; Hue = MaterialInfo.GetMaterialColor( "xormite", "", 0 ); 				CargoContains = "XormiteOre"; 		CargoQty = (int)(CargoValue/48); }
 				else if ( rare <= 4 ){ CargoMaterial = 12; Name = "crate of mithril ore"; Hue = MaterialInfo.GetMaterialColor( "mithril", "", 0 ); 				CargoContains = "MithrilOre"; 		CargoQty = (int)(CargoValue/48); }
 				else if ( rare <= 8 ){ CargoMaterial = 11; Name = "crate of obsidian ore"; Hue = MaterialInfo.GetMaterialColor( "obsidian", "", 0 ); 			CargoContains = "ObsidianOre"; 		CargoQty = (int)(CargoValue/36); }
 				else if ( rare <= 16 ){ CargoMaterial = 10; Name = "crate of nepturite ore"; Hue = MaterialInfo.GetMaterialColor( "nepturite", "", 0 ); 		CargoContains = "NepturiteOre"; 	CargoQty = (int)(CargoValue/36); }
-				else if ( rare <= 32 ){ CargoMaterial = 9; Name = "crate of valorite ore"; Hue = MaterialInfo.GetMaterialColor( "valorite", "", 0 ); 			CargoContains = "ValoriteOre"; 		CargoQty = (int)(CargoValue/36); }
+				else */if ( rare <= 32 ){ CargoMaterial = 9; Name = "crate of valorite ore"; Hue = MaterialInfo.GetMaterialColor( "valorite", "", 0 ); 			CargoContains = "ValoriteOre"; 		CargoQty = (int)(CargoValue/36); }
 				else if ( rare <= 64 ){ CargoMaterial = 8; Name = "crate of verite ore"; Hue = MaterialInfo.GetMaterialColor( "verite", "", 0 ); 				CargoContains = "VeriteOre"; 		CargoQty = (int)(CargoValue/32); }
 				else if ( rare <= 128 ){ CargoMaterial = 7; Name = "crate of agapite ore"; Hue = MaterialInfo.GetMaterialColor( "agapite", "", 0 ); 			CargoContains = "AgapiteOre"; 		CargoQty = (int)(CargoValue/28); }
 				else if ( rare <= 256 ){ CargoMaterial = 6; Name = "crate of gold ore"; Hue = MaterialInfo.GetMaterialColor( "gold", "", 0 ); 					CargoContains = "GoldOre"; 			CargoQty = (int)(CargoValue/24); }

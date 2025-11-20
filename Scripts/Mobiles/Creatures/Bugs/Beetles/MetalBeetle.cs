@@ -133,7 +133,8 @@ namespace Server.Mobiles
 			{
 				c.DropItem( new ShadowIronOre ( Utility.RandomMinMax( 10, 40 ) ) );
 			}
-			else if ( this.Hue == MaterialInfo.GetMaterialColor( "mithril", "monster", 0 ) )
+			// GATED RESOURCES: These beetle variants are disabled (ores not yet available)
+			/*else if ( this.Hue == MaterialInfo.GetMaterialColor( "mithril", "monster", 0 ) )
 			{
 				c.DropItem( new MithrilOre ( Utility.RandomMinMax( 10, 40 ) ) );
 			}
@@ -148,7 +149,7 @@ namespace Server.Mobiles
 			else if ( this.Hue == MaterialInfo.GetMaterialColor( "nepturite", "monster", 0 ) )
 			{
 				c.DropItem( new NepturiteOre ( Utility.RandomMinMax( 10, 40 ) ) );
-			}
+			}*/
 		}
 
 		public override void GenerateLoot()

@@ -75,6 +75,13 @@ namespace Server.Items
 			}
 			else if ( from.Skills[SkillName.Blacksmith].Value >= 50 )
 			{
+				// Check if these rare metal stones are gated (unknown)
+				if ( Server.Misc.ResourceGating.IsRareMetalStoneGated( this.Name ) )
+				{
+					from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_STONES);
+					return;
+				}
+
 				if ( this.Name == "onyx stones" )
 				{
 					Item ingot = new OnyxIngot();

@@ -65,13 +65,13 @@ namespace Server.Engines.Harvest
 		{
 			if (from == null || map == null || tool == null || loc == Point3D.Zero) 
 			{
-				from.SendMessage(55, "Aconteceu um erro inesperado. Faça um print disso e avise ao staff team.");
+				from.SendMessage(55, "Aconteceu um erro inesperado. Faï¿½a um print disso e avise ao staff team.");
 				if (map == null)
-					from.SendMessage(55, "O mapa não existe");
+					from.SendMessage(55, "O mapa nï¿½o existe");
 				if (tool == null)
-					from.SendMessage(55, "A ferramenta não existe");
+					from.SendMessage(55, "A ferramenta nï¿½o existe");
 				if (loc == Point3D.Zero)
-					from.SendMessage(55, "A localização é inválida.");
+					from.SendMessage(55, "A localizaï¿½ï¿½o ï¿½ invï¿½lida.");
 													
 				return false;
 			}
@@ -84,7 +84,7 @@ namespace Server.Engines.Harvest
 				PlayerMobile pm = (PlayerMobile)from;
 				if ( AdventuresAutomation.TaskTarget.Contains((PlayerMobile)from)) // ran out of resources on the current target area
 				{
-					from.SendMessage(55, "Procurando um novo local pois esse local agora está vazio.");
+					from.SendMessage(55, "Procurando um novo local pois esse local agora estï¿½ vazio.");
 
 					AdventuresAutomation.TaskTarget.Remove((PlayerMobile)from); // this means next doaction itll try another spot.
 					return false;
@@ -257,7 +257,7 @@ namespace Server.Engines.Harvest
 							if ( item is BlankScroll )
 							{
 							    amount = Utility.RandomMinMax( amount, (int)(amount+(from.Skills[SkillName.Inscribe].Value/10)) );
-							    from.SendMessage(55, "Você encontrou alguns pergaminhos em branco.");
+							    from.SendMessage(55, "Vocï¿½ encontrou alguns pergaminhos em branco.");
                                 from.PlaySound(from.Female ? 811 : 1085);
                                 from.Say("*oooh!*");
                             }
@@ -295,79 +295,80 @@ namespace Server.Engines.Harvest
 								int driftWood = item.Amount;
 								item.Delete();
 								item = new DriftwoodLog( driftWood );
-								from.SendMessage(55, "Você corta alguns troncos de madeira flutuante.");
+								from.SendMessage(55, "Vocï¿½ corta alguns troncos de madeira flutuante.");
 							}*/
-							if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && 
-								FindSpecialOre && 
-								item is BaseOre && 
+							// GATED RESOURCES: Location-based gated ore/granite conversion disabled
+							/*if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" &&
+								FindSpecialOre &&
+								item is BaseOre &&
 								from.Map == Map.TerMur )
 							{
 								int xormiteOre = item.Amount;
 								item.Delete();
 								item = new XormiteOre( xormiteOre );
-								from.SendMessage(55, "Você encontrou minério xormite.");
+								from.SendMessage(55, "Vocï¿½ encontrou minï¿½rio xormite.");
 							}
-							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && 
-								FindSpecialOre && 
+							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" &&
+								FindSpecialOre &&
 								item is BaseOre )
 							{
 								int mithrilOre = item.Amount;
 								item.Delete();
 								item = new MithrilOre( mithrilOre );
-								from.SendMessage(55, "Você encontrou minério de mithril.");
+								from.SendMessage(55, "Vocï¿½ encontrou minï¿½rio de mithril.");
 							}
-							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Serpent Island" && 
-								FindSpecialOre && 
+							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Serpent Island" &&
+								FindSpecialOre &&
 								item is BaseOre )
 							{
 								int obsidianOre = item.Amount;
 								item.Delete();
 								item = new ObsidianOre( obsidianOre );
-								from.SendMessage(55, "Você encontrou minério de obsidiana.");
+								from.SendMessage(55, "Vocï¿½ encontrou minï¿½rio de obsidiana.");
 							}
-							else if ( Worlds.IsExploringSeaAreas( from ) && 
-								FindSpecialOre && 
+							else if ( Worlds.IsExploringSeaAreas( from ) &&
+								FindSpecialOre &&
 								item is BaseOre )
 							{
 								int nepturiteOre = item.Amount;
 								item.Delete();
 								item = new NepturiteOre( nepturiteOre );
-								from.SendMessage(55, "Você encontrou minério de nepturite.");
+								from.SendMessage(55, "Vocï¿½ encontrou minï¿½rio de nepturite.");
 							}
-							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && 
-								FindSpecialGranite && 
-								item is BaseGranite && 
+							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" &&
+								FindSpecialGranite &&
+								item is BaseGranite &&
 								from.Map == Map.TerMur )
 							{
 								int xormiteGranite = item.Amount;
 								item.Delete();
 								item = new XormiteGranite( xormiteGranite );
-								from.SendMessage(55, "Você encontrou granito de xormite.");
+								from.SendMessage(55, "Vocï¿½ encontrou granito de xormite.");
 							}
-							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && 
-								FindSpecialGranite && 
+							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" &&
+								FindSpecialGranite &&
 								item is BaseGranite )
 							{
 								int mithrilGranite = item.Amount;
 								item.Delete();
 								item = new MithrilGranite( mithrilGranite );
-								from.SendMessage(55, "Você encontrou granito de mithril.");
+								from.SendMessage(55, "Vocï¿½ encontrou granito de mithril.");
 							}
 							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Serpent Island" && FindSpecialGranite && item is BaseGranite )
 							{
 								int obsidianGranite = item.Amount;
 								item.Delete();
 								item = new ObsidianGranite( obsidianGranite );
-								from.SendMessage(55, "Você encontrou granito obsidiano.");
+								from.SendMessage(55, "Vocï¿½ encontrou granito obsidiano.");
 							}
 							else if ( Worlds.IsExploringSeaAreas( from ) && FindSpecialGranite && item is BaseGranite )
 							{
 								int nepturiteGranite = item.Amount;
 								item.Delete();
 								item = new NepturiteGranite( nepturiteGranite );
-								from.SendMessage(55, "Você encontrou granito de nepturite.");
+								from.SendMessage(55, "Vocï¿½ encontrou granito de nepturite.");
 
-                            }
+                            }*/
 							else if ( reg.IsPartOf( typeof( NecromancerRegion ) ) && FindBlackLog && item is BaseLog )
 							{
                                 if (skillValue >= resource.ReqSkill) // maybe double check?
@@ -381,7 +382,7 @@ namespace Server.Engines.Harvest
                                     Container pack = from.Backpack;
                                     Item bonusItem = new EbonyLog(1);
                                     from.AddToBackpack(bonusItem);
-                                    from.SendMessage(65, "BONUS! Esta região parece possuir madeira de Ébano de forma anormal.");
+                                    from.SendMessage(65, "BONUS! Esta regiï¿½o parece possuir madeira de ï¿½bano de forma anormal.");
                                 }
 							}
 							/*else if ( reg.IsPartOf( typeof( NecromancerRegion ) ) && FindGhostLog && item is BaseLog )
@@ -410,7 +411,7 @@ namespace Server.Engines.Harvest
 								int nepturiteGranite = item.Amount;
 								item.Delete();
 								item = new NepturiteGranite( nepturiteGranite );
-								from.SendMessage(55, "Você encontrou granito de nepturite.");
+								from.SendMessage(55, "Vocï¿½ encontrou granito de nepturite.");
 
                             }
 							else if ( ( reg.IsPartOf( "Shipwreck Grotto" ) || reg.IsPartOf( "Barnacled Cavern" ) || reg.IsPartOf( "Savage Sea Docks" ) || reg.IsPartOf( "Serpent Sail Docks" ) || reg.IsPartOf( "Anchor Rock Docks" ) || reg.IsPartOf( "Kraken Reef Docks" ) || reg.IsPartOf( "the Forgotten Lighthouse" ) ) && FindSpecialOre && item is BaseOre )
@@ -418,10 +419,10 @@ namespace Server.Engines.Harvest
 								int nepturiteOre = item.Amount;
 								item.Delete();
 								item = new NepturiteOre( nepturiteOre );
-								from.SendMessage( 55, "Você encontrou minério de nepturite.");
+								from.SendMessage( 55, "Vocï¿½ encontrou minï¿½rio de nepturite.");
 							}
 
-/*							else if ( item is IronOre ){ from.SendMessage(55, "Você encontrou alguns minérios de ferro."); }
+/*							else if ( item is IronOre ){ from.SendMessage(55, "Vocï¿½ encontrou alguns minï¿½rios de ferro."); }
 							else if ( item is DullCopperOre ){ from.SendMessage( "You dig up some dull copper ore."); }
 							else if ( item is ShadowIronOre ){ from.SendMessage( "You dig up some shadow iron ore."); }
 							else if ( item is CopperOre ){ from.SendMessage( "You dig up some copper ore."); }
@@ -434,20 +435,20 @@ namespace Server.Engines.Harvest
                             else if (item is TitaniumOre) { from.SendMessage("You dig up some titanium ore."); }
                             else if (item is RoseniumOre) { from.SendMessage("You dig up some rosenium ore."); }*/
 
-                            else if ( item is Granite ){ from.SendMessage(65, "Você encontrou granito."); }
-							else if ( item is DullCopperGranite ){ from.SendMessage(65, "Você encontrou granito de cobre rústico."); }
-							else if ( item is ShadowIronGranite ){ from.SendMessage(65, "Você encontrou granito de ferro negro."); }
-							else if ( item is CopperGranite ){ from.SendMessage(65, "Você encontrou granito de cobre."); }
-							else if ( item is BronzeGranite ){ from.SendMessage(65, "Você encontrou granito de bronze."); }
-                            else if (item is PlatinumGranite) { from.SendMessage(65, "Você encontrou granito de platina."); }
-                            else if ( item is GoldGranite ){ from.SendMessage(65, "Você encontrou granito de dourado."); }
-							else if ( item is AgapiteGranite ){ from.SendMessage(65, "Você encontrou granito de agapite."); }
-							else if ( item is VeriteGranite ){ from.SendMessage(65, "Você encontrou granito de verite."); }
-							else if ( item is ValoriteGranite ){ from.SendMessage(65, "Você encontrou granito de valorite."); }
-                            else if (item is TitaniumGranite) { from.SendMessage(65, "Você encontrou granito de titânio."); }
-                            else if (item is RoseniumGranite) { from.SendMessage(65, "Você encontrou granito de rosênio."); }
+                            else if ( item is Granite ){ from.SendMessage(65, "Vocï¿½ encontrou granito."); }
+							else if ( item is DullCopperGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de cobre rï¿½stico."); }
+							else if ( item is ShadowIronGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de ferro negro."); }
+							else if ( item is CopperGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de cobre."); }
+							else if ( item is BronzeGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de bronze."); }
+                            else if (item is PlatinumGranite) { from.SendMessage(65, "Vocï¿½ encontrou granito de platina."); }
+                            else if ( item is GoldGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de dourado."); }
+							else if ( item is AgapiteGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de agapite."); }
+							else if ( item is VeriteGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de verite."); }
+							else if ( item is ValoriteGranite ){ from.SendMessage(65, "Vocï¿½ encontrou granito de valorite."); }
+                            else if (item is TitaniumGranite) { from.SendMessage(65, "Vocï¿½ encontrou granito de titï¿½nio."); }
+                            else if (item is RoseniumGranite) { from.SendMessage(65, "Vocï¿½ encontrou granito de rosï¿½nio."); }
 
-                            /*else if ( item is Log ){ from.SendMessage("Você corta algumas toras."); }
+                            /*else if ( item is Log ){ from.SendMessage("Vocï¿½ corta algumas toras."); }
 							else if ( item is AshLog ){ from.SendMessage( "You chop some ash logs."); }
 							else if ( item is CherryLog ){ from.SendMessage( "You chop some cherry logs."); }
 							else if ( item is EbonyLog ){ from.SendMessage( "You chop some ebony logs."); }
@@ -465,14 +466,14 @@ namespace Server.Engines.Harvest
 								Container pack = from.Backpack;
 								DugUpCoal coal = new DugUpCoal( Utility.RandomMinMax( 1, 2 ) );
 								from.AddToBackpack ( coal );
-								from.SendMessage( 55, "Você encontrou carvão mineral.");
+								from.SendMessage( 55, "Vocï¿½ encontrou carvï¿½o mineral.");
 							}
 							else if ( Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" && from.Skills[SkillName.Mining].Value > Utility.RandomMinMax( 1, 500 ) )
 							{
 								Container pack = from.Backpack;
 								DugUpZinc zinc = new DugUpZinc( Utility.RandomMinMax( 1, 2 ) );
 								from.AddToBackpack ( zinc );
-								from.SendMessage(55, "Você encontrou zinco.");
+								from.SendMessage(55, "Vocï¿½ encontrou zinco.");
 							}
 
 							// FISHING
@@ -503,7 +504,7 @@ namespace Server.Engines.Harvest
 							item is MySongbook || 
 							item is ArtifactManual )
 						{
-						    from.SendMessage(55, "Você encontra um livro.");
+						    from.SendMessage(55, "Vocï¿½ encontra um livro.");
                             from.PlaySound(from.Female ? 811 : 1085);
                             from.Say("*oooh!*");
                             if ( item is DDRelicBook )
@@ -527,7 +528,7 @@ namespace Server.Engines.Harvest
 							item is LibraryScroll6 || 
 							item is DDRelicScrolls )
 						{
-						    from.SendMessage(55,"Você encontra um pergaminho.");
+						    from.SendMessage(55,"Vocï¿½ encontra um pergaminho.");
                             from.PlaySound(from.Female ? 811 : 1085);
                             from.Say("*oooh!*");
                             if ( item is DDRelicScrolls )

@@ -158,11 +158,12 @@ namespace Server.Items
 				else if ( CrateItem == "agapite" ){ from.AddToBackpack ( new AgapiteOre( CrateQty ) ); }
 				else if ( CrateItem == "verite" ){ from.AddToBackpack ( new VeriteOre( CrateQty ) ); }
 				else if ( CrateItem == "valorite" ){ from.AddToBackpack ( new ValoriteOre( CrateQty ) ); }
-				else if ( CrateItem == "nepturite" ){ from.AddToBackpack ( new NepturiteOre( CrateQty ) ); }
+				// GATED RESOURCES: These ores are not yet available to players
+				/*else if ( CrateItem == "nepturite" ){ from.AddToBackpack ( new NepturiteOre( CrateQty ) ); }
 				else if ( CrateItem == "obsidian" ){ from.AddToBackpack ( new ObsidianOre( CrateQty ) ); }
 				else if ( CrateItem == "mithril" ){ from.AddToBackpack ( new MithrilOre( CrateQty ) ); }
 				else if ( CrateItem == "xormite" ){ from.AddToBackpack ( new XormiteOre( CrateQty ) ); }
-				else if ( CrateItem == "dwarven" ){ from.AddToBackpack ( new DwarvenOre( CrateQty ) ); }
+				else if ( CrateItem == "dwarven" ){ from.AddToBackpack ( new DwarvenOre( CrateQty ) ); }*/
 				else { from.AddToBackpack ( new IronOre( CrateQty ) ); }
 
 				from.PrivateOverheadMessage(MessageType.Regular, 0x14C, false, "You separate the ore into your backpack", from.NetState);

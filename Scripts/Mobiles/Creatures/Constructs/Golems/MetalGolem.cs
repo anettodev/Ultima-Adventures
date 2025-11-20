@@ -36,11 +36,12 @@ namespace Server.Mobiles
 				case 7: ore = new VeriteIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "verite", "monster", 0 ); scalar = 1.7; RealName = "a verite construct"; break; // Verite
 				case 8: ore = new ValoriteIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "valorite", "monster", 0 ); scalar = 1.8; RealName = "a valorite construct"; break; // Valorite
 				case 9:
-					if ( Worlds.IsExploringSeaAreas( this ) == true ){ ore = new NepturiteIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "nepturite", "monster", 0 ); scalar = 1.9; RealName = "a nepturite construct"; }
+					// GATED RESOURCES: These construct variants are disabled (ingots not yet available to players)
+					/*if ( Worlds.IsExploringSeaAreas( this ) == true ){ ore = new NepturiteIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "nepturite", "monster", 0 ); scalar = 1.9; RealName = "a nepturite construct"; }
 					else if ( Worlds.GetMyWorld( this.Map, this.Location, this.X, this.Y ) == "the Serpent Island" ){ ore = new ObsidianIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "obsidian", "monster", 0 ); scalar = 1.9; RealName = "an obsidian construct"; }
 					else if ( Worlds.GetMyWorld( this.Map, this.Location, this.X, this.Y ) == "the Underworld" && this.Map == Map.TerMur ){ ore = new XormiteIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "xormite", "monster", 0 ); scalar = 2.0; RealName = "a xormite construct"; }
 					else if ( Worlds.GetMyWorld( this.Map, this.Location, this.X, this.Y ) == "the Underworld" ){ ore = new MithrilIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = MaterialInfo.GetMaterialColor( "mithril", "monster", 0 ); scalar = 2.1; RealName = "a mithril construct"; }
-					else { ore = new IronIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = 0x430; scalar = 1.0; RealName = "an iron construct"; }
+					else */{ ore = new IronIngot( Utility.RandomMinMax( 13, 21 ) ); Hue = 0x430; scalar = 1.0; RealName = "an iron construct"; }
 					break; // Special
 			}
 

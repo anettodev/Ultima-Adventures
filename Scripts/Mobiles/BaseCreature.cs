@@ -3684,7 +3684,8 @@ namespace Server.Mobiles
 				}
 			}
 
-			if ( reg.IsPartOf( "the Tower of Brass" ) )
+			// GATED RESOURCES: Tower of Brass region disabled (brass is not yet available to players)
+			/*if ( reg.IsPartOf( "the Tower of Brass" ) )
 			{
 				if ( this is BloodDemon )
 				{
@@ -3799,7 +3800,7 @@ namespace Server.Mobiles
 						brs.Delete();
 					}
 				}
-			}
+			}*/
 			if ( reg.IsPartOf( "the Castle of Dracula" ) )
 			{
 				if ( this is OrcCaptain )

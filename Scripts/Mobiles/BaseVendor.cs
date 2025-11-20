@@ -28,22 +28,22 @@ namespace Server.Mobiles
         private static bool m_Talked;
         string[] VendorSay = new string[] 
 		{ 
-			"Saudações",
-            "Olá você",
+			"Saudaï¿½ï¿½es",
+            "Olï¿½ vocï¿½",
             "Eu tenho coisas boas aqui.",
             "Venha olhe!",
             "Compre aqui!",
 			"Opa! Em que posso te ajudar?",
 			"I might have that thing you were looking for...",
 			"Opa!",
-			"Os melhores preços aqui!",
+			"Os melhores preï¿½os aqui!",
 			"sim?",
-			"Rápido, Estou ocupado!",
-			"Meu estoque está cheio!",
+			"Rï¿½pido, Estou ocupado!",
+			"Meu estoque estï¿½ cheio!",
 			"Bemvindo a minha loja",
 			"*Hmm?*",
-			"O tempo está bom para compras",
-			"Bela vestimenta. Está vendendo?"
+			"O tempo estï¿½ bom para compras",
+			"Bela vestimenta. Estï¿½ vendendo?"
 		};
 
         public override void OnMovement(Mobile m, Point3D oldLocation)
@@ -972,13 +972,13 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( from ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu não faço negócios com você!");
+				this.Say("Eu nï¿½o faï¿½o negï¿½cios com vocï¿½!");
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say("Me desculpe mas eu não estou negociando nada, milorde.");
+				this.Say("Me desculpe mas eu nï¿½o estou negociando nada, milorde.");
 				return;
 			}	
 
@@ -1195,13 +1195,13 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( from ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say( "Eu não faço negócios com você!" );
+				this.Say( "Eu nï¿½o faï¿½o negï¿½cios com vocï¿½!" );
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say( "Me desculpe mas eu não estou negociando nada, milorde." );
+				this.Say( "Me desculpe mas eu nï¿½o estou negociando nada, milorde." );
 				return;
 			}				
 
@@ -1277,7 +1277,7 @@ namespace Server.Mobiles
 				}
 				else
 				{
-                    string sSay = "Não acredito que você tenha algo do meu interesse.";
+                    string sSay = "Nï¿½o acredito que vocï¿½ tenha algo do meu interesse.";
                     this.PublicOverheadMessage(MessageType.Regular, 1153, false, sSay);
 				}
 			}
@@ -1287,13 +1287,13 @@ namespace Server.Mobiles
 		{
 			if ( from.Blessed )
 			{
-				string sSay = "Eu não posso negociar com você enquanto você estiver neste estado.";
+				string sSay = "Eu nï¿½o posso negociar com vocï¿½ enquanto vocï¿½ estiver neste estado.";
 				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
 				return false;
 			}
 			else if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
 			{
-				string sSay = "Não acredito que possa aceitar isto de você.";
+				string sSay = "Nï¿½o acredito que possa aceitar isto de vocï¿½.";
 				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
 				return false;
 			}
@@ -1459,7 +1459,8 @@ namespace Server.Mobiles
 					}
 					return false;
 				}
-				else if ( dropped is DugUpCoal && this is Blacksmith && Server.Misc.Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" )
+				// GATED RESOURCES: Steel and Brass alloy crafting disabled (metals not yet available)
+				/*else if ( dropped is DugUpCoal && this is Blacksmith && Server.Misc.Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" )
 				{
 					string sMessage = "";
 
@@ -1502,7 +1503,7 @@ namespace Server.Mobiles
 					}
 
 					return false;
-				}
+				}*/
 				else if (	( dropped is DDCopper || dropped is DDSilver ) && 
 							( this is Minter || this is Banker )	)
 				{
@@ -2526,7 +2527,7 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( buyer ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu não faço negócios com você!");
+				this.Say("Eu nï¿½o faï¿½o negï¿½cios com vocï¿½!");
 				return false;
 			}
 
@@ -2755,7 +2756,7 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( seller ) )
 			{
                 //Say( 501522 ); // I shall not treat with scum like thee!
-                string sSay = "Eu não faço negócios com você!";
+                string sSay = "Eu nï¿½o faï¿½o negï¿½cios com vocï¿½!";
                 this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, seller.NetState);
 
                 //this.Say( "I have no business with you." );

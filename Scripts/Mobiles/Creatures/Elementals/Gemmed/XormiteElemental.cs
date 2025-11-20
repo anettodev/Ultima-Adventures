@@ -70,8 +70,9 @@ namespace Server.Mobiles
 		public override void OnDeath( Container c )
 		{
 			base.OnDeath( c );
-			Item ore = new XormiteOre( Utility.RandomMinMax( 5, 10 ) );
-   			c.DropItem( ore );
+			// GATED RESOURCES: Xormite ore is not yet available to players
+			/*Item ore = new XormiteOre( Utility.RandomMinMax( 5, 10 ) );
+   			c.DropItem( ore );*/
 		}
 
 		public override void GenerateLoot()

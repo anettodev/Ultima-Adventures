@@ -153,6 +153,13 @@ namespace Server.Mobiles
 					else if ( ( targeted is BaseWeapon && from.Backpack != null) && !( targeted is BaseRanged ) && Server.Misc.MaterialInfo.IsAnyKindOfWoodItem( ITEM ) )
 					{
 						BaseWeapon bw = targeted as BaseWeapon;
+					// RESOURCE GATING: Check if this weapon is made from gated wood
+					if ( Server.Misc.ResourceGating.IsItemMadeFromGatedMetal( bw ) )
+					{
+						m_Carpenter.SayTo(from, Server.Misc.ResourceGating.MSG_VENDOR_CANNOT_REPAIR_GATED_WOOD);
+						return;
+					}
+
 						Container pack = from.Backpack;
 						int toConsume = 0;
 
@@ -199,6 +206,13 @@ if (bw.MaxHitPoints > 10)
 					else if ( targeted is BaseArmor && from.Backpack != null && Server.Misc.MaterialInfo.IsAnyKindOfWoodItem( ITEM ) )
 					{
 						BaseArmor ba = targeted as BaseArmor;
+					// RESOURCE GATING: Check if this armor is made from gated wood
+					if ( Server.Misc.ResourceGating.IsItemMadeFromGatedMetal( ba ) )
+					{
+						m_Carpenter.SayTo(from, Server.Misc.ResourceGating.MSG_VENDOR_CANNOT_REPAIR_GATED_WOOD);
+						return;
+					}
+
 						Container pack = from.Backpack;
 						int toConsume = 0;
 

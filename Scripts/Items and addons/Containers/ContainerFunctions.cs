@@ -200,15 +200,16 @@ namespace Server.Misc
 					Item idropped = DungeonLoot.RandomWares();
 
 					/*if ( idropped is BaseWoodBoard && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new DriftwoodBoard(); }*/
-					if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new NepturiteIngot(); }
+					// GATED RESOURCES: These location-based ingot drops are disabled
+					/*if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new NepturiteIngot(); }
 					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Serpent Island" ){ idropped = new ObsidianIngot(); }
-					else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new SpinedLeather(); }
-					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new SteelIngot(); }
-					else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new DinosaurLeather(); }
-					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Island of Umber Veil" ){ idropped = new BrassIngot(); }
+					else */if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new SpinedLeather(); }
+					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new SteelIngot(); }
+					else */else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new DinosaurLeather(); }
+					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Island of Umber Veil" ){ idropped = new BrassIngot(); }
 					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new XormiteIngot(); }
-					else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new AlienLeather(); }
-					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" ){ idropped = new MithrilIngot(); }
+					else */else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new AlienLeather(); }
+					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" ){ idropped = new MithrilIngot(); }*/
 					else if ((idropped is Cloth) || (idropped is UncutCloth) || (idropped is BoltOfCloth))
 					{
 						idropped.Hue = RandomThings.GetRandomColor(0);
@@ -1368,7 +1369,7 @@ namespace Server.Misc
 			{
 				male = true;
                 // MALE TITLES
-                string[] vName0 = new string[] { "Templário", "Ladrão", "Ilusionista", "Príncipe", "Invocador", "Sacerdote", "Conjurador", "Bandido", "Barão", "Feiticeiro", "Clérigo", "Monge", "Menestrel ", "Defensor", "Cavalheiro", "Mágico", "Warlock", "Lutador", "Seeker", "Assassino", "Ranger", "Bárbaro", "Explorador", "Herético", "Gladiador", "Sábio", "Rogue", "Paladin", "Bard", "Divino", "Lorde", "Bandido", "Profeta", "Mercenário", "Aventureiro", "Encantador", "Rei", "Escoteiro", "Místico", "Mago", "Viajante", "Invocador", "Guerreiro", "Feiticeiro", "Vidente", "Caçador", "Cavaleiro", "Necromante", "Xamã" };
+                string[] vName0 = new string[] { "Templï¿½rio", "Ladrï¿½o", "Ilusionista", "Prï¿½ncipe", "Invocador", "Sacerdote", "Conjurador", "Bandido", "Barï¿½o", "Feiticeiro", "Clï¿½rigo", "Monge", "Menestrel ", "Defensor", "Cavalheiro", "Mï¿½gico", "Warlock", "Lutador", "Seeker", "Assassino", "Ranger", "Bï¿½rbaro", "Explorador", "Herï¿½tico", "Gladiador", "Sï¿½bio", "Rogue", "Paladin", "Bard", "Divino", "Lorde", "Bandido", "Profeta", "Mercenï¿½rio", "Aventureiro", "Encantador", "Rei", "Escoteiro", "Mï¿½stico", "Mago", "Viajante", "Invocador", "Guerreiro", "Feiticeiro", "Vidente", "Caï¿½ador", "Cavaleiro", "Necromante", "Xamï¿½" };
 					sName0 = vName0[Utility.RandomMinMax( 0, (vName0.Length-1) )];
 
 				// MALE NAMES
@@ -1500,14 +1501,14 @@ namespace Server.Misc
 			{
 				male = false;
                 // FEMALE TITLES
-                string[] vName0 = new string[] { "Templária", "Ladra", "Ilusionista", "Princesa", "Invocadora", "Sacerdote", "Conjuradora", "Bandida", "Baroa", "Feiticeira", "Clériga", "Monge", "Menestrel", "Defensora", "Lady", "Mágica", "Warlock", "Lutadora", "Seeker", "Assassina", "Ranger", "Bárbara", "Exploradora", "Herética", "Gladiadora", "Sábia", "Rogue", "Paladina", "Barda", "[m removeDivina", "Senhora", "Bandida", "Profeta", "Mercenária", "Aventureira", "Encantadora", "Rainha", "Escoteira", "Mística", "Maga", "Viajante", "Invocadora", "Guerreira", "Feiticeira", "Vidente", "Caçadora", "Paladina", "Necromante", "Xamã" };
+                string[] vName0 = new string[] { "Templï¿½ria", "Ladra", "Ilusionista", "Princesa", "Invocadora", "Sacerdote", "Conjuradora", "Bandida", "Baroa", "Feiticeira", "Clï¿½riga", "Monge", "Menestrel", "Defensora", "Lady", "Mï¿½gica", "Warlock", "Lutadora", "Seeker", "Assassina", "Ranger", "Bï¿½rbara", "Exploradora", "Herï¿½tica", "Gladiadora", "Sï¿½bia", "Rogue", "Paladina", "Barda", "[m removeDivina", "Senhora", "Bandida", "Profeta", "Mercenï¿½ria", "Aventureira", "Encantadora", "Rainha", "Escoteira", "Mï¿½stica", "Maga", "Viajante", "Invocadora", "Guerreira", "Feiticeira", "Vidente", "Caï¿½adora", "Paladina", "Necromante", "Xamï¿½" };
                 sName0 = vName0[Utility.RandomMinMax( 0, (vName0.Length-1) )];
 
 				// FEMALE NAMES
 				if (Utility.RandomMinMax( 1, 3 ) == 1)
 				{
 					nNameSection = 1;
-					string[] vName1 = new string[] {"Angel", "Tru", "Angélica", "Maria", "Nag", "Marta", "Jade", "Luz", "Flora", "Ewe", "Dale", "Ana", "Tata", "Bia", "Rose", "Rosa", "Luisa", "Joy", "Gab", "Fernanda", "Fanny", "Dani", "Dany", "Vena", "Solar", "Rute", "Nubia", "Luna", "Jackie", "Dawn", "Aurora", "Venus", "Sol", "Mary", "Judy", "Julianne", "Mona", "Leticia", "Letty", "Sonia"};
+					string[] vName1 = new string[] {"Angel", "Tru", "Angï¿½lica", "Maria", "Nag", "Marta", "Jade", "Luz", "Flora", "Ewe", "Dale", "Ana", "Tata", "Bia", "Rose", "Rosa", "Luisa", "Joy", "Gab", "Fernanda", "Fanny", "Dani", "Dany", "Vena", "Solar", "Rute", "Nubia", "Luna", "Jackie", "Dawn", "Aurora", "Venus", "Sol", "Mary", "Judy", "Julianne", "Mona", "Leticia", "Letty", "Sonia"};
 						sName1 = vName1[Utility.RandomMinMax( 0, (vName1.Length-1) )];
 
 					string[] vName2 = new string[] { "stark", "lanister", "targaryan", "baratheon", "ander", "vid", "thur", "sard", "red", "mund", "lard", "gurd", "fird", "cester", "ard", "vred", "ton", "shan", "rence", "nald", "ley", "gus", "ford", "colt", "bald", "wald", "tor", "shaw", "reth", "nard", "lisle", "ham", "fram", "dane", "ban", "wallader", "tran", "son", "rick", "nath", "loch", "hard", "fred", "dard", "baugh", "ward", "ius", "steen", "ridge", "ney", "man", "hart", "frid", "doch", "bert", "werth", "ulf", "stone", "riel", "olas", "mar", "helm", "fried", "dolph", "brand", "wig", "vald", "ter", "ron", "pold", "mas", "home", "gal", "don", "cas", "win", "van", "than", "rone", "rad", "mon", "isler", "gard", "doric", "cent", "wood", "vard", "ther", "roth", "ram", "mond", "kild", "gemon", "dower", "cent", "yard", "ven", "thon", "sander", "rard", "mour", "ian", "gill", "dred" };
@@ -1573,7 +1574,7 @@ namespace Server.Misc
 				}
 			}
 
-			string[] vAdj = new string[] { "Exótico", "Misterioso", "Maravilhoso", "Incrível", "Surpreendente", "Místico", "Surpreendente", "Magnífico", "Fenomenal", "Fantástico", "Incrível", "Extraordinário", "Fabuloso ", "Maravilhoso", "Glorioso", "Perdido", "Fábula", "Lendário", "Mítico", "Desaparecido", "Ancestral", "Ornado", "Maravilhoso", "Sagrado", "Indizível", "Desconhecido", "Esquecido" };
+			string[] vAdj = new string[] { "Exï¿½tico", "Misterioso", "Maravilhoso", "Incrï¿½vel", "Surpreendente", "Mï¿½stico", "Surpreendente", "Magnï¿½fico", "Fenomenal", "Fantï¿½stico", "Incrï¿½vel", "Extraordinï¿½rio", "Fabuloso ", "Maravilhoso", "Glorioso", "Perdido", "Fï¿½bula", "Lendï¿½rio", "Mï¿½tico", "Desaparecido", "Ancestral", "Ornado", "Maravilhoso", "Sagrado", "Indizï¿½vel", "Desconhecido", "Esquecido" };
 				string sAdj = vAdj[Utility.RandomMinMax( 0, (vAdj.Length-1) )] + " ";
 
 			if ( box == "Pilfer" )
@@ -1591,25 +1592,25 @@ namespace Server.Misc
 					sName3 = NameList.RandomName( "male" ) + " o ";
 				}
 
-				string[] spaceTitles = new string[] { "Mecânico(a)", "Cientista", "Médico(a)", "Soldado(a)", "Mercenário(a)", "Engenheiro(a)", "Oficial Médico(a) Chefe", "Oficial de Ciências", "Conselheiro(a)", "Fuzileiro(a) Naval", "Soldado", "Soldado", "Navegador(a)", "Oficial Médico(a)", "Oficial", "Timoneiro(a)", "Atirador(a)", "Piloto", "Oficial de Armas", "Oficial Tático", "Biólogo(a)", "Químico(a)", "Oficial de Segurança", " Engenheiro(a) de Robótica", "Engenheiro(a) de Aviônica", "Engenharia(a) Chefe", "Chefe de Segurança", "Linguista", "Botânico(a)", "Patologista", "Antropólogo(a)", "Sociólogo(a)", "Primeiro Oficial", "Oficial de Logística", "Enfermeiro(a)" };
+				string[] spaceTitles = new string[] { "Mecï¿½nico(a)", "Cientista", "Mï¿½dico(a)", "Soldado(a)", "Mercenï¿½rio(a)", "Engenheiro(a)", "Oficial Mï¿½dico(a) Chefe", "Oficial de Ciï¿½ncias", "Conselheiro(a)", "Fuzileiro(a) Naval", "Soldado", "Soldado", "Navegador(a)", "Oficial Mï¿½dico(a)", "Oficial", "Timoneiro(a)", "Atirador(a)", "Piloto", "Oficial de Armas", "Oficial Tï¿½tico", "Biï¿½logo(a)", "Quï¿½mico(a)", "Oficial de Seguranï¿½a", " Engenheiro(a) de Robï¿½tica", "Engenheiro(a) de Aviï¿½nica", "Engenharia(a) Chefe", "Chefe de Seguranï¿½a", "Linguista", "Botï¿½nico(a)", "Patologista", "Antropï¿½logo(a)", "Sociï¿½logo(a)", "Primeiro Oficial", "Oficial de Logï¿½stica", "Enfermeiro(a)" };
 					string spaceTitle = spaceTitles[Utility.RandomMinMax( 0, (spaceTitles.Length-1) )];
 
 				return sName3 + spaceTitle;
 			}
 			else if ( box == "Sunken" )
 			{
-				string[] sPirate = new string[] { "Capitão", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pólvora", "Bucaneiro(a)", "Corsário(a)", "Montador(a)", "Faxineiro(a)" };
+				string[] sPirate = new string[] { "Capitï¿½o", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pï¿½lvora", "Bucaneiro(a)", "Corsï¿½rio(a)", "Montador(a)", "Faxineiro(a)" };
 				string xPirate = sPirate[Utility.RandomMinMax( 0, (sPirate.Length-1) )];
 				
 				if ( nNameSection == 1 )
 				{ sName3 = sName1 + sName2 + ((male) ? " o " : " a ") + xPirate; } 
 				else { sName3 = pName3 + ((male) ? " o " : " a ") + xPirate; }
 
-				return sAdj + "baú de " + sName3;
+				return sAdj + "baï¿½ de " + sName3;
 			}
 			else if ( box == "SunkenBag" )
 			{
-                string[] sPirate = new string[] { "Capitão", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pólvora", "Bucaneiro(a)", "Corsário(a)", "Montador(a)", "Faxineiro(a)" };
+                string[] sPirate = new string[] { "Capitï¿½o", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pï¿½lvora", "Bucaneiro(a)", "Corsï¿½rio(a)", "Montador(a)", "Faxineiro(a)" };
                 string xPirate = sPirate[Utility.RandomMinMax(0, (sPirate.Length - 1))];
 
                 if ( Utility.RandomMinMax( 1, 3 ) == 3 ) 
@@ -1657,7 +1658,7 @@ namespace Server.Misc
                     case 3: sCorpse = "esqueleto"; break;
                 }
 
-                string[] sPirate = new string[] { "Capitão", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pólvora", "Bucaneiro(a)", "Corsário(a)", "Montador(a)", "Faxineiro(a)" };
+                string[] sPirate = new string[] { "Capitï¿½o", "Primeiro(a) Imediato", "Intendente", "Co-mestre", "Mestre da Vela", "Artista do Mar", "Navegador(a)", "Mestre Artilheiro(a)", "Artilheiro(a)", "Fabricante de Vela", "Imediato", "Marinheiro(a)", "Macaco da Pï¿½lvora", "Bucaneiro(a)", "Corsï¿½rio(a)", "Montador(a)", "Faxineiro(a)" };
                 string xPirate = sPirate[Utility.RandomMinMax(0, (sPirate.Length - 1))];
 
                 if (Utility.RandomMinMax(1, 3) == 3)
@@ -2100,15 +2101,16 @@ namespace Server.Misc
 				loot = DungeonLoot.RandomWares();
 
 				/*if ( loot is BaseWoodBoard && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new DriftwoodBoard(); }*/
-				if ( loot is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new NepturiteIngot(); }
+				// GATED RESOURCES: These location-based ingot drops are disabled
+				/*if ( loot is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new NepturiteIngot(); }
 				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Serpent Island" ){ loot = new ObsidianIngot(); }
-				else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new SpinedLeather(); }
-				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new SteelIngot(); }
-				else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new DinosaurLeather(); }
-				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" ){ loot = new BrassIngot(); }
+				else */if ( loot is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new SpinedLeather(); }
+				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new SteelIngot(); }
+				else */else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new DinosaurLeather(); }
+				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" ){ loot = new BrassIngot(); }
 				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new XormiteIngot(); }
-				else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new AlienLeather(); }
-				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" ){ loot = new MithrilIngot(); }
+				else */else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new AlienLeather(); }
+				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" ){ loot = new MithrilIngot(); }*/
 				else if ((loot is Cloth) || (loot is UncutCloth) || (loot is BoltOfCloth))
 				{
 					loot.Hue = RandomThings.GetRandomColor(0);

@@ -80,6 +80,13 @@ namespace Server.Items
 			}
 			else if ( from.Skills[SkillName.Blacksmith].Value >= 50 )
 			{
+				// Check if these metal scales are gated (unknown)
+				if ( Server.Misc.ResourceGating.IsScaleGated( this.Name ) )
+				{
+					from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_SCALES);
+					return;
+				}
+
 				if ( this.Name == "dull copper scales" )
 				{
 					Item ingot = new DullCopperIngot();

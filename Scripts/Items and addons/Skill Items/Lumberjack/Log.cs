@@ -117,7 +117,7 @@ namespace Server.Items
 			}
 			else
 			{
-				from.SendMessage( "As toras estão muito longe." );
+				from.SendMessage( "As toras estÃ£o muito longe." );
 			}
 		}
 
@@ -154,12 +154,19 @@ namespace Server.Items
 
 				if ( !from.InRange( m_Log.GetWorldLocation(), 2 ) )
 				{
-					from.SendMessage("As toras estão muito longe.");
+					from.SendMessage("As toras estÃ£o muito longe.");
 					return;
 				}
 
 				if ( IsMill( targeted ) )
 				{
+				// RESOURCE GATING: Check if this wood type is gated (unknown to players)
+				if ( Server.Misc.ResourceGating.IsResourceGated( m_Log.Resource ) )
+				{
+					from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_CONVERT_GATED_LOGS);
+					return;
+				}
+
 					double difficulty;
 
 					switch ( m_Log.Resource )
@@ -188,7 +195,7 @@ namespace Server.Items
 					
 					if ( difficulty > 50.0 && difficulty > from.Skills[SkillName.Lumberjacking].Value )
 					{
-						from.SendMessage(55,"Você não tem ideia de como cortar e trabalhar esse tipo de madeira!");
+						from.SendMessage(55,"VocÃª nÃ£o tem ideia de como cortar e trabalhar esse tipo de madeira!");
 						return;
 					}
 
@@ -196,7 +203,7 @@ namespace Server.Items
 					{
 						if ( m_Log.Amount <= 0 )
 						{
-							from.SendMessage(55,"Não há madeira suficiente nesta pilha para fazer uma tábua.");
+							from.SendMessage(55,"NÃ£o hÃ¡ madeira suficiente nesta pilha para fazer uma tÃ¡bua.");
 						}
 						else
 						{
@@ -206,7 +213,7 @@ namespace Server.Items
 							wood.Amount = amount;
 							from.AddToBackpack( wood );
 							from.PlaySound( 0x21C );
-							from.SendMessage( 55, "Você corta as toras e coloca algumas tábuas na mochila.");
+							from.SendMessage( 55, "VocÃª corta as toras e coloca algumas tÃ¡buas na mochila.");
 						}
 					}
 					else
@@ -217,12 +224,12 @@ namespace Server.Items
 						if ( amount < 2 || lose == amount )
 						{
 							m_Log.Delete();
-							from.SendMessage(55, "Você tenta cortar as toras, mas estraga toda a madeira.");
+							from.SendMessage(55, "VocÃª tenta cortar as toras, mas estraga toda a madeira.");
 						}
 						else
 						{
 							m_Log.Amount = amount - lose;
-							from.SendMessage(55, "Você tenta cortar as toras, mas estraga um pouco da madeira.");
+							from.SendMessage(55, "VocÃª tenta cortar as toras, mas estraga um pouco da madeira.");
 						}
 
 						from.PlaySound( 0x21C );
@@ -230,7 +237,7 @@ namespace Server.Items
 				}
 				else
 				{
-					from.SendMessage(55, "Isso não é uma serraria");
+					from.SendMessage(55, "Isso nÃ£o Ã© uma serraria");
 				}
 			}
 		}

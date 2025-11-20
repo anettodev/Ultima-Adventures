@@ -80,6 +80,13 @@ namespace Server.Items
 			}
 			else if ( from.Skills[SkillName.Blacksmith].Value >= 50 )
 			{
+				// Check if these crystalline metals are gated (unknown)
+				if ( Server.Misc.ResourceGating.IsCrystallineGated( this.Name ) )
+				{
+					from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_CRYSTALLINE);
+					return;
+				}
+
 				if ( this.Name == "crystalline dull copper" )
 				{
 					Item ingot = new DullCopperIngot();

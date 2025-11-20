@@ -219,6 +219,13 @@ namespace Server.Mobiles
 						Container pack = from.Backpack;
 						int toConsume = 0;
 
+						// Check if weapon is made from gated metal
+						if ( Server.Misc.ResourceGating.IsItemMadeFromGatedMetal( bw ) )
+						{
+							m_Blacksmith.SayTo(from, Server.Misc.ResourceGating.MSG_VENDOR_CANNOT_REPAIR_GATED_METAL);
+							return;
+						}
+
 						if (bw.HitPoints < bw.MaxHitPoints )
 						{
 							int nCost = 100;
@@ -264,6 +271,13 @@ namespace Server.Mobiles
 						BaseArmor ba = targeted as BaseArmor;
 						Container pack = from.Backpack;
 						int toConsume = 0;
+
+						// Check if armor is made from gated metal
+						if ( Server.Misc.ResourceGating.IsItemMadeFromGatedMetal( ba ) )
+						{
+							m_Blacksmith.SayTo(from, Server.Misc.ResourceGating.MSG_VENDOR_CANNOT_REPAIR_GATED_METAL);
+							return;
+						}
 
 						if (ba.HitPoints < ba.MaxHitPoints && Server.Misc.MaterialInfo.IsAnyKindOfMetalItem( ((Item)targeted) ))
 						{
