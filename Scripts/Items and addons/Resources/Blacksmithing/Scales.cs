@@ -78,7 +78,7 @@ namespace Server.Items
 		[Constructable]
 		public RedScales( int amount ) : base( CraftResource.RedScales, amount )
 		{
-			Name = "red scales";
+			Name = "escamas vermelhas";
 		}
 
 		public RedScales( Serial serial ) : base( serial )
@@ -110,7 +110,7 @@ namespace Server.Items
 		[Constructable]
 		public YellowScales( int amount ) : base( CraftResource.YellowScales, amount )
 		{
-			Name = "yellow scales";
+			Name = "escamas amarelas";
 		}
 
 		public YellowScales( Serial serial ) : base( serial )
@@ -142,7 +142,7 @@ namespace Server.Items
 		[Constructable]
 		public BlackScales( int amount ) : base( CraftResource.BlackScales, amount )
 		{
-			Name = "black scales";
+			Name = "escamas negras";
 		}
 
 		public BlackScales( Serial serial ) : base( serial )
@@ -174,7 +174,7 @@ namespace Server.Items
 		[Constructable]
 		public GreenScales( int amount ) : base( CraftResource.GreenScales, amount )
 		{
-			Name = "green scales";
+			Name = "escamas verdes";
 		}
 
 		public GreenScales( Serial serial ) : base( serial )
@@ -206,7 +206,7 @@ namespace Server.Items
 		[Constructable]
 		public WhiteScales( int amount ) : base( CraftResource.WhiteScales, amount )
 		{
-			Name = "white scales";
+			Name = "escamas brancas";
 		}
 
 		public WhiteScales( Serial serial ) : base( serial )
@@ -226,7 +226,7 @@ namespace Server.Items
 
 			int version = reader.ReadInt();
 
-			Name = "white scales";
+			Name = "escamas brancas";
 		}
 	}
 
@@ -240,7 +240,7 @@ namespace Server.Items
 		[Constructable]
 		public BlueScales( int amount ) : base( CraftResource.BlueScales, amount )
 		{
-			Name = "blue scales";
+			Name = "escamas azuis";
 		}
 
 		public BlueScales( Serial serial ) : base( serial )
@@ -272,7 +272,7 @@ namespace Server.Items
 		[Constructable]
 		public DinosaurScales( int amount ) : base( CraftResource.DinosaurScales, amount )
 		{
-			Name = "dinosaur scales";
+			Name = "escamas de dinossauro";
 		}
 
 		public DinosaurScales( Serial serial ) : base( serial )

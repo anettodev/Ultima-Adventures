@@ -9,18 +9,26 @@ namespace Server.Items
 {
     public class GuildCraftingProcess
     {
-        private int BaseCost = 100;
+        private int BaseCost = GuildCraftingConstants.BASE_ENHANCEMENT_COST;
         private bool AttrCountAffectsCost = true;
-        public int MaxAttrCount = 15;
+        public int MaxAttrCount = GuildCraftingConstants.MAX_ATTRIBUTES_ALLOWED;
 
         public Mobile Owner = null;
         public Item ItemToUpgrade = null;
         public int CurrentAttributeCount = 0;
+        private BaseGuildTool GuildTool = null;
 
         public GuildCraftingProcess(Mobile from, Item target)
         {
             Owner = from;
             ItemToUpgrade = target;
+        }
+
+        public GuildCraftingProcess(Mobile from, Item target, BaseGuildTool tool)
+        {
+            Owner = from;
+            ItemToUpgrade = target;
+            GuildTool = tool;
         }
 
         public void BeginProcess()
@@ -29,7 +37,7 @@ namespace Server.Items
 
             if (!(ItemToUpgrade is BaseShield || ItemToUpgrade is BaseClothing || ItemToUpgrade is BaseArmor || ItemToUpgrade is BaseWeapon || ItemToUpgrade is BaseJewel || ItemToUpgrade is Spellbook))
             {
-                Owner.SendMessage("This cannot be enhanced.");
+                Owner.SendMessage(GuildCraftingStringConstants.MSG_ITEM_NOT_ENHANCEABLE);
             }
             else
             {
@@ -47,7 +55,7 @@ namespace Server.Items
                 }
 
                 if (CurrentAttributeCount > MaxAttrCount || MaxedAttributes >= MaxAttrCount )
-                    Owner.SendMessage("This piece of equipment cannot be enhanced any further.");
+                    Owner.SendMessage(GuildCraftingStringConstants.MSG_MAX_ENHANCEMENT_REACHED);
                 else
                     Owner.SendGump(new EnhancementGump(this));
             }
@@ -57,7 +65,7 @@ namespace Server.Items
         {
             if (GetCostToUpgrade(handler) < 1 )
 			{
-				Owner.SendMessage("This piece of equipment cannot be enhanced with that any further.");
+				Owner.SendMessage(GuildCraftingStringConstants.MSG_ATTRIBUTE_MAXED);
 			}
             else if (SpendGold(GetCostToUpgrade(handler)))
             {
@@ -86,7 +94,7 @@ namespace Server.Items
                     }
                     else
                     {
-                        Owner.SendLocalizedMessage(500192);
+                        Owner.SendLocalizedMessage(GuildCraftingConstants.MSG_NEED_MORE_GOLD);
                     }
                 }
             }
@@ -94,19 +102,28 @@ namespace Server.Items
             if (bought)
             {
                 if (Owner.AccessLevel >= AccessLevel.GameMaster)
-                    Owner.SendMessage("{0} gold would have been withdrawn from your bank if you were not an admin.", amount);
+                    Owner.SendMessage(GuildCraftingStringConstants.MSG_ADMIN_GOLD_BYPASS_FORMAT, amount);
                 else if (fromBank)
-                    Owner.SendMessage("The total of your purchase is {0} gold, which has been withdrawn from your bank account.", amount);
+                    Owner.SendMessage(GuildCraftingStringConstants.MSG_PURCHASE_FROM_BANK_FORMAT, amount);
                 else
-                    Owner.SendMessage("The total of your purchase is {0} gold.", amount);
+                    Owner.SendMessage(GuildCraftingStringConstants.MSG_PURCHASE_COST_FORMAT, amount);
             }
 
-			PlayerMobile pc = (PlayerMobile)Owner;
-			if ( pc.NpcGuild == NpcGuild.TailorsGuild ){ Owner.PlaySound( 0x248 ); }
-			else if ( pc.NpcGuild == NpcGuild.CarpentersGuild ){ Owner.PlaySound( 0x23D ); }
-			else if ( pc.NpcGuild == NpcGuild.ArchersGuild ){ Owner.PlaySound( 0x55 ); }
-			else if ( pc.NpcGuild == NpcGuild.TinkersGuild ){ Owner.PlaySound( 0x542 ); }
-			else if ( pc.NpcGuild == NpcGuild.BlacksmithsGuild ){ Owner.PlaySound( 0x541 ); }
+			// Play sound effect based on guild tool (if available) or fall back to guild type
+			if (GuildTool != null)
+			{
+				Owner.PlaySound(GuildTool.EnhancementSoundEffect);
+			}
+			else
+			{
+				// Legacy fallback for old constructor calls
+				PlayerMobile pc = (PlayerMobile)Owner;
+				if ( pc.NpcGuild == NpcGuild.TailorsGuild ){ Owner.PlaySound( GuildCraftingConstants.SOUND_TAILORING ); }
+				else if ( pc.NpcGuild == NpcGuild.CarpentersGuild ){ Owner.PlaySound( GuildCraftingConstants.SOUND_CARPENTRY ); }
+				else if ( pc.NpcGuild == NpcGuild.ArchersGuild ){ Owner.PlaySound( GuildCraftingConstants.SOUND_FLETCHING ); }
+				else if ( pc.NpcGuild == NpcGuild.TinkersGuild ){ Owner.PlaySound( GuildCraftingConstants.SOUND_TINKERING ); }
+				else if ( pc.NpcGuild == NpcGuild.BlacksmithsGuild ){ Owner.PlaySound( GuildCraftingConstants.SOUND_BLACKSMITHING ); }
+			}
 
             return bought;
         }
@@ -126,7 +143,7 @@ namespace Server.Items
         {
             int attrMultiplier = 1;
 			int gold = BaseCost;
-				if ( IsCraftedByEnhancer( ItemToUpgrade, Owner ) ){ gold = (int)( gold / 2 ); }
+				if ( IsCraftedByEnhancer( ItemToUpgrade, Owner ) ){ gold = (int)( gold / GuildCraftingConstants.CRAFTER_DISCOUNT_DIVISOR ); }
 
             if (AttrCountAffectsCost)
             {

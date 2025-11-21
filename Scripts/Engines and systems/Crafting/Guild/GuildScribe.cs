@@ -1,157 +1,84 @@
 using System;
 using Server;
-using System.Collections;
-using Server.ContextMenus;
-using System.Collections.Generic;
 using Server.Misc;
-using Server.Network;
-using Server.Items;
-using Server.Gumps;
 using Server.Mobiles;
-using Server.Commands;
-using Server.Targeting;
 
 namespace Server.Items
 {
-    public class GuildScribe : Item
+    /// <summary>
+    /// Extraordinary Scribes Pen for enhancing spellbooks.
+    /// Requires Librarians Guild membership (or elder skill 110+) and skill 90+.
+    /// </summary>
+    public class GuildScribe : BaseGuildTool
     {
+        #region Properties
+
+        protected override NpcGuild RequiredGuild => NpcGuild.LibrariansGuild;
+        protected override SkillName RequiredSkill => SkillName.Inscribe;
+        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
+        protected override bool AllowElderSkillBypass => true;
+        protected override Type GuildmasterType => typeof(LibrarianGuildmaster);
+        protected override Type ShoppeType => typeof(LibrarianShoppe);
+        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_BOOK;
+        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_LIBRARIANS_ONLY;
+        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_SCRIBE;
+        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_LIBRARIAN_LOCATION;
+
+        // Note: Scribe guild doesn't have a specific sound in the original - using default
+        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_CARPENTRY;
+
+        #endregion
+
+        #region Constructor
+
         [Constructable]
-        public GuildScribe() : base(0x2051)
+        public GuildScribe()
+            : base(GuildCraftingConstants.ITEMID_SCRIBE_PEN,
+                   GuildCraftingConstants.TOOL_WEIGHT_VERY_LIGHT,
+                   GuildCraftingConstants.EXTRAORDINARY_TOOL_HUE)
         {
-            Name = "Extraordinary Scribes Pen";
-			Weight = 1.0;
-			Hue = 0x430;
+            Name = GuildCraftingStringConstants.NAME_GUILD_SCRIBE;
         }
 
-        public GuildScribe(Serial serial) : base(serial)
-		{
-		}
+        public GuildScribe(Serial serial) : base(serial) { }
 
-        public override void OnDoubleClick( Mobile from )
+        #endregion
+
+        #region Item Validation
+
+        protected override bool ValidateItem(Mobile from, Item item)
         {
-			if ( from is PlayerMobile )
-			{
-				int canDo = 0;
-				foreach ( Mobile m in this.GetMobilesInRange( 20 ) )
-				{
-					if ( m is LibrarianGuildmaster )
-						++canDo;
-				}
-				foreach ( Item i in this.GetItemsInRange( 20 ) )
-				{
-					if ( i is LibrarianShoppe && !i.Movable )
-					{
-						LibrarianShoppe b = (LibrarianShoppe)i;
-
-						if ( b.ShoppeOwner == from )
-							++canDo;
-					}
-				}
-				if ( from.Map == Map.TerMur && from.X > 1054 && from.X < 1126 && from.Y > 1907 && from.Y < 1983 ){ ++canDo; }
-
-				PlayerMobile pc = (PlayerMobile)from;
-				if ( pc.NpcGuild != NpcGuild.LibrariansGuild && from.Skills[SkillName.Inscribe].Value < 110 )
-				{
-					from.SendMessage( "Only those of the Librarian Guild may use this, or those with elder skills." );
-				}
-				else if ( from.Skills[SkillName.Inscribe].Value < 90 )
-				{
-					from.SendMessage( "Only a master Scribe can use this!" );
-				}
-				else if ( canDo == 0 )
-				{
-					from.SendMessage( "You need to be near a Librarian guildmaster, or a Inscription shoppe you own, to use this!" );
-				}
-				else
-				{
-					from.SendMessage("Select the book you would like to enhance...");
-					from.BeginTarget(-1, false, TargetFlags.None, new TargetCallback(OnTarget));
-				}
-			}
-        }
-
-		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
-		{ 
-			base.GetContextMenuEntries( from, list ); 
-			list.Add( new SpeechGumpEntry( from ) );
-		} 
-
-		public class SpeechGumpEntry : ContextMenuEntry
-		{
-			private Mobile m_Mobile;
-			
-			public SpeechGumpEntry( Mobile from ) : base( 6121, 3 )
-			{
-				m_Mobile = from;
-			}
-
-			public override void OnClick()
-			{
-			    if( !( m_Mobile is PlayerMobile ) )
-				return;
-				
-				PlayerMobile mobile = (PlayerMobile) m_Mobile;
-				{
-					if ( ! mobile.HasGump( typeof( SpeechGump ) ) )
-					{
-						mobile.SendGump(new SpeechGump( "Enhancing Items", SpeechFunctions.SpeechText( m_Mobile.Name, m_Mobile.Name, "Enhance" ) ));
-					}
-				}
-            }
-        }
-
-        public void OnTarget(Mobile from, object obj)
-        {
-            if ( obj is Item )
+            // Accept regular spellbooks
+            if (item is Spellbook && !(item is NecromancerSpellbook))
             {
-				Item item = (Item)obj;
-
-                if (((Item)obj).RootParent != from)
-                {
-                    from.SendLocalizedMessage(1042001); // That must be in your pack for you to use it.
-                }
-				else if ( item is ILevelable )
-				{
-					from.SendMessage( "You cannot enhance legendary artifacts!" );
-				}
-				else if ( item is Spellbook )
-				{
-					Spellbook sbook = (Spellbook)item;
-					
-					GuildCraftingProcess process = new GuildCraftingProcess(from, (Item)obj);
-					process.BeginProcess();
-				}
-				else if ( item is NecromancerSpellbook )
-				{
-					NecromancerSpellbook nbook = (NecromancerSpellbook)item;
-
-					if ( Server.Misc.MaterialInfo.IsAnyKindOfMetalItem( item ) )
-					{
-						GuildCraftingProcess process = new GuildCraftingProcess(from, (Item)obj);
-						process.BeginProcess();
-					}
-					else
-					{
-						from.SendMessage( "You cannot enhance this item!" );
-					}
-				}
-                else
-                {
-					from.SendMessage( "You cannot enhance this item!" );
-                }
+                return true;
             }
-        }
-        
-        public override void Serialize(GenericWriter writer)
-		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
-		}
 
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
+            // Accept necromancer spellbooks only if they are metal
+            if (item is NecromancerSpellbook)
+            {
+                return Server.Misc.MaterialInfo.IsAnyKindOfMetalItem(item);
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Serialization
+
+        public override void Serialize(GenericWriter writer)
+        {
+            base.Serialize(writer);
+            writer.Write((int)GuildCraftingConstants.SERIALIZATION_VERSION);
+        }
+
+        public override void Deserialize(GenericReader reader)
+        {
+            base.Deserialize(reader);
+            int version = reader.ReadInt();
+        }
+
+        #endregion
     }
 }

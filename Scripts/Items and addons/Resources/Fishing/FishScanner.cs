@@ -35,8 +35,8 @@ namespace Server.Items
             if (m_Charges > 1) { list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor(m_Charges.ToString() + " Cargas Restantes", "#8be4fc") ); }
             else { list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("1 Carga Restante", "#8be4fc")); }
 
-            list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Skills: fishing + TasteID", "#8be4fc")); 
-            list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Escaneia as propriedades mágicas de um peixe", "#ffe066"));
+            list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Habilidades: pesca + identificaÃ§Ã£o do paladar", "#8be4fc")); 
+            list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Escaneia as propriedades mÃ¡gicas de um peixe", "#ffe066"));
         }
 
         public override void OnDoubleClick(Mobile from)
@@ -76,7 +76,7 @@ namespace Server.Items
 
                     if (m_Fish.RevealProps) 
                     {
-                        from.SendMessage(55, "Este peixe teve suas propriedades mágicas identificadas.");
+                        from.SendMessage(55, "Este peixe teve suas propriedades mï¿½gicas identificadas.");
                         return;
                     }
 
@@ -88,20 +88,20 @@ namespace Server.Items
 
                     if (80 >= from.Skills[SkillName.TasteID].Value && 90 >= from.Skills[SkillName.Fishing].Value)
                     {
-                        from.SendMessage(55, "Apenas Mestres em Pesca e Peritos em Identificação do Paladar sabem como utilizar este equipamento.");
+                        from.SendMessage(55, "Apenas Mestres em Pesca e Peritos em Identificaï¿½ï¿½o do Paladar sabem como utilizar este equipamento.");
                         return;
                     }
                     else 
                     {
                         m_Fish.RevealProps = true;
-                        from.SendMessage(55, "Você identificou as propriedades do peixe mágico.");
+                        from.SendMessage(55, "Vocï¿½ identificou as propriedades do peixe mï¿½gico.");
                         from.PlaySound(0x3BD);
                         m_Tool.ConsumeCharge(from);
                     }
                 }
                 else
                 {
-                    from.SendMessage(55, "Você só pode usar isso em peixe mágico.");
+                    from.SendMessage(55, "Vocï¿½ sï¿½ pode usar isso em peixe mï¿½gico.");
                 }
             }
         }

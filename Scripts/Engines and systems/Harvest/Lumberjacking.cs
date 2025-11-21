@@ -12,29 +12,42 @@ using Server.Items;
 
 namespace Server.Engines.Harvest
 {
+	/// <summary>
+	/// Lumberjacking harvest system for cutting trees and collecting various wood types.
+	/// Supports different wood types with skill-based availability and bonus item drops.
+	/// </summary>
 	public class Lumberjacking : HarvestSystem
 	{
 		private static Lumberjacking m_System;
 
-		public static Lumberjacking System
+	/// <summary>
+	/// Gets the singleton instance of the lumberjacking system
+	/// </summary>
+	public static Lumberjacking System
+	{
+		get
 		{
-			get
-			{
-				if ( m_System == null )
-					m_System = new Lumberjacking();
+			if (m_System == null)
+				m_System = new Lumberjacking();
 
-				return m_System;
-			}
+			return m_System;
 		}
+	}
 
 		private HarvestDefinition m_Definition;
 
-		public HarvestDefinition Definition
-		{
-			get{ return m_Definition; }
-		}
+	/// <summary>
+	/// Gets the harvest definition for lumberjacking
+	/// </summary>
+	public HarvestDefinition Definition
+	{
+		get { return m_Definition; }
+	}
 
-		public Lumberjacking()
+		/// <summary>
+		/// Initializes the lumberjacking system with wood harvest definitions
+		/// </summary>
+	public Lumberjacking()
 		{
 			HarvestResource[] res;
 			HarvestVein[] veins;
@@ -43,16 +56,16 @@ namespace Server.Engines.Harvest
 			HarvestDefinition lumber = new HarvestDefinition();
 
 			// Resource banks are every 3x3 tiles
-			lumber.BankWidth = 3;
-			lumber.BankHeight = 3;
+			lumber.BankWidth = HarvestConstants.LUMBER_BANK_WIDTH;
+			lumber.BankHeight = HarvestConstants.LUMBER_BANK_HEIGHT;
 
-			// Every bank holds from 5-30 logs
-			lumber.MinTotal = 6;
-			lumber.MaxTotal = 36;
+			// Every bank holds from 6-36 logs
+			lumber.MinTotal = HarvestConstants.LUMBER_BANK_MIN_TOTAL;
+			lumber.MaxTotal = HarvestConstants.LUMBER_BANK_MAX_TOTAL;
 
-			// A resource bank will respawn its content every 20 to 30 minutes
-			lumber.MinRespawn = TimeSpan.FromMinutes( 15.0 );
-			lumber.MaxRespawn = TimeSpan.FromMinutes( 30.0 );
+			// A resource bank will respawn its content every 15 to 30 minutes
+			lumber.MinRespawn = TimeSpan.FromMinutes(HarvestConstants.LUMBER_RESPAWN_MIN_MINUTES);
+			lumber.MaxRespawn = TimeSpan.FromMinutes(HarvestConstants.LUMBER_RESPAWN_MAX_MINUTES);
 
 			// Skill checking is done on the Lumberjacking skill
 			lumber.Skill = SkillName.Lumberjacking;
@@ -61,67 +74,58 @@ namespace Server.Engines.Harvest
 			lumber.Tiles = m_TreeTiles;
 
 			// Players must be within 2 tiles to harvest
-			lumber.MaxRange = 2;
+			lumber.MaxRange = HarvestConstants.LUMBER_MAX_RANGE;
 
-			// Ten logs per harvest action
-			lumber.ConsumedPerHarvest = 2;//Utility.RandomMinMax(6, 12);
-			lumber.ConsumedPerFeluccaHarvest = 2;// Utility.RandomMinMax(6, 12); ;
+			// Two logs per harvest action
+			lumber.ConsumedPerHarvest = HarvestConstants.LUMBER_CONSUMED_PER_HARVEST;
+			lumber.ConsumedPerFeluccaHarvest = HarvestConstants.LUMBER_CONSUMED_PER_HARVEST;
 
 			// The chopping effect
-			lumber.EffectActions = new int[]{ 13 };
-			lumber.EffectSounds = new int[]{ 0x13E };
-			lumber.EffectCounts = new int[] { 1 };//(Core.AOS ? new int[]{ 1 } : new int[]{ 1, 2, 2, 2, 3 });
+			lumber.EffectActions = HarvestConstants.LUMBER_EFFECT_ACTIONS;
+			lumber.EffectSounds = HarvestConstants.LUMBER_EFFECT_SOUNDS;
+			lumber.EffectCounts = HarvestConstants.LUMBER_EFFECT_COUNTS;
 
-            lumber.EffectDelay = TimeSpan.FromSeconds( 1.4 );
-			lumber.EffectSoundDelay = TimeSpan.FromSeconds( 0.7 );
+			lumber.EffectDelay = TimeSpan.FromSeconds(HarvestConstants.LUMBER_EFFECT_DELAY);
+			lumber.EffectSoundDelay = TimeSpan.FromSeconds(HarvestConstants.LUMBER_EFFECT_SOUND_DELAY);
 
-			lumber.NoResourcesMessage = 500493; // There's not enough wood here to harvest.
-			lumber.FailMessage = 500495; // You hack at the tree for a while, but fail to produce any useable wood.
-			lumber.OutOfRangeMessage = 500446; // That is too far away.
-			lumber.PackFullMessage = 500497; // You can't place any wood into your backpack!
-			lumber.ToolBrokeMessage = 500499; // You broke your axe.
+			lumber.NoResourcesMessage = HarvestConstants.MSG_NO_WOOD_HERE;
+			lumber.FailMessage = HarvestConstants.MSG_FAILED_PRODUCE_WOOD;
+			lumber.OutOfRangeMessage = HarvestConstants.MSG_TOO_FAR_AWAY;
+			lumber.PackFullMessage = HarvestConstants.MSG_BACKPACK_FULL_WOOD;
+			lumber.ToolBrokeMessage = HarvestConstants.MSG_AXE_BROKEN;
 
 			res = new HarvestResource[]
 			{
-				new HarvestResource(  00.0, 00.0, 120.0, "Você cortou algumas toras", typeof( Log ) ),
-				new HarvestResource(  60.0, 50.0, 120.0, "Você cortou algumas toras de Carvalho cinza", typeof( AshLog ) ),
-				new HarvestResource(  70.0, 60.0, 120.0, "Você cortou algumas toras de Ébano", typeof( EbonyLog ) ),
-                new HarvestResource(  80.0, 70.0, 120.0, "Você cortou algumas toras de Ipê-amarelo", typeof( GoldenOakLog ) ),
-                new HarvestResource(  90.0, 80.0, 120.0, "Você cortou algumas toras de Cerejeira", typeof( CherryLog ) ),
-                new HarvestResource(  95.0, 85.0, 120.0, "Você cortou algumas toras de Pau-Brasil", typeof( RosewoodLog ) ),
-                new HarvestResource(  100.0, 90.0, 120.0, "Você cortou algumas toras de madeira Élfica", typeof( ElvenLog ) ),
-                new HarvestResource(  100.0, 90.0, 120.0, "Você cortou algumas toras de Nogueira Branca", typeof( HickoryLog ) )
-/*                new HarvestResource(  100.0, 85.0, 135.0, "", typeof( WalnutLog ) ),
-                new HarvestResource(  80.0, 50.0, 115.0, "", typeof( MahoganyLog ) ),
-                new HarvestResource(  85.0, 55.0, 120.0, "", typeof( OakLog ) ),
-                new HarvestResource(  90.0, 65.0, 125.0, "", typeof( PineLog ) ),*/ 
+				new HarvestResource(HarvestConstants.LOG_SKILL_MIN, HarvestConstants.LOG_SKILL_MIN, HarvestConstants.LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_REGULAR_LOGS, typeof(Log)),
+				new HarvestResource(HarvestConstants.ASH_LOG_SKILL_MIN, HarvestConstants.ASH_LOG_SKILL_MIN, HarvestConstants.ASH_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_ASH_LOGS, typeof(AshLog)),
+				new HarvestResource(HarvestConstants.EBONY_LOG_SKILL_MIN, HarvestConstants.EBONY_LOG_SKILL_MIN, HarvestConstants.EBONY_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_EBONY_LOGS, typeof(EbonyLog)),
+				new HarvestResource(HarvestConstants.GOLDEN_OAK_LOG_SKILL_MIN, HarvestConstants.GOLDEN_OAK_LOG_SKILL_MIN, HarvestConstants.GOLDEN_OAK_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_GOLDEN_OAK_LOGS, typeof(GoldenOakLog)),
+				new HarvestResource(HarvestConstants.CHERRY_LOG_SKILL_MIN, HarvestConstants.CHERRY_LOG_SKILL_MIN, HarvestConstants.CHERRY_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_CHERRY_LOGS, typeof(CherryLog)),
+				new HarvestResource(HarvestConstants.ROSEWOOD_LOG_SKILL_MIN, HarvestConstants.ROSEWOOD_LOG_SKILL_MIN, HarvestConstants.ROSEWOOD_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_ROSEWOOD_LOGS, typeof(RosewoodLog)),
+				new HarvestResource(HarvestConstants.ELVEN_LOG_SKILL_MIN, HarvestConstants.ELVEN_LOG_SKILL_MIN, HarvestConstants.ELVEN_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_ELVEN_LOGS, typeof(ElvenLog)),
+				new HarvestResource(HarvestConstants.HICKORY_LOG_SKILL_MIN, HarvestConstants.HICKORY_LOG_SKILL_MIN, HarvestConstants.HICKORY_LOG_SKILL_MAX, HarvestStringConstants.MSG_CUT_HICKORY_LOGS, typeof(HickoryLog))
 			};
 
 			veins = new HarvestVein[]
 			{
-				new HarvestVein( 27.0, 0.0, res[0], null ),	// Ordinary Logs
-				new HarvestVein( 18.0, 0.5, res[1], res[0] ), // Ash
-				new HarvestVein( 15.0, 0.4, res[2], res[0] ), // Ebony
-				new HarvestVein( 12.0, 0.4, res[3], res[0] ), // Golden Oak
-				new HarvestVein( 10.0, 0.3, res[4], res[0] ), // Cherry
-				new HarvestVein( 8.0, 0.2, res[5], res[0] ), // Rosewood
-				new HarvestVein( 5.0, 0.1, res[6], res[0] ), // Elven
-				new HarvestVein( 5.0, 0.1, res[7], res[0] ) // Hickory
-				/*new HarvestVein( 7.0, 0.5, res[6], res[0] ), // Mahogany
-				new HarvestVein( 6.0, 0.5, res[7], res[0] ), // Oak
-				new HarvestVein( 5.0, 0.5, res[8], res[0] ), // Pine*/
-				/*new HarvestVein( 30.0, 0.5, res[10], res[0] ), // Walnut*/
-				
+				new HarvestVein(HarvestConstants.LOG_VEIN_CHANCE, 0.0, res[0], null), // Ordinary Logs
+				new HarvestVein(HarvestConstants.ASH_LOG_VEIN_CHANCE, HarvestConstants.ASH_LOG_RARITY, res[1], res[0]), // Ash
+				new HarvestVein(HarvestConstants.EBONY_LOG_VEIN_CHANCE, HarvestConstants.EBONY_LOG_RARITY, res[2], res[0]), // Ebony
+				new HarvestVein(HarvestConstants.GOLDEN_OAK_VEIN_CHANCE, HarvestConstants.GOLDEN_OAK_RARITY, res[3], res[0]), // Golden Oak
+				new HarvestVein(HarvestConstants.CHERRY_LOG_VEIN_CHANCE, HarvestConstants.CHERRY_LOG_RARITY, res[4], res[0]), // Cherry
+				new HarvestVein(HarvestConstants.ROSEWOOD_LOG_VEIN_CHANCE, HarvestConstants.ROSEWOOD_LOG_RARITY, res[5], res[0]), // Rosewood
+				new HarvestVein(HarvestConstants.ELVEN_LOG_VEIN_CHANCE, HarvestConstants.ELVEN_LOG_RARITY, res[6], res[0]), // Elven
+				new HarvestVein(HarvestConstants.HICKORY_LOG_VEIN_CHANCE, HarvestConstants.HICKORY_LOG_RARITY, res[7], res[0]) // Hickory
 			};
 
 			lumber.BonusResources = new BonusHarvestResource[]
 			{
-				new BonusHarvestResource( 0, 94.0, null, null ), //Nothing
-                new BonusHarvestResource( 80, 2.0, "Eba! Você achou cogumelos.", typeof( HomePlants_Mushroom ) ),
-                new BonusHarvestResource( 90, 2.0, "Eba! Você achou óleo ceifador.", typeof( ReaperOil ) ),
-				new BonusHarvestResource( 100, 1.0, "Eba! Você achou seiva de árvore mística.", typeof( MysticalTreeSap ) ),
-                new BonusHarvestResource( 110, 1.0, "Eba! Você achou óleo mutagênico!", typeof( OilWood ) )
-            };
+				new BonusHarvestResource(0, HarvestConstants.LUMBER_BONUS_NOTHING_CHANCE, null, null), // Nothing
+				new BonusHarvestResource(80, HarvestConstants.LUMBER_BONUS_MUSHROOM_CHANCE, HarvestStringConstants.MSG_FOUND_MUSHROOMS, typeof(HomePlants_Mushroom)),
+				new BonusHarvestResource(90, HarvestConstants.LUMBER_BONUS_REAPER_OIL_CHANCE, HarvestStringConstants.MSG_FOUND_REAPER_OIL, typeof(ReaperOil)),
+				new BonusHarvestResource(100, HarvestConstants.LUMBER_BONUS_TREE_SAP_CHANCE, HarvestStringConstants.MSG_FOUND_MYSTICAL_SAP, typeof(MysticalTreeSap)),
+				new BonusHarvestResource(110, HarvestConstants.LUMBER_BONUS_OIL_WOOD_CHANCE, HarvestStringConstants.MSG_FOUND_OIL_WOOD, typeof(OilWood))
+			};
 
 			lumber.Resources = res;
 			lumber.Veins = veins;
@@ -158,9 +162,9 @@ namespace Server.Engines.Harvest
 			if ( !base.CheckHarvest( from, tool, def, toHarvest ) )
 				return false;
 
-			if ( tool.Parent != from )
+			if (tool.Parent != from)
 			{
-				from.SendLocalizedMessage( 500487 ); // The axe must be equipped for any serious wood chopping.
+				from.SendLocalizedMessage(HarvestConstants.MSG_AXE_MUST_EQUIPPED);
 				return false;
 			}
 
@@ -179,10 +183,10 @@ namespace Server.Engines.Harvest
 				Item obj = (Item)toHarvest;
 				obj.PublicOverheadMessage( Server.Network.MessageType.Regular, 0x3E9, 500464 ); // Use this on corpses to carve away meat and hide
 			}
-			else if ( toHarvest is Targeting.StaticTarget || toHarvest is Targeting.LandTarget )
-				from.SendLocalizedMessage( 500489 ); // You can't use an axe on that.
+			else if (toHarvest is Targeting.StaticTarget || toHarvest is Targeting.LandTarget)
+				from.SendLocalizedMessage(HarvestConstants.MSG_CANNOT_USE_AXE);
 			else
-				from.SendLocalizedMessage( 1005213 ); // You can't do that
+				from.SendLocalizedMessage(1005213); // You can't do that
 		}
 
 		public override void OnHarvestStarted( Mobile from, Item tool, HarvestDefinition def, object toHarvest )

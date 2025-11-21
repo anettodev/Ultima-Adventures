@@ -3,8 +3,15 @@ using Server.Items;
 
 namespace Server.Engines.Craft
 {
+	/// <summary>
+	/// Cartography crafting system for creating maps, charts, and scrolls.
+	/// Requires Cartography skill and blank maps/bark fragments as resources.
+	/// </summary>
 	public class DefCartography : CraftSystem
 	{
+		/// <summary>
+		/// Gets the main skill required for cartography
+		/// </summary>
 		public override SkillName MainSkill
 		{
 			get	{ return SkillName.Cartography; }
@@ -12,9 +19,14 @@ namespace Server.Engines.Craft
 
 		public override int GumpTitleNumber
 		{
-			get { return 1044008; } // <CENTER>CARTOGRAPHY MENU</CENTER>
+			get { return CartographyConstants.GUMP_TITLE; } // <CENTER>CARTOGRAPHY MENU</CENTER>
 		}
 
+		/// <summary>
+		/// Gets the crafting chance at minimum skill level
+		/// </summary>
+		/// <param name="item">The craft item</param>
+		/// <returns>Always returns 0.0 for cartography</returns>
 		public override double GetChanceAtMin( CraftItem item )
 		{
 			return 0.0; // 0%
@@ -33,63 +45,140 @@ namespace Server.Engines.Craft
 			}
 		}
 
-		private DefCartography() : base( 1, 1, 1.25 )// base( 1, 1, 3.0 )
+		private DefCartography() : base( CartographyConstants.CRAFT_SYSTEM_MIN_SKILL, CartographyConstants.CRAFT_SYSTEM_MAX_SKILL, CartographyConstants.CRAFT_SYSTEM_DELAY )
 		{
 		}
 
+		/// <summary>
+		/// Validates if the mobile can perform cartography crafting
+		/// </summary>
+		/// <param name="from">The mobile attempting to craft</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="itemType">The type of item being crafted</param>
+		/// <returns>0 if crafting is allowed, otherwise the error message cliloc</returns>
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
-			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
-			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+			int toolCheck = ValidateTool(tool, from);
+			if (toolCheck != 0)
+				return toolCheck;
 
 			return 0;
 		}
 
-		public override void PlayCraftEffect( Mobile from )
+		/// <summary>
+		/// Validates that the tool is usable for crafting
+		/// </summary>
+		/// <param name="tool">The tool to validate</param>
+		/// <param name="from">The mobile using the tool</param>
+		/// <returns>0 if valid, otherwise the error message cliloc</returns>
+		private int ValidateTool(BaseTool tool, Mobile from)
 		{
-			from.PlaySound( 0x249 );
+			if (tool == null || tool.Deleted || tool.UsesRemaining < 0)
+				return CartographyConstants.MSG_TOOL_WORN_OUT;
+
+			if (!BaseTool.CheckAccessible(tool, from))
+				return CartographyConstants.MSG_TOOL_NOT_ACCESSIBLE;
+
+			return 0;
 		}
 
+		/// <summary>
+		/// Plays the crafting effect sounds for cartography
+		/// </summary>
+		/// <param name="from">The mobile performing the craft</param>
+		public override void PlayCraftEffect( Mobile from )
+		{
+			from.PlaySound( CartographyConstants.SOUND_CRAFTING );
+		}
+
+		/// <summary>
+		/// Plays ending effects and returns appropriate messages based on craft result
+		/// </summary>
+		/// <param name="from">The mobile performing the craft</param>
+		/// <param name="failed">Whether the craft failed</param>
+		/// <param name="lostMaterial">Whether materials were lost on failure</param>
+		/// <param name="toolBroken">Whether the tool broke</param>
+		/// <param name="quality">The quality level of the crafted item</param>
+		/// <param name="makersMark">Whether maker's mark was applied</param>
+		/// <param name="item">The crafted item</param>
+		/// <returns>The cliloc ID of the message to display</returns>
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+				from.SendLocalizedMessage( CartographyConstants.MSG_TOOL_WORN_OUT );
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+					return CartographyConstants.MSG_FAILED_MATERIAL_LOSS;
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return CartographyConstants.MSG_FAILED_NO_MATERIAL_LOSS;
 			}
 			else
 			{
 				if ( quality == 0 )
-					return 502785; // You were barely able to make this item.  It's quality is below average.
+					return CartographyConstants.MSG_BELOW_AVERAGE;
 				else if ( makersMark && quality == 2 )
-					return 1044156; // You create an exceptional quality item and affix your maker's mark.
+					return CartographyConstants.MSG_EXCEPTIONAL_WITH_MARK;
 				else if ( quality == 2 )
-					return 1044155; // You create an exceptional quality item.
-				else				
-					return 1044154; // You create the item.
+					return CartographyConstants.MSG_EXCEPTIONAL;
+				else
+					return CartographyConstants.MSG_NORMAL;
 			}
 		}
 
+		/// <summary>
+		/// Initializes the craft list with all available cartography recipes
+		/// </summary>
 		public override void InitCraftList()
 		{
-			// Blank Scrolls
-			int index;
-			index = AddCraft( typeof( BlankScroll ), 1044294, 1044377, 40.0, 70.0, typeof( BarkFragment ), 1073477, 1, 1073478 );
-			SetUseAllRes( index, true );
+			AddBlankScrolls();
+			AddMaps();
+		}
 
-			// WIZARD CHANGED IT BECAUSE THERE ARE NO TOWNS...REALLY
-			AddCraft( typeof( LocalMap ), 1044448, "small map", 10.0, 70.0, typeof( BlankMap ), 1044449, 1, 1044450 );
-			AddCraft( typeof(  CityMap ), 1044448, "large map", 25.0, 85.0, typeof( BlankMap ), 1044449, 1, 1044450 );
-			AddCraft( typeof( SeaChart ), 1044448, "sea chart", 35.0, 95.0, typeof( BlankMap ), 1044449, 1, 1044450 );
-			AddCraft( typeof( WorldMap ), 1044448, "huge map", 39.5, 99.5, typeof( BlankMap ), 1044449, 1, 1044450 );
-			AddCraft( typeof( MapWorld ), 1044448, "world map", 89.5, 110.5, typeof( BlankMap ), 1044449, 1, 1044450 );
+		/// <summary>
+		/// Adds blank scroll crafting recipes
+		/// </summary>
+		private void AddBlankScrolls()
+		{
+			int index = AddCraft( typeof( BlankScroll ), CartographyConstants.CATEGORY_BLANK_SCROLLS,
+				CartographyConstants.ITEM_BLANK_SCROLL,
+				CartographyConstants.SKILL_MIN_BLANK_SCROLL, CartographyConstants.SKILL_MAX_BLANK_SCROLL,
+				typeof( BarkFragment ), CartographyConstants.RESOURCE_BARK_FRAGMENT,
+				CartographyConstants.BARK_FRAGMENT_AMOUNT, CartographyConstants.RESOURCE_BARK_FRAGMENT_NOT_FOUND );
+			SetUseAllRes( index, true );
+		}
+
+		/// <summary>
+		/// Adds map crafting recipes
+		/// </summary>
+		private void AddMaps()
+		{
+			// Maps use blank maps as their resource
+			AddCraft( typeof( LocalMap ), CartographyConstants.CATEGORY_MAPS, CartographyStringConstants.ITEM_SMALL_MAP,
+				CartographyConstants.SKILL_MIN_SMALL_MAP, CartographyConstants.SKILL_MAX_SMALL_MAP,
+				typeof( BlankMap ), CartographyConstants.RESOURCE_BLANK_MAP,
+				CartographyConstants.BLANK_MAP_AMOUNT, CartographyConstants.RESOURCE_BLANK_MAP_NOT_FOUND );
+
+			AddCraft( typeof( CityMap ), CartographyConstants.CATEGORY_MAPS, CartographyStringConstants.ITEM_LARGE_MAP,
+				CartographyConstants.SKILL_MIN_LARGE_MAP, CartographyConstants.SKILL_MAX_LARGE_MAP,
+				typeof( BlankMap ), CartographyConstants.RESOURCE_BLANK_MAP,
+				CartographyConstants.BLANK_MAP_AMOUNT, CartographyConstants.RESOURCE_BLANK_MAP_NOT_FOUND );
+
+			AddCraft( typeof( SeaChart ), CartographyConstants.CATEGORY_MAPS, CartographyStringConstants.ITEM_SEA_CHART,
+				CartographyConstants.SKILL_MIN_SEA_CHART, CartographyConstants.SKILL_MAX_SEA_CHART,
+				typeof( BlankMap ), CartographyConstants.RESOURCE_BLANK_MAP,
+				CartographyConstants.BLANK_MAP_AMOUNT, CartographyConstants.RESOURCE_BLANK_MAP_NOT_FOUND );
+
+			AddCraft( typeof( WorldMap ), CartographyConstants.CATEGORY_MAPS, CartographyStringConstants.ITEM_HUGE_MAP,
+				CartographyConstants.SKILL_MIN_HUGE_MAP, CartographyConstants.SKILL_MAX_HUGE_MAP,
+				typeof( BlankMap ), CartographyConstants.RESOURCE_BLANK_MAP,
+				CartographyConstants.BLANK_MAP_AMOUNT, CartographyConstants.RESOURCE_BLANK_MAP_NOT_FOUND );
+
+			AddCraft( typeof( MapWorld ), CartographyConstants.CATEGORY_MAPS, CartographyStringConstants.ITEM_WORLD_MAP,
+				CartographyConstants.SKILL_MIN_WORLD_MAP, CartographyConstants.SKILL_MAX_WORLD_MAP,
+				typeof( BlankMap ), CartographyConstants.RESOURCE_BLANK_MAP,
+				CartographyConstants.BLANK_MAP_AMOUNT, CartographyConstants.RESOURCE_BLANK_MAP_NOT_FOUND );
 		}
 	}
 }

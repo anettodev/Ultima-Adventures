@@ -1,151 +1,76 @@
 using System;
 using Server;
-using System.Collections;
-using Server.ContextMenus;
-using System.Collections.Generic;
 using Server.Misc;
-using Server.Network;
-using Server.Items;
-using Server.Gumps;
 using Server.Mobiles;
-using Server.Commands;
-using Server.Targeting;
 
 namespace Server.Items
 {
-    public class GuildFletching : Item
+    /// <summary>
+    /// Extraordinary Fletching Tools for enhancing bows and crossbows.
+    /// Requires Archers Guild membership and skill 90+.
+    /// </summary>
+    public class GuildFletching : BaseGuildTool
     {
+        #region Properties
+
+        protected override NpcGuild RequiredGuild => NpcGuild.ArchersGuild;
+        protected override SkillName RequiredSkill => SkillName.Fletching;
+        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
+        protected override bool AllowElderSkillBypass => false;
+        protected override Type GuildmasterType => typeof(ArcherGuildmaster);
+        protected override Type ShoppeType => typeof(BowyerShoppe);
+        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_RANGED_WEAPON;
+        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_ARCHERS_ONLY;
+        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_FLETCHER;
+        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_BOWYER_LOCATION;
+        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_FLETCHING;
+
+        #endregion
+
+        #region Constructor
+
         [Constructable]
-        public GuildFletching() : base(0x1EB8)
+        public GuildFletching()
+            : base(GuildCraftingConstants.ITEMID_FLETCHING_TOOLS,
+                   GuildCraftingConstants.TOOL_WEIGHT_HEAVY,
+                   GuildCraftingConstants.EXTRAORDINARY_TOOL_HUE)
         {
-            Name = "Extraordinary Fletching Tools";
-			Weight = 5.0;
-			Hue = 0x430;
+            Name = GuildCraftingStringConstants.NAME_GUILD_FLETCHING;
         }
 
-        public GuildFletching(Serial serial) : base(serial)
-		{
-		}
+        public GuildFletching(Serial serial) : base(serial) { }
 
-        public override void OnDoubleClick( Mobile from )
+        #endregion
+
+        #region Item Validation
+
+        protected override bool ValidateItem(Mobile from, Item item)
         {
-			if ( from is PlayerMobile )
-			{
-				int canDo = 0;
-
-				foreach ( Mobile m in this.GetMobilesInRange( 20 ) )
-				{
-					if ( m is ArcherGuildmaster )
-						++canDo;
-				}
-				foreach ( Item i in this.GetItemsInRange( 20 ) )
-				{
-					if ( i is BowyerShoppe && !i.Movable )
-					{
-						BowyerShoppe b = (BowyerShoppe)i;
-
-						if ( b.ShoppeOwner == from )
-							++canDo;
-					}
-				}
-				if ( from.Map == Map.TerMur && from.X > 1054 && from.X < 1126 && from.Y > 1907 && from.Y < 1983 ){ ++canDo; }
-
-				PlayerMobile pc = (PlayerMobile)from;
-				if ( pc.NpcGuild != NpcGuild.ArchersGuild && from.Skills[SkillName.Fletching].Value < 100  )
-				{
-					from.SendMessage( "Only those of the Archers Guild may use this!" );
-				}
-				else if ( from.Skills[SkillName.Fletching].Value < 90 )
-				{
-					from.SendMessage( "Only a master fletcher can use this!" );
-				}
-				else if ( canDo == 0 )
-				{
-					from.SendMessage( "You need to be near a bowyer guildmaster, or a bowyer shoppe you own, to use this!" );
-				}
-				else
-				{
-					from.SendMessage("Select the bow or crossbow you would like to enhance...");
-					from.BeginTarget(-1, false, TargetFlags.None, new TargetCallback(OnTarget));
-				}
-			}
-        }
-
-		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
-		{ 
-			base.GetContextMenuEntries( from, list ); 
-			list.Add( new SpeechGumpEntry( from ) );
-		} 
-
-		public class SpeechGumpEntry : ContextMenuEntry
-		{
-			private Mobile m_Mobile;
-			
-			public SpeechGumpEntry( Mobile from ) : base( 6121, 3 )
-			{
-				m_Mobile = from;
-			}
-
-			public override void OnClick()
-			{
-			    if( !( m_Mobile is PlayerMobile ) )
-				return;
-				
-				PlayerMobile mobile = (PlayerMobile) m_Mobile;
-				{
-					if ( ! mobile.HasGump( typeof( SpeechGump ) ) )
-					{
-						mobile.SendGump(new SpeechGump( "Enhancing Items", SpeechFunctions.SpeechText( m_Mobile.Name, m_Mobile.Name, "Enhance" ) ));
-					}
-				}
-            }
-        }
-
-        public void OnTarget(Mobile from, object obj)
-        {
-            if ( obj is Item )
+            // Only accept ranged weapons (bows and crossbows)
+            if (item is BaseRanged)
             {
-				Item item = (Item)obj;
-
-                if (((Item)obj).RootParent != from)
-                {
-                    from.SendLocalizedMessage(1042001); // That must be in your pack for you to use it.
-                }
-				else if ( item is ILevelable )
-				{
-					from.SendMessage( "You cannot enhance legendary artifacts!" );
-				}
-				else if ( item is BaseRanged )
-				{
-					BaseWeapon weapon = (BaseWeapon)item;
-
-					if ( Server.Misc.MaterialInfo.IsAnyKindOfWoodItem( item ) )
-                    {
-						GuildCraftingProcess process = new GuildCraftingProcess(from, (Item)obj);
-						process.BeginProcess();
-					}
-					else
-					{
-						from.SendMessage( "You cannot enhance this item!" );
-					}
-				}
-                else
-                {
-					from.SendMessage( "You cannot enhance this item!" );
-                }
+                return Server.Misc.MaterialInfo.IsAnyKindOfWoodItem(item);
             }
-        }
-        
-        public override void Serialize(GenericWriter writer)
-		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
-		}
 
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
+            return false;
+        }
+
+        #endregion
+
+        #region Serialization
+
+        public override void Serialize(GenericWriter writer)
+        {
+            base.Serialize(writer);
+            writer.Write((int)GuildCraftingConstants.SERIALIZATION_VERSION);
+        }
+
+        public override void Deserialize(GenericReader reader)
+        {
+            base.Deserialize(reader);
+            int version = reader.ReadInt();
+        }
+
+        #endregion
     }
 }

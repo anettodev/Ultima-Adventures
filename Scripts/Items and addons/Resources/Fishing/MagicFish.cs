@@ -137,12 +137,12 @@ namespace Server.Items
                 }
 
                 if(m_invisible)
-                    list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Invisibilidade Momentânea", "#8be4fc"));
+                    list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Invisibilidade MomentÃ¢nea", "#8be4fc"));
             }
             else 
             {
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Um peixe com propriedades mágicas", "#8be4fc"));
-                list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Para descobrir suas propriedades mágicas utilize o scanner de peixes.", "#ffe066"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Um peixe com propriedades mÃ¡gicas", "#8be4fc"));
+                list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Para descobrir suas propriedades mÃ¡gicas utilize o scanner de peixes.", "#ffe066"));
             }
         }
 
@@ -151,7 +151,7 @@ namespace Server.Items
             /*bool applied = Spells.SpellHelper.AddStatOffset( from, Type, Bonus, TimeSpan.FromMinutes( 1.0 ) );*/
             if (!from.CanBeginAction(typeof(BaseMagicFish)))
             {
-                from.PrivateOverheadMessage(MessageType.Regular, 95, false, "* Tenho que aguardar para comer outro peixe mágico. *", from.NetState);
+                from.PrivateOverheadMessage(MessageType.Regular, 95, false, "* Tenho que aguardar para comer outro peixe mï¿½gico. *", from.NetState);
                 return false;
             }
             else
@@ -307,7 +307,7 @@ namespace Server.Items
         [Constructable]
 		public PrizedFish() : base(96)
 		{
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
 
             Array values = Enum.GetValues(typeof(MagicFishStatType));
             Random random = new Random();
@@ -344,7 +344,7 @@ namespace Server.Items
         [Constructable]
 		public WondrousFish() : base( 86 )
 		{
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
             Array values = Enum.GetValues(typeof(MagicFishStatType));
             Random random = new Random();
             l_statType = (MagicFishStatType)values.GetValue(random.Next(1, values.Length));
@@ -383,7 +383,7 @@ namespace Server.Items
         [Constructable]
 		public TrulyRareFish() : base(1166)
 		{
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
             Array values = Enum.GetValues(typeof(MagicFishStatType));
             Random random = new Random();
             l_statType = (MagicFishStatType)values.GetValue(random.Next(1, values.Length));
@@ -419,7 +419,7 @@ namespace Server.Items
         [Constructable]
         public PeculiarFish() : base(210)
         {
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
         }
 
         public override void AddNameProperties(ObjectPropertyList list)
@@ -427,12 +427,12 @@ namespace Server.Items
             base.AddNameProperties(list);
             if (this.RevealProps) 
             {
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Este peixe entende a lingua dos mortos", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Este peixe entende a lÃ­ngua dos mortos", "#8be4fc"));
             }
             else
             {
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Um peixe exótico", "#8be4fc"));
-                list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Para descobrir suas propriedades mágicas utilize o scanner de peixes.", "#ffe066"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Um peixe exÃ³tico", "#8be4fc"));
+                list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Para descobrir suas propriedades mÃ¡gicas utilize o scanner de peixes.", "#ffe066"));
             }
         }
 
@@ -444,7 +444,7 @@ namespace Server.Items
         {
             if (!from.CanBeginAction(typeof(PeculiarFish)))
             {
-                from.PrivateOverheadMessage(MessageType.Regular, 95, false, "* Tenho que aguardar para comer outro peixe mágico. *", from.NetState);
+                from.PrivateOverheadMessage(MessageType.Regular, 95, false, "* Tenho que aguardar para comer outro peixe mï¿½gico. *", from.NetState);
                 return false;
             }
             else
@@ -458,7 +458,7 @@ namespace Server.Items
                 from.PlaySound(from.Female ? 787 : 1058);
                 from.PlaySound(1073);
 
-                from.SendMessage(55, "Você começa a ouvir uma lingua estranha.");
+                from.SendMessage(55, "Vocï¿½ comeï¿½a a ouvir uma lingua estranha.");
                 this.Amount--;
                 if (this.Amount <= 0)
                     this.Delete();
@@ -496,7 +496,7 @@ namespace Server.Items
 
         public static void RemoveEffect(Mobile m)
         {
-            m.SendMessage(55, "Você deixa de entender a lingua dos mortos.");
+            m.SendMessage(55, "Vocï¿½ deixa de entender a lingua dos mortos.");
             m.CanHearGhosts = false;
             m.EndAction(typeof(PeculiarFish));
         }
@@ -529,7 +529,7 @@ namespace Server.Items
 		[Constructable]
 		public InvisibleFish() : base(990)
 		{
-			Name = "peixe mágico";
+			Name = "peixe mï¿½gico";
             DoInvisible = true;
 
         }
@@ -563,7 +563,7 @@ namespace Server.Items
         [Constructable]
         public PoisonFish() : base(66)
         {
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
             m_poison = Utility.RandomMinMax(1, 5);
             PoisonValue = HitPoison(m_poison);
         }
@@ -609,7 +609,7 @@ namespace Server.Items
         [Constructable]
         public StaminaFish() : base(133)
         {
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
 
             RegenerateType = MagicFishRegenerateType.Stam; 
         }
@@ -643,7 +643,7 @@ namespace Server.Items
         [Constructable]
         public HealFish() : base(1161)
         {
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
             RegenerateType = MagicFishRegenerateType.Hits;
         }
 
@@ -674,7 +674,7 @@ namespace Server.Items
         [Constructable]
         public ManaFish() : base(91)
         {
-            Name = "peixe mágico";
+            Name = "peixe mï¿½gico";
             RegenerateType = MagicFishRegenerateType.Mana;
         }
 

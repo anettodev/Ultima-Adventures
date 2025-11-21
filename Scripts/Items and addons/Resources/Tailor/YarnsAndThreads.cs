@@ -90,7 +90,7 @@ namespace Server.Items
 		{
 			if ( IsChildOf( from.Backpack ) )
 			{
-                from.SendMessage(55, "Você precisa de um tear para transformar isso.");
+                from.SendMessage(55, "Vocï¿½ precisa de um tear para transformar isso.");
                 //from.SendLocalizedMessage( 500366 ); // Select a loom to use that on.
 				from.Target = new PickLoomTarget( this );
 			}
@@ -120,7 +120,7 @@ namespace Server.Items
             }
 
             if (m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
 
             list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize um tear para transformar.", "#ffe066")); // PARENTHESIS
         }
@@ -197,7 +197,7 @@ namespace Server.Items
 
                             from.AddToBackpack(create);
 
-                            from.SendMessage(55, "Você transforma material e coloca na mochila.");
+                            from.SendMessage(55, "Vocï¿½ transforma material e coloca na mochila.");
                             //from.SendLocalizedMessage( 500368 ); // You create some cloth and put it in your backpack.
 
                             /*							if (typeof(LightYarnUnraveled) == m_Material.GetType()) // DEPRECATED - NOT GONNA HAPPEN
@@ -209,7 +209,7 @@ namespace Server.Items
 
                                                             from.AddToBackpack(create);
 
-                                                            from.SendMessage(55, "Você transforma material em carretel(s) de linha e coloca na mochila.");*//*
+                                                            from.SendMessage(55, "Vocï¿½ transforma material em carretel(s) de linha e coloca na mochila.");*//*
                                                         }*/
 
                             if ( loom.Phase > 0 )
@@ -268,11 +268,11 @@ namespace Server.Items
                                         from.AddToBackpack(rest);
                                     }
 
-                                    from.SendMessage(55, "Por ser altamente habilidoso, você é capaz de recuperar o resto do material utilizado.");
+                                    from.SendMessage(55, "Por ser altamente habilidoso, vocï¿½ ï¿½ capaz de recuperar o resto do material utilizado.");
                                 }
 								else 
 								{
-                                    from.SendMessage(55, "Você não possui habilidade suficiente para recuperar o resto do material utilizado e acaba perdendo-o.");
+                                    from.SendMessage(55, "Vocï¿½ nï¿½o possui habilidade suficiente para recuperar o resto do material utilizado e acaba perdendo-o.");
                                 }
 
                                 loom.Phase = 0; // reset the loom
@@ -280,7 +280,7 @@ namespace Server.Items
 						}
 						else
 						{
-							from.SendMessage(55, "Você não tem o suficiente para criar um rolo de pano.");
+							from.SendMessage(55, "Vocï¿½ nï¿½o tem o suficiente para criar um rolo de pano.");
 						}
 					}
 				}
@@ -298,13 +298,13 @@ namespace Server.Items
 		[Constructable]
 		public DarkYarn() : this( 1 )
 		{
-            Name = "bola(s) de lã grossa";
+            Name = "bola(s) de lÃ¡ grossa";
         }
 
 		[Constructable]
 		public DarkYarn( int amount ) : base( 0xE1D, amount )
 		{
-            Name = "bola(s) de lã grossa";
+            Name = "bola(s) de lÃ¡ grossa";
         }
 
 		public DarkYarn( Serial serial ) : base( serial )
@@ -325,7 +325,7 @@ namespace Server.Items
 
 			int version = reader.ReadInt();
 
-            Name = "bola(s) de lã grossa";
+            Name = "bola(s) de lÃ¡ grossa";
         }
 	}
 
@@ -334,13 +334,13 @@ namespace Server.Items
 		[Constructable]
 		public LightYarn() : this( 1 )
 		{
-            Name = "bola(s) de lã fina";
+            Name = "bola(s) de lÃ¡ fina";
         }
 
 		[Constructable]
 		public LightYarn( int amount ) : base( 0xE1E, amount )
 		{
-            Name = "bola(s) de lã fina";
+            Name = "bola(s) de lÃ¡ fina";
         }
 
 		public LightYarn( Serial serial ) : base( serial )
@@ -360,7 +360,7 @@ namespace Server.Items
 
 			int version = reader.ReadInt();
 
-            Name = "bola(s) de lã fina";
+            Name = "bola(s) de lÃ¡ fina";
         }
 	}
 
@@ -369,13 +369,13 @@ namespace Server.Items
         [Constructable]
         public LightYarnUnraveled() : this(1)
         {
-            Name = "bola(s) de lã desenrolada";
+            Name = "bola(s) de lÃ¡ desenrolada";
         }
 
         [Constructable]
         public LightYarnUnraveled(int amount) : base(0xE1E, amount)
         {
-            Name = "bola(s) de lã desenrolada";
+            Name = "bola(s) de lÃ¡ desenrolada";
         }
 
         public LightYarnUnraveled(Serial serial) : base(serial)
@@ -395,7 +395,7 @@ namespace Server.Items
 
             int version = reader.ReadInt();
 
-            Name = "bola(s) de lã desenrolada";
+            Name = "bola(s) de lÃ¡ desenrolada";
         }
     }
 

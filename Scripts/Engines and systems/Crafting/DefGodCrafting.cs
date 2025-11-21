@@ -17,7 +17,7 @@ namespace Server.Engines.Craft
  
         public override string GumpTitleString
         {
-            get { return "<BASEFONT Color=#FBFBFB><CENTER>MAGICAL SMITHING MENU</CENTER></BASEFONT>"; }
+            get { return GodCraftingStringConstants.GUMP_TITLE_SMITHING; }
         }
 
 		private static CraftSystem m_CraftSystem;
@@ -37,46 +37,46 @@ namespace Server.Engines.Craft
 
 		public override double GetChanceAtMin( CraftItem item )
 		{
-			return 0.5; // 50%
+			return GodCraftingConstants.MIN_SUCCESS_CHANCE; // 50%
 		}
 
-		private DefGodSmithing() : base( 1, 1, 1.25 )// base( 1, 1, 4.5 )
+		private DefGodSmithing() : base( GodCraftingConstants.MIN_CHANCE_MULTIPLIER, GodCraftingConstants.MAX_CHANCE_MULTIPLIER, GodCraftingConstants.DELAY_MULTIPLIER )// base( 1, 1, 4.5 )
 		{
 		}
 
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
+				return GodCraftingConstants.CLILOC_TOOL_WORN_OUT; // You have worn out your tool!
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+				return GodCraftingConstants.CLILOC_TOOL_MUST_BE_ON_PERSON; // The tool must be on your person to use.
 
-			if ( from.Map == Map.TerMur && from.X > 1104 && from.X < 1125 && from.Y > 1960 && from.Y < 1978 )
+			if ( from.Map == Map.TerMur && from.X > GodCraftingConstants.SMITHING_AREA_MIN_X && from.X < GodCraftingConstants.SMITHING_AREA_MAX_X && from.Y > GodCraftingConstants.SMITHING_AREA_MIN_Y && from.Y < GodCraftingConstants.SMITHING_AREA_MAX_Y )
 				return 0;
 
-			return 501816;
+			return GodCraftingConstants.CLILOC_LOCATION_ERROR;
 		}
 
 		public override void PlayCraftEffect( Mobile from )
 		{
-			from.PlaySound( 0x541 );
+			from.PlaySound( GodCraftingConstants.SOUND_SMITHING );
 		}
 
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+				from.SendLocalizedMessage( GodCraftingConstants.CLILOC_TOOL_WORN_OUT ); // You have worn out your tool
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+					return GodCraftingConstants.CLILOC_FAILED_MATERIAL_LOST; // You failed to create the item, and some of your materials are lost.
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return GodCraftingConstants.CLILOC_FAILED_NO_MATERIAL_LOST; // You failed to create the item, but no materials were lost.
 			}
 			else
 			{
-				return 1044154; // You create the item.
+				return GodCraftingConstants.CLILOC_ITEM_CREATED; // You create the item.
 			}
 		}
 
@@ -86,170 +86,170 @@ namespace Server.Engines.Craft
 
 			#region Armor
 
-			AddCraft( typeof( AmethystPlateArms ), "Amethyst & Emerald", "Amethyst Arms", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 18, 1042081 );
-			AddCraft( typeof( AmethystPlateGloves ), "Amethyst & Emerald", "Amethyst Gauntlets", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 12, 1042081 );
-			AddCraft( typeof( AmethystPlateGorget ), "Amethyst & Emerald", "Amethyst Gorget", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 10, 1042081 );
-			AddCraft( typeof( AmethystPlateLegs ), "Amethyst & Emerald", "Amethyst Leggings", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 20, 1042081 );
-			AddCraft( typeof( AmethystPlateChest ), "Amethyst & Emerald", "Amethyst Tunic", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 25, 1042081 );
-			AddCraft( typeof( AmethystFemalePlateChest ), "Amethyst & Emerald", "Amethyst Female Tunic", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 20, 1042081 );
-			AddCraft( typeof( AmethystPlateHelm ), "Amethyst & Emerald", "Amethyst Helm", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 15, 1042081 );
-			AddCraft( typeof( AmethystShield ), "Amethyst & Emerald", "Amethyst Shield", 90.0, 125.0, typeof( AmethystIngot ), "Block of Amethyst", 18, 1042081 );
-			index = AddCraft( typeof( OilAmethyst ), "Amethyst & Emerald", "Amethyst Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( AmethystIngot ), "Block of Amethyst", 30, 1042081 );
+			AddCraft( typeof( AmethystPlateArms ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystPlateGloves ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystPlateGorget ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystPlateLegs ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystPlateChest ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystFemalePlateChest ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystPlateHelm ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( AmethystShield ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( AmethystIngot ), "Block of Amethyst", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilAmethyst ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Amethyst Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( AmethystIngot ), "Block of Amethyst", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( EmeraldPlateArms ), "Amethyst & Emerald", "Emerald Arms", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 18, 1042081 );
-			AddCraft( typeof( EmeraldPlateGloves ), "Amethyst & Emerald", "Emerald Gauntlets", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 12, 1042081 );
-			AddCraft( typeof( EmeraldPlateGorget ), "Amethyst & Emerald", "Emerald Gorget", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 10, 1042081 );
-			AddCraft( typeof( EmeraldPlateLegs ), "Amethyst & Emerald", "Emerald Leggings", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 20, 1042081 );
-			AddCraft( typeof( EmeraldPlateChest ), "Amethyst & Emerald", "Emerald Tunic", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 25, 1042081 );
-			AddCraft( typeof( EmeraldFemalePlateChest ), "Amethyst & Emerald", "Emerald Female Tunic", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 20, 1042081 );
-			AddCraft( typeof( EmeraldPlateHelm ), "Amethyst & Emerald", "Emerald Helm", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 15, 1042081 );
-			AddCraft( typeof( EmeraldShield ), "Amethyst & Emerald", "Emerald Shield", 90.0, 125.0, typeof( EmeraldIngot ), "Block of Emerald", 18, 1042081 );
-			index = AddCraft( typeof( OilEmerald ), "Amethyst & Emerald", "Emerald Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( EmeraldIngot ), "Block of Emerald", 30, 1042081 );
+			AddCraft( typeof( EmeraldPlateArms ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldPlateGloves ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldPlateGorget ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldPlateLegs ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldPlateChest ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldFemalePlateChest ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldPlateHelm ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( EmeraldShield ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( EmeraldIngot ), "Block of Emerald", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilEmerald ), GodCraftingStringConstants.CATEGORY_AMETHYST_EMERALD, "Emerald Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( EmeraldIngot ), "Block of Emerald", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( GarnetPlateArms ), "Garnet & Ice", "Garnet Arms", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 18, 1042081 );
-			AddCraft( typeof( GarnetPlateGloves ), "Garnet & Ice", "Garnet Gauntlets", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 12, 1042081 );
-			AddCraft( typeof( GarnetPlateGorget ), "Garnet & Ice", "Garnet Gorget", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 10, 1042081 );
-			AddCraft( typeof( GarnetPlateLegs ), "Garnet & Ice", "Garnet Leggings", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 20, 1042081 );
-			AddCraft( typeof( GarnetPlateChest ), "Garnet & Ice", "Garnet Tunic", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 25, 1042081 );
-			AddCraft( typeof( GarnetFemalePlateChest ), "Garnet & Ice", "Garnet Female Tunic", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 20, 1042081 );
-			AddCraft( typeof( GarnetPlateHelm ), "Garnet & Ice", "Garnet Helm", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 15, 1042081 );
-			AddCraft( typeof( GarnetShield ), "Garnet & Ice", "Garnet Shield", 90.0, 125.0, typeof( GarnetIngot ), "Block of Garnet", 18, 1042081 );
-			index = AddCraft( typeof( OilGarnet ), "Garnet & Ice", "Garnet Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( GarnetIngot ), "Block of Garnet", 30, 1042081 );
+			AddCraft( typeof( GarnetPlateArms ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetPlateGloves ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetPlateGorget ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetPlateLegs ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetPlateChest ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetFemalePlateChest ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetPlateHelm ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( GarnetShield ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( GarnetIngot ), "Block of Garnet", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilGarnet ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Garnet Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( GarnetIngot ), "Block of Garnet", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( IcePlateArms ), "Garnet & Ice", "Ice Arms", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 18, 1042081 );
-			AddCraft( typeof( IcePlateGloves ), "Garnet & Ice", "Ice Gauntlets", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 12, 1042081 );
-			AddCraft( typeof( IcePlateGorget ), "Garnet & Ice", "Ice Gorget", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 10, 1042081 );
-			AddCraft( typeof( IcePlateLegs ), "Garnet & Ice", "Ice Leggings", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 20, 1042081 );
-			AddCraft( typeof( IcePlateChest ), "Garnet & Ice", "Ice Tunic", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 25, 1042081 );
-			AddCraft( typeof( IceFemalePlateChest ), "Garnet & Ice", "Ice Female Tunic", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 20, 1042081 );
-			AddCraft( typeof( IcePlateHelm ), "Garnet & Ice", "Ice Helm", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 15, 1042081 );
-			AddCraft( typeof( IceShield ), "Garnet & Ice", "Ice Shield", 90.0, 125.0, typeof( IceIngot ), "Block of Ice", 18, 1042081 );
-			index = AddCraft( typeof( OilIce ), "Garnet & Ice", "Ice Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( IceIngot ), "Block of Ice", 30, 1042081 );
+			AddCraft( typeof( IcePlateArms ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IcePlateGloves ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IcePlateGorget ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IcePlateLegs ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IcePlateChest ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IceFemalePlateChest ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IcePlateHelm ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( IceShield ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( IceIngot ), "Block of Ice", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilIce ), GodCraftingStringConstants.CATEGORY_GARNET_ICE, "Ice Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( IceIngot ), "Block of Ice", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( JadePlateArms ), "Jade & Marble", "Jade Arms", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 18, 1042081 );
-			AddCraft( typeof( JadePlateGloves ), "Jade & Marble", "Jade Gauntlets", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 12, 1042081 );
-			AddCraft( typeof( JadePlateGorget ), "Jade & Marble", "Jade Gorget", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 10, 1042081 );
-			AddCraft( typeof( JadePlateLegs ), "Jade & Marble", "Jade Leggings", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 20, 1042081 );
-			AddCraft( typeof( JadePlateChest ), "Jade & Marble", "Jade Tunic", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 25, 1042081 );
-			AddCraft( typeof( JadeFemalePlateChest ), "Jade & Marble", "Jade Female Tunic", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 20, 1042081 );
-			AddCraft( typeof( JadePlateHelm ), "Jade & Marble", "Jade Helm", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 15, 1042081 );
-			AddCraft( typeof( JadeShield ), "Jade & Marble", "Jade Shield", 90.0, 125.0, typeof( JadeIngot ), "Block of Jade", 18, 1042081 );
-			index = AddCraft( typeof( OilJade ), "Jade & Marble", "Jade Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( JadeIngot ), "Block of Jade", 30, 1042081 );
+			AddCraft( typeof( JadePlateArms ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadePlateGloves ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadePlateGorget ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadePlateLegs ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadePlateChest ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadeFemalePlateChest ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadePlateHelm ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( JadeShield ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( JadeIngot ), "Block of Jade", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilJade ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Jade Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( JadeIngot ), "Block of Jade", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( MarblePlateArms ), "Jade & Marble", "Marble Arms", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 18, 1042081 );
-			AddCraft( typeof( MarblePlateGloves ), "Jade & Marble", "Marble Gauntlets", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 12, 1042081 );
-			AddCraft( typeof( MarblePlateGorget ), "Jade & Marble", "Marble Gorget", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 10, 1042081 );
-			AddCraft( typeof( MarblePlateLegs ), "Jade & Marble", "Marble Leggings", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 20, 1042081 );
-			AddCraft( typeof( MarblePlateChest ), "Jade & Marble", "Marble Tunic", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 25, 1042081 );
-			AddCraft( typeof( MarbleFemalePlateChest ), "Jade & Marble", "Marble Female Tunic", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 20, 1042081 );
-			AddCraft( typeof( MarblePlateHelm ), "Jade & Marble", "Marble Helm", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 15, 1042081 );
-			AddCraft( typeof( MarbleShields ), "Jade & Marble", "Marble Shield", 90.0, 125.0, typeof( MarbleIngot ), "Block of Marble", 18, 1042081 );
-			index = AddCraft( typeof( OilMarble ), "Jade & Marble", "Marble Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( MarbleIngot ), "Block of Marble", 30, 1042081 );
+			AddCraft( typeof( MarblePlateArms ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarblePlateGloves ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarblePlateGorget ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarblePlateLegs ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarblePlateChest ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarbleFemalePlateChest ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarblePlateHelm ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( MarbleShields ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( MarbleIngot ), "Block of Marble", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilMarble ), GodCraftingStringConstants.CATEGORY_JADE_MARBLE, "Marble Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( MarbleIngot ), "Block of Marble", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( OnyxPlateArms ), "Onyx & Quartz", "Onyx Arms", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 18, 1042081 );
-			AddCraft( typeof( OnyxPlateGloves ), "Onyx & Quartz", "Onyx Gauntlets", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 12, 1042081 );
-			AddCraft( typeof( OnyxPlateGorget ), "Onyx & Quartz", "Onyx Gorget", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 10, 1042081 );
-			AddCraft( typeof( OnyxPlateLegs ), "Onyx & Quartz", "Onyx Leggings", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 20, 1042081 );
-			AddCraft( typeof( OnyxPlateChest ), "Onyx & Quartz", "Onyx Tunic", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 25, 1042081 );
-			AddCraft( typeof( OnyxFemalePlateChest ), "Onyx & Quartz", "Onyx Female Tunic", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 20, 1042081 );
-			AddCraft( typeof( OnyxPlateHelm ), "Onyx & Quartz", "Onyx Helm", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 15, 1042081 );
-			AddCraft( typeof( OnyxShield ), "Onyx & Quartz", "Onyx Shield", 90.0, 125.0, typeof( OnyxIngot ), "Block of Onyx", 18, 1042081 );
-			index = AddCraft( typeof( OilOnyx ), "Onyx & Quartz", "Onyx Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( OnyxIngot ), "Block of Onyx", 30, 1042081 );
+			AddCraft( typeof( OnyxPlateArms ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxPlateGloves ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxPlateGorget ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxPlateLegs ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxPlateChest ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxFemalePlateChest ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxPlateHelm ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( OnyxShield ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( OnyxIngot ), "Block of Onyx", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilOnyx ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Onyx Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( OnyxIngot ), "Block of Onyx", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( QuartzPlateArms ), "Onyx & Quartz", "Quartz Arms", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 18, 1042081 );
-			AddCraft( typeof( QuartzPlateGloves ), "Onyx & Quartz", "Quartz Gauntlets", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 12, 1042081 );
-			AddCraft( typeof( QuartzPlateGorget ), "Onyx & Quartz", "Quartz Gorget", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 10, 1042081 );
-			AddCraft( typeof( QuartzPlateLegs ), "Onyx & Quartz", "Quartz Leggings", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 20, 1042081 );
-			AddCraft( typeof( QuartzPlateChest ), "Onyx & Quartz", "Quartz Tunic", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 25, 1042081 );
-			AddCraft( typeof( QuartzFemalePlateChest ), "Onyx & Quartz", "Quartz Female Tunic", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 20, 1042081 );
-			AddCraft( typeof( QuartzPlateHelm ), "Onyx & Quartz", "Quartz Helm", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 15, 1042081 );
-			AddCraft( typeof( QuartzShield ), "Onyx & Quartz", "Quartz Shield", 90.0, 125.0, typeof( QuartzIngot ), "Block of Quartz", 18, 1042081 );
-			index = AddCraft( typeof( OilQuartz ), "Onyx & Quartz", "Quartz Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( QuartzIngot ), "Block of Quartz", 30, 1042081 );
+			AddCraft( typeof( QuartzPlateArms ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzPlateGloves ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzPlateGorget ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzPlateLegs ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzPlateChest ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzFemalePlateChest ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzPlateHelm ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( QuartzShield ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( QuartzIngot ), "Block of Quartz", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilQuartz ), GodCraftingStringConstants.CATEGORY_ONYX_QUARTZ, "Quartz Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( QuartzIngot ), "Block of Quartz", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( RubyPlateArms ), "Ruby & Sapphire", "Ruby Arms", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 18, 1042081 );
-			AddCraft( typeof( RubyPlateGloves ), "Ruby & Sapphire", "Ruby Gauntlets", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 12, 1042081 );
-			AddCraft( typeof( RubyPlateGorget ), "Ruby & Sapphire", "Ruby Gorget", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 10, 1042081 );
-			AddCraft( typeof( RubyPlateLegs ), "Ruby & Sapphire", "Ruby Leggings", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 20, 1042081 );
-			AddCraft( typeof( RubyPlateChest ), "Ruby & Sapphire", "Ruby Tunic", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 25, 1042081 );
-			AddCraft( typeof( RubyFemalePlateChest ), "Ruby & Sapphire", "Ruby Female Tunic", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 20, 1042081 );
-			AddCraft( typeof( RubyPlateHelm ), "Ruby & Sapphire", "Ruby Helm", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 15, 1042081 );
-			AddCraft( typeof( RubyShield ), "Ruby & Sapphire", "Ruby Shield", 90.0, 125.0, typeof( RubyIngot ), "Block of Ruby", 18, 1042081 );
-			index = AddCraft( typeof( OilRuby ), "Ruby & Sapphire", "Ruby Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( RubyIngot ), "Block of Ruby", 30, 1042081 );
+			AddCraft( typeof( RubyPlateArms ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyPlateGloves ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyPlateGorget ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyPlateLegs ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyPlateChest ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyFemalePlateChest ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyPlateHelm ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( RubyShield ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( RubyIngot ), "Block of Ruby", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilRuby ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Ruby Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( RubyIngot ), "Block of Ruby", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SapphirePlateArms ), "Ruby & Sapphire", "Sapphire Arms", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 18, 1042081 );
-			AddCraft( typeof( SapphirePlateGloves ), "Ruby & Sapphire", "Sapphire Gauntlets", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 12, 1042081 );
-			AddCraft( typeof( SapphirePlateGorget ), "Ruby & Sapphire", "Sapphire Gorget", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 10, 1042081 );
-			AddCraft( typeof( SapphirePlateLegs ), "Ruby & Sapphire", "Sapphire Leggings", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 20, 1042081 );
-			AddCraft( typeof( SapphirePlateChest ), "Ruby & Sapphire", "Sapphire Tunic", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 25, 1042081 );
-			AddCraft( typeof( SapphireFemalePlateChest ), "Ruby & Sapphire", "Sapphire Female Tunic", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 20, 1042081 );
-			AddCraft( typeof( SapphirePlateHelm ), "Ruby & Sapphire", "Sapphire Helm", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 15, 1042081 );
-			AddCraft( typeof( SapphireShield ), "Ruby & Sapphire", "Sapphire Shield", 90.0, 125.0, typeof( SapphireIngot ), "Block of Sapphire", 18, 1042081 );
-			index = AddCraft( typeof( OilSapphire ), "Ruby & Sapphire", "Sapphire Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( SapphireIngot ), "Block of Sapphire", 30, 1042081 );
+			AddCraft( typeof( SapphirePlateArms ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphirePlateGloves ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphirePlateGorget ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphirePlateLegs ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphirePlateChest ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphireFemalePlateChest ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphirePlateHelm ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SapphireShield ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SapphireIngot ), "Block of Sapphire", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilSapphire ), GodCraftingStringConstants.CATEGORY_RUBY_SAPPHIRE, "Sapphire Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( SapphireIngot ), "Block of Sapphire", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SilverPlateArms ), "Silver & Spinel", "Silver Arms", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 18, 1042081 );
-			AddCraft( typeof( SilverPlateGloves ), "Silver & Spinel", "Silver Gauntlets", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 12, 1042081 );
-			AddCraft( typeof( SilverPlateGorget ), "Silver & Spinel", "Silver Gorget", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 10, 1042081 );
-			AddCraft( typeof( SilverPlateLegs ), "Silver & Spinel", "Silver Leggings", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 20, 1042081 );
-			AddCraft( typeof( SilverPlateChest ), "Silver & Spinel", "Silver Tunic", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 25, 1042081 );
-			AddCraft( typeof( SilverFemalePlateChest ), "Silver & Spinel", "Silver Female Tunic", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 20, 1042081 );
-			AddCraft( typeof( SilverPlateHelm ), "Silver & Spinel", "Silver Helm", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 15, 1042081 );
-			AddCraft( typeof( SilverShield ), "Silver & Spinel", "Silver Shield", 90.0, 125.0, typeof( ShinySilverIngot ), "Block of Silver", 18, 1042081 );
-			index = AddCraft( typeof( OilSilver ), "Silver & Spinel", "Silver Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( ShinySilverIngot ), "Block of Silver", 30, 1042081 );
+			AddCraft( typeof( SilverPlateArms ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverPlateGloves ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverPlateGorget ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverPlateLegs ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverPlateChest ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverFemalePlateChest ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverPlateHelm ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SilverShield ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( ShinySilverIngot ), "Block of Silver", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilSilver ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Silver Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( ShinySilverIngot ), "Block of Silver", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SpinelPlateArms ), "Silver & Spinel", "Spinel Arms", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 18, 1042081 );
-			AddCraft( typeof( SpinelPlateGloves ), "Silver & Spinel", "Spinel Gauntlets", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 12, 1042081 );
-			AddCraft( typeof( SpinelPlateGorget ), "Silver & Spinel", "Spinel Gorget", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 10, 1042081 );
-			AddCraft( typeof( SpinelPlateLegs ), "Silver & Spinel", "Spinel Leggings", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 20, 1042081 );
-			AddCraft( typeof( SpinelPlateChest ), "Silver & Spinel", "Spinel Tunic", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 25, 1042081 );
-			AddCraft( typeof( SpinelFemalePlateChest ), "Silver & Spinel", "Spinel Female Tunic", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 20, 1042081 );
-			AddCraft( typeof( SpinelPlateHelm ), "Silver & Spinel", "Spinel Helm", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 15, 1042081 );
-			AddCraft( typeof( SpinelShield ), "Silver & Spinel", "Spinel Shield", 90.0, 125.0, typeof( SpinelIngot ), "Block of Spinel", 18, 1042081 );
-			index = AddCraft( typeof( OilSpinel ), "Silver & Spinel", "Spinel Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( SpinelIngot ), "Block of Spinel", 30, 1042081 );
+			AddCraft( typeof( SpinelPlateArms ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelPlateGloves ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelPlateGorget ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelPlateLegs ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelPlateChest ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelFemalePlateChest ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelPlateHelm ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SpinelShield ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SpinelIngot ), "Block of Spinel", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilSpinel ), GodCraftingStringConstants.CATEGORY_SILVER_SPINEL, "Spinel Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( SpinelIngot ), "Block of Spinel", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( StarRubyPlateArms ), "Star Ruby & Topaz", "Star Ruby Arms", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 18, 1042081 );
-			AddCraft( typeof( StarRubyPlateGloves ), "Star Ruby & Topaz", "Star Ruby Gauntlets", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 12, 1042081 );
-			AddCraft( typeof( StarRubyPlateGorget ), "Star Ruby & Topaz", "Star Ruby Gorget", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 10, 1042081 );
-			AddCraft( typeof( StarRubyPlateLegs ), "Star Ruby & Topaz", "Star Ruby Leggings", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 20, 1042081 );
-			AddCraft( typeof( StarRubyPlateChest ), "Star Ruby & Topaz", "Star Ruby Tunic", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 25, 1042081 );
-			AddCraft( typeof( StarRubyFemalePlateChest ), "Star Ruby & Topaz", "Star Ruby Female Tunic", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 20, 1042081 );
-			AddCraft( typeof( StarRubyPlateHelm ), "Star Ruby & Topaz", "Star Ruby Helm", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 15, 1042081 );
-			AddCraft( typeof( StarRubyShield ), "Star Ruby & Topaz", "Star Ruby Shield", 90.0, 125.0, typeof( StarRubyIngot ), "Block of Star Ruby", 18, 1042081 );
-			index = AddCraft( typeof( OilStarRuby ), "Star Ruby & Topaz", "Star Ruby Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( StarRubyIngot ), "Block of Star Ruby", 30, 1042081 );
+			AddCraft( typeof( StarRubyPlateArms ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyPlateGloves ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyPlateGorget ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyPlateLegs ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyPlateChest ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyFemalePlateChest ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyPlateHelm ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( StarRubyShield ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( StarRubyIngot ), "Block of Star Ruby", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilStarRuby ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Star Ruby Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( StarRubyIngot ), "Block of Star Ruby", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( TopazPlateArms ), "Star Ruby & Topaz", "Topaz Arms", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 18, 1042081 );
-			AddCraft( typeof( TopazPlateGloves ), "Star Ruby & Topaz", "Topaz Gauntlets", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 12, 1042081 );
-			AddCraft( typeof( TopazPlateGorget ), "Star Ruby & Topaz", "Topaz Gorget", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 10, 1042081 );
-			AddCraft( typeof( TopazPlateLegs ), "Star Ruby & Topaz", "Topaz Leggings", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 20, 1042081 );
-			AddCraft( typeof( TopazPlateChest ), "Star Ruby & Topaz", "Topaz Tunic", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 25, 1042081 );
-			AddCraft( typeof( TopazFemalePlateChest ), "Star Ruby & Topaz", "Topaz Female Tunic", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 20, 1042081 );
-			AddCraft( typeof( TopazPlateHelm ), "Star Ruby & Topaz", "Topaz Helm", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 15, 1042081 );
-			AddCraft( typeof( TopazShield ), "Star Ruby & Topaz", "Topaz Shield", 90.0, 125.0, typeof( TopazIngot ), "Block of Topaz", 18, 1042081 );
-			index = AddCraft( typeof( OilTopaz ), "Star Ruby & Topaz", "Topaz Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( TopazIngot ), "Block of Topaz", 30, 1042081 );
+			AddCraft( typeof( TopazPlateArms ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazPlateGloves ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazPlateGorget ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazPlateLegs ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazPlateChest ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazFemalePlateChest ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazPlateHelm ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( TopazShield ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TopazIngot ), "Block of Topaz", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilTopaz ), GodCraftingStringConstants.CATEGORY_STAR_RUBY_TOPAZ, "Topaz Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( TopazIngot ), "Block of Topaz", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( CaddellitePlateArms ), "Caddellite", "Caddellite Arms", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 18, 1042081 );
-			AddCraft( typeof( CaddellitePlateGloves ), "Caddellite", "Caddellite Gauntlets", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 12, 1042081 );
-			AddCraft( typeof( CaddellitePlateGorget ), "Caddellite", "Caddellite Gorget", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 10, 1042081 );
-			AddCraft( typeof( CaddellitePlateLegs ), "Caddellite", "Caddellite Leggings", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 20, 1042081 );
-			AddCraft( typeof( CaddellitePlateChest ), "Caddellite", "Caddellite Tunic", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 25, 1042081 );
-			AddCraft( typeof( CaddelliteFemalePlateChest ), "Caddellite", "Caddellite Female Tunic", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 20, 1042081 );
-			AddCraft( typeof( CaddellitePlateHelm ), "Caddellite", "Caddellite Helm", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 15, 1042081 );
-			AddCraft( typeof( CaddelliteShield ), "Caddellite", "Caddellite Shield", 90.0, 125.0, typeof( CaddelliteIngot ), "Block of Caddellite", 18, 1042081 );
-			index = AddCraft( typeof( OilCaddellite ), "Caddellite", "Caddellite Oil", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( CaddelliteIngot ), "Block of Caddellite", 30, 1042081 );
+			AddCraft( typeof( CaddellitePlateArms ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddellitePlateGloves ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Gauntlets", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddellitePlateGorget ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddellitePlateLegs ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddellitePlateChest ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 25, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddelliteFemalePlateChest ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Female Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 20, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddellitePlateHelm ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Helm", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 15, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( CaddelliteShield ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Shield", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( CaddelliteIngot ), "Block of Caddellite", 18, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			index = AddCraft( typeof( OilCaddellite ), GodCraftingStringConstants.CATEGORY_CADDELLITE, "Caddellite Oil", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( CaddelliteIngot ), "Block of Caddellite", 30, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
 			#endregion
 		}
@@ -269,7 +269,7 @@ namespace Server.Engines.Craft
  
         public override string GumpTitleString
         {
-            get { return "<BASEFONT Color=#FBFBFB><CENTER>MAGICAL SEWING MENU</CENTER></BASEFONT>"; }
+            get { return GodCraftingStringConstants.GUMP_TITLE_SEWING; }
         }
 
 		private static CraftSystem m_CraftSystem;
@@ -289,46 +289,46 @@ namespace Server.Engines.Craft
 
 		public override double GetChanceAtMin( CraftItem item )
 		{
-			return 0.5; // 50%
+			return GodCraftingConstants.MIN_SUCCESS_CHANCE; // 50%
 		}
 
-		private DefGodSewing() : base( 1, 1, 1.25 )// base( 1, 1, 4.5 )
+		private DefGodSewing() : base( GodCraftingConstants.MIN_CHANCE_MULTIPLIER, GodCraftingConstants.MAX_CHANCE_MULTIPLIER, GodCraftingConstants.DELAY_MULTIPLIER )// base( 1, 1, 4.5 )
 		{
 		}
 
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
+				return GodCraftingConstants.CLILOC_TOOL_WORN_OUT; // You have worn out your tool!
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+				return GodCraftingConstants.CLILOC_TOOL_MUST_BE_ON_PERSON; // The tool must be on your person to use.
 
-			if ( from.Map == Map.TerMur && from.X > 1087 && from.X < 1105 && from.Y > 1968 && from.Y < 1982 )
+			if ( from.Map == Map.TerMur && from.X > GodCraftingConstants.SEWING_AREA_MIN_X && from.X < GodCraftingConstants.SEWING_AREA_MAX_X && from.Y > GodCraftingConstants.SEWING_AREA_MIN_Y && from.Y < GodCraftingConstants.SEWING_AREA_MAX_Y )
 				return 0;
 
-			return 501816;
+			return GodCraftingConstants.CLILOC_LOCATION_ERROR;
 		}
 
 		public override void PlayCraftEffect( Mobile from )
 		{
-			from.PlaySound( 0x248 );
+			from.PlaySound( GodCraftingConstants.SOUND_SEWING );
 		}
 
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
 		{
 			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+				from.SendLocalizedMessage( GodCraftingConstants.CLILOC_TOOL_WORN_OUT ); // You have worn out your tool
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+					return GodCraftingConstants.CLILOC_FAILED_MATERIAL_LOST; // You failed to create the item, and some of your materials are lost.
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return GodCraftingConstants.CLILOC_FAILED_NO_MATERIAL_LOST; // You failed to create the item, but no materials were lost.
 			}
 			else
 			{
-				return 1044154; // You create the item.
+				return GodCraftingConstants.CLILOC_ITEM_CREATED; // You create the item.
 			}
 		}
 
@@ -338,47 +338,47 @@ namespace Server.Engines.Craft
 
 			#region Armor
 
-			AddCraft( typeof( SkinDemonArms ), "Demon Skin", "Demon Skin Arms", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 4, 1042081 );
-			AddCraft( typeof( SkinDemonHelm ), "Demon Skin", "Demon Skin Cap", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 2, 1042081 );
-			AddCraft( typeof( SkinDemonGloves ), "Demon Skin", "Demon Skin Gloves", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 3, 1042081 );
-			AddCraft( typeof( SkinDemonGorget ), "Demon Skin", "Demon Skin Gorget", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 4, 1042081 );
-			AddCraft( typeof( SkinDemonLegs ), "Demon Skin", "Demon Skin Leggings", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 10, 1042081 );
-			AddCraft( typeof( SkinDemonChest ), "Demon Skin", "Demon Skin Tunic", 90.0, 125.0, typeof( DemonSkin ), "Demon Skin", 12, 1042081 );
+			AddCraft( typeof( SkinDemonArms ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDemonHelm ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDemonGloves ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDemonGorget ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDemonLegs ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDemonChest ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, "Demon Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DemonSkin ), GodCraftingStringConstants.CATEGORY_DEMON_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SkinDragonArms ), "Dragon Skin", "Dragon Skin Arms", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 4, 1042081 );
-			AddCraft( typeof( SkinDragonHelm ), "Dragon Skin", "Dragon Skin Cap", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 2, 1042081 );
-			AddCraft( typeof( SkinDragonGloves ), "Dragon Skin", "Dragon Skin Gloves", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 3, 1042081 );
-			AddCraft( typeof( SkinDragonGorget ), "Dragon Skin", "Dragon Skin Gorget", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 4, 1042081 );
-			AddCraft( typeof( SkinDragonLegs ), "Dragon Skin", "Dragon Skin Leggings", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 10, 1042081 );
-			AddCraft( typeof( SkinDragonChest ), "Dragon Skin", "Dragon Skin Tunic", 90.0, 125.0, typeof( DragonSkin ), "Dragon Skin", 12, 1042081 );
+			AddCraft( typeof( SkinDragonArms ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDragonHelm ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDragonGloves ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDragonGorget ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDragonLegs ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinDragonChest ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, "Dragon Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( DragonSkin ), GodCraftingStringConstants.CATEGORY_DRAGON_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SkinNightmareArms ), "Nightmare Skin", "Nightmare Skin Arms", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 4, 1042081 );
-			AddCraft( typeof( SkinNightmareHelm ), "Nightmare Skin", "Nightmare Skin Cap", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 2, 1042081 );
-			AddCraft( typeof( SkinNightmareGloves ), "Nightmare Skin", "Nightmare Skin Gloves", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 3, 1042081 );
-			AddCraft( typeof( SkinNightmareGorget ), "Nightmare Skin", "Nightmare Skin Gorget", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 4, 1042081 );
-			AddCraft( typeof( SkinNightmareLegs ), "Nightmare Skin", "Nightmare Skin Leggings", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 10, 1042081 );
-			AddCraft( typeof( SkinNightmareChest ), "Nightmare Skin", "Nightmare Skin Tunic", 90.0, 125.0, typeof( NightmareSkin ), "Nightmare Skin", 12, 1042081 );
+			AddCraft( typeof( SkinNightmareArms ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinNightmareHelm ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinNightmareGloves ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinNightmareGorget ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinNightmareLegs ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinNightmareChest ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, "Nightmare Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( NightmareSkin ), GodCraftingStringConstants.CATEGORY_NIGHTMARE_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SkinSerpentArms ), "Serpent Skin", "Serpent Skin Arms", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 4, 1042081 );
-			AddCraft( typeof( SkinSerpentHelm ), "Serpent Skin", "Serpent Skin Cap", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 2, 1042081 );
-			AddCraft( typeof( SkinSerpentGloves ), "Serpent Skin", "Serpent Skin Gloves", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 3, 1042081 );
-			AddCraft( typeof( SkinSerpentGorget ), "Serpent Skin", "Serpent Skin Gorget", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 4, 1042081 );
-			AddCraft( typeof( SkinSerpentLegs ), "Serpent Skin", "Serpent Skin Leggings", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 10, 1042081 );
-			AddCraft( typeof( SkinSerpentChest ), "Serpent Skin", "Serpent Skin Tunic", 90.0, 125.0, typeof( SerpentSkin ), "Serpent Skin", 12, 1042081 );
+			AddCraft( typeof( SkinSerpentArms ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinSerpentHelm ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinSerpentGloves ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinSerpentGorget ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinSerpentLegs ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinSerpentChest ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, "Serpent Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( SerpentSkin ), GodCraftingStringConstants.CATEGORY_SERPENT_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SkinTrollArms ), "Troll Skin", "Troll Skin Arms", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 4, 1042081 );
-			AddCraft( typeof( SkinTrollHelm ), "Troll Skin", "Troll Skin Cap", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 2, 1042081 );
-			AddCraft( typeof( SkinTrollGloves ), "Troll Skin", "Troll Skin Gloves", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 3, 1042081 );
-			AddCraft( typeof( SkinTrollGorget ), "Troll Skin", "Troll Skin Gorget", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 4, 1042081 );
-			AddCraft( typeof( SkinTrollLegs ), "Troll Skin", "Troll Skin Leggings", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 10, 1042081 );
-			AddCraft( typeof( SkinTrollChest ), "Troll Skin", "Troll Skin Tunic", 90.0, 125.0, typeof( TrollSkin ), "Troll Skin", 12, 1042081 );
+			AddCraft( typeof( SkinTrollArms ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinTrollHelm ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinTrollGloves ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinTrollGorget ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinTrollLegs ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinTrollChest ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, "Troll Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( TrollSkin ), GodCraftingStringConstants.CATEGORY_TROLL_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			AddCraft( typeof( SkinUnicornArms ), "Unicorn Skin", "Unicorn Skin Arms", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 4, 1042081 );
-			AddCraft( typeof( SkinUnicornHelm ), "Unicorn Skin", "Unicorn Skin Cap", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 2, 1042081 );
-			AddCraft( typeof( SkinUnicornGloves ), "Unicorn Skin", "Unicorn Skin Gloves", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 3, 1042081 );
-			AddCraft( typeof( SkinUnicornGorget ), "Unicorn Skin", "Unicorn Skin Gorget", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 4, 1042081 );
-			AddCraft( typeof( SkinUnicornLegs ), "Unicorn Skin", "Unicorn Skin Leggings", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 10, 1042081 );
-			AddCraft( typeof( SkinUnicornChest ), "Unicorn Skin", "Unicorn Skin Tunic", 90.0, 125.0, typeof( UnicornSkin ), "Unicorn Skin", 12, 1042081 );
+			AddCraft( typeof( SkinUnicornArms ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Arms", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinUnicornHelm ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Cap", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinUnicornGloves ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Gloves", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinUnicornGorget ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Gorget", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinUnicornLegs ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Leggings", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 10, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddCraft( typeof( SkinUnicornChest ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, "Unicorn Skin Tunic", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( UnicornSkin ), GodCraftingStringConstants.CATEGORY_UNICORN_SKIN, 12, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
 			#endregion
 		}
@@ -398,7 +398,7 @@ namespace Server.Engines.Craft
  
         public override string GumpTitleString
         {
-            get { return "<BASEFONT Color=#FBFBFB><CENTER>MAGICAL ALCHEMY MENU</CENTER></BASEFONT>"; }
+            get { return GodCraftingStringConstants.GUMP_TITLE_BREWING; }
         }
 
 		private static CraftSystem m_CraftSystem;
@@ -418,29 +418,29 @@ namespace Server.Engines.Craft
 
 		public override double GetChanceAtMin( CraftItem item )
 		{
-			return 0.5; // 50%
+			return GodCraftingConstants.MIN_SUCCESS_CHANCE; // 50%
 		}
 
-		private DefGodBrewing() : base( 1, 1, 1.25 )// base( 1, 1, 4.5 )
+		private DefGodBrewing() : base( GodCraftingConstants.MIN_CHANCE_MULTIPLIER, GodCraftingConstants.MAX_CHANCE_MULTIPLIER, GodCraftingConstants.DELAY_MULTIPLIER )// base( 1, 1, 4.5 )
 		{
 		}
 
 		public override int CanCraft( Mobile from, BaseTool tool, Type itemType )
 		{
 			if( tool == null || tool.Deleted || tool.UsesRemaining < 0 )
-				return 1044038; // You have worn out your tool!
+				return GodCraftingConstants.CLILOC_TOOL_WORN_OUT; // You have worn out your tool!
 			else if ( !BaseTool.CheckAccessible( tool, from ) )
-				return 1044263; // The tool must be on your person to use.
+				return GodCraftingConstants.CLILOC_TOOL_MUST_BE_ON_PERSON; // The tool must be on your person to use.
 
-			if ( from.Map == Map.TerMur && from.X > 1098 && from.X < 1121 && from.Y > 1908 && from.Y < 1931 )
+			if ( from.Map == Map.TerMur && from.X > GodCraftingConstants.BREWING_AREA_MIN_X && from.X < GodCraftingConstants.BREWING_AREA_MAX_X && from.Y > GodCraftingConstants.BREWING_AREA_MIN_Y && from.Y < GodCraftingConstants.BREWING_AREA_MAX_Y )
 				return 0;
 
-			return 501816;
+			return GodCraftingConstants.CLILOC_LOCATION_ERROR;
 		}
 
 		public override void PlayCraftEffect( Mobile from )
 		{
-			from.PlaySound( 0x242 );
+			from.PlaySound( GodCraftingConstants.SOUND_BREWING );
 		}
 
 		public override int PlayEndingEffect( Mobile from, bool failed, bool lostMaterial, bool toolBroken, int quality, bool makersMark, CraftItem item )
@@ -448,18 +448,18 @@ namespace Server.Engines.Craft
 			Server.Gumps.MReagentGump.XReagentGump( from );
 
 			if ( toolBroken )
-				from.SendLocalizedMessage( 1044038 ); // You have worn out your tool
+				from.SendLocalizedMessage( GodCraftingConstants.CLILOC_TOOL_WORN_OUT ); // You have worn out your tool
 
 			if ( failed )
 			{
 				if ( lostMaterial )
-					return 1044043; // You failed to create the item, and some of your materials are lost.
+					return GodCraftingConstants.CLILOC_FAILED_MATERIAL_LOST; // You failed to create the item, and some of your materials are lost.
 				else
-					return 1044157; // You failed to create the item, but no materials were lost.
+					return GodCraftingConstants.CLILOC_FAILED_NO_MATERIAL_LOST; // You failed to create the item, but no materials were lost.
 			}
 			else
 			{
-				return 1044154; // You create the item.
+				return GodCraftingConstants.CLILOC_ITEM_CREATED; // You create the item.
 			}
 		}
 
@@ -469,65 +469,65 @@ namespace Server.Engines.Craft
 
 			#region Potions
 
-			index = AddCraft( typeof( LesserInvisibilityPotion ), "Invisibility", "Invisibility Potion, Lesser", 70.0, 105.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 1, 1042081 );
-			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 2, 1042081 );
+			index = AddCraft( typeof( LesserInvisibilityPotion ), GodCraftingStringConstants.CATEGORY_INVISIBILITY, "Invisibility Potion, Lesser", GodCraftingConstants.LESSER_POTION_MIN_SKILL, GodCraftingConstants.LESSER_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 1, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( InvisibilityPotion ), "Invisibility", "Invisibility Potion", 80.0, 115.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 2, 1042081 );
-			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 4, 1042081 );
+			index = AddCraft( typeof( InvisibilityPotion ), GodCraftingStringConstants.CATEGORY_INVISIBILITY, "Invisibility Potion", GodCraftingConstants.REGULAR_POTION_MIN_SKILL, GodCraftingConstants.REGULAR_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( GreaterInvisibilityPotion ), "Invisibility", "Invisibility Potion, Greater", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 3, 1042081 );
-			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 6, 1042081 );
+			index = AddCraft( typeof( GreaterInvisibilityPotion ), GodCraftingStringConstants.CATEGORY_INVISIBILITY, "Invisibility Potion, Greater", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 6, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( InvulnerabilityPotion ), "Invulnerability", "Invulnerability Potion", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( EnchantedSeaweed ), "Enchanted Seaweed", 3, 1042081 );
-			AddRes( index, typeof( DragonTooth ), "Dragon Tooth", 2, 1042081 );
+			index = AddCraft( typeof( InvulnerabilityPotion ), GodCraftingStringConstants.CATEGORY_INVULNERABILITY, "Invulnerability Potion", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( EnchantedSeaweed ), "Enchanted Seaweed", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( DragonTooth ), "Dragon Tooth", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( LesserManaPotion ), "Mana", "Mana Potion, Lesser", 70.0, 105.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 1, 1042081 );
-			AddRes( index, typeof( LichDust ), "Lich Dust", 2, 1042081 );
+			index = AddCraft( typeof( LesserManaPotion ), GodCraftingStringConstants.CATEGORY_MANA, "Mana Potion, Lesser", GodCraftingConstants.LESSER_POTION_MIN_SKILL, GodCraftingConstants.LESSER_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 1, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( LichDust ), "Lich Dust", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( ManaPotion ), "Mana", "Mana Potion", 80.0, 115.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 2, 1042081 );
-			AddRes( index, typeof( LichDust ), "Lich Dust", 4, 1042081 );
+			index = AddCraft( typeof( ManaPotion ), GodCraftingStringConstants.CATEGORY_MANA, "Mana Potion", GodCraftingConstants.REGULAR_POTION_MIN_SKILL, GodCraftingConstants.REGULAR_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( LichDust ), "Lich Dust", 4, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( GreaterManaPotion ), "Mana", "Mana Potion, Greater", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 3, 1042081 );
-			AddRes( index, typeof( LichDust ), "Lich Dust", 6, 1042081 );
+			index = AddCraft( typeof( GreaterManaPotion ), GodCraftingStringConstants.CATEGORY_MANA, "Mana Potion, Greater", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( LichDust ), "Lich Dust", 6, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( LesserRejuvenatePotion ), "Rejuvenate", "Rejuvenation Potion, Lesser", 70.0, 105.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemonClaw ), "Demon Claw", 1, 1042081 );
-			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 1, 1042081 );
+			index = AddCraft( typeof( LesserRejuvenatePotion ), GodCraftingStringConstants.CATEGORY_REJUVENATE, "Rejuvenation Potion, Lesser", GodCraftingConstants.LESSER_POTION_MIN_SKILL, GodCraftingConstants.LESSER_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemonClaw ), "Demon Claw", 1, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 1, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( RejuvenatePotion ), "Rejuvenate", "Rejuvenation Potion", 80.0, 115.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemonClaw ), "Demon Claw", 2, 1042081 );
-			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 2, 1042081 );
+			index = AddCraft( typeof( RejuvenatePotion ), GodCraftingStringConstants.CATEGORY_REJUVENATE, "Rejuvenation Potion", GodCraftingConstants.REGULAR_POTION_MIN_SKILL, GodCraftingConstants.REGULAR_POTION_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemonClaw ), "Demon Claw", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( GreaterRejuvenatePotion ), "Rejuvenate", "Rejuvenation Potion, Greater", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemonClaw ), "Demon Claw", 3, 1042081 );
-			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, 1042081 );
+			index = AddCraft( typeof( GreaterRejuvenatePotion ), GodCraftingStringConstants.CATEGORY_REJUVENATE, "Rejuvenation Potion, Greater", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemonClaw ), "Demon Claw", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( SuperPotion ), "Rejuvenate", "Superior Potion", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemonClaw ), "Demon Claw", 3, 1042081 );
-			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, 1042081 );
+			index = AddCraft( typeof( SuperPotion ), GodCraftingStringConstants.CATEGORY_REJUVENATE, "Superior Potion", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemonClaw ), "Demon Claw", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( AutoResPotion ), "Resurrection", "Resurrect Self Potion", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemigodBlood ), "Demigod Blood", 3, 1042081 );
-			AddRes( index, typeof( GhostlyDust ), "Ghostly Dust", 2, 1042081 );
+			index = AddCraft( typeof( AutoResPotion ), GodCraftingStringConstants.CATEGORY_RESURRECTION, "Resurrect Self Potion", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemigodBlood ), "Demigod Blood", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( GhostlyDust ), "Ghostly Dust", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( ResurrectPotion ), "Resurrection", "Resurrect Others Potion", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( DemigodBlood ), "Demigod Blood", 3, 1042081 );
-			AddRes( index, typeof( GhostlyDust ), "Ghostly Dust", 2, 1042081 );
+			index = AddCraft( typeof( ResurrectPotion ), GodCraftingStringConstants.CATEGORY_RESURRECTION, "Resurrect Others Potion", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( DemigodBlood ), "Demigod Blood", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( GhostlyDust ), "Ghostly Dust", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			index = AddCraft( typeof( RepairPotion ), "Repair", "Repairing Potion", 90.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, 1042081 );
-			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 2, 1042081 );
+			index = AddCraft( typeof( RepairPotion ), GodCraftingStringConstants.CATEGORY_REPAIR, "Repairing Potion", GodCraftingConstants.STANDARD_MIN_SKILL, GodCraftingConstants.STANDARD_MAX_SKILL, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( UnicornHorn ), "Unicorn Horn", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( SilverSerpentVenom ), "Silver Serpent Venom", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );
 
-			/*index = AddCraft( typeof( DurabilityPotion ), "Repair", "Durability Potion", 110.0, 125.0, typeof( Bottle ), 1044529, 1, 500315 );
-			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 3, 1042081 );
-			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 2, 1042081 );*/
+			/*index = AddCraft( typeof( DurabilityPotion ), GodCraftingStringConstants.CATEGORY_REPAIR, "Durability Potion", 110.0, 125.0, typeof( Bottle ), GodCraftingConstants.CLILOC_BOTTLE, 1, GodCraftingConstants.CLILOC_GENERIC_ERROR );
+			AddRes( index, typeof( GoldenSerpentVenom ), "Golden Serpent Venom", 3, GodCraftingConstants.CLILOC_RESOURCE_LACK );
+			AddRes( index, typeof( DragonBlood ), "Dragon Blood", 2, GodCraftingConstants.CLILOC_RESOURCE_LACK );*/
 
 			#endregion
 		}

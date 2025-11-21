@@ -27,7 +27,7 @@ namespace Server.Items
         [Constructable]
 		public UncutCloth() : this( 1 )
 		{
-            //Name = "tecido(s) de poliéster";
+            //Name = "tecido(s) de poliï¿½ster";
         }
 
 		[Constructable]
@@ -35,7 +35,7 @@ namespace Server.Items
 		{
 			Stackable = true;
 			Amount = amount;
-            //Name = "tecido(s) de poliéster";
+            //Name = "tecido(s) de poliï¿½ster";
         }
 
 		public UncutCloth( Serial serial ) : base( serial )
@@ -69,17 +69,17 @@ namespace Server.Items
 
             m_colored = reader.ReadBool();
 
-            //Name = "tecido(s) de poliéster";
+            //Name = "tecido(s) de poliï¿½ster";
         }
 
         public override void AddNameProperties(ObjectPropertyList list)
         {
             base.AddNameProperties(list);
 
-            //list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Poliéster", "#8be4fc"));
+            //list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Poliï¿½ster", "#8be4fc"));
 
             if (m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
 
             list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize uma tesoura para transformar em bandagens.", "#ffe066")); // PARENTHESIS
         }

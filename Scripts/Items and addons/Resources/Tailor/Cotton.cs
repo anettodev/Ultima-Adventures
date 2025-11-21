@@ -19,7 +19,7 @@ namespace Server.Items
         [Constructable]
 		public Cotton() : this( 1 )
 		{
-            Name = "fardo(s) de algodão";
+            Name = "fardo(s) de algodÃ£o";
         }
 
 		[Constructable]
@@ -28,7 +28,7 @@ namespace Server.Items
 			Stackable = true;
 			Weight = 4.0;
 			Amount = amount;
-			Name = "fardo(s) de algodão";
+			Name = "fardo(s) de algodÃ£o";
         }
 
 		public Cotton( Serial serial ) : base( serial )
@@ -39,7 +39,7 @@ namespace Server.Items
         {
             base.AddNameProperties(list);
             if (m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
             list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize uma roda de fiar para transformar.", "#ffe066")); // PARENTHESIS
         }
 
@@ -58,7 +58,7 @@ namespace Server.Items
 
 			int version = reader.ReadInt();
 
-            Name = "fardo(s) de algodão";
+            Name = "fardo(s) de algodÃ£o";
             m_colored = reader.ReadBool();
         }
 /*		public bool Dye( Mobile from, DyeTub sender )
@@ -77,7 +77,7 @@ namespace Server.Items
 		{
 			if ( IsChildOf( from.Backpack ) )
 			{
-                from.SendMessage(55, "Você precisa de uma roda de fiar para transformar isso.");
+                from.SendMessage(55, "Vocï¿½ precisa de uma roda de fiar para transformar isso.");
                 //from.SendLocalizedMessage( 502655 ); // What spinning wheel do you wish to spin this on?
 				from.Target = new PickWheelTarget( this );
 			}
@@ -105,7 +105,7 @@ namespace Server.Items
                     if (originLoc.X != atualLoc.X || originLoc.Y != atualLoc.Y)
                     {
                         stopped = true;
-                        pm.SendMessage(55, "Você se moveu e parou de transformar o(s) item(s).");
+                        pm.SendMessage(55, "Vocï¿½ se moveu e parou de transformar o(s) item(s).");
 
                         break;
                     }
@@ -121,13 +121,13 @@ namespace Server.Items
                     yarn.Delete();
 
 					from.AddToBackpack(item);
-					from.SendMessage(55, "Você coloca os carretéis de linha na mochila.");
+					from.SendMessage(55, "Vocï¿½ coloca os carretï¿½is de linha na mochila.");
 					//from.SendLocalizedMessage( 1010577 ); // You put the spools of thread in your backpack.
 				}
 				else 
 				{
 					yarn.Amount -= ((yarn.Amount * 0.1) < 1) ? 1 : (int)(yarn.Amount * 0.1);
-                    from.SendMessage(33, "Você perdeu uma pequena quantidade de material quando falhou na transformação.");
+                    from.SendMessage(33, "Vocï¿½ perdeu uma pequena quantidade de material quando falhou na transformaï¿½ï¿½o.");
                 }
             }
 		}
@@ -162,7 +162,7 @@ namespace Server.Items
 					}
 					else if ( wheel.Spinning )
 					{
-                        from.SendMessage(55, "Essa roda de tecer já está em uso. Aguarde acabar.");
+                        from.SendMessage(55, "Essa roda de tecer jï¿½ estï¿½ em uso. Aguarde acabar.");
                         //from.SendLocalizedMessage( 502656 ); // That spinning wheel is being used.
 					}
 					else
@@ -172,7 +172,7 @@ namespace Server.Items
 				}
 				else
 				{
-                    from.SendMessage(55, "Você precisa de uma roda de tecer para transformar isso.");
+                    from.SendMessage(55, "Vocï¿½ precisa de uma roda de tecer para transformar isso.");
                     //from.SendLocalizedMessage( 502658 ); // Use that on a spinning wheel.
 				}
 			}

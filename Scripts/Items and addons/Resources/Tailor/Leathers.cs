@@ -148,18 +148,18 @@ namespace Server.Items
 		[Constructable]
 		public SpinedLeather() : this( 1 )
 		{
-			Name = "spined leather";
+			Name = "couro spined";
 		}
 
 		[Constructable]
 		public SpinedLeather( int amount ) : base( CraftResource.SpinedLeather, amount )
 		{
-			Name = "spined leather";
+			Name = "couro spined";
 		}
 
 		public SpinedLeather( Serial serial ) : base( serial )
 		{
-			Name = "spined leather";
+			Name = "couro spined";
 		}
 
 		public override void Serialize( GenericWriter writer )
@@ -183,18 +183,18 @@ namespace Server.Items
 		[Constructable]
 		public HornedLeather() : this( 1 )
 		{
-			Name = "horned leather";
+			Name = "couro horned";
 		}
 
 		[Constructable]
 		public HornedLeather( int amount ) : base( CraftResource.HornedLeather, amount )
 		{
-			Name = "horned leather";
+			Name = "couro horned";
 		}
 
 		public HornedLeather( Serial serial ) : base( serial )
 		{
-			Name = "horned leather";
+			Name = "couro horned";
 		}
 
 		public override void Serialize( GenericWriter writer )
@@ -218,18 +218,18 @@ namespace Server.Items
 		[Constructable]
 		public BarbedLeather() : this( 1 )
 		{
-			Name = "barbed leather";
+			Name = "couro barbed";
 		}
 
 		[Constructable]
 		public BarbedLeather( int amount ) : base( CraftResource.BarbedLeather, amount )
 		{
-			Name = "barbed leather";
+			Name = "couro barbed";
 		}
 
 		public BarbedLeather( Serial serial ) : base( serial )
 		{
-			Name = "barbed leather";
+			Name = "couro barbed";
 		}
 
 		public override void Serialize( GenericWriter writer )

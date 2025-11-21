@@ -21,7 +21,7 @@ namespace Server.Items
 		[Constructable]
 		public Feather( int amount ) : base( 0x4CCD )
 		{
-			Name = "feather";
+			Name = "pena(s)";
 			Stackable = true;
 			Amount = amount;
 		}

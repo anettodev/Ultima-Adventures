@@ -75,7 +75,7 @@ namespace Server.DeepMine
 				//can use cliloc cf 1007072 if ores not custom
 				string ore = FormatName.ToOre(m_OreType.FullName);
 				
-				return "You place some "+ore+ " in your backpack";
+				return "Você coloca alguns "+ore+ " na sua mochila";
 			}
 		}
 		

@@ -71,7 +71,7 @@ namespace Server.Items
             }
 
             if (m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
             list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize uma tesoura para transformar em tecido.", "#ffe066")); // PARENTHESIS
         }
 

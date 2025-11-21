@@ -18,7 +18,7 @@ namespace Server.Items
         [Constructable]
 		public Wool() : this( 1 )
 		{
-            Name = "fardo(s) de lã fina";
+            Name = "fardo(s) de lÃ¡ fina";
             Hue = 946;
         }
 
@@ -29,7 +29,7 @@ namespace Server.Items
 			Weight = 3.0;
 			Amount = amount;
             Hue = 946;
-            Name = "fardo(s) de lã fina";
+            Name = "fardo(s) de lÃ¡ fina";
         }
 
 		public Wool( Serial serial ) : base( serial )
@@ -41,7 +41,7 @@ namespace Server.Items
             base.AddNameProperties(list);
 
 			if(m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
 
             list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize uma roda de fiar para transformar.", "#ffe066")); // PARENTHESIS
         }
@@ -61,7 +61,7 @@ namespace Server.Items
 
 			int version = reader.ReadInt();
             m_colored = reader.ReadBool();
-            Name = "fardo(s) de lã fina";
+            Name = "fardo(s) de lÃ¡ fina";
         }
 		public bool Dye( Mobile from, DyeTub sender )
 		{
@@ -105,7 +105,7 @@ namespace Server.Items
                     if (originLoc.X != atualLoc.X || originLoc.Y != atualLoc.Y)
                     {
                         stopped = true;
-                        pm.SendMessage(55, "Você se moveu e parou de transformar o(s) item(s).");
+                        pm.SendMessage(55, "Vocï¿½ se moveu e parou de transformar o(s) item(s).");
 
                         break;
                     }
@@ -121,13 +121,13 @@ namespace Server.Items
                     yarn.Delete();
 
                     from.AddToBackpack(item);
-                    from.SendMessage(55, "Você coloca a(s) bola(s) de lã na mochila.");
+                    from.SendMessage(55, "Vocï¿½ coloca a(s) bola(s) de lÃ¡ na mochila.");
                     //from.SendLocalizedMessage(1010574); // You put a ball of yarn in your backpack.
                 }
                 else
                 {
                     yarn.Amount -= ((yarn.Amount * 0.1) < 1) ? 1 : (int)(yarn.Amount * 0.1);
-                    from.SendMessage(33, "Você perdeu uma pequena quantidade de material quando falhou na transformação.");
+                    from.SendMessage(33, "Vocï¿½ perdeu uma pequena quantidade de material quando falhou na transformaï¿½ï¿½o.");
                 }
             }
         }
@@ -182,7 +182,7 @@ namespace Server.Items
         [Constructable]
 		public TaintedWool() : this( 1 )
 		{
-            Name = "fardo(s) de lã grossa";
+            Name = "fardo(s) de lÃ¡ grossa";
         }
 		
 		[Constructable]
@@ -192,7 +192,7 @@ namespace Server.Items
 			Weight = 4.0;
 			Amount = amount;
 			Hue = 914;
-            Name = "fardo(s) de lã grossa";
+            Name = "fardo(s) de lÃ¡ grossa";
         }
 
 		public TaintedWool( Serial serial ) : base( serial )
@@ -216,7 +216,7 @@ namespace Server.Items
 
             int version = reader.ReadInt();
 
-            Name = "fardo(s) de lã grossa";
+            Name = "fardo(s) de lÃ¡ grossa";
         }
 		
 		new public static void OnSpun( ISpinningWheel wheel, Mobile from, Item yarn, Point3D originLoc)
@@ -236,7 +236,7 @@ namespace Server.Items
                     if (originLoc.X != atualLoc.X || originLoc.Y != atualLoc.Y)
                     {
                         stopped = true;
-                        pm.SendMessage(55, "Você se moveu e parou de transformar o(s) item(s).");
+                        pm.SendMessage(55, "Vocï¿½ se moveu e parou de transformar o(s) item(s).");
 
                         break;
                     }
@@ -253,13 +253,13 @@ namespace Server.Items
                     yarn.Delete();
 
                     from.AddToBackpack(item);
-                    from.SendMessage(55, "Você coloca a(s) bola(s) de lã na mochila.");
+                    from.SendMessage(55, "Vocï¿½ coloca a(s) bola(s) de lÃ¡ na mochila.");
                     //from.SendLocalizedMessage(1010574); // You put a ball of yarn in your backpack.
                 }
                 else
                 {
                     yarn.Amount -= ((yarn.Amount * 0.1) < 1) ? 1 : (int)(yarn.Amount * 0.1);
-                    from.SendMessage(33, "Você perdeu uma pequena quantidade de material quando falhou na transformação.");
+                    from.SendMessage(33, "Vocï¿½ perdeu uma pequena quantidade de material quando falhou na transformaï¿½ï¿½o.");
                 }
             }
         }

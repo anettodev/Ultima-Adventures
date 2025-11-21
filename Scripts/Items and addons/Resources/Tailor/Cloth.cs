@@ -78,7 +78,7 @@ namespace Server.Items
             }
 
             if (m_colored)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificalmente", "#8be4fc"));
+                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Colorido Artificialmente", "#8be4fc"));
 
             if (m_Resource != CraftResource.Cotton)
                 list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Utilize uma tesoura para transformar em bandagens.", "#ffe066")); // PARENTHESIS
@@ -97,7 +97,7 @@ namespace Server.Items
             }
             else 
             {
-                from.SendMessage(55, "Você não pode pintar esse tipo de tecido.");
+                from.SendMessage(55, "Vocï¿½ nï¿½o pode pintar esse tipo de tecido.");
                 return false;
             }
 
@@ -167,12 +167,12 @@ namespace Server.Items
             if (CraftResource.Cotton == m_Resource)
             {
                 base.ScissorHelper(from, new Bandage(), 2);
-                from.SendMessage(55, "Você corta o tecido e transforma-o em bandagens.");
+                from.SendMessage(55, "Vocï¿½ corta o tecido e transforma-o em bandagens.");
                 return true;
             }
             else 
             {
-                from.SendMessage(55, "Apenas tecido do tipo algodão pode ser transformado em bandagens!");
+                from.SendMessage(55, "Apenas tecido do tipo algodï¿½o pode ser transformado em bandagens!");
                 return false;
             }
 		}
