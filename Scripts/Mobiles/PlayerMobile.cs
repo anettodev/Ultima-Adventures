@@ -3374,6 +3374,12 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 		protected override void OnLocationChange( Point3D oldLocation ) 
 		{
+			// Stop automation if player moved (check X/Y coordinates)
+			if ( this.GetFlag( PlayerFlag.IsAutomated ) && (oldLocation.X != this.Location.X || oldLocation.Y != this.Location.Y) )
+			{
+				AdventuresAutomation.StopAction( this );
+			}
+
 			if ( !( Server.Misc.Worlds.IsMainRegion( Server.Misc.Worlds.GetRegionName( this.Map, oldLocation ) ) ) && Server.Misc.Worlds.IsMainRegion( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) ) )
 			{
 				Server.Misc.Worlds.EnteredTheLand( this );

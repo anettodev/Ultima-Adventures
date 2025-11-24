@@ -2,6 +2,7 @@ using System;
 using Server;
 using Server.Items;
 using Server.Mobiles;
+using Server.Targeting;
 using System.Collections.Generic;
 using System.Collections;
 using Server.Multis;
@@ -754,5 +755,19 @@ namespace Server.Engines.Harvest
             0x7FFE, 0x7FFF
         };
         #endregion
+
+        /// <summary>
+        /// Provides fishing skill checks to the player
+        /// </summary>
+        /// <param name="from">The mobile to give skill checks to</param>
+        /// <param name="c">Number of skill checks to perform</param>
+        public static void FishingSkill(Mobile from, int c)
+        {
+            while (c > 0)
+            {
+                c--;
+                from.CheckSkill(SkillName.Fishing, 0, 125);
+            }
+        }
     }
 }

@@ -312,8 +312,8 @@ namespace Server.Engines.Harvest
                                             case 1: preLoot = new DDRelicCloth(); break;
                                             case 2: preLoot = new DDRelicFur(); break;
                                             case 3: preLoot = new DDRelicLeather(); break;
-                                            case 4: preLoot = new DDRelicStudded(); break;
-                                            case 5: preLoot = new DDRelicWood(); break;
+                                            case 4: preLoot = new DDRelicArmor(); break;
+                                            case 5: preLoot = new DDRelicArmor(); break;
                                         }
                                         int attributeCount;
                                         int min, max;
@@ -331,10 +331,10 @@ namespace Server.Engines.Harvest
                                         switch (Utility.Random(5))
                                         {
                                             case 0: preLoot = new DDRelicWeapon(); break;
-                                            case 1: preLoot = new DDRelicAxe(); break;
-                                            case 2: preLoot = new DDRelicBow(); break;
-                                            case 3: preLoot = new DDRelicPole(); break;
-                                            case 4: preLoot = new DDRelicSword(); break;
+                                            case 1: preLoot = new DDRelicWeapon(); break;
+                                            case 2: preLoot = new DDRelicWeapon(); break;
+                                            case 3: preLoot = new DDRelicWeapon(); break;
+                                            case 4: preLoot = new DDRelicWeapon(); break;
                                         }
                                         int attributeCount;
                                         int min, max;

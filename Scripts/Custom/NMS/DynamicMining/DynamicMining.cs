@@ -35,6 +35,10 @@ namespace Server.Engines.Harvest
 
         public static HarvestSystem GetSystem(Item axe)
 		{
+			// Null check for tool
+			if (axe == null || axe.Deleted)
+				return null;
+
 			Map map;
 			Point3D loc;
 
@@ -48,24 +52,39 @@ namespace Server.Engines.Harvest
 			}
 			else
 			{
-				map = ((IEntity)root).Map;
-				loc = ((IEntity)root).Location;
+				IEntity entity = root as IEntity;
+				if (entity == null)
+					return null;
+					
+				map = entity.Map;
+				loc = entity.Location;
 			}
+			
+			// Null check for map before using it
+			if (map == null || map == Map.Internal)
+				return null;
 			
 			IPooledEnumerable eable = map.GetMobilesInRange(loc, 5);
 			
-			foreach ( Mobile mob in eable )
+			try
 			{
-				if(mob is MineSpirit)//find a mine spot
+				foreach ( Mobile mob in eable )
 				{
-					MineSpirit mine = (MineSpirit)mob;
-                    //m.SendMessage(35, "dist-> " + mine.GetDistanceToSqrt(loc));
-                    //m.SendMessage(55, "Você sente que está próximo de um veio de minério.");
-                    if (mine.GetDistanceToSqrt(loc) <= mine.Range)
+					if(mob is MineSpirit)//find a mine spot
 					{
-                        return mine.HarvestSystem; //return its system
+						MineSpirit mine = (MineSpirit)mob;
+						//m.SendMessage(35, "dist-> " + mine.GetDistanceToSqrt(loc));
+						//m.SendMessage(55, "Você sente que está próximo de um veio de minério.");
+						if (mine.GetDistanceToSqrt(loc) <= mine.Range)
+						{
+							return mine.HarvestSystem; //return its system
+						}
 					}
 				}
+			}
+			finally
+			{
+				eable.Free();
 			}
 			
 			return null;//Nothing to harvest

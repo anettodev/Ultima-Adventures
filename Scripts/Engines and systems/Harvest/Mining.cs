@@ -210,7 +210,7 @@ namespace Server.Engines.Harvest
 
 			res = new HarvestResource[]
 				{
-					new HarvestResource(HarvestConstants.SAND_SKILL_MIN, HarvestConstants.SAND_SKILL_MIN, HarvestConstants.SAND_SKILL_MAX, HarvestConstants.MSG_FOUND_SAND, typeof(Sand))
+					new HarvestResource(HarvestConstants.SAND_SKILL_MIN, HarvestConstants.SAND_SKILL_MIN, HarvestConstants.SAND_SKILL_MAX, HarvestStringConstants.MSG_FOUND_SAND, typeof(Sand))
 				};
 
 			veins = new HarvestVein[]

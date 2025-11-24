@@ -45,7 +45,7 @@ namespace Server.Items
 		public AdventuresAutomation() : base( 0x0EDE )
 		{
 			Movable = false;
-			Name = "Item de automação de aventuras";
+			Name = "Item de automaï¿½ï¿½o de aventuras";
 			Visible = false;
 			m_OneTimeType = 3;
 			globaltasktimer = 0;
@@ -71,6 +71,10 @@ namespace Server.Items
 
 		public static HarvestSystem GetMiningSystem(PlayerMobile pm, Item tool)
 		{
+			// Null check for tool
+			if (tool == null || tool.Deleted)
+				return (HarvestSystem)(Mining.System);
+				
 			HarvestSystem DMining = (HarvestSystem)DynamicMining.GetSystem(tool);
             HarvestSystem miningSystem = (DMining != null) ? DMining : (HarvestSystem)(Mining.System);
 			return miningSystem;
@@ -85,22 +89,22 @@ namespace Server.Items
 		
 			if ( pm.GetFlag( PlayerFlag.IsAutomated ) )
 			{
-				pm.SendMessage(55, "Você já está realizando uma tarefa automática. Se quiser para, digite: '.parar' ou '.stop'.");
+				pm.SendMessage(55, "Vocï¿½ jï¿½ estï¿½ realizando uma tarefa automï¿½tica. Se quiser para, digite: '.parar' ou '.stop'.");
 				return;
 			}
 			else if ( pm.Backpack == null || pm.Backpack.Deleted)
 			{
-				pm.SendMessage(55, "Você não tem uma mochila por algum motivo.");
+				pm.SendMessage(55, "Vocï¿½ nï¿½o tem uma mochila por algum motivo.");
 				return;
 			}
 			else if ( !pm.Alive )
 			{
-				pm.SendMessage(55, "Você está morto e não pode fazer isso.");
+				pm.SendMessage(55, "Vocï¿½ estï¿½ morto e nï¿½o pode fazer isso.");
 				return;
 			}
 			else if ( pm.Map == null )
 			{
-				pm.SendMessage(55, "Você se encontra em um local inválido!");
+				pm.SendMessage(55, "Vocï¿½ se encontra em um local invï¿½lido!");
 				return;
 			}
 
@@ -112,7 +116,7 @@ namespace Server.Items
 			//listing actions
 			if (Insensitive.Contains( speech, "auto-listar" ))
 			{
-				pm.Say("Posso fazer as seguintes ações automáticas:");
+				pm.Say("Posso fazer as seguintes aï¿½ï¿½es automï¿½ticas:");
 				pm.Say("Auto-Pescar, Auto-Minerar, Auto-Lenhar");
 				pm.Say("Auto-Moer, Auto-Esfolar, Auto-Massa, Auto-Panificar");
                 return;
@@ -125,7 +129,7 @@ namespace Server.Items
 				tool = pm.FindItemOnLayer( Layer.OneHanded );
 				if (tool == null || (tool != null && !(tool is FishingPole) ) )
 				{
-					pm.SendMessage(55, "Você precisa segurar uma vara de pescar para pescar.");
+					pm.SendMessage(55, "Vocï¿½ precisa segurar uma vara de pescar para pescar.");
 					return;
 				}
 				
@@ -153,17 +157,19 @@ namespace Server.Items
                 // find tool
                 if (tool == null || !(BaseAxe.IsMiningTool(tool)) )
 				{
-					pm.SendMessage(55, "Você precisa equipar uma picareta ou possuir uma pá para minerar.");
+					pm.SendMessage(55, "Vocï¿½ precisa equipar uma picareta ou possuir uma pï¿½ para minerar.");
 					return;
 				}
                 //////////////////////////////////////////////////////////////
                 
 				HarvestSystem miningSystem = GetMiningSystem(pm, (Item)tool);//(HarvestSystem)(Mining.System);
-				if (miningSystem is DynamicMining)
+				// Allow auto-mining with DynamicMining systems (MineSpirit locations)
+				// Previously blocked to force manual mining, but now supports auto-mining
+				/*if (miningSystem is DynamicMining)
 				{
-					pm.SendMessage(55, "Você sente que está próximo de um veio de minério raro e precisa procurar manualmente.");
+					pm.SendMessage(55, "Vocï¿½ sente que estï¿½ prï¿½ximo de um veio de minï¿½rio raro e precisa procurar manualmente.");
                     return;
-                }
+                }*/
 
                 delay = miningdelay; // in seconds
                 HarvestTarget(pm, "mining", tool); //find target
@@ -180,7 +186,7 @@ namespace Server.Items
 
 				if (tool == null || (tool != null && !(tool is BaseAxe) ) || BaseAxe.IsMiningTool(tool)) 
 				{
-					pm.SendMessage(55, "Você precisa segurar um machado para cortar árvores.");
+					pm.SendMessage(55, "Vocï¿½ precisa segurar um machado para cortar ï¿½rvores.");
 					return;
 				}
 				
@@ -201,7 +207,7 @@ namespace Server.Items
 				
 				if ( (tool == null || tool2 == null) || (tool != null && !(tool is SkinningKnife) ) || (tool2 != null && !(tool2 is Scissors) ) )
 				{
-					pm.SendMessage(55, "Você precisa de uma faca e uma tesoura em sua mochila para fazer isso.");
+					pm.SendMessage(55, "Vocï¿½ precisa de uma faca e uma tesoura em sua mochila para fazer isso.");
 					return;
 				}
 
@@ -214,7 +220,7 @@ namespace Server.Items
 				Item wheat = pm.Backpack.FindItemByType(typeof(WheatSheaf));
 				if (wheat == null)
 				{
-					pm.SendMessage(55, "Você precisa de trigo na mochila para moer farinha!");
+					pm.SendMessage(55, "Vocï¿½ precisa de trigo na mochila para moer farinha!");
 					return;
 				}
 				
@@ -283,7 +289,7 @@ namespace Server.Items
 
 				if (!water) // ok didnt find anything
 				{
-					pm.SendMessage(55, "Você precisa de uma fonte de água próxima para fazer massa.");
+					pm.SendMessage(55, "Vocï¿½ precisa de uma fonte de ï¿½gua prï¿½xima para fazer massa.");
 					return;
 				}
 
@@ -309,7 +315,7 @@ namespace Server.Items
 
 				if (!water) // ok didnt find anything
 				{
-					pm.SendMessage(55, "Você precisa de um forno próximo para fazer pão.");
+					pm.SendMessage(55, "Vocï¿½ precisa de um forno prï¿½ximo para fazer pï¿½o.");
 					return;
 				}
 
@@ -326,7 +332,7 @@ namespace Server.Items
 			if (!pm.GetFlag(PlayerFlag.IsAutomated))
 				pm.SetFlag(PlayerFlag.IsAutomated, true);
 			else {
-                pm.SendMessage(55, "Você já está realizando uma tarefa automática. Se quiser para, digite: '.parar' ou '.stop'.");
+                pm.SendMessage(55, "Vocï¿½ jï¿½ estï¿½ realizando uma tarefa automï¿½tica. Se quiser para, digite: '.parar' ou '.stop'.");
             }
 
 			PlayerLoc.Add(pm, pm.Location);	
@@ -353,11 +359,11 @@ namespace Server.Items
 				}
 				if (tool == null)
 				{
-					string name = "pão";
+					string name = "pï¿½o";
 					if (make == "dough")
 						name = "massa";
 					
-					pm.SendMessage("Você precisa da ferramenta adequada para criar " + name + " .");
+					pm.SendMessage("Vocï¿½ precisa da ferramenta adequada para criar " + name + " .");
 					AdventuresAutomation.StopAction(pm);
 				}
 				return tool;
@@ -392,10 +398,17 @@ namespace Server.Items
 								if ( (action == "fishing" && Server.Misc.Worlds.IsWaterTile( (landTile.ID), 1 )) )
 								{
 									//pm.SendMessage(66, "REPEAT!! ****");
+									// Null check for tool before using it
+									if (tool == null || tool.Deleted)
+										continue;
+										
 									HarvestSystem system = (HarvestSystem)(Fishing.System);
+									if (system == null)
+										continue;
+										
 									Point3D loc = new Point3D(pm.X + x, pm.Y + y, landTile.Z);
 									HarvestDefinition def = system.GetDefinition( landTile.ID );
-									if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
+									if (def != null && pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
 									{
 										harvestx = pm.X + x;
 										harvesty = pm.Y + y;
@@ -407,10 +420,18 @@ namespace Server.Items
 								if ( (action == "mining" && Server.Misc.Worlds.IsMiningTile( landTile.ID, 0 )) )
 								{
 									//pm.SendMessage(66, "REPEAT!! ****");
-									HarvestSystem system = (HarvestSystem)(Mining.System);// GetMiningSystem(pm, (BaseAxe)tool);// 
+									// Null check for tool before calling GetMiningSystem
+									if (tool == null || tool.Deleted)
+										continue;
+										
+									// Use GetMiningSystem to support both Mining.System and DynamicMining (MineSpirit)
+									HarvestSystem system = GetMiningSystem(pm, tool);
+									if (system == null)
+										continue;
+										
 									Point3D loc = new Point3D(pm.X + x, pm.Y + y, landTile.Z);
 									HarvestDefinition def = system.GetDefinition( landTile.ID );
-									if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
+									if (def != null && pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
 									{
 										harvestx = pm.X + x;
 										harvesty = pm.Y + y;
@@ -426,6 +447,10 @@ namespace Server.Items
 									if (action == "fishing") //try to find fishing static targets
 									{
                                     //pm.SendMessage(63, "REPEAT2!! ****");
+                                    // Null check for tool before using it
+                                    if (tool == null || tool.Deleted)
+                                        continue;
+                                        
                                     for ( int i = 0; (harvestx == 0 || harvesty == 0) && i < tiles.Length; ++i )
 										{
 											StaticTile tile = tiles[i];
@@ -435,18 +460,14 @@ namespace Server.Items
 
 												Point3D loc = new Point3D(pm.X + x, pm.Y + y, mp.GetAverageZ( pm.X + x, pm.Y ));
 												HarvestSystem system = (HarvestSystem)(Fishing.System);
+												
+												if (system == null)
+													continue;
+													
 												HarvestDefinition def = system.GetDefinition( tile.ID + 0x4000 );
 
-												if (def == null || system == null || loc == Point3D.Zero)
+												if (def == null || loc == Point3D.Zero)
 												{
-													pm.SendMessage(33, "Ocorreu um problema. Faça uma captura de tela e avise ao staff team.");
-													if (def == null)
-														pm.SendMessage("def is null");
-													if (system == null)
-														pm.SendMessage("system is null");
-													if (loc == Point3D.Zero)
-														pm.SendMessage("loc is zero");
-															
 													continue;
 												}
 
@@ -475,7 +496,7 @@ namespace Server.Items
 
 												if (def == null || system == null || loc == Point3D.Zero)
 												{
-													pm.SendMessage(33, "Ocorreu um problema. Faça uma captura de tela e avise ao staff team.");
+													pm.SendMessage(33, "Ocorreu um problema. Faï¿½a uma captura de tela e avise ao staff team.");
 													if (def == null)
 														pm.SendMessage("def is null");
 													if (system == null)
@@ -499,6 +520,10 @@ namespace Server.Items
 
 									if ( action == "lumberjacking") // lumberjacking relies on statics only.
 									{
+										// Null check for tool before using it
+										if (tool == null || tool.Deleted)
+											continue;
+											
 										for ( int i = 0; (harvestx == 0 || harvesty == 0) && i < tiles.Length; ++i )
 										{
 											StaticTile tile = tiles[i];
@@ -507,18 +532,14 @@ namespace Server.Items
 											{
 													Point3D loc = new Point3D(pm.X + x, pm.Y + y, mp.GetAverageZ( pm.X + x, pm.Y ));
 													HarvestSystem system = (HarvestSystem)(Lumberjacking.System);
+													
+													if (system == null)
+														continue;
+														
 													HarvestDefinition def = system.GetDefinition( tile.ID + 0x4000 );
 
-													if (def == null || system == null || loc == Point3D.Zero)
+													if (def == null || loc == Point3D.Zero)
 													{
-														pm.SendMessage(33, "Ocorreu um problema. Faça uma captura de tela e avise ao staff team.");
-														if (def == null)
-															pm.SendMessage("def is null"); //THIS IS HAPPENING TO FIX+++
-														if (system == null)
-															pm.SendMessage("system is null");
-														if (loc == Point3D.Zero)
-															pm.SendMessage("loc is zero");
-														
 														continue;
 													}
 
@@ -551,12 +572,20 @@ namespace Server.Items
 				}
 				else
 				{
-					pm.SendMessage(55, "Não foi possível encontrar recursos próximos.");
+					pm.SendMessage(55, "Nï¿½o foi possï¿½vel encontrar recursos prï¿½ximos.");
 					pm.Say("*Acho que acabei por aqui.*");
 
 					StopAction(pm);
 					return;
 				}
+		}
+
+		public static void ClearHarvestTarget( PlayerMobile pm )
+		{
+			if (pm != null && TaskTarget.Contains(pm))
+			{
+				TaskTarget.Remove(pm);
+			}
 		}
 
 		public static void StopAction( PlayerMobile pm )
@@ -579,7 +608,7 @@ namespace Server.Items
                     TaskString.Remove(pm);
 
                 //globalAction = null;
-                pm.SendMessage(55, "* Ação automática parada! *");
+                pm.SendMessage(55, "* Aï¿½ï¿½o automï¿½tica parada! *");
             }
 		}
 
@@ -687,12 +716,12 @@ namespace Server.Items
                                 newItem.MoveToWorld(pm.Location, pm.Map);// drop the losses on the floor
                                 newItem.InvalidateProperties();
 
-                                pm.SendMessage(55, "Você está muito pesado e deixa alguns itens cairem no chão.");
+                                pm.SendMessage(55, "Vocï¿½ estï¿½ muito pesado e deixa alguns itens cairem no chï¿½o.");
 							}
 						}
 						catch
 						{
-                            pm.SendMessage(55, "Você está muito acima do peso máximo suportado!.");
+                            pm.SendMessage(55, "Vocï¿½ estï¿½ muito acima do peso mï¿½ximo suportado!.");
                             StopAction(pm);
                             return;
 						}
@@ -700,7 +729,7 @@ namespace Server.Items
                 }
                 else
 				{
-                    pm.SendMessage(55, "Você está muito acima do peso máximo suportado!");
+                    pm.SendMessage(55, "Vocï¿½ estï¿½ muito acima do peso mï¿½ximo suportado!");
                     StopAction(pm);
                 }
 			}
@@ -719,7 +748,7 @@ namespace Server.Items
 					Point3D oldloc = (Point3D)de.Value;
 					if (loc.X != oldloc.X || loc.Y != oldloc.Y)
 					{
-						pm.SendMessage(55, "Você se moveu e parou de fazer a ação.");
+						pm.SendMessage(55, "Vocï¿½ se moveu e parou de fazer a aï¿½ï¿½o.");
 						StopAction(pm);
 						return;
 					}
@@ -756,17 +785,31 @@ namespace Server.Items
 
 			if (tool == null)
 			{
-				pm.Say(55, "Há um problema com minha ferramenta.");
+				pm.Say(55, "Hï¿½ um problema com minha ferramenta.");
 				return;
 			}
 
 			if (action == "dough")
 			{
+				// Null check for tool before using it
+				if (tool == null || tool.Deleted)
+				{
+					pm.Say(55, "HÃ¡ um problema com minha ferramenta.");
+					StopAction(pm);
+					return;
+				}
 				MakeDough(pm, tool);
 				return;
 			}
 			if (action == "bread")
 			{
+				// Null check for tool before using it
+				if (tool == null || tool.Deleted)
+				{
+					pm.Say(55, "HÃ¡ um problema com minha ferramenta.");
+					StopAction(pm);
+					return;
+				}
 				MakeBread(pm, tool);
 				return;
 			}
@@ -811,7 +854,7 @@ namespace Server.Items
 
 					if (hs is Fishing)
 						delay = AdventuresAutomation.fishingdelay;
-					else if (hs is Mining)
+					else if (hs is Mining || hs is DynamicMining)
 						delay = AdventuresAutomation.miningdelay;
 					else if (hs is Lumberjacking)
 						delay = AdventuresAutomation.lumberjackingdelay;
@@ -967,21 +1010,21 @@ namespace Server.Items
 		public static void Make(PlayerMobile pm, BaseTool tool, string thing, SkillName skill, Type tomake, int delay, int minskill, int maxskill, Type Resource1, int r1, Type Resource2, int r2, Type Resource3, int r3, Type Resource4, int r4  )
 		{
 			//crafting system is bullshit complicated.  bypassing it.
-			// check tool
-			if (tool.Deleted || tool == null || tool.UsesRemaining < 1)
+			// check tool - null check must come first
+			if (tool == null || tool.Deleted || tool.UsesRemaining < 1)
 			{
 				tool = (BaseTool)FindCraftTool(pm, thing); // try to find a new tool
 				if (tool == null)
 				{
 					pm.Say("*Aff! Estou sem ferramentas.*");
-                    pm.SendMessage(55, "Sua ferramenta não pode ser mais usada e não há outra em sua mochila.");
+                    pm.SendMessage(55, "Sua ferramenta nï¿½o pode ser mais usada e nï¿½o hï¿½ outra em sua mochila.");
                     AdventuresAutomation.StopAction(pm);
 				}
 			}
 
 			if ((int)pm.Skills[SkillName.Cooking].Value < minskill)
 			{
-				pm.Say(55, "Ainda não sei como fazer isso.");
+				pm.Say(55, "Ainda nï¿½o sei como fazer isso.");
 				AdventuresAutomation.StopAction(pm);
 			}
 
@@ -1080,7 +1123,7 @@ namespace Server.Items
 				pm.SendMessage("Eba! Fiz uma comida (" + thing + ").");
 			}
 			else
-				pm.SendMessage(55, "Você falhou e desperdiçou alguns recursos.");
+				pm.SendMessage(55, "Vocï¿½ falhou e desperdiï¿½ou alguns recursos.");
 			
 
 			((BaseTool)tool).UsesRemaining --;

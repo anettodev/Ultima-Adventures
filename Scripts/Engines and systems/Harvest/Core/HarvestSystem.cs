@@ -587,14 +587,24 @@ namespace Server.Engines.Harvest
             if (type == null) 
 			{
                 def.SendMessageTo(from, def.FailMessage);
-                /*if (automated)
-                    AdventuresAutomation.StopAction((PlayerMobile)from);
-                from.EndAction(locked);*/
+                // Clear target for automation to find new spot
+                if (automated)
+                {
+                    AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
+                    AdventuresAutomation.DoAction((PlayerMobile)from);
+                }
                 return;
             }
 				
 
 			OnHarvestFinished( from, tool, def, vein, bank, resource, toHarvest );
+			
+			// Clear target after successful harvest and continue automation
+			if (automated)
+			{
+				AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
+				AdventuresAutomation.DoAction((PlayerMobile)from);
+			}
 		}
 
 		public virtual void OnHarvestFinished( Mobile from, Item tool, HarvestDefinition def, HarvestVein vein, HarvestBank bank, HarvestResource resource, object harvested )
@@ -737,6 +747,13 @@ namespace Server.Engines.Harvest
 			else if ( !CheckResources( from, tool, def, map, loc, true ) )
 			{
 				from.EndAction( locked );
+				
+				// Clear target for automation to find new spot when resources depleted
+				if (automated)
+				{
+					AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
+					AdventuresAutomation.DoAction((PlayerMobile)from);
+				}
 
 				return false;
 			}

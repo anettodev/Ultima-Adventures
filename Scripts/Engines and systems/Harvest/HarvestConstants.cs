@@ -576,9 +576,6 @@ namespace Server.Engines.Harvest
         /// <summary>Failed to produce wood message</summary>
         public const int MSG_FAILED_PRODUCE_WOOD = 500495;
 
-        /// <summary>Too far away message</summary>
-        public const int MSG_TOO_FAR_AWAY = 500446;
-
         /// <summary>Backpack full message</summary>
         public const int MSG_BACKPACK_FULL_WOOD = 500497;
 
