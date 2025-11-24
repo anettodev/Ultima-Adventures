@@ -813,6 +813,115 @@ namespace Server.Commands
 				if ( m_ItemID > 0 )
 					item.ItemID = m_ItemID;
 			}
+			else if ( item is MoonObeliskKeywordTeleporter )
+			{
+				MoonObeliskKeywordTeleporter tp = (MoonObeliskKeywordTeleporter)item;
+
+				for ( int i = 0; i < m_Params.Length; ++i )
+				{
+					if ( m_Params[i].StartsWith( "Substring" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.Substring = m_Params[i].Substring( ++indexOf );
+					}
+					else if ( m_Params[i].StartsWith( "Keyword" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.Keyword = Utility.ToInt32( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "Range" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.Range = Utility.ToInt32( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "PointDest" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.PointDest = Point3D.Parse( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "MapDest" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.MapDest = Map.Parse( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "Creatures" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.Creatures = Utility.ToBoolean( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "SourceEffect" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.SourceEffect = Utility.ToBoolean( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "DestEffect" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.DestEffect = Utility.ToBoolean( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "SoundID" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.SoundID = Utility.ToInt32( m_Params[i].Substring( ++indexOf ) );
+					}
+					else if ( m_Params[i].StartsWith( "Delay" ) )
+					{
+						int indexOf = m_Params[i].IndexOf( '=' );
+
+						if ( indexOf >= 0 )
+							tp.Delay = TimeSpan.Parse( m_Params[i].Substring( ++indexOf ) );
+					}
+				}
+
+				// MoonObeliskKeywordTeleporter keeps its constructor ItemID (0x115F)
+				// Don't override with the parsed serial number
+			}
+			else if ( item is VordoTipsObelisk )
+			{
+				VordoTipsObelisk obelisk = (VordoTipsObelisk)item;
+
+				for ( int i = 0; i < m_Params.Length; ++i )
+				{
+					string param = m_Params[i].Trim();
+
+					if ( param.StartsWith( "CustomName=" ) )
+					{
+						int indexOf = param.IndexOf( '=' );
+						obelisk.CustomName = param.Substring( indexOf + 1 );
+					}
+					else if ( param.StartsWith( "TipText=" ) )
+					{
+						int indexOf = param.IndexOf( '=' );
+						obelisk.TipText = param.Substring( indexOf + 1 );
+					}
+					else if ( param.StartsWith( "HueOverride=" ) )
+					{
+						int indexOf = param.IndexOf( '=' );
+						obelisk.HueOverride = Utility.ToInt32( param.Substring( indexOf + 1 ) );
+					}
+				}
+
+				// VordoTipsObelisk keeps its constructor ItemID (0x115F)
+				// Don't override with the parsed serial numberhe parsed serial number
+			}
 			else if ( item is Teleporter )
 			{
 				Teleporter tp = (Teleporter)item;
@@ -1306,7 +1415,7 @@ namespace Server.Commands
 			{
 				line = line.Trim();
 
-				if ( line.Length > 0 && !line.StartsWith( "#" ) )
+				if ( line.Length > 0 && !line.StartsWith( "#" ) && !line.StartsWith( ";;" ) )
 					break;
 			}
 

@@ -458,6 +458,13 @@ namespace Server
 								m_MaxTimeOverride = Utility.ToDouble( splitA[1] );
 						}
 
+						// Special handling for MineSpirit (requires at least 10 fields)
+						if ( split[0].ToLower() == "!" && split.Length >= 10 )
+						{
+							PlaceMineSpirit( split, from );
+							continue;
+						}
+
 						if ( split.Length < 19 )
 							continue;
 
@@ -646,6 +653,149 @@ namespace Server
 			}
 			
 			m_Count++;
+		}
+
+		/// <summary>
+		/// Places a MineSpirit mobile directly (not via spawner)
+		/// Format: !|MineSpirit|OreType|ReqSkill|MinSkill|MaxSkill|Range|X|Y|Z|Map
+		/// Example: !|MineSpirit|TitaniumOre|100|100|120|3|6708|458|0|1
+		/// </summary>
+		private static void PlaceMineSpirit( string[] split, Mobile from )
+		{
+			try
+			{
+				// Parse fields: !|MineSpirit|OreType|ReqSkill|MinSkill|MaxSkill|Range|X|Y|Z|Map
+				if ( split.Length < 10 )
+				{
+					Console.WriteLine( "MineSpirit Parser: Invalid format, need at least 10 fields. Line skipped." );
+					return;
+				}
+
+				string mobileType = split[1]; // Should be "MineSpirit"
+				string oreTypeName = split.Length > 2 ? split[2] : "IronOre";
+				double reqSkill = split.Length > 3 ? Utility.ToDouble( split[3] ) : 50.0;
+				double minSkill = split.Length > 4 ? Utility.ToDouble( split[4] ) : 50.0;
+				double maxSkill = split.Length > 5 ? Utility.ToDouble( split[5] ) : 120.0;
+				int range = split.Length > 6 ? Utility.ToInt32( split[6] ) : 3;
+				int x = Utility.ToInt32( split[7] );
+				int y = Utility.ToInt32( split[8] );
+				int z = Utility.ToInt32( split[9] );
+				int mapNum = split.Length > 10 ? Utility.ToInt32( split[10] ) : 1;
+
+				// Validate mobile type
+				Type mobileTypeObj = ScriptCompiler.FindTypeByName( mobileType );
+				if ( mobileTypeObj == null || !typeof(Mobile).IsAssignableFrom( mobileTypeObj ) )
+				{
+					Console.WriteLine( "MineSpirit Parser: Invalid mobile type '{0}'. Line skipped.", mobileType );
+					return;
+				}
+
+				// Validate ore type
+				Type oreType = ScriptCompiler.FindTypeByName( oreTypeName );
+				if ( oreType == null || !typeof(BaseOre).IsAssignableFrom( oreType ) )
+				{
+					Console.WriteLine( "MineSpirit Parser: Invalid ore type '{0}', defaulting to IronOre.", oreTypeName );
+					oreType = typeof(IronOre);
+				}
+
+				// Clamp values
+				reqSkill = Math.Max( 0.0, Math.Min( 120.0, reqSkill ) );
+				minSkill = Math.Max( 0.0, Math.Min( 120.0, minSkill ) );
+				maxSkill = Math.Max( 0.0, Math.Min( 120.0, maxSkill ) );
+				range = Math.Max( 0, Math.Min( 3, range ) );
+
+				// Determine map
+				Map targetMap = Map.Felucca;
+				switch ( mapNum )
+				{
+					case 0: // Both Trammel and Felucca
+						PlaceMineSpiritAtLocation( mobileTypeObj, oreType, reqSkill, minSkill, maxSkill, range, x, y, z, Map.Felucca );
+						PlaceMineSpiritAtLocation( mobileTypeObj, oreType, reqSkill, minSkill, maxSkill, range, x, y, z, Map.Trammel );
+						return;
+					case 1:
+						targetMap = Map.Felucca;
+						break;
+					case 2:
+						targetMap = Map.Trammel;
+						break;
+					case 3:
+						targetMap = Map.Ilshenar;
+						break;
+					case 4:
+						targetMap = Map.Malas;
+						break;
+					case 5:
+						targetMap = Map.Maps[4]; // Tokuno
+						break;
+					case 6:
+						targetMap = Map.Maps[5]; // TerMur
+						break;
+					default:
+						Console.WriteLine( "MineSpirit Parser: Unknown map {0}, defaulting to Felucca.", mapNum );
+						targetMap = Map.Felucca;
+						break;
+				}
+
+				PlaceMineSpiritAtLocation( mobileTypeObj, oreType, reqSkill, minSkill, maxSkill, range, x, y, z, targetMap );
+			}
+			catch ( Exception e )
+			{
+				Console.WriteLine( "MineSpirit Parser: Error parsing line - {0}", e.Message );
+			}
+		}
+
+		/// <summary>
+		/// Creates and places a MineSpirit at the specified location
+		/// Checks for existing MineSpirit at location to prevent duplicates
+		/// </summary>
+		private static void PlaceMineSpiritAtLocation( Type mobileType, Type oreType, double reqSkill, double minSkill, double maxSkill, int range, int x, int y, int z, Map map )
+		{
+			try
+			{
+				// Check if MineSpirit already exists at this exact location
+				Point3D location = new Point3D( x, y, z );
+				foreach ( Mobile mobile in World.Mobiles.Values )
+				{
+					if ( mobile is MineSpirit && mobile.Map == map && mobile.Location == location )
+					{
+						// Update existing MineSpirit with new properties instead of creating duplicate
+						MineSpirit existing = (MineSpirit)mobile;
+						existing.OreType = oreType;
+						existing.ReqSkill = reqSkill;
+						existing.MinSkill = minSkill;
+						existing.MaxSkill = maxSkill;
+						existing.Range = range;
+						return; // Skip creation, already exists
+					}
+				}
+
+				// No existing MineSpirit found, create new one
+				Mobile mineSpirit = Activator.CreateInstance( mobileType ) as Mobile;
+				if ( mineSpirit != null && mineSpirit is MineSpirit )
+				{
+					MineSpirit spirit = (MineSpirit)mineSpirit;
+					spirit.Hidden = true;
+					spirit.Frozen = true;
+					spirit.CantWalk = true;
+					spirit.Blessed = true;
+					spirit.OreType = oreType;
+					spirit.ReqSkill = reqSkill;
+					spirit.MinSkill = minSkill;
+					spirit.MaxSkill = maxSkill;
+					spirit.Range = range;
+
+					spirit.MoveToWorld( location, map );
+					m_Count++;
+				}
+				else
+				{
+					Console.WriteLine( "MineSpirit Parser: Failed to create MineSpirit at {0},{1},{2}", x, y, z );
+				}
+			}
+			catch ( Exception e )
+			{
+				Console.WriteLine( "MineSpirit Parser: Error creating MineSpirit at {0},{1},{2} - {3}", x, y, z, e.Message );
+			}
 		}
 	}
 }
