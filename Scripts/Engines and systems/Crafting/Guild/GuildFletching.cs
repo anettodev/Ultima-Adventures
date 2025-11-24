@@ -13,17 +13,17 @@ namespace Server.Items
     {
         #region Properties
 
-        protected override NpcGuild RequiredGuild => NpcGuild.ArchersGuild;
-        protected override SkillName RequiredSkill => SkillName.Fletching;
-        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
-        protected override bool AllowElderSkillBypass => false;
-        protected override Type GuildmasterType => typeof(ArcherGuildmaster);
-        protected override Type ShoppeType => typeof(BowyerShoppe);
-        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_RANGED_WEAPON;
-        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_ARCHERS_ONLY;
-        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_FLETCHER;
-        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_BOWYER_LOCATION;
-        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_FLETCHING;
+        protected override NpcGuild RequiredGuild { get { return NpcGuild.ArchersGuild; } }
+        protected override SkillName RequiredSkill { get { return SkillName.Fletching; } }
+        protected override double MinimumSkillRequired { get { return GuildCraftingConstants.MIN_SKILL_REQUIRED; } }
+        protected override bool AllowElderSkillBypass { get { return false; } }
+        protected override Type GuildmasterType { get { return typeof(ArcherGuildmaster); } }
+        protected override Type ShoppeType { get { return typeof(BowyerShoppe); } }
+        protected override string SelectionPrompt { get { return GuildCraftingStringConstants.MSG_SELECT_RANGED_WEAPON; } }
+        protected override string GuildRequirementMessage { get { return GuildCraftingStringConstants.MSG_GUILD_ARCHERS_ONLY; } }
+        protected override string SkillRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_MASTER_FLETCHER; } }
+        protected override string LocationRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_BOWYER_LOCATION; } }
+        public override int EnhancementSoundEffect { get { return GuildCraftingConstants.SOUND_FLETCHING; } }
 
         #endregion
 

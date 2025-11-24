@@ -13,17 +13,17 @@ namespace Server.Items
     {
         #region Properties
 
-        protected override NpcGuild RequiredGuild => NpcGuild.TinkersGuild;
-        protected override SkillName RequiredSkill => SkillName.Tinkering;
-        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
-        protected override bool AllowElderSkillBypass => false;
-        protected override Type GuildmasterType => typeof(TinkerGuildmaster);
-        protected override Type ShoppeType => typeof(TinkerShoppe);
-        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_JEWELRY;
-        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_TINKERS_ONLY;
-        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_TINKER;
-        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_TINKER_LOCATION;
-        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_TINKERING;
+        protected override NpcGuild RequiredGuild { get { return NpcGuild.TinkersGuild; } }
+        protected override SkillName RequiredSkill { get { return SkillName.Tinkering; } }
+        protected override double MinimumSkillRequired { get { return GuildCraftingConstants.MIN_SKILL_REQUIRED; } }
+        protected override bool AllowElderSkillBypass { get { return false; } }
+        protected override Type GuildmasterType { get { return typeof(TinkerGuildmaster); } }
+        protected override Type ShoppeType { get { return typeof(TinkerShoppe); } }
+        protected override string SelectionPrompt { get { return GuildCraftingStringConstants.MSG_SELECT_JEWELRY; } }
+        protected override string GuildRequirementMessage { get { return GuildCraftingStringConstants.MSG_GUILD_TINKERS_ONLY; } }
+        protected override string SkillRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_MASTER_TINKER; } }
+        protected override string LocationRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_TINKER_LOCATION; } }
+        public override int EnhancementSoundEffect { get { return GuildCraftingConstants.SOUND_TINKERING; } }
 
         #endregion
 

@@ -13,17 +13,17 @@ namespace Server.Items
     {
         #region Properties
 
-        protected override NpcGuild RequiredGuild => NpcGuild.CarpentersGuild;
-        protected override SkillName RequiredSkill => SkillName.Carpentry;
-        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
-        protected override bool AllowElderSkillBypass => false;
-        protected override Type GuildmasterType => typeof(CarpenterGuildmaster);
-        protected override Type ShoppeType => typeof(CarpentryShoppe);
-        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_WOODEN_EQUIPMENT;
-        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_CARPENTERS_ONLY;
-        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_CARPENTER;
-        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_CARPENTRY_LOCATION;
-        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_CARPENTRY;
+        protected override NpcGuild RequiredGuild { get { return NpcGuild.CarpentersGuild; } }
+        protected override SkillName RequiredSkill { get { return SkillName.Carpentry; } }
+        protected override double MinimumSkillRequired { get { return GuildCraftingConstants.MIN_SKILL_REQUIRED; } }
+        protected override bool AllowElderSkillBypass { get { return false; } }
+        protected override Type GuildmasterType { get { return typeof(CarpenterGuildmaster); } }
+        protected override Type ShoppeType { get { return typeof(CarpentryShoppe); } }
+        protected override string SelectionPrompt { get { return GuildCraftingStringConstants.MSG_SELECT_WOODEN_EQUIPMENT; } }
+        protected override string GuildRequirementMessage { get { return GuildCraftingStringConstants.MSG_GUILD_CARPENTERS_ONLY; } }
+        protected override string SkillRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_MASTER_CARPENTER; } }
+        protected override string LocationRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_CARPENTRY_LOCATION; } }
+        public override int EnhancementSoundEffect { get { return GuildCraftingConstants.SOUND_CARPENTRY; } }
 
         #endregion
 

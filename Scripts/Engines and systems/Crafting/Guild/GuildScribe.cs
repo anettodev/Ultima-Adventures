@@ -13,19 +13,19 @@ namespace Server.Items
     {
         #region Properties
 
-        protected override NpcGuild RequiredGuild => NpcGuild.LibrariansGuild;
-        protected override SkillName RequiredSkill => SkillName.Inscribe;
-        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
-        protected override bool AllowElderSkillBypass => true;
-        protected override Type GuildmasterType => typeof(LibrarianGuildmaster);
-        protected override Type ShoppeType => typeof(LibrarianShoppe);
-        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_BOOK;
-        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_LIBRARIANS_ONLY;
-        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_SCRIBE;
-        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_LIBRARIAN_LOCATION;
+        protected override NpcGuild RequiredGuild { get { return NpcGuild.LibrariansGuild; } }
+        protected override SkillName RequiredSkill { get { return SkillName.Inscribe; } }
+        protected override double MinimumSkillRequired { get { return GuildCraftingConstants.MIN_SKILL_REQUIRED; } }
+        protected override bool AllowElderSkillBypass { get { return true; } }
+        protected override Type GuildmasterType { get { return typeof(LibrarianGuildmaster); } }
+        protected override Type ShoppeType { get { return typeof(LibrarianShoppe); } }
+        protected override string SelectionPrompt { get { return GuildCraftingStringConstants.MSG_SELECT_BOOK; } }
+        protected override string GuildRequirementMessage { get { return GuildCraftingStringConstants.MSG_GUILD_LIBRARIANS_ONLY; } }
+        protected override string SkillRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_MASTER_SCRIBE; } }
+        protected override string LocationRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_LIBRARIAN_LOCATION; } }
 
         // Note: Scribe guild doesn't have a specific sound in the original - using default
-        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_CARPENTRY;
+        public override int EnhancementSoundEffect { get { return GuildCraftingConstants.SOUND_CARPENTRY; } }
 
         #endregion
 

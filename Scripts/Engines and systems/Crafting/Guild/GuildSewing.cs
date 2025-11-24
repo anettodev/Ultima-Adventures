@@ -13,17 +13,17 @@ namespace Server.Items
     {
         #region Properties
 
-        protected override NpcGuild RequiredGuild => NpcGuild.TailorsGuild;
-        protected override SkillName RequiredSkill => SkillName.Tailoring;
-        protected override double MinimumSkillRequired => GuildCraftingConstants.MIN_SKILL_REQUIRED;
-        protected override bool AllowElderSkillBypass => false;
-        protected override Type GuildmasterType => typeof(TailorGuildmaster);
-        protected override Type ShoppeType => typeof(TailorShoppe);
-        protected override string SelectionPrompt => GuildCraftingStringConstants.MSG_SELECT_CLOTHING;
-        protected override string GuildRequirementMessage => GuildCraftingStringConstants.MSG_GUILD_TAILORS_ONLY;
-        protected override string SkillRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_MASTER_TAILOR;
-        protected override string LocationRequirementMessage => GuildCraftingStringConstants.MSG_REQUIRES_TAILOR_LOCATION;
-        public override int EnhancementSoundEffect => GuildCraftingConstants.SOUND_TAILORING;
+        protected override NpcGuild RequiredGuild { get { return NpcGuild.TailorsGuild; } }
+        protected override SkillName RequiredSkill { get { return SkillName.Tailoring; } }
+        protected override double MinimumSkillRequired { get { return GuildCraftingConstants.MIN_SKILL_REQUIRED; } }
+        protected override bool AllowElderSkillBypass { get { return false; } }
+        protected override Type GuildmasterType { get { return typeof(TailorGuildmaster); } }
+        protected override Type ShoppeType { get { return typeof(TailorShoppe); } }
+        protected override string SelectionPrompt { get { return GuildCraftingStringConstants.MSG_SELECT_CLOTHING; } }
+        protected override string GuildRequirementMessage { get { return GuildCraftingStringConstants.MSG_GUILD_TAILORS_ONLY; } }
+        protected override string SkillRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_MASTER_TAILOR; } }
+        protected override string LocationRequirementMessage { get { return GuildCraftingStringConstants.MSG_REQUIRES_TAILOR_LOCATION; } }
+        public override int EnhancementSoundEffect { get { return GuildCraftingConstants.SOUND_TAILORING; } }
 
         #endregion
 
