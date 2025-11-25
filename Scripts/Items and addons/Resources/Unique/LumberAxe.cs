@@ -39,7 +39,7 @@ namespace Server.Items
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
-			list.Add(1070722, "Este machado apenas corta madeira comum" );
+			list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(HarvestToolStringConstants.MSG_LUMBER_AXE_SPECIAL, HarvestToolStringConstants.COLOR_CYAN));
 		}
 
 		public LumberAxe( Serial serial ) : base( serial )

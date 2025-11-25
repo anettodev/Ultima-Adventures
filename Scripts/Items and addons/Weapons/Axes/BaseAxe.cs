@@ -123,11 +123,10 @@ namespace Server.Items
 
 		public override void AddNameProperties( ObjectPropertyList list )
 		{
-			
 			base.AddNameProperties( list );	
 
-			if (!(this is Pickaxe) && !(this is SturdyPickaxe)&& !(this is GargoylesPickaxe))
-				list.Add("Diga '.auto-lenhar' para usar o sistema de automacao."); 
+			if (!(this is Pickaxe) && !(this is SturdyPickaxe) && !(this is GargoylesPickaxe))
+				list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(HarvestToolStringConstants.MSG_AUTOMATION_HINT_LUMBERJACKING, HarvestToolStringConstants.COLOR_ORANGE)); 
 		}
 
 		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list )

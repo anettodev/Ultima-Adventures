@@ -18,13 +18,13 @@ namespace Server.Items
 			Stackable = true;
 			Amount = amount;
 			Hue = 0x5DD;
-			Name = "seiva de árvore mística";
+			Name = "seiva de Ã¡rvore mÃ­stica";
 		}
 
 		public override void AddNameProperties( ObjectPropertyList list )
 		{
 			base.AddNameProperties( list );
-			list.Add( 1070722, "Cola peças de madeira");
+			list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(HarvestToolStringConstants.MSG_MYSTICAL_TREE_SAP_SPECIAL, HarvestToolStringConstants.COLOR_CYAN));
 		}
 
 		public MysticalTreeSap( Serial serial ) : base( serial )

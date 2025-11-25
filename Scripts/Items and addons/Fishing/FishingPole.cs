@@ -32,7 +32,7 @@ namespace Server.Items
 		public override void AddNameProperties( ObjectPropertyList list )
 		{
 			base.AddNameProperties( list );
-            list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor("Diga '.auto-pescar' para usar o sistema de automa��o.", "#8be4fc"));
+			list.Add(1053099, ItemNameHue.UnifiedItemProps.SetColor(HarvestToolStringConstants.MSG_AUTOMATION_HINT_FISHING, HarvestToolStringConstants.COLOR_ORANGE));
 		}
 
 		public override void Serialize( GenericWriter writer )

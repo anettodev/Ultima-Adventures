@@ -51,6 +51,7 @@ namespace Server.Mobiles
 			Blessed = true;
 			Frozen = true;
 			CantWalk = true;
+			Hue = 1150;
 		}
 
 		/// <summary>
