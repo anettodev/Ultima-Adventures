@@ -7,7 +7,6 @@
  */
 
 using System;
-using System;
 using Server;
 using Server.Items;
 using Server.Mobiles;
@@ -17,23 +16,21 @@ using Server.Regions;
 
 namespace Server.Engines.Harvest
 {
+	/// <summary>
+	/// Dynamic mining harvest system that provides custom ore types at specific locations marked by MineSpirit mobiles.
+	/// Allows GameMasters to place custom mining spots without creating regions.
+	/// </summary>
 	public class DynamicMining : HarvestSystem
 	{
+		#region Static Methods
 
-/*        private static DynamicMining m_System;
-
-        public static DynamicMining System
-        {
-            get
-            {
-                if (m_System == null)
-                    m_System = new DynamicMining();
-
-                return m_System;
-            }
-        }*/
-
-        public static HarvestSystem GetSystem(Item axe)
+		/// <summary>
+		/// Gets the appropriate harvest system for the given tool location.
+		/// Checks for nearby MineSpirit instances and returns their custom system if found.
+		/// </summary>
+		/// <param name="axe">The mining tool</param>
+		/// <returns>Custom harvest system if MineSpirit found, null otherwise</returns>
+		public static HarvestSystem GetSystem(Item axe)
 		{
 			// Null check for tool
 			if (axe == null || axe.Deleted)
@@ -42,10 +39,10 @@ namespace Server.Engines.Harvest
 			Map map;
 			Point3D loc;
 
-            Mobile m = (Mobile)axe.RootParentEntity;
-            object root = axe.RootParent;
+			Mobile mobile = (Mobile)axe.RootParentEntity;
+			object root = axe.RootParent;
 
-			if ( root == null )
+			if (root == null)
 			{
 				map = axe.Map;
 				loc = axe.Location;
@@ -64,20 +61,18 @@ namespace Server.Engines.Harvest
 			if (map == null || map == Map.Internal)
 				return null;
 			
-			IPooledEnumerable eable = map.GetMobilesInRange(loc, 5);
+			IPooledEnumerable eable = map.GetMobilesInRange(loc, DynamicMiningConstants.MINE_SPIRIT_SEARCH_RANGE);
 			
 			try
 			{
-				foreach ( Mobile mob in eable )
+				foreach (Mobile mob in eable)
 				{
-					if(mob is MineSpirit)//find a mine spot
+					if (mob is MineSpirit)
 					{
 						MineSpirit mine = (MineSpirit)mob;
-						//m.SendMessage(35, "dist-> " + mine.GetDistanceToSqrt(loc));
-						//m.SendMessage(55, "Você sente que está próximo de um veio de minério.");
 						if (mine.GetDistanceToSqrt(loc) <= mine.Range)
 						{
-							return mine.HarvestSystem; //return its system
+							return mine.HarvestSystem;
 						}
 					}
 				}
@@ -87,33 +82,49 @@ namespace Server.Engines.Harvest
 				eable.Free();
 			}
 			
-			return null;//Nothing to harvest
+			return null;
 		}
+
+		#endregion
 		
-		#region As Mining
+		#region Fields
+
 		private HarvestDefinition m_Ore;
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the ore harvest definition
+		/// </summary>
 		public HarvestDefinition Ore
 		{
-			get{ return m_Ore; }
+			get { return m_Ore; }
 		}
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes the dynamic mining system with default harvest definition
+		/// </summary>
 		public DynamicMining()
 		{
-			#region Mining for ore
 			HarvestDefinition ore = m_Ore = new HarvestDefinition();
 
 			// Resource banks are every 3x3 tiles
-			ore.BankWidth = 3;
-			ore.BankHeight = 3;
+			ore.BankWidth = HarvestConstants.ORE_BANK_WIDTH;
+			ore.BankHeight = HarvestConstants.ORE_BANK_HEIGHT;
 
 			// Every bank holds from 4 to 28 ore
-			ore.MinTotal = 4;
-			ore.MaxTotal = 28;
+			ore.MinTotal = DynamicMiningConstants.DYNAMIC_ORE_BANK_MIN_TOTAL;
+			ore.MaxTotal = DynamicMiningConstants.DYNAMIC_ORE_BANK_MAX_TOTAL;
 
 			// A resource bank will respawn its content every 10 to 30 minutes
-			ore.MinRespawn = TimeSpan.FromMinutes( 10.0 );
-			ore.MaxRespawn = TimeSpan.FromMinutes( 30 );
+			ore.MinRespawn = TimeSpan.FromMinutes(DynamicMiningConstants.DYNAMIC_ORE_RESPAWN_MIN_MINUTES);
+			ore.MaxRespawn = TimeSpan.FromMinutes(DynamicMiningConstants.DYNAMIC_ORE_RESPAWN_MAX_MINUTES);
 
 			// Skill checking is done on the Mining skill
 			ore.Skill = SkillName.Mining;
@@ -122,158 +133,216 @@ namespace Server.Engines.Harvest
 			ore.Tiles = m_MountainAndCaveTiles;
 
 			// Players must be within 2 tiles to harvest
-			ore.MaxRange = 2;
+			ore.MaxRange = HarvestConstants.ORE_MAX_RANGE;
 
 			// One ore per harvest action
-			ore.ConsumedPerHarvest = 1;
-			ore.ConsumedPerFeluccaHarvest = 1;
+			ore.ConsumedPerHarvest = HarvestConstants.ORE_CONSUMED_PER_HARVEST;
+			ore.ConsumedPerFeluccaHarvest = HarvestConstants.ORE_CONSUMED_PER_HARVEST;
 
 			// The digging effect
-			ore.EffectActions = new int[]{ 11 };
-			ore.EffectSounds = new int[]{ 0x125, 0x126 };
-			ore.EffectCounts = new int[]{ 1 };
-			ore.EffectDelay = TimeSpan.FromSeconds( 1.5 );
-			ore.EffectSoundDelay = TimeSpan.FromSeconds( 0.7 );
+			ore.EffectActions = new int[] { DynamicMiningConstants.DYNAMIC_EFFECT_ACTION_ID };
+			ore.EffectSounds = HarvestConstants.ORE_EFFECT_SOUNDS;
+			ore.EffectCounts = new int[] { DynamicMiningConstants.DYNAMIC_EFFECT_COUNT };
+			ore.EffectDelay = TimeSpan.FromSeconds(HarvestConstants.ORE_EFFECT_DELAY);
+			ore.EffectSoundDelay = TimeSpan.FromSeconds(HarvestConstants.ORE_EFFECT_SOUND_DELAY);
 
-			ore.NoResourcesMessage = 503040; // There is no metal here to mine.
-			ore.DoubleHarvestMessage = 503042; // Someone has gotten to the metal before you.
-			ore.TimedOutOfRangeMessage = 503041; // You have moved too far away to continue mining.
-			ore.OutOfRangeMessage = 500446; // That is too far away.
-			ore.FailMessage = 503043; // You loosen some rocks but fail to find any useable ore.
-			ore.PackFullMessage = 1010481; // Your backpack is full, so the ore you mined is lost.
-			ore.ToolBrokeMessage = 1044038; // You have worn out your tool!
+			ore.NoResourcesMessage = HarvestConstants.MSG_NO_METAL_HERE;
+			ore.DoubleHarvestMessage = HarvestConstants.MSG_METAL_TAKEN;
+			ore.TimedOutOfRangeMessage = HarvestConstants.MSG_TOO_FAR_AWAY;
+			ore.OutOfRangeMessage = HarvestConstants.MSG_TOO_FAR_AWAY;
+			ore.FailMessage = HarvestConstants.MSG_FAILED_FIND_ORE;
+			ore.PackFullMessage = HarvestConstants.MSG_BACKPACK_FULL;
+			ore.ToolBrokeMessage = HarvestConstants.MSG_TOOL_WORN_OUT;
 
-			if ( Core.ML )
+			if (Core.ML)
 			{
 				ore.BonusResources = new BonusHarvestResource[]
 				{
-                    new BonusHarvestResource( 0, 89.75, null, null ),	//Nothing
-					new BonusHarvestResource( 60, 5, 1074542, typeof( BlankScroll ) ),
-                    new BonusHarvestResource( 60, 1, 1074542, typeof( LocalMap ) ),
-                    new BonusHarvestResource( 60, 1, 1074542, typeof( IndecipherableMap ) ),
-                    new BonusHarvestResource( 60, 1, 1074542, typeof( BlankMap ) ),
-                    new BonusHarvestResource( 70, .5, 1074542, typeof( Amber ) ),
-                    new BonusHarvestResource( 75, .5, 1074542, typeof( Amethyst ) ),
-                    new BonusHarvestResource( 75, .5, 1074542, typeof( Citrine ) ),
-                    new BonusHarvestResource( 80, .1, 1074542, typeof( Diamond ) ),
-                    new BonusHarvestResource( 85, .1, 1074542, typeof( Emerald ) ),
-                    new BonusHarvestResource( 85, .1, 1074542, typeof( Ruby ) ),
-                    new BonusHarvestResource( 85, .1, 1074542, typeof( Sapphire ) ),
-                    new BonusHarvestResource( 90, .05, 1074542, typeof( StarSapphire ) ),
-                    new BonusHarvestResource( 90, .05, 1074542, typeof( Tourmaline ) ),
-                    new BonusHarvestResource( 100, .05, 1072562, typeof( BlueDiamond ) ),
-                    new BonusHarvestResource( 100, .05, 1072567, typeof( DarkSapphire ) ),
-                    new BonusHarvestResource( 100, .05, 1072570, typeof( EcruCitrine ) ),
-                    new BonusHarvestResource( 100, .05, 1072564, typeof( FireRuby ) ),
-                    new BonusHarvestResource( 100, .05, 1072566, typeof( PerfectEmerald ) )
-					//new BonusHarvestResource( 100, .1, 1072568, typeof( Turquoise ) ),
-                };
+					new BonusHarvestResource(0, HarvestConstants.BONUS_NOTHING_CHANCE, null, null),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_SCROLL_MAP_SKILL_REQ, HarvestConstants.BONUS_SCROLL_CHANCE, 1074542, typeof(BlankScroll)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_SCROLL_MAP_SKILL_REQ, HarvestConstants.BONUS_LOCAL_MAP_CHANCE, 1074542, typeof(LocalMap)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_SCROLL_MAP_SKILL_REQ, HarvestConstants.BONUS_INDECIPHERABLE_MAP_CHANCE, 1074542, typeof(IndecipherableMap)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_SCROLL_MAP_SKILL_REQ, HarvestConstants.BONUS_BLANK_MAP_CHANCE, 1074542, typeof(BlankMap)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_AMBER_SKILL_REQ, HarvestConstants.BONUS_AMBER_CHANCE, 1074542, typeof(Amber)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_GEM_SKILL_REQ, HarvestConstants.BONUS_AMETHYST_CHANCE, 1074542, typeof(Amethyst)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_GEM_SKILL_REQ, HarvestConstants.BONUS_CITRINE_CHANCE, 1074542, typeof(Citrine)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_DIAMOND_SKILL_REQ, HarvestConstants.BONUS_DIAMOND_CHANCE, 1074542, typeof(Diamond)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_HIGH_GEM_SKILL_REQ, HarvestConstants.BONUS_EMERALD_CHANCE, 1074542, typeof(Emerald)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_HIGH_GEM_SKILL_REQ, HarvestConstants.BONUS_RUBY_CHANCE, 1074542, typeof(Ruby)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_HIGH_GEM_SKILL_REQ, HarvestConstants.BONUS_SAPPHIRE_CHANCE, 1074542, typeof(Sapphire)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_RARE_GEM_SKILL_REQ, HarvestConstants.BONUS_STAR_SAPPHIRE_CHANCE, 1074542, typeof(StarSapphire)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_RARE_GEM_SKILL_REQ, HarvestConstants.BONUS_TOURMALINE_CHANCE, 1074542, typeof(Tourmaline)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_LEGENDARY_GEM_SKILL_REQ, HarvestConstants.BONUS_BLUE_DIAMOND_CHANCE, 1072562, typeof(BlueDiamond)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_LEGENDARY_GEM_SKILL_REQ, HarvestConstants.BONUS_DARK_SAPPHIRE_CHANCE, 1072567, typeof(DarkSapphire)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_LEGENDARY_GEM_SKILL_REQ, HarvestConstants.BONUS_ECRU_CITRINE_CHANCE, 1072570, typeof(EcruCitrine)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_LEGENDARY_GEM_SKILL_REQ, HarvestConstants.BONUS_FIRE_RUBY_CHANCE, 1072564, typeof(FireRuby)),
+					new BonusHarvestResource((int)DynamicMiningConstants.BONUS_LEGENDARY_GEM_SKILL_REQ, HarvestConstants.BONUS_PERFECT_EMERALD_CHANCE, 1072566, typeof(PerfectEmerald))
+				};
 			}
 
-			ore.RaceBonus = false;//Core.ML;
+			ore.RaceBonus = false;
 			ore.RandomizeVeins = true;
 
-			Definitions.Add( ore );
-			#endregion
+			Definitions.Add(ore);
 		}
 
-		public override Type GetResourceType( Mobile from, Item tool, HarvestDefinition def, Map map, Point3D loc, HarvestResource resource )
+		#endregion
+
+		#region Core Harvest Methods
+
+		/// <summary>
+		/// Gets the resource type to harvest
+		/// </summary>
+		/// <param name="from">The mobile performing the harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="def">The harvest definition</param>
+		/// <param name="map">The map</param>
+		/// <param name="loc">The location</param>
+		/// <param name="resource">The harvest resource</param>
+		/// <returns>The resource type to create</returns>
+		public override Type GetResourceType(Mobile from, Item tool, HarvestDefinition def, Map map, Point3D loc, HarvestResource resource)
 		{
-			if ( def == m_Ore )
+			if (def == m_Ore)
 			{
 				return resource.Types[0];
 			}
 
-			return base.GetResourceType( from, tool, def, map, loc, resource );
+			return base.GetResourceType(from, tool, def, map, loc, resource);
 		}
 
-		public override bool CheckHarvest( Mobile from, Item tool )
+		/// <summary>
+		/// Checks if the mobile can harvest with the given tool
+		/// </summary>
+		/// <param name="from">The mobile attempting to harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <returns>True if harvesting is allowed, false otherwise</returns>
+		public override bool CheckHarvest(Mobile from, Item tool)
 		{
-			if ( !base.CheckHarvest( from, tool ) )
+			if (!base.CheckHarvest(from, tool))
 				return false;
 
-			if ( from.Mounted )
-			{
-				from.SendLocalizedMessage( 501864 ); // You can't mine while riding.
-				return false;
-			}
-			else if ( from.IsBodyMod && !from.Body.IsHuman )
-			{
-				from.SendLocalizedMessage( 501865 ); // You can't mine while polymorphed.
-				return false;
-			}
-
-			return true;
+			return ValidateMiningConditions(from);
 		}
 
-		public override void SendSuccessTo( Mobile from, Item item, HarvestResource resource )
+		/// <summary>
+		/// Sends success message to the mobile
+		/// </summary>
+		/// <param name="from">The mobile that harvested</param>
+		/// <param name="item">The item that was harvested</param>
+		/// <param name="resource">The harvest resource</param>
+		public override void SendSuccessTo(Mobile from, Item item, HarvestResource resource)
 		{
-			
-			base.SendSuccessTo( from, item, resource );
+			base.SendSuccessTo(from, item, resource);
 		}
 
-		public override bool CheckHarvest( Mobile from, Item tool, HarvestDefinition def, object toHarvest )
+		/// <summary>
+		/// Checks if the mobile can harvest the specific target
+		/// </summary>
+		/// <param name="from">The mobile attempting to harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="def">The harvest definition</param>
+		/// <param name="toHarvest">The target to harvest</param>
+		/// <returns>True if harvesting is allowed, false otherwise</returns>
+		public override bool CheckHarvest(Mobile from, Item tool, HarvestDefinition def, object toHarvest)
 		{
-			if ( !base.CheckHarvest( from, tool, def, toHarvest ) )
+			if (!base.CheckHarvest(from, tool, def, toHarvest))
 				return false;
 
-			if ( from.Mounted )
-			{
-				from.SendLocalizedMessage( 501864 ); // You can't mine while riding.
-				return false;
-			}
-			else if ( from.IsBodyMod && !from.Body.IsHuman )
-			{
-				from.SendLocalizedMessage( 501865 ); // You can't mine while polymorphed.
-				return false;
-			}
-
-			return true;
+			return ValidateMiningConditions(from);
 		}
 
-		public override HarvestVein MutateVein( Mobile from, Item tool, HarvestDefinition def, HarvestBank bank, object toHarvest, HarvestVein vein )
+		/// <summary>
+		/// Mutates the harvest vein (not used in dynamic mining)
+		/// </summary>
+		/// <param name="from">The mobile performing the harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="def">The harvest definition</param>
+		/// <param name="bank">The harvest bank</param>
+		/// <param name="toHarvest">The target to harvest</param>
+		/// <param name="vein">The current vein</param>
+		/// <returns>The vein to use</returns>
+		public override HarvestVein MutateVein(Mobile from, Item tool, HarvestDefinition def, HarvestBank bank, object toHarvest, HarvestVein vein)
 		{
 			return vein;
 		}
 
-		private static int[] m_Offsets = new int[]
+		/// <summary>
+		/// Begins the harvesting process
+		/// </summary>
+		/// <param name="from">The mobile attempting to harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <returns>True if harvesting can begin, false otherwise</returns>
+		public override bool BeginHarvesting(Mobile from, Item tool)
 		{
-			-1, -1,
-			-1,  0,
-			-1,  1,
-			0, -1,
-			0,  1,
-			1, -1,
-			1,  0,
-			1,  1
-		};
-
-		public override bool BeginHarvesting( Mobile from, Item tool )
-		{
-			if ( !base.BeginHarvesting( from, tool ) )
+			if (!base.BeginHarvesting(from, tool))
 				return false;
 
-			from.SendLocalizedMessage( 503033 ); // Where do you wish to dig?
+			from.SendLocalizedMessage(DynamicMiningConstants.MSG_WHERE_TO_DIG);
 			return true;
 		}
 
-		public override void OnHarvestStarted( Mobile from, Item tool, HarvestDefinition def, object toHarvest )
+		/// <summary>
+		/// Called when harvesting has started
+		/// </summary>
+		/// <param name="from">The mobile performing the harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="def">The harvest definition</param>
+		/// <param name="toHarvest">The target to harvest</param>
+		public override void OnHarvestStarted(Mobile from, Item tool, HarvestDefinition def, object toHarvest)
 		{
-			base.OnHarvestStarted( from, tool, def, toHarvest );
+			base.OnHarvestStarted(from, tool, def, toHarvest);
 
-			if ( Core.ML )
+			if (Core.ML)
 				from.RevealingAction();
 		}
 
-		public override void OnBadHarvestTarget( Mobile from, Item tool, object toHarvest )
+		/// <summary>
+		/// Called when a bad harvest target is selected
+		/// </summary>
+		/// <param name="from">The mobile attempting to harvest</param>
+		/// <param name="tool">The tool being used</param>
+		/// <param name="toHarvest">The invalid target</param>
+		public override void OnBadHarvestTarget(Mobile from, Item tool, object toHarvest)
 		{
-			if ( toHarvest is LandTarget )
-				from.SendLocalizedMessage( 501862 ); // You can't mine there.
+			if (toHarvest is LandTarget)
+				from.SendLocalizedMessage(DynamicMiningConstants.MSG_CANNOT_MINE_THERE);
 			else
-				from.SendLocalizedMessage( 501863 ); // You can't mine that.
+				from.SendLocalizedMessage(DynamicMiningConstants.MSG_CANNOT_MINE_THAT);
 		}
 
-		#region Tile lists
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Validates if the mobile meets the conditions for mining
+		/// </summary>
+		/// <param name="from">The mobile to validate</param>
+		/// <returns>True if conditions are met, false otherwise</returns>
+		private bool ValidateMiningConditions(Mobile from)
+		{
+			if (from.Mounted)
+			{
+				from.SendLocalizedMessage(DynamicMiningConstants.MSG_CANNOT_MINE_RIDING);
+				return false;
+			}
+
+			if (from.IsBodyMod && !from.Body.IsHuman)
+			{
+				from.SendLocalizedMessage(DynamicMiningConstants.MSG_CANNOT_MINE_POLYMORPHED);
+				return false;
+			}
+
+			return true;
+		}
+
+		#endregion
+
+		#region Tile Lists
+
+		/// <summary>
+		/// Array of tile IDs that can be mined (mountain and cave tiles)
+		/// </summary>
 		private static int[] m_MountainAndCaveTiles = new int[]
 		{
 			220, 221, 222, 223, 224, 225, 226, 227, 228, 229,
@@ -309,12 +378,10 @@ namespace Server.Engines.Harvest
 			2101, 2102, 2103, 2104, 2105,
 
 			0x453B, 0x453C, 0x453D, 0x453E, 0x453F, 0x4540, 0x4541,
-			0x4542, 0x4543, 0x4544,	0x4545, 0x4546, 0x4547, 0x4548,
-			0x4549, 0x454A, 0x454B, 0x454C, 0x454D, 0x454E,	0x454F//, 0x8E0, 0x8E3, 0x8E1, 0x8E5, 0x8E8
-        };
+			0x4542, 0x4543, 0x4544, 0x4545, 0x4546, 0x4547, 0x4548,
+			0x4549, 0x454A, 0x454B, 0x454C, 0x454D, 0x454E, 0x454F
+		};
 
-		#endregion
-		
 		#endregion
 	}
 }

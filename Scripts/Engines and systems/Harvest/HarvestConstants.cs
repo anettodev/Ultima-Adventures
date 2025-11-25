@@ -17,10 +17,10 @@ namespace Server.Engines.Harvest
         public const int DEFAULT_BANK_HEIGHT = 3;
 
         /// <summary>Default minimum respawn time in minutes</summary>
-        public const double DEFAULT_RESPAWN_MIN_MINUTES = 15.0;
+        public const double DEFAULT_RESPAWN_MIN_MINUTES = 20.0;
 
         /// <summary>Default maximum respawn time in minutes</summary>
-        public const double DEFAULT_RESPAWN_MAX_MINUTES = 30.0;
+        public const double DEFAULT_RESPAWN_MAX_MINUTES = 45.0;
 
         /// <summary>Default maximum harvest range in tiles</summary>
         public const int DEFAULT_MAX_RANGE = 2;
@@ -50,10 +50,10 @@ namespace Server.Engines.Harvest
         public const int ORE_BANK_MAX_TOTAL = 30;
 
         /// <summary>Minimum ore respawn time in minutes</summary>
-        public const double ORE_RESPAWN_MIN_MINUTES = 15.0;
+        public const double ORE_RESPAWN_MIN_MINUTES = 20.0;
 
         /// <summary>Maximum ore respawn time in minutes</summary>
-        public const double ORE_RESPAWN_MAX_MINUTES = 30.0;
+        public const double ORE_RESPAWN_MAX_MINUTES = 45.0;
 
         /// <summary>Maximum range for ore mining</summary>
         public const int ORE_MAX_RANGE = 2;
@@ -84,10 +84,10 @@ namespace Server.Engines.Harvest
         public const int SAND_BANK_MAX_TOTAL = 18;
 
         /// <summary>Minimum sand respawn time in minutes</summary>
-        public const double SAND_RESPAWN_MIN_MINUTES = 10.0;
+        public const double SAND_RESPAWN_MIN_MINUTES = 15.0;
 
         /// <summary>Maximum sand respawn time in minutes</summary>
-        public const double SAND_RESPAWN_MAX_MINUTES = 20.0;
+        public const double SAND_RESPAWN_MAX_MINUTES = 30.0;
 
         /// <summary>Maximum range for sand mining</summary>
         public const int SAND_MAX_RANGE = 2;
@@ -424,10 +424,10 @@ namespace Server.Engines.Harvest
         public const int LUMBER_BANK_MAX_TOTAL = 36;
 
         /// <summary>Minimum lumber respawn time in minutes</summary>
-        public const double LUMBER_RESPAWN_MIN_MINUTES = 15.0;
+        public const double LUMBER_RESPAWN_MIN_MINUTES = 20.0;
 
         /// <summary>Maximum lumber respawn time in minutes</summary>
-        public const double LUMBER_RESPAWN_MAX_MINUTES = 30.0;
+        public const double LUMBER_RESPAWN_MAX_MINUTES = 45.0;
 
         /// <summary>Maximum range for lumberjacking</summary>
         public const int LUMBER_MAX_RANGE = 2;
@@ -640,10 +640,10 @@ namespace Server.Engines.Harvest
         public const int FISHING_BANK_MAX_TOTAL = 9;
 
         /// <summary>Minimum fishing respawn time in minutes</summary>
-        public const double FISHING_RESPAWN_MIN_MINUTES = 15.0;
+        public const double FISHING_RESPAWN_MIN_MINUTES = 20.0;
 
         /// <summary>Maximum fishing respawn time in minutes</summary>
-        public const double FISHING_RESPAWN_MAX_MINUTES = 30.0;
+        public const double FISHING_RESPAWN_MAX_MINUTES = 45.0;
 
         /// <summary>Maximum range for fishing</summary>
         public const int FISHING_MAX_RANGE = 4;
@@ -705,6 +705,171 @@ namespace Server.Engines.Harvest
 
         /// <summary>Fishing pole broken message</summary>
         public const int MSG_POLE_BROKEN = 503174;
+
+        #endregion
+
+        #endregion
+
+        #region HarvestSystem Constants
+
+        #region Message Colors
+
+        /// <summary>Error message color (red)</summary>
+        public const int MSG_COLOR_ERROR = 55;
+
+        /// <summary>Success message color (light blue)</summary>
+        public const int MSG_COLOR_SUCCESS = 65;
+
+        /// <summary>Warning message color (yellow)</summary>
+        public const int MSG_COLOR_WARNING = 33;
+
+        #endregion
+
+        #region Sound Effects
+
+        /// <summary>Female tool worn out sound</summary>
+        public const int SOUND_TOOL_WORN_OUT_FEMALE = 0x31C;
+
+        /// <summary>Male tool worn out sound</summary>
+        public const int SOUND_TOOL_WORN_OUT_MALE = 0x42C;
+
+        /// <summary>Female success sound (blank scroll/book)</summary>
+        public const int SOUND_SUCCESS_FEMALE = 811;
+
+        /// <summary>Male success sound (blank scroll/book)</summary>
+        public const int SOUND_SUCCESS_MALE = 1085;
+
+        #endregion
+
+        #region Multipliers and Bonuses
+
+        /// <summary>Racial bonus multiplier for Human</summary>
+        public const double RACIAL_BONUS_MULTIPLIER_HUMAN = 1.1;
+
+        /// <summary>Elf vein fallback bonus</summary>
+        public const double ELF_VEIN_FALLBACK_BONUS = 0.20;
+
+        /// <summary>Inscribe skill divisor for blank scroll calculation</summary>
+        public const int INSCRIBE_SKILL_DIVISOR = 10;
+
+        /// <summary>Inscribe skill multiplier for relic value calculation</summary>
+        public const int INSCRIBE_SKILL_MULTIPLIER = 2;
+
+        #endregion
+
+        #region Amount Calculations
+
+        /// <summary>Mines of Morinia multiplier</summary>
+        public const int MINES_OF_MORINIA_MULTIPLIER = 3;
+
+        /// <summary>Special resource chance minimum</summary>
+        public const int SPECIAL_RESOURCE_CHANCE_MIN = 1;
+
+        /// <summary>Special resource chance maximum</summary>
+        public const int SPECIAL_RESOURCE_CHANCE_MAX = 2;
+
+        /// <summary>Mines of Morinia chance minimum</summary>
+        public const int MINES_OF_MORINIA_CHANCE_MIN = 1;
+
+        /// <summary>Mines of Morinia chance maximum</summary>
+        public const int MINES_OF_MORINIA_CHANCE_MAX = 3;
+
+        /// <summary>Coal/Zinc amount minimum</summary>
+        public const int COAL_ZINC_AMOUNT_MIN = 1;
+
+        /// <summary>Coal/Zinc amount maximum</summary>
+        public const int COAL_ZINC_AMOUNT_MAX = 2;
+
+        /// <summary>Coal/Zinc skill check minimum</summary>
+        public const int COAL_ZINC_SKILL_CHECK_MIN = 1;
+
+        /// <summary>Coal/Zinc skill check maximum</summary>
+        public const int COAL_ZINC_SKILL_CHECK_MAX = 500;
+
+        #endregion
+
+        #region Bitmask Values
+
+        /// <summary>Tile ID bitmask</summary>
+        public const int TILE_ID_BITMASK = 0x3FFF;
+
+        /// <summary>Static tile flag</summary>
+        public const int STATIC_TILE_FLAG = 0x4000;
+
+        #endregion
+
+        #region Animation Parameters
+
+        /// <summary>Animation speed</summary>
+        public const int ANIMATION_SPEED = 5;
+
+        /// <summary>Animation repeat count</summary>
+        public const int ANIMATION_REPEAT = 1;
+
+        /// <summary>Animation forward direction</summary>
+        public const bool ANIMATION_FORWARD = true;
+
+        /// <summary>Animation repeat back</summary>
+        public const bool ANIMATION_REPEAT_BACK = false;
+
+        /// <summary>Animation repeat delay</summary>
+        public const int ANIMATION_REPEAT_DELAY = 0;
+
+        #endregion
+
+        #region Core Harvest System Constants
+
+        #region Respawn Multipliers
+
+        /// <summary>Elf race bonus respawn time multiplier (25% reduction = 0.75)</summary>
+        public const double ELF_RACE_RESPAWN_MULTIPLIER = 0.75;
+
+        /// <summary>Midland region respawn time multiplier</summary>
+        public const double MIDLAND_RESPAWN_MULTIPLIER = 20.0;
+
+        /// <summary>Minimum current value for harvest bank</summary>
+        public const int MIN_CURRENT_VALUE = 0;
+
+        #endregion
+
+        #region Random Generation Constants
+
+        /// <summary>Random seed multiplier for X coordinate</summary>
+        public const int RANDOM_SEED_X_MULTIPLIER = 17;
+
+        /// <summary>Random seed multiplier for Y coordinate</summary>
+        public const int RANDOM_SEED_Y_MULTIPLIER = 11;
+
+        /// <summary>Random seed multiplier for Map ID</summary>
+        public const int RANDOM_SEED_MAP_MULTIPLIER = 3;
+
+        /// <summary>Midland random value multiplier</summary>
+        public const double MIDLAND_RANDOM_VALUE_MULTIPLIER = 4.0;
+
+        /// <summary>Maximum random value cap (prevents value >= 1.0)</summary>
+        public const double MAX_RANDOM_VALUE_CAP = 0.99;
+
+        /// <summary>Percentage conversion multiplier (converts 0.0-1.0 to 0-100)</summary>
+        public const double PERCENTAGE_CONVERSION_MULTIPLIER = 100.0;
+
+        #endregion
+
+        #region Sound Effects
+
+        /// <summary>Sound ID for axe action</summary>
+        public const int SOUND_AXE_ACTION = 0x13E;
+
+        /// <summary>Sound ID for furniture destruction</summary>
+        public const int SOUND_FURNITURE_DESTROY = 0x3B3;
+
+        #endregion
+
+        #region Range Constants
+
+        /// <summary>Furniture destruction range in tiles</summary>
+        public const int FURNITURE_DESTROY_RANGE = 3;
+
+        #endregion
 
         #endregion
 

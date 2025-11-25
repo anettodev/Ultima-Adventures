@@ -6,159 +6,260 @@
  * 
  */
 
-/// <summary>
-/// The MineSpirit localize the spot on the map, with a point and a range
-/// This is the easiest way for GameMasters to place mines, more than creating regions
-/// I make it with a mob rather than an item, just to have access to Mobile.GetDistanceToSqrt in DynamicMining.cs
-/// </summary>
-
 using System;
 using Server.Items;
 using Server.Engines.Harvest;
 using Server.DeepMine;
+
 namespace Server.Mobiles
 {
+	/// <summary>
+	/// MineSpirit mobile that marks a location on the map with a point and range.
+	/// This is the easiest way for GameMasters to place custom mining spots without creating regions.
+	/// Implemented as a mobile rather than an item to have access to Mobile.GetDistanceToSqrt in DynamicMining.cs.
+	/// </summary>
 	public class MineSpirit : StaticElemental
-    {
-		//change it for the base class of ore if custom
+	{
+		#region Constants
+
+		/// <summary>Base type for ore validation (change for custom ore base class)</summary>
 		private static Type m_BaseType = typeof(BaseOre);
-		
+
+		#endregion
+
+		#region Fields
+
+		private HarvestSystem m_HarvestSystem;
+		private int m_Range = MineSpiritConstants.DEFAULT_RANGE;
+		private Type m_OreType = m_BaseType;
+		private double m_ReqSkill = MineSpiritConstants.DEFAULT_REQ_SKILL;
+		private double m_MinSkill = MineSpiritConstants.DEFAULT_MIN_SKILL;
+		private double m_MaxSkill = MineSpiritConstants.DEFAULT_MAX_SKILL;
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new MineSpirit instance
+		/// </summary>
 		[Constructable]
-		public MineSpirit( )
+		public MineSpirit()
 		{
-			//Not a real ingame mobile
-/*			Hidden = true;
+			// Make invisible and non-interactive for players
+			Hidden = true;
+			Blessed = true;
 			Frozen = true;
 			CantWalk = true;
-			Blessed = true;*/
 		}
 
-        private HarvestSystem m_HarvestSystem;
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">Serialization reader</param>
+		public MineSpirit(Serial serial) : base(serial)
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the custom harvest system for this MineSpirit location
+		/// </summary>
 		public HarvestSystem HarvestSystem
 		{
 			get
 			{
-				if(m_HarvestSystem==null)
+				if (m_HarvestSystem == null)
 				{
-                    HarvestResource[] res = new HarvestResource[]
+					HarvestResource[] res = new HarvestResource[]
 					{
-						new HarvestResource( 00.0, 00.0, 100.0, "Você encontrou alguns minérios de ferro.", typeof(IronOre ), typeof(Granite ) )
+						new HarvestResource(
+							MineSpiritConstants.FALLBACK_REQ_SKILL,
+							MineSpiritConstants.FALLBACK_MIN_SKILL,
+							MineSpiritConstants.FALLBACK_MAX_SKILL,
+							MineSpiritStringConstants.MSG_FOUND_IRON_ORE_FALLBACK,
+							typeof(IronOre),
+							typeof(Granite))
 					};
 
-                    DynamicMining system = new DynamicMining();
+					DynamicMining system = new DynamicMining();
 					
 					system.Ore.Resources = new HarvestResource[]
 					{
-						new HarvestResource( m_ReqSkill, m_MinSkill, m_MaxSkill, m_HarvestMessage, m_OreType )
+						new HarvestResource(m_ReqSkill, m_MinSkill, m_MaxSkill, GetHarvestMessage(), m_OreType)
 					};
 					
 					system.Ore.Veins = new HarvestVein[]
 					{
-						new HarvestVein( 50, 0.5, system.Ore.Resources[0], res[0]),
-                        new HarvestVein( 50, 0.0, res[0], null) // iron
-                    };
+						new HarvestVein(MineSpiritConstants.CUSTOM_VEIN_CHANCE, MineSpiritConstants.CUSTOM_VEIN_RARITY, system.Ore.Resources[0], res[0]),
+						new HarvestVein(MineSpiritConstants.FALLBACK_VEIN_CHANCE, MineSpiritConstants.FALLBACK_VEIN_RARITY, res[0], null)
+					};
 					
 					m_HarvestSystem = system;
 				}
 				return m_HarvestSystem;
-				
 			}
 		}
 
-        private string m_HarvestMessage
+		/// <summary>
+		/// Gets or sets the detection range for this MineSpirit (0-3 tiles)
+		/// </summary>
+		[CommandProperty(AccessLevel.Administrator)]
+		public int Range
 		{
-			get
+			get { return m_Range; }
+			set
 			{
-				//can use cliloc cf 1007072 if ores not custom
-				//string ore = m_OreType.FullName;//use substring, my customs ore have a getname method
-				string ore = m_OreType.Name.Substring(0, m_OreType.Name.Length - 3);//CraftResources.GetName(m_OreType.m_Resource);//FormatName.ToOre(m_OreType.FullName);
-                return "Você encontrou alguns minérios de "+ore+ " e colocou em sua mochila.";
+				m_Range = ClampRange(value);
 			}
 		}
 		
-		#region Props
-		private int m_Range=3;
-		[CommandProperty(AccessLevel.Administrator)]
-		public int Range {
-			get { return m_Range; }
-			set { m_Range = value; m_Range = Math.Max(0,m_Range);m_Range=Math.Min(3,m_Range);}
-		}
-		
-		private Type m_OreType = m_BaseType;
+		/// <summary>
+		/// Gets or sets the ore type that can be mined at this location
+		/// </summary>
 		[CommandProperty(AccessLevel.Administrator)]
 		public Type OreType
 		{
 			get { return m_OreType; }
-			set { Type t = value; if(m_BaseType.IsAssignableFrom(t)){m_OreType = t; m_HarvestSystem=null;}}
+			set
+			{
+				Type t = value;
+				if (m_BaseType.IsAssignableFrom(t))
+				{
+					m_OreType = t;
+					InvalidateHarvestSystem();
+				}
+			}
 		}
 		
-		private double m_ReqSkill = 50;
+		/// <summary>
+		/// Gets or sets the required skill to mine at this location (0-120)
+		/// </summary>
 		[CommandProperty(AccessLevel.Administrator)]
 		public double ReqSkill
 		{
 			get { return m_ReqSkill; }
-			set { m_ReqSkill = value; m_ReqSkill=Math.Max(0,m_ReqSkill);m_ReqSkill=Math.Min(120,m_ReqSkill);m_HarvestSystem=null;}
+			set
+			{
+				m_ReqSkill = ClampSkill(value);
+				InvalidateHarvestSystem();
+			}
 		}
 		
-		private double m_MinSkill = 50;
+		/// <summary>
+		/// Gets or sets the minimum skill for mining at this location (0-120)
+		/// </summary>
 		[CommandProperty(AccessLevel.Administrator)]
 		public double MinSkill
 		{
 			get { return m_MinSkill; }
-			set { m_MinSkill = value; m_MinSkill=Math.Max(0,m_MinSkill);m_MinSkill=Math.Min(120,m_MinSkill);m_HarvestSystem=null;}
+			set
+			{
+				m_MinSkill = ClampSkill(value);
+				InvalidateHarvestSystem();
+			}
 		}
 		
-		private double m_MaxSkill = 120;
+		/// <summary>
+		/// Gets or sets the maximum skill for mining at this location (0-120)
+		/// </summary>
 		[CommandProperty(AccessLevel.Administrator)]
 		public double MaxSkill
 		{
 			get { return m_MaxSkill; }
-			set { m_MaxSkill = value; m_MaxSkill=Math.Max(0,m_MaxSkill);m_MaxSkill=Math.Min(120,m_MaxSkill);m_HarvestSystem=null;}
+			set
+			{
+				m_MaxSkill = ClampSkill(value);
+				InvalidateHarvestSystem();
+			}
 		}
+
 		#endregion
-		
-		#region Serial
-		public MineSpirit( Serial serial ) : base( serial )
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Gets the harvest message for the configured ore type
+		/// </summary>
+		/// <returns>Formatted harvest message in PT-BR</returns>
+		private string GetHarvestMessage()
 		{
+			string oreName = m_OreType.Name.Substring(0, m_OreType.Name.Length - MineSpiritConstants.ORE_NAME_SUFFIX_LENGTH);
+			return string.Format(MineSpiritStringConstants.MSG_FOUND_ORE_FORMAT, oreName);
 		}
 
-		public override void Serialize( GenericWriter writer )
+		/// <summary>
+		/// Clamps the range value to valid bounds
+		/// </summary>
+		/// <param name="value">The range value to clamp</param>
+		/// <returns>Clamped range value</returns>
+		private int ClampRange(int value)
 		{
-			base.Serialize( writer );
-
-			writer.Write( 0 ); // version
-
-			writer.Write( (int) m_Range );
-			
-			writer.Write( (string) m_OreType.FullName );
-			
-			writer.Write( (double) m_MinSkill );
-			
-			writer.Write( (double) m_MaxSkill );
-			
-			writer.Write( (double) m_ReqSkill );
+			return Math.Max(MineSpiritConstants.RANGE_MIN, Math.Min(MineSpiritConstants.RANGE_MAX, value));
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Clamps the skill value to valid bounds
+		/// </summary>
+		/// <param name="value">The skill value to clamp</param>
+		/// <returns>Clamped skill value</returns>
+		private double ClampSkill(double value)
 		{
-			base.Deserialize( reader );
+			return Math.Max(MineSpiritConstants.SKILL_MIN, Math.Min(MineSpiritConstants.SKILL_MAX, value));
+		}
+
+		/// <summary>
+		/// Invalidates the cached harvest system, forcing it to be recreated on next access
+		/// </summary>
+		private void InvalidateHarvestSystem()
+		{
+			m_HarvestSystem = null;
+		}
+
+		#endregion
+
+		#region Serialization
+		/// <summary>
+		/// Serializes the MineSpirit instance
+		/// </summary>
+		/// <param name="writer">The writer to serialize to</param>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+
+			writer.Write(0); // version
+
+			writer.Write((int)m_Range);
+			writer.Write((string)m_OreType.FullName);
+			writer.Write((double)m_MinSkill);
+			writer.Write((double)m_MaxSkill);
+			writer.Write((double)m_ReqSkill);
+		}
+
+		/// <summary>
+		/// Deserializes the MineSpirit instance
+		/// </summary>
+		/// <param name="reader">The reader to deserialize from</param>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
 
 			int version = reader.ReadInt();
 
 			m_Range = reader.ReadInt();
 			
 			Type t = ScriptCompiler.FindTypeByFullName(reader.ReadString());
-			if(t!=null && m_BaseType.IsAssignableFrom(t))
+			if (t != null && m_BaseType.IsAssignableFrom(t))
 				m_OreType = t;
 			
 			m_MinSkill = reader.ReadDouble();
-			
 			m_MaxSkill = reader.ReadDouble();
-			
 			m_ReqSkill = reader.ReadDouble();
 		}
-		
-		
+
 		#endregion
 	}
 }

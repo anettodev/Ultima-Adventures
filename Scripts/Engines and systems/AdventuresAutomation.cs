@@ -161,15 +161,40 @@ namespace Server.Items
 		/// <summary>
 		/// Validates that the AdventuresAutomation item exists in the world
 		/// If not found, sends a page/message to staff members
-		/// Uses cached instance for O(1) performance instead of O(n) iteration
+		/// Uses cached instance for O(1) performance, falls back to world search if cache is invalid
 		/// </summary>
 		private static void EnsureAutomationItemExists()
 		{
-			// Check cached instance instead of iterating all world items
-			if (s_Instance == null || s_Instance.Deleted || s_Instance.Map == Map.Internal)
+			// Fast path: Check cached instance first
+			if (s_Instance != null && !s_Instance.Deleted && s_Instance.Map != null && s_Instance.Map != Map.Internal)
 			{
-				NotifyStaffMissingAutomationItem();
+				return; // Instance is valid
 			}
+
+			// Cache is invalid - search world for the item (fallback for manually placed items)
+			AdventuresAutomation foundItem = null;
+			foreach (Item item in World.Items.Values)
+			{
+				if (item is AdventuresAutomation)
+				{
+					AdventuresAutomation automation = (AdventuresAutomation)item;
+					if (!automation.Deleted && automation.Map != null && automation.Map != Map.Internal)
+					{
+						foundItem = automation;
+						break;
+					}
+				}
+			}
+
+			// Update cache if item was found
+			if (foundItem != null)
+			{
+				SetInstance(foundItem);
+				return; // Item exists, cache updated
+			}
+
+			// Item truly doesn't exist - notify staff
+			NotifyStaffMissingAutomationItem();
 		}
 		
 		/// <summary>

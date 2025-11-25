@@ -87,7 +87,7 @@ namespace Server.Items
 		{
 		}
 
-		public BaseOre( CraftResource resource, int amount ) : base( 0x19B9 )
+		public BaseOre( CraftResource resource, int amount ) : base( OreConstants.ITEM_ID_STANDARD_PILE )
 		{
 			Stackable = true;
 			Amount = amount;
@@ -100,26 +100,90 @@ namespace Server.Items
 		{
 		}
 
-		public override void AddNameProperty( ObjectPropertyList list )
+		/// <summary>
+		/// Gets the display name for this ore type.
+		/// Can be overridden by derived classes to provide custom names.
+		/// </summary>
+		/// <returns>The display name for this ore</returns>
+		public virtual string GetOreDisplayName()
 		{
-			if ( Amount > 1 )
-				list.Add( 1050039, "{0}\t#{1}", Amount, 1026583 ); // ~1_NUMBER~ ~2_ITEMNAME~
-			else
-				list.Add( 1026583 ); // ore
+			return OreNameConstants.GENERIC_ORE_LABEL;
 		}
 
+		/// <summary>
+		/// Gets the resource type display name for the tooltip properties.
+		/// Maps CraftResource enum values to PT-BR display names from OreNameConstants.
+		/// </summary>
+		/// <returns>The resource type display name, or null if not found</returns>
+		public virtual string GetResourceTypeDisplayName()
+		{
+			switch ( m_Resource )
+			{
+				case CraftResource.Iron: return OreNameConstants.IRON_DISPLAY_NAME;
+				case CraftResource.DullCopper: return OreNameConstants.DULL_COPPER_DISPLAY_NAME;
+				case CraftResource.ShadowIron: return OreNameConstants.SHADOW_IRON_DISPLAY_NAME;
+				case CraftResource.Copper: return OreNameConstants.COPPER_DISPLAY_NAME;
+				case CraftResource.Bronze: return OreNameConstants.BRONZE_DISPLAY_NAME;
+				case CraftResource.Gold: return OreNameConstants.GOLD_DISPLAY_NAME;
+				case CraftResource.Agapite: return OreNameConstants.AGAPITE_DISPLAY_NAME;
+				case CraftResource.Verite: return OreNameConstants.VERITE_DISPLAY_NAME;
+				case CraftResource.Valorite: return OreNameConstants.VALORITE_DISPLAY_NAME;
+				case CraftResource.Titanium: return OreNameConstants.TITANIUM_DISPLAY_NAME;
+				case CraftResource.Rosenium: return OreNameConstants.ROSENIUM_DISPLAY_NAME;
+				case CraftResource.Platinum: return OreNameConstants.PLATINUM_DISPLAY_NAME;
+				case CraftResource.Nepturite: return OreNameConstants.NEPTURITE_DISPLAY_NAME;
+				case CraftResource.Obsidian: return OreNameConstants.OBSIDIAN_DISPLAY_NAME;
+				case CraftResource.Mithril: return OreNameConstants.MITHRIL_DISPLAY_NAME;
+				case CraftResource.Xormite: return OreNameConstants.XORMITE_DISPLAY_NAME;
+				case CraftResource.Dwarven: return OreNameConstants.DWARVEN_DISPLAY_NAME;
+				default: return null;
+			}
+		}
+
+		/// <summary>
+		/// Adds the name property to the object property list.
+		/// Uses GetOreDisplayName() to get the custom name if available.
+		/// </summary>
+		/// <param name="list">The object property list to add to</param>
+		public override void AddNameProperty( ObjectPropertyList list )
+		{
+			string displayName = GetOreDisplayName();
+			
+			if ( Amount > 1 )
+				list.Add( OreConstants.MSG_ID_MULTIPLE_ITEMS_FORMAT, "{0}\t{1}", Amount, displayName );
+			else
+				list.Add( displayName );
+		}
+
+		/// <summary>
+		/// Adds properties to the object property list (tooltip).
+		/// Shows the resource type using custom PT-BR names (including Iron).
+		/// </summary>
+		/// <param name="list">The object property list to add to</param>
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
 
-			if ( !CraftResources.IsStandard( m_Resource ) )
+			// Try to get custom PT-BR display name first (includes Iron)
+			string customName = GetResourceTypeDisplayName();
+			
+			if ( customName != null )
 			{
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( customName, OreStringConstants.COLOR_CYAN ) );
+			}
+			else if ( !CraftResources.IsStandard( m_Resource ) )
+			{
+				// Fallback to original system if custom name not found (only for non-standard resources)
 				int num = CraftResources.GetLocalizationNumber( m_Resource );
 
 				if ( num > 0 )
 					list.Add( num );
 				else
-					list.Add( CraftResources.GetName( m_Resource ) );
+				{
+					string resourceName = CraftResources.GetName( m_Resource );
+					if ( !string.IsNullOrEmpty( resourceName ) )
+						list.Add( resourceName );
+				}
 			}
 		}
 
@@ -146,22 +210,281 @@ namespace Server.Items
 				from.SendLocalizedMessage( 500447 ); // That is not accessible
 				return;
 			}
-			else if ( from.InRange( this.GetWorldLocation(), 2 ) )
+			else if ( from.InRange( this.GetWorldLocation(), OreConstants.INTERACTION_RANGE ) )
 			{
-				from.SendLocalizedMessage( 501971 ); // Select the forge on which to smelt the ore, or another pile of ore with which to combine it.
+				from.SendLocalizedMessage( OreConstants.MSG_ID_SELECT_FORGE );
 				from.Target = new InternalTarget( this );
 			}
 			else
 			{
-				from.SendLocalizedMessage( 501976 ); // The ore is too far away.
+				from.SendLocalizedMessage( OreConstants.MSG_ID_ORE_TOO_FAR );
 			}
 		}
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Calculates the worth of an ore pile based on its amount and item ID
+		/// </summary>
+		/// <param name="ore">The ore pile to calculate worth for</param>
+		/// <returns>The calculated worth value</returns>
+		private static int CalculateOreWorth( BaseOre ore )
+		{
+			int worth = ore.Amount;
+			
+			if ( ore.ItemID == OreConstants.ITEM_ID_STANDARD_PILE )
+				worth *= OreConstants.WORTH_MULTIPLIER_STANDARD_PILE;
+			else if ( ore.ItemID == OreConstants.ITEM_ID_SMALL_PILE )
+				worth *= OreConstants.WORTH_MULTIPLIER_SMALL_PILE;
+			else 
+				worth *= OreConstants.WORTH_MULTIPLIER_MEDIUM_LARGE_PILE;
+			
+			return worth;
+		}
+
+		/// <summary>
+		/// Determines the new pile ID and additional weight when combining ores with different weights
+		/// </summary>
+		/// <param name="ore1">First ore pile</param>
+		/// <param name="ore2">Second ore pile</param>
+		/// <param name="plusWeight">Output parameter for additional weight</param>
+		/// <returns>The new item ID for the combined pile</returns>
+		private static int DetermineCombinedPileID( BaseOre ore1, BaseOre ore2, out int plusWeight )
+		{
+			plusWeight = 0;
+			int newID = ore2.ItemID;
+			
+			if ( ore1.DefaultWeight != ore2.DefaultWeight )
+			{
+				if ( ore1.ItemID == OreConstants.ITEM_ID_SMALL_PILE || ore2.ItemID == OreConstants.ITEM_ID_SMALL_PILE )
+				{
+					newID = OreConstants.ITEM_ID_SMALL_PILE;
+				}
+				else if ( ore2.ItemID == OreConstants.ITEM_ID_STANDARD_PILE )
+				{
+					newID = ore1.ItemID;
+					plusWeight = ore2.Amount * 2;
+				}
+				else
+				{
+					plusWeight = ore1.Amount * 2;
+				}
+			}
+			
+			return newID;
+		}
+
+		/// <summary>
+		/// Validates if two ore piles can be combined
+		/// </summary>
+		/// <param name="from">The mobile attempting to combine</param>
+		/// <param name="ore1">First ore pile</param>
+		/// <param name="ore2">Second ore pile</param>
+		/// <param name="totalWorth">Total worth of combined ores</param>
+		/// <param name="plusWeight">Additional weight from combination</param>
+		/// <returns>True if combination is valid, false otherwise</returns>
+		private static bool ValidateOreCombination( Mobile from, BaseOre ore1, BaseOre ore2, int totalWorth, int plusWeight )
+		{
+			// Check maximum worth limits
+			if ( (ore2.ItemID == OreConstants.ITEM_ID_STANDARD_PILE && totalWorth > OreConstants.MAX_WORTH_STANDARD_PILE) || 
+			     (( ore2.ItemID == OreConstants.ITEM_ID_MEDIUM_PILE || ore2.ItemID == OreConstants.ITEM_ID_LARGE_PILE ) && totalWorth > OreConstants.MAX_WORTH_MEDIUM_LARGE_PILE) || 
+			     (ore2.ItemID == OreConstants.ITEM_ID_SMALL_PILE && totalWorth > OreConstants.MAX_WORTH_SMALL_PILE))
+			{
+				from.SendLocalizedMessage( OreConstants.MSG_ID_TOO_MUCH_ORE );
+				return false;
+			}
+			
+			// Check weight limit if in backpack
+			if ( ore2.RootParent is Mobile )
+			{
+				Mobile owner = (Mobile)ore2.RootParent;
+				if ( (plusWeight + owner.Backpack.TotalWeight) > owner.Backpack.MaxWeight )
+				{ 
+					from.SendLocalizedMessage( OreConstants.MSG_ID_WEIGHT_TOO_GREAT );
+					return false;
+				}
+			}
+			
+			return true;
+		}
+
+		/// <summary>
+		/// Combines two ore piles into one
+		/// </summary>
+		/// <param name="ore1">Source ore pile (will be deleted)</param>
+		/// <param name="ore2">Target ore pile (will be updated)</param>
+		/// <param name="totalWorth">Total worth of combined ores</param>
+		/// <param name="newID">New item ID for the combined pile</param>
+		private static void CombineOrePiles( BaseOre ore1, BaseOre ore2, int totalWorth, int newID )
+		{
+			ore2.ItemID = newID;
+			
+			if ( ore2.ItemID == OreConstants.ITEM_ID_STANDARD_PILE )
+			{
+				ore2.Amount = totalWorth / OreConstants.WORTH_MULTIPLIER_STANDARD_PILE;
+				ore1.Delete();
+			}
+			else if ( ore2.ItemID == OreConstants.ITEM_ID_SMALL_PILE )
+			{
+				ore2.Amount = totalWorth / OreConstants.WORTH_MULTIPLIER_SMALL_PILE;
+				ore1.Delete();
+			}
+			else
+			{
+				ore2.Amount = totalWorth / OreConstants.WORTH_MULTIPLIER_MEDIUM_LARGE_PILE;
+				ore1.Delete();
+			}
+		}
+
+		/// <summary>
+		/// Gets the smelting difficulty for a given resource type
+		/// </summary>
+		/// <param name="resource">The craft resource type</param>
+		/// <returns>The smelting difficulty value</returns>
+		private static double GetSmeltingDifficulty( CraftResource resource )
+		{
+			switch ( resource )
+			{
+				case CraftResource.DullCopper: return OreConstants.SMELT_DIFFICULTY_DULL_COPPER;
+				case CraftResource.Copper: return OreConstants.SMELT_DIFFICULTY_COPPER;
+				case CraftResource.Bronze: return OreConstants.SMELT_DIFFICULTY_BRONZE;
+				case CraftResource.ShadowIron: return OreConstants.SMELT_DIFFICULTY_SHADOW_IRON;
+				case CraftResource.Platinum: return OreConstants.SMELT_DIFFICULTY_PLATINUM;
+				case CraftResource.Gold: return OreConstants.SMELT_DIFFICULTY_GOLD;
+				case CraftResource.Agapite: return OreConstants.SMELT_DIFFICULTY_AGAPITE;
+				case CraftResource.Verite: return OreConstants.SMELT_DIFFICULTY_VERITE;
+				case CraftResource.Valorite: return OreConstants.SMELT_DIFFICULTY_VALORITE;
+				case CraftResource.Titanium: return OreConstants.SMELT_DIFFICULTY_TITANIUM;
+				case CraftResource.Rosenium: return OreConstants.SMELT_DIFFICULTY_ROSENIUM;
+				case CraftResource.Nepturite: return OreConstants.SMELT_DIFFICULTY_NEPTURITE;
+				case CraftResource.Obsidian: return OreConstants.SMELT_DIFFICULTY_OBSIDIAN;
+				case CraftResource.Mithril: return OreConstants.SMELT_DIFFICULTY_MITHRIL;
+				case CraftResource.Xormite: return OreConstants.SMELT_DIFFICULTY_XORMITE;
+				case CraftResource.Dwarven: return OreConstants.SMELT_DIFFICULTY_DWARVEN;
+				default: return OreConstants.SMELT_DIFFICULTY_DEFAULT;
+			}
+		}
+
+		/// <summary>
+		/// Validates if the player can smelt the ore
+		/// </summary>
+		/// <param name="from">The mobile attempting to smelt</param>
+		/// <param name="ore">The ore to smelt</param>
+		/// <param name="difficulty">The smelting difficulty</param>
+		/// <returns>True if smelting can proceed, false otherwise</returns>
+		private static bool ValidateSmeltingConditions( Mobile from, BaseOre ore, double difficulty )
+		{
+			// Check skill requirement
+			if ( difficulty > OreConstants.SMELT_MIN_SKILL_THRESHOLD && difficulty > from.Skills[SkillName.Mining].Value )
+			{
+				from.SendMessage(55, OreStringConstants.MSG_CANNOT_SMELT_ORE);
+				return false;
+			}
+			
+			// Check minimum amount for small pile
+			if ( ore.Amount <= 1 && ore.ItemID == OreConstants.ITEM_ID_SMALL_PILE )
+			{
+				from.SendMessage(55, OreStringConstants.MSG_NOT_ENOUGH_ORE_FOR_INGOT);
+				return false;
+			}
+			
+			return true;
+		}
+
+		/// <summary>
+		/// Calculates the amount of ingots to create based on ore pile type
+		/// </summary>
+		/// <param name="ore">The ore pile to smelt</param>
+		/// <param name="baseAmount">Base amount of ore</param>
+		/// <returns>The calculated ingot amount</returns>
+		private static int CalculateSmeltAmount( BaseOre ore, int baseAmount )
+		{
+			if ( ore.ItemID == OreConstants.ITEM_ID_SMALL_PILE )
+			{
+				if ( ore.Amount % 2 == 0 )
+				{
+					baseAmount /= 2;
+					ore.Delete();
+				}
+				else
+				{
+					baseAmount /= 2;
+					ore.Amount = 1;
+				}
+			}
+			else if ( ore.ItemID == OreConstants.ITEM_ID_STANDARD_PILE )
+			{
+				baseAmount *= 2;
+				ore.Delete();
+			}
+			else
+			{
+				baseAmount /= 1;
+				ore.Delete();
+			}
+			
+			return baseAmount;
+		}
+
+		/// <summary>
+		/// Processes successful smelting operation
+		/// </summary>
+		/// <param name="from">The mobile who smelted</param>
+		/// <param name="ore">The ore that was smelted</param>
+		private static void ProcessSuccessfulSmelt( Mobile from, BaseOre ore )
+		{
+			if ( ore.Amount <= 0 )
+			{
+				from.SendMessage(55, OreStringConstants.MSG_NOT_ENOUGH_ORE_FOR_INGOT);
+				return;
+			}
+			
+			int amount = ore.Amount;
+			if ( amount > OreConstants.MAX_SMELT_AMOUNT )
+				amount = OreConstants.MAX_SMELT_AMOUNT;
+
+			BaseIngot ingot = ore.GetIngot();
+			ingot.Amount = CalculateSmeltAmount( ore, amount );
+			
+			from.AddToBackpack( ingot );
+			from.PlaySound( OreConstants.SOUND_ID_SMELT );
+			from.SendMessage(55, OreStringConstants.MSG_SMELTED_ORE_SUCCESS);
+		}
+
+		/// <summary>
+		/// Processes failed smelting attempt (burns away impurities)
+		/// </summary>
+		/// <param name="from">The mobile who attempted to smelt</param>
+		/// <param name="ore">The ore that failed to smelt</param>
+		private static void ProcessFailedSmelt( Mobile from, BaseOre ore )
+		{
+			if ( ore.Amount < 2 && ore.ItemID == OreConstants.ITEM_ID_STANDARD_PILE )
+			{
+				from.SendLocalizedMessage( OreConstants.MSG_ID_BURN_IMPURITIES );
+				ore.ItemID = OreConstants.ITEM_ID_MEDIUM_PILE;
+				from.PlaySound( OreConstants.SOUND_ID_SMELT );
+			}
+			else if ( ore.Amount < 2 && (ore.ItemID == OreConstants.ITEM_ID_MEDIUM_PILE || ore.ItemID == OreConstants.ITEM_ID_LARGE_PILE) )
+			{
+				from.SendLocalizedMessage( OreConstants.MSG_ID_BURN_IMPURITIES );
+				ore.ItemID = OreConstants.ITEM_ID_SMALL_PILE;
+				from.PlaySound( OreConstants.SOUND_ID_SMELT );
+			}
+			else
+			{
+				from.SendLocalizedMessage( OreConstants.MSG_ID_BURN_IMPURITIES );
+				ore.Amount /= 2;
+				from.PlaySound( OreConstants.SOUND_ID_SMELT );
+			}
+		}
+
+		#endregion
 
 		private class InternalTarget : Target
 		{
 			private BaseOre m_Ore;
 
-			public InternalTarget( BaseOre ore ) :  base ( 2, false, TargetFlags.None )
+			public InternalTarget( BaseOre ore ) : base( OreConstants.TARGET_RANGE, false, TargetFlags.None )
 			{
 				m_Ore = ore;
 			}
@@ -171,211 +494,87 @@ namespace Server.Items
 				if ( m_Ore.Deleted )
 					return;
 
-				if ( !from.InRange( m_Ore.GetWorldLocation(), 2 ) )
+				if ( !from.InRange( m_Ore.GetWorldLocation(), OreConstants.INTERACTION_RANGE ) )
 				{
-					from.SendLocalizedMessage( 501976 ); // The ore is too far away.
+					from.SendLocalizedMessage( OreConstants.MSG_ID_ORE_TOO_FAR );
 					return;
 				}
 				
-				#region Combine Ore
+				// Handle ore combining
 				if ( targeted is BaseOre )
 				{
-					BaseOre ore = (BaseOre)targeted;
-					if ( !ore.Movable )
-						return;
-					else if ( m_Ore == ore )
-					{
-						from.SendLocalizedMessage( 501972 ); // Select another pile or ore with which to combine this.
-						from.Target = new InternalTarget( ore );
-						return;
-					}
-					else if ( ore.Resource != m_Ore.Resource )
-					{
-						from.SendLocalizedMessage( 501979 ); // You cannot combine ores of different metals.
-						return;
-					}
-
-					int worth = ore.Amount;
-					if ( ore.ItemID == 0x19B9 )
-						worth *= 8;
-					else if ( ore.ItemID == 0x19B7 )
-						worth *= 2;
-					else 
-						worth *= 4;
-					int sourceWorth = m_Ore.Amount;
-					if ( m_Ore.ItemID == 0x19B9 )
-						sourceWorth *= 8;
-					else if ( m_Ore.ItemID == 0x19B7 )
-						sourceWorth *= 2;
-					else
-						sourceWorth *= 4;
-					worth += sourceWorth;
-
-					int plusWeight = 0;
-					int newID = ore.ItemID;
-					if ( ore.DefaultWeight != m_Ore.DefaultWeight )
-					{
-						if ( ore.ItemID == 0x19B7 || m_Ore.ItemID == 0x19B7 )
-						{
-							newID = 0x19B7;
-						}
-						else if ( ore.ItemID == 0x19B9 )
-						{
-							newID = m_Ore.ItemID;
-							plusWeight = ore.Amount * 2;
-						}
-						else
-						{
-							plusWeight = m_Ore.Amount * 2;
-						}
-					}
-
-					if ( (ore.ItemID == 0x19B9 && worth > 120000) || (( ore.ItemID == 0x19B8 || ore.ItemID == 0x19BA ) && worth > 60000) || (ore.ItemID == 0x19B7 && worth > 30000))
-					{
-						from.SendLocalizedMessage( 1062844 ); // There is too much ore to combine.
-						return;
-					}
-					else if ( ore.RootParent is Mobile && (plusWeight + ((Mobile)ore.RootParent).Backpack.TotalWeight) > ((Mobile)ore.RootParent).Backpack.MaxWeight )
-					{ 
-						from.SendLocalizedMessage( 501978 ); // The weight is too great to combine in a container.
-						return;
-					}
-
-					ore.ItemID = newID;
-					if ( ore.ItemID == 0x19B9 )
-					{
-						ore.Amount = worth / 8;
-						m_Ore.Delete();
-					}
-					else if ( ore.ItemID == 0x19B7 )
-					{
-						ore.Amount = worth / 2;
-						m_Ore.Delete();
-					}
-					else
-					{
-						ore.Amount = worth / 4;
-						m_Ore.Delete();
-					}	
+					HandleOreCombining( from, (BaseOre)targeted );
 					return;
 				}
-				#endregion
 
+				// Handle smelting
 				if ( Server.Engines.Craft.DefBlacksmithy.IsForge( targeted ) )
 				{
-					// Check if ore is gated (unknown metal)
-					if ( Server.Misc.ResourceGating.IsResourceGated( m_Ore.Resource ) )
-					{
-						from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_ORE);
-						return;
-					}
+					HandleSmelting( from, targeted );
+				}
+			}
 
-					double difficulty;
-
-					switch ( m_Ore.Resource )
-					{
-						default: difficulty = 50.0; break;
-						case CraftResource.DullCopper: difficulty = 65.0; break;
-                        case CraftResource.Copper: difficulty = 70.0; break;
-                        case CraftResource.Bronze: difficulty = 75.0; break;
-                        case CraftResource.ShadowIron: difficulty = 80.0; break;
-                        case CraftResource.Platinum: difficulty = 85.0; break;
-                        case CraftResource.Gold: difficulty = 85.0; break;
-						case CraftResource.Agapite: difficulty = 90.0; break;
-						case CraftResource.Verite: difficulty = 95.0; break;
-						case CraftResource.Valorite: difficulty = 95.0; break;
-                        case CraftResource.Titanium: difficulty = 100.0; break;
-                        case CraftResource.Rosenium: difficulty = 100.0; break;
-                        case CraftResource.Nepturite: difficulty = 105.0; break;
-						case CraftResource.Obsidian: difficulty = 105.0; break;
-						case CraftResource.Mithril: difficulty = 110.0; break;
-						case CraftResource.Xormite: difficulty = 110.0; break;
-						case CraftResource.Dwarven: difficulty = 120.0; break;
-                    }
-
-					double minSkill = difficulty - 10.0;
-					double maxSkill = difficulty + 10.0;
+			/// <summary>
+			/// Handles combining two ore piles
+			/// </summary>
+			/// <param name="from">The mobile attempting to combine</param>
+			/// <param name="targetOre">The target ore pile to combine with</param>
+			private void HandleOreCombining( Mobile from, BaseOre targetOre )
+			{
+				if ( !targetOre.Movable )
+					return;
 					
-					if ( difficulty > 50.0 && difficulty > from.Skills[SkillName.Mining].Value )
-					{
-                        from.SendMessage(55, "Você não sabe como derreter este minério.");
-                        //from.SendLocalizedMessage( 501986 ); // You have no idea how to smelt this strange ore!
-						return;
-					}
-					
-					if ( m_Ore.Amount <= 1 && m_Ore.ItemID == 0x19B7 )
-					{
-                        from.SendMessage(55, "Você há minério suficiente para fazer um lingote.");
-                        //from.SendLocalizedMessage( 501987 ); // There is not enough metal-bearing ore in this pile to make an ingot.
-						return;
-					}
+				if ( m_Ore == targetOre )
+				{
+					from.SendLocalizedMessage( OreConstants.MSG_ID_SELECT_ANOTHER_PILE );
+					from.Target = new InternalTarget( targetOre );
+					return;
+				}
+				
+				if ( targetOre.Resource != m_Ore.Resource )
+				{
+					from.SendLocalizedMessage( OreConstants.MSG_ID_CANNOT_COMBINE_DIFFERENT );
+					return;
+				}
 
-					if ( from.CheckTargetSkill( SkillName.Mining, targeted, minSkill, maxSkill ) )
-					{
-						if ( m_Ore.Amount <= 0 )
-						{
-                            from.SendMessage(55, "Você há minério suficiente para fazer um lingote.");
-                            //from.SendLocalizedMessage( 501987 ); // There is not enough metal-bearing ore in this pile to make an ingot.
-						}
-						else
-						{
-							int amount = m_Ore.Amount;
-							if ( m_Ore.Amount > 30000 )
-								amount = 30000;
+				int totalWorth = CalculateOreWorth( targetOre ) + CalculateOreWorth( m_Ore );
+				int plusWeight;
+				int newID = DetermineCombinedPileID( m_Ore, targetOre, out plusWeight );
 
-							BaseIngot ingot = m_Ore.GetIngot();
-							
-							if ( m_Ore.ItemID == 0x19B7 )
-							{
-								if ( m_Ore.Amount % 2 == 0 )
-								{
-									amount /= 2;
-									m_Ore.Delete();
-								}
-								else
-								{
-									amount /= 2;
-									m_Ore.Amount = 1;
-								}
-							}
-								
-							else if ( m_Ore.ItemID == 0x19B9 )
-							{
-								amount *= 2;
-								m_Ore.Delete();
-							}
-							
-							else
-							{
-								amount /= 1;
-								m_Ore.Delete();
-							}
+				if ( !ValidateOreCombination( from, m_Ore, targetOre, totalWorth, plusWeight ) )
+					return;
 
-							ingot.Amount = amount;
-							from.AddToBackpack( ingot );
-							from.PlaySound( 0x208 );
-                            from.SendMessage(55, "Você fundiu o minério removendo as impurezas e colocou o metal na mochila.");
-                            //from.SendLocalizedMessage( 501988 ); // You smelt the ore removing the impurities and put the metal in your backpack.
-						}
-					}
-					else if ( m_Ore.Amount < 2 && m_Ore.ItemID == 0x19B9 )
-					{
-						from.SendLocalizedMessage( 501990 ); // You burn away the impurities but are left with less useable metal.
-						m_Ore.ItemID = 0x19B8;
-						from.PlaySound( 0x208 );
-					}
-					else if ( m_Ore.Amount < 2 && m_Ore.ItemID == 0x19B8 || m_Ore.ItemID == 0x19BA )
-					{
-						from.SendLocalizedMessage( 501990 ); // You burn away the impurities but are left with less useable metal.
-						m_Ore.ItemID = 0x19B7;
-						from.PlaySound( 0x208 );
-					}
-					else
-					{
-						from.SendLocalizedMessage( 501990 ); // You burn away the impurities but are left with less useable metal.
-						m_Ore.Amount /= 2;
-						from.PlaySound( 0x208 );
-					}
+				CombineOrePiles( m_Ore, targetOre, totalWorth, newID );
+			}
+
+			/// <summary>
+			/// Handles smelting ore at a forge
+			/// </summary>
+			/// <param name="from">The mobile attempting to smelt</param>
+			/// <param name="forge">The forge target</param>
+			private void HandleSmelting( Mobile from, object forge )
+			{
+				// Check if ore is gated (unknown metal)
+				if ( Server.Misc.ResourceGating.IsResourceGated( m_Ore.Resource ) )
+				{
+					from.SendMessage(55, Server.Misc.ResourceGating.MSG_CANNOT_SMELT_GATED_ORE);
+					return;
+				}
+
+				double difficulty = GetSmeltingDifficulty( m_Ore.Resource );
+				double minSkill = difficulty - OreConstants.SMELT_SKILL_VARIANCE;
+				double maxSkill = difficulty + OreConstants.SMELT_SKILL_VARIANCE;
+
+				if ( !ValidateSmeltingConditions( from, m_Ore, difficulty ) )
+					return;
+
+				if ( from.CheckTargetSkill( SkillName.Mining, forge, minSkill, maxSkill ) )
+				{
+					ProcessSuccessfulSmelt( from, m_Ore );
+				}
+				else
+				{
+					ProcessFailedSmelt( from, m_Ore );
 				}
 			}
 		}
@@ -399,7 +598,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.0; } // Density of real iron (~8g/cm³) / 2;
+            get { return OreConstants.DENSITY_STANDARD; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -440,7 +639,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.5; } // Density of real copper (~9g/cm³) / 2;
+            get { return OreConstants.DENSITY_COPPER_BASED; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -479,9 +678,18 @@ namespace Server.Items
 		{
 		}
 
+		/// <summary>
+		/// Gets the custom display name for ShadowIron ore (Ferro-Negro in PT-BR)
+		/// </summary>
+		/// <returns>The PT-BR display name "Ferro-Negro"</returns>
+		//public override string GetOreDisplayName()
+		//{
+			//return OreNameConstants.SHADOW_IRON_DISPLAY_NAME;
+		//}
+
         public override double DefaultWeight
         {
-            get { return 4; } // Density of real iron (~8g/cm³) / 2;
+            get { return OreConstants.DENSITY_STANDARD; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -522,7 +730,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 4.5; } // Density of real copper (~9g/cm³) / 2;
+            get { return OreConstants.DENSITY_COPPER_BASED; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -604,7 +812,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 9.5; } // Density of real gold (~19g/cm³) / 2;
+            get { return OreConstants.DENSITY_GOLD; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -772,7 +980,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 2.25; } // Density of real titanium (~4.5g/cm³) / 2;
+            get { return OreConstants.DENSITY_TITANIUM_ROSENIUM; }
         }
 
         public virtual int GetLabelNumber()
@@ -820,7 +1028,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 2.25; } // Density of real titanium (~4.5g/cm³) / 2;
+            get { return OreConstants.DENSITY_TITANIUM_ROSENIUM; }
         }
 
         public override void Serialize(GenericWriter writer)
@@ -863,7 +1071,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 10.5; } // Density of real platinum (~21.5g/cm³) / 2;
+            get { return OreConstants.DENSITY_PLATINUM; }
         }
 
         public override void Serialize(GenericWriter writer)
@@ -904,7 +1112,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 1.5; } // Density of real obsidian (~3.0g/cm³) / 2;
+            get { return OreConstants.DENSITY_OBSIDIAN; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -945,7 +1153,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 1.0; } // Density of mithril is the lowest possible;
+            get { return OreConstants.DENSITY_MITHRIL; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -986,7 +1194,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 5.0; } // DwarvenOre needs to have a medium density;
+            get { return OreConstants.DENSITY_DWARVEN; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -1027,7 +1235,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 8.0; } // DwarvenOre needs to have a high density;
+            get { return OreConstants.DENSITY_XORMITE; }
         }
 
         public override void Serialize( GenericWriter writer )
@@ -1068,7 +1276,7 @@ namespace Server.Items
 
         public override double DefaultWeight
         {
-            get { return 2.0; } // Nepturite is low (base) density;
+            get { return OreConstants.DENSITY_NEPTURITE; }
         }
 
         public override void Serialize( GenericWriter writer )
