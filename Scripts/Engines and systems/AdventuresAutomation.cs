@@ -23,12 +23,52 @@ namespace Server.Items
 	{
 		#region Static Fields
 
+		/// <summary>
+		/// Cached singleton instance of AdventuresAutomation item
+		/// Eliminates need to iterate World.Items.Values for performance
+		/// </summary>
+		private static AdventuresAutomation s_Instance;
+
 		private static Dictionary<PlayerMobile, Item> PlayerTool;
 		private static Dictionary<PlayerMobile, Point3D> PlayerLoc;
 		private static Dictionary<PlayerMobile, int> TaskNextAction;
 		public static Dictionary<PlayerMobile, object> TaskTarget;
 		private static Dictionary<PlayerMobile, HarvestSystem> TaskSystem;
 		private static Dictionary<PlayerMobile, string> TaskString;
+
+		/// <summary>
+		/// Reverse lookup: Groups players by timer value for O(1) timer matching
+		/// Key: Timer value, Value: List of players with that timer value
+		/// </summary>
+		private static Dictionary<int, List<PlayerMobile>> TimerReverseLookup;
+
+		#endregion
+
+		#region Instance Caching
+
+		/// <summary>
+		/// Gets the singleton AdventuresAutomation instance
+		/// </summary>
+		public static AdventuresAutomation Instance
+		{
+			get { return s_Instance; }
+		}
+
+		/// <summary>
+		/// Sets the singleton instance (called when item is added to world)
+		/// </summary>
+		private static void SetInstance(AdventuresAutomation instance)
+		{
+			s_Instance = instance;
+		}
+
+		/// <summary>
+		/// Clears the singleton instance (called when item is deleted)
+		/// </summary>
+		private static void ClearInstance()
+		{
+			s_Instance = null;
+		}
 
 		#endregion
 
@@ -108,6 +148,8 @@ namespace Server.Items
 				AdventuresAutomation.TaskSystem = new Dictionary<PlayerMobile, HarvestSystem>();
 			if ( AdventuresAutomation.TaskString == null)
 				AdventuresAutomation.TaskString = new Dictionary<PlayerMobile, string>();
+			if ( AdventuresAutomation.TimerReverseLookup == null)
+				AdventuresAutomation.TimerReverseLookup = new Dictionary<int, List<PlayerMobile>>();
 			
 			// Ensure AdventuresAutomation item exists in world for OneTimeTick to work
 			EnsureAutomationItemExists();
@@ -119,22 +161,12 @@ namespace Server.Items
 		/// <summary>
 		/// Validates that the AdventuresAutomation item exists in the world
 		/// If not found, sends a page/message to staff members
+		/// Uses cached instance for O(1) performance instead of O(n) iteration
 		/// </summary>
 		private static void EnsureAutomationItemExists()
 		{
-			// Check if any AdventuresAutomation item exists in the world
-			bool found = false;
-			foreach (Item item in World.Items.Values)
-			{
-				if (item is AdventuresAutomation && item.Map != Map.Internal)
-				{
-					found = true;
-					break;
-				}
-			}
-			
-			// If not found, notify staff members
-			if (!found)
+			// Check cached instance instead of iterating all world items
+			if (s_Instance == null || s_Instance.Deleted || s_Instance.Map == Map.Internal)
 			{
 				NotifyStaffMissingAutomationItem();
 			}
@@ -182,7 +214,7 @@ namespace Server.Items
 		/// <summary>
 		/// Called when the item is added to a parent (container or world)
 		/// Ensures only one AdventuresAutomation item exists in the server
-			/// </summary>
+		/// </summary>
 		/// <param name="parent">The parent container or location</param>
 		public override void OnAdded(IEntity parent)
 		{
@@ -191,7 +223,16 @@ namespace Server.Items
 			// Only check for duplicates when added to world (not containers)
 			if (parent == null && this.Map != null && this.Map != Map.Internal)
 			{
-				CheckForDuplicate();
+				// Set this as the instance if none exists
+				if (s_Instance == null || s_Instance.Deleted || s_Instance.Map == Map.Internal)
+				{
+					SetInstance(this);
+				}
+				else
+				{
+					// Another instance exists - check if this is a duplicate
+					CheckForDuplicate();
+				}
 			}
 		}
 
@@ -206,12 +247,37 @@ namespace Server.Items
 			// Check for duplicates when spawned in world
 			if (this.Map != null && this.Map != Map.Internal)
 			{
-				CheckForDuplicate();
+				// Set this as the instance if none exists
+				if (s_Instance == null || s_Instance.Deleted || s_Instance.Map == Map.Internal)
+				{
+					SetInstance(this);
+				}
+				else
+				{
+					// Another instance exists - check if this is a duplicate
+					CheckForDuplicate();
+				}
 			}
 		}
 
 		/// <summary>
+		/// Called when the item is deleted
+		/// Clears the cached instance if this was the singleton
+		/// </summary>
+		public override void OnDelete()
+		{
+			// Clear cached instance if this was the singleton
+			if (s_Instance == this)
+			{
+				ClearInstance();
+			}
+
+			base.OnDelete();
+		}
+
+		/// <summary>
 		/// Checks if another AdventuresAutomation item exists and removes this instance if duplicate found
+		/// Uses cached instance for O(1) performance instead of O(n) iteration
 		/// </summary>
 		private void CheckForDuplicate()
 		{
@@ -219,20 +285,11 @@ namespace Server.Items
 			if (this.Deleted)
 				return;
 
-			AdventuresAutomation existingItem = null;
+			// Check cached instance instead of iterating all world items
+			AdventuresAutomation existingItem = s_Instance;
 
-			// Search for existing AdventuresAutomation items in the world
-			foreach (Item item in World.Items.Values)
-			{
-				if (item is AdventuresAutomation && item != this && !item.Deleted && item.Map != null && item.Map != Map.Internal)
-				{
-					existingItem = (AdventuresAutomation)item;
-					break;
-				}
-			}
-
-			// If another instance exists, delete this one
-			if (existingItem != null)
+			// If another instance exists and it's not this one, delete this one
+			if (existingItem != null && existingItem != this && !existingItem.Deleted && existingItem.Map != null && existingItem.Map != Map.Internal)
 			{
 				// Try to find who created this (check recent command log or nearby mobiles)
 				Mobile creator = null;
@@ -617,9 +674,12 @@ namespace Server.Items
 					{
 						for ( int y = -AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; !water && y <= AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; ++y )
 						{
-							double dist = Math.Sqrt(x*x+y*y);
+							// Use squared distance comparison to avoid expensive Math.Sqrt
+							int squaredDist = x*x + y*y;
+							double maxDist = AdventuresAutomationConstants.WATER_SEARCH_DISTANCE_MAX;
+							double squaredMaxDist = maxDist * maxDist;
 
-							if ( dist <= AdventuresAutomationConstants.WATER_SEARCH_DISTANCE_MAX )
+							if (squaredDist <= squaredMaxDist)
 							{
 								LandTile landTile = pm.Map.Tiles.GetLandTile( pm.X + x, pm.Y + y ); //mining and fishing relies on landtiles
 
@@ -751,51 +811,70 @@ namespace Server.Items
 			int delay = 0;
 			Item tool = null;
 
-			//listing actions
-			if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_LIST_ACTIONS ))
+			// Optimized command parsing: Extract command suffix after ".auto-" prefix
+			// This is faster than multiple Insensitive.Contains() calls
+			string commandSuffix = null;
+			if (Insensitive.StartsWith(speech, ".auto-"))
 			{
-				pm.Say(AdventuresAutomationStringConstants.MSG_AVAILABLE_ACTIONS);
-				pm.Say(AdventuresAutomationStringConstants.MSG_HARVEST_ACTIONS);
-				pm.Say(AdventuresAutomationStringConstants.MSG_CRAFTING_ACTIONS);
-                return;
+				// Extract command suffix (everything after ".auto-")
+				int prefixLength = 6; // ".auto-".Length
+				if (speech.Length > prefixLength)
+				{
+					commandSuffix = speech.Substring(prefixLength).ToLower();
+				}
+			}
+			else
+			{
+				// Not an automation command, return early
+				return;
 			}
 
-			//start task initiation here
-			if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_FISHING ))
+			// Route to appropriate handler using switch statement for O(1) lookup
+			bool commandHandled = false;
+			switch (commandSuffix)
 			{
-				if (!HandleFishingAction(pm, out tool, out delay))
+				case "listar":
+					pm.Say(AdventuresAutomationStringConstants.MSG_AVAILABLE_ACTIONS);
+					pm.Say(AdventuresAutomationStringConstants.MSG_HARVEST_ACTIONS);
+					pm.Say(AdventuresAutomationStringConstants.MSG_CRAFTING_ACTIONS);
+					return; // Early return for list command
+
+				case "pescar":
+					commandHandled = HandleFishingAction(pm, out tool, out delay);
+					break;
+
+				case "minerar":
+					commandHandled = HandleMiningAction(pm, out tool, out delay);
+					break;
+
+				case "lenhar":
+					commandHandled = HandleLumberjackingAction(pm, out tool, out delay);
+					break;
+
+				case "esfolar":
+					commandHandled = HandleSkinningAction(pm, out delay);
+					break;
+
+				case "moer":
+					commandHandled = HandleMillingAction(pm, out tool, out delay);
+					break;
+
+				case "massa":
+					commandHandled = HandleDoughAction(pm, out tool, out delay);
+					break;
+
+				case "panificar":
+					commandHandled = HandleBreadAction(pm, out tool, out delay);
+					break;
+
+				default:
+					// Unknown command - silently return (could add error message here if needed)
 					return;
 			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_MINING ))
-			{
-				if (!HandleMiningAction(pm, out tool, out delay))
-					return;
-			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_LUMBERJACKING ))
-			{
-				if (!HandleLumberjackingAction(pm, out tool, out delay))
-					return;
-			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_SKINNING ))
-			{
-				if (!HandleSkinningAction(pm, out delay))
-					return;
-			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_MILLING ))
-			{
-				if (!HandleMillingAction(pm, out tool, out delay))
-					return;
-			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_DOUGH ))
-			{
-				if (!HandleDoughAction(pm, out tool, out delay))
-					return;
-			}
-			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_BREAD ))
-			{
-				if (!HandleBreadAction(pm, out tool, out delay))
-					return;
-			}
+
+			// If command handler returned false, action setup failed
+			if (!commandHandled)
+				return;
 
             // Setup auto-action
             PlayerTool[pm] = tool;
@@ -886,11 +965,8 @@ namespace Server.Items
 
 			if (harvestx != 0 && harvesty != 0 && target != null)
 			{
-				if (TaskTarget.ContainsKey(pm)) 
-				{ 
-					TaskTarget.Remove(pm); 
-				}
-					
+				// Remove existing entry if present (Remove returns true if key existed)
+				TaskTarget.Remove(pm);
 				TaskTarget[pm] = target;
 			}
 			else
@@ -928,15 +1004,19 @@ namespace Server.Items
 		/// <returns>Target object if found, null otherwise</returns>
 		private static object FindTargetInLandTiles(PlayerMobile pm, string action, Item tool, Map mp, int range, ref int harvestx, ref int harvesty, ref int harvestz)
 		{
+			// Pre-calculate squared range to avoid repeated calculations
+			int squaredRange = range * range;
+
 			for ( int x = -range; x <= range; ++x )
 			{
 				if ((pm.X + x) != pm.X)
 				{
 					for ( int y = -range; y <= range; ++y )
 					{
-						double dist = Math.Sqrt(x*x+y*y);
+						// Use squared distance comparison to avoid expensive Math.Sqrt
+						int squaredDist = x*x + y*y;
 
-						if ( dist <= range && (harvestx == 0 || harvesty == 0) )
+						if (squaredDist <= squaredRange && (harvestx == 0 || harvesty == 0))
 						{
 							LandTile landTile = mp.Tiles.GetLandTile( pm.X + x, pm.Y + y );
 
@@ -1025,15 +1105,19 @@ namespace Server.Items
 		/// <returns>Target object if found, null otherwise</returns>
 		private static object FindTargetInStaticTiles(PlayerMobile pm, string action, Item tool, Map mp, int range, ref int harvestx, ref int harvesty, ref int harvestz)
 		{
+			// Pre-calculate squared range to avoid repeated calculations
+			int squaredRange = range * range;
+
 			for ( int x = -range; x <= range; ++x )
 			{
 				if ((pm.X + x) != pm.X)
 				{
 					for ( int y = -range; y <= range; ++y )
 					{
-						double dist = Math.Sqrt(x*x+y*y);
+						// Use squared distance comparison to avoid expensive Math.Sqrt
+						int squaredDist = x*x + y*y;
 
-						if ( dist <= range && (harvestx == 0 || harvesty == 0) )
+						if (squaredDist <= squaredRange && (harvestx == 0 || harvesty == 0))
 						{
 							StaticTile[] tiles = mp.Tiles.GetStaticTiles( pm.X + x, pm.Y + y, true );
 
@@ -1138,7 +1222,7 @@ namespace Server.Items
 		/// <param name="pm">The player mobile</param>
 		public static void ClearHarvestTarget( PlayerMobile pm )
 		{
-			if (pm != null && TaskTarget.ContainsKey(pm))
+			if (pm != null)
 			{
 				TaskTarget.Remove(pm);
 			}
@@ -1154,18 +1238,20 @@ namespace Server.Items
 			{
                 pm.SetFlag(PlayerFlag.IsAutomated, false);
 
-                if (PlayerLoc.ContainsKey(pm))
-                    PlayerLoc.Remove(pm);
-                if (PlayerTool.ContainsKey(pm))
-                    PlayerTool.Remove(pm);
-                if (TaskNextAction.ContainsKey(pm))
-                    TaskNextAction.Remove(pm);
-                if (TaskTarget.ContainsKey(pm))
-                    TaskTarget.Remove(pm);
-                if (TaskSystem.ContainsKey(pm))
-                    TaskSystem.Remove(pm);
-                if (TaskString.ContainsKey(pm))
-                    TaskString.Remove(pm);
+                // Remove entries (Remove returns true if key existed, but we don't need to check)
+                // Also remove from reverse lookup if present
+                int oldTimer;
+                if (TaskNextAction.TryGetValue(pm, out oldTimer))
+                {
+                    RemovePlayerFromTimer(oldTimer, pm);
+                }
+
+                PlayerLoc.Remove(pm);
+                PlayerTool.Remove(pm);
+                TaskNextAction.Remove(pm);
+                TaskTarget.Remove(pm);
+                TaskSystem.Remove(pm);
+                TaskString.Remove(pm);
 
                 pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_NORMAL, AdventuresAutomationStringConstants.MSG_AUTOMATION_STOPPED);
             }
@@ -1333,8 +1419,7 @@ namespace Server.Items
 			if (!pm.GetFlag(PlayerFlag.IsAutomated))
 			{
 				// Player is no longer automated, clean up
-				if (TaskNextAction.ContainsKey(pm))
-					TaskNextAction.Remove(pm);
+				TaskNextAction.Remove(pm);
 				return;
 			}
 
@@ -1357,8 +1442,9 @@ namespace Server.Items
 					if (action != null && action != "")
 					{
 						TaskString[pm] = action;
-						// Re-initialize system if needed
-						if (!TaskSystem.ContainsKey(pm))
+						// Re-initialize system if needed (use TryGetValue to check existence)
+						HarvestSystem existingSystem;
+						if (!TaskSystem.TryGetValue(pm, out existingSystem))
 						{
 							if (action == AdventuresAutomationStringConstants.ACTION_STRING_FISHING)
 								TaskSystem[pm] = (HarvestSystem)(Fishing.System);
@@ -1449,8 +1535,9 @@ namespace Server.Items
 				return;
 			}
 
-			// Find harvest target if needed
-			if (!TaskTarget.ContainsKey(pm))
+			// Find harvest target if needed (use TryGetValue to check existence)
+			object existingTarget;
+			if (!TaskTarget.TryGetValue(pm, out existingTarget))
 			{
 				HarvestTarget(pm, action, tool);
 				
@@ -1473,8 +1560,7 @@ namespace Server.Items
 				else
 				{
 					// Invalid target or system - clear and retry with delay
-					if (TaskTarget.ContainsKey(pm))
-						TaskTarget.Remove(pm);
+					TaskTarget.Remove(pm);
 					int delay = GetDelayForSystem(hs != null ? hs : GetTaskSystem(pm));
 					if (delay == 0)
 						delay = AdventuresAutomationConstants.DELAY_MINING_SECONDS;
@@ -1820,6 +1906,7 @@ namespace Server.Items
 
 		/// <summary>
 		/// Sets the next action timer for the specified player
+		/// Also updates reverse lookup for O(1) timer matching
 		/// </summary>
 		/// <param name="pm">The player mobile</param>
 		/// <param name="delay">Delay in seconds</param>
@@ -1836,9 +1923,13 @@ namespace Server.Items
 			if (delay < 1)
 				delay = 1;
 
-			if (TaskNextAction.ContainsKey(pm))
-				TaskNextAction.Remove(pm);
-		
+			// Remove player from old timer in reverse lookup
+			int oldTimer;
+			if (TaskNextAction.TryGetValue(pm, out oldTimer))
+			{
+				RemovePlayerFromTimer(oldTimer, pm);
+			}
+
 			// Calculate next timer value (current timer + delay)
 			int nextTimer = globaltasktimer + delay;
 			
@@ -1853,33 +1944,81 @@ namespace Server.Items
 					nextTimer = 0;
 			}
 
-            TaskNextAction[pm] = nextTimer;
+			// Update forward lookup
+			TaskNextAction[pm] = nextTimer;
+
+			// Update reverse lookup for O(1) timer matching
+			AddPlayerToTimer(nextTimer, pm);
+		}
+
+		/// <summary>
+		/// Adds player to reverse lookup for specified timer value
+		/// </summary>
+		private static void AddPlayerToTimer(int timerValue, PlayerMobile pm)
+		{
+			List<PlayerMobile> players;
+			if (!TimerReverseLookup.TryGetValue(timerValue, out players))
+			{
+				players = new List<PlayerMobile>();
+				TimerReverseLookup[timerValue] = players;
+			}
+			
+			// Only add if not already in list (safety check)
+			if (!players.Contains(pm))
+				players.Add(pm);
+		}
+
+		/// <summary>
+		/// Removes player from reverse lookup for specified timer value
+		/// </summary>
+		private static void RemovePlayerFromTimer(int timerValue, PlayerMobile pm)
+		{
+			List<PlayerMobile> players;
+			if (TimerReverseLookup.TryGetValue(timerValue, out players))
+			{
+				players.Remove(pm);
+				
+				// Clean up empty lists to prevent memory leak
+				if (players.Count == 0)
+					TimerReverseLookup.Remove(timerValue);
+			}
 		}
 
 		/// <summary>
 		/// Called by OneTime system to process automation timers
+		/// Uses reverse lookup for O(1) timer matching instead of O(n) iteration
 		/// </summary>
 		public void OneTimeTick()
 		{
 			CheckHashTables();
 
-			List<PlayerMobile> automated = new List<PlayerMobile>();
-			
-			// Check players in TaskNextAction dictionary for timer matches
-			foreach( KeyValuePair<PlayerMobile, int> kvp in TaskNextAction )
+			// Use reverse lookup for O(1) timer matching
+			List<PlayerMobile> playersForTimer;
+			if (TimerReverseLookup.TryGetValue(globaltasktimer, out playersForTimer))
 			{
-                if (kvp.Value == globaltasktimer )
+				// Process all players with matching timer
+				// Iterate backwards to safely remove items during iteration
+				for (int i = playersForTimer.Count - 1; i >= 0; i--)
 				{
-					// Only add if player is still flagged as automated
-					if (kvp.Key != null && !kvp.Key.Deleted && kvp.Key.GetFlag(PlayerFlag.IsAutomated))
-						automated.Add(kvp.Key);
-                }
-            }
+					PlayerMobile pm = playersForTimer[i];
+					
+					// Validate player before processing
+					if (pm == null || pm.Deleted || !pm.GetFlag(PlayerFlag.IsAutomated))
+					{
+						// Remove invalid player from reverse lookup
+						playersForTimer.RemoveAt(i);
+						// Also remove from forward lookup
+						TaskNextAction.Remove(pm);
+						continue;
+					}
 
-            // Process all automated players
-            for ( int i = 0; i < automated.Count; ++i )
-			{
-                DoAction(automated[ i ]);
+					// Process the player
+					DoAction(pm);
+				}
+
+				// Clean up empty list
+				if (playersForTimer.Count == 0)
+					TimerReverseLookup.Remove(globaltasktimer);
 			}
 
 			globaltasktimer ++;
