@@ -180,6 +180,91 @@ namespace Server.Mobiles
 
 		#endregion
 
+		#region Overrides - Visibility
+
+		/// <summary>
+		/// Overrides Hidden property to always be true for players
+		/// Staff can still see it via CanSee logic (AccessLevel check)
+		/// </summary>
+		[CommandProperty(AccessLevel.Administrator)]
+		public override bool Hidden
+		{
+			get
+			{
+				// Always return true - this mobile should be invisible to players
+				// Staff can see it because CanSee checks AccessLevel
+				return true;
+			}
+			set
+			{
+				// Always keep it hidden - prevent any attempts to unhide
+				// Only set base if trying to set to true (redundant but safe)
+				if (value == true)
+				{
+					base.Hidden = true;
+				}
+				// If trying to set to false, ignore it - stay hidden
+			}
+		}
+
+		/// <summary>
+		/// Prevents MineSpirit from being revealed by actions
+		/// </summary>
+		public override void RevealingAction()
+		{
+			// Do nothing - MineSpirit should never be revealed to players
+		}
+
+		/// <summary>
+		/// Ensures MineSpirit stays hidden after spawning
+		/// </summary>
+		public override void OnAfterSpawn()
+		{
+			base.OnAfterSpawn();
+			
+			// Ensure mobile remains hidden and non-interactive after spawning
+			Hidden = true;
+			Blessed = true;
+			Frozen = true;
+			CantWalk = true;
+		}
+
+		#endregion
+
+		#region Overrides - Invulnerability
+
+		/// <summary>
+		/// Prevents MineSpirit from being damaged
+		/// </summary>
+		/// <returns>Always returns false to prevent all damage</returns>
+		public override bool CanBeDamaged()
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Prevents MineSpirit from being killed
+		/// </summary>
+		/// <returns>Always returns false to prevent death</returns>
+		public override bool OnBeforeDeath()
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Prevents any damage processing that might reveal the mobile
+		/// </summary>
+		/// <param name="amount">Damage amount (ignored)</param>
+		/// <param name="from">Damage source (ignored)</param>
+		/// <param name="willKill">Whether damage would kill (ignored)</param>
+		public override void OnDamage(int amount, Mobile from, bool willKill)
+		{
+			// Do nothing - prevent any damage processing
+			// This ensures Hidden stays true and mobile remains invisible
+		}
+
+		#endregion
+
 		#region Helper Methods
 
 		/// <summary>
@@ -259,6 +344,12 @@ namespace Server.Mobiles
 			m_MinSkill = reader.ReadDouble();
 			m_MaxSkill = reader.ReadDouble();
 			m_ReqSkill = reader.ReadDouble();
+
+			// Ensure mobile remains hidden and non-interactive after deserialization
+			Hidden = true;
+			Blessed = true;
+			Frozen = true;
+			CantWalk = true;
 		}
 
 		#endregion

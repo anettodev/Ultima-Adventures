@@ -2344,9 +2344,10 @@ namespace Server.Mobiles
 			else if ( m is BaseNPC ){ return true; }
 			else if ( m is GauntletMaster ){ return true; }
 			else if ( m is CloneCharacterOnLogout.CharacterClone ){ return true; }
-			else if ( m is DoomVarietyDealer ){ return true; }
+		else if ( m is DoomVarietyDealer ){ return true; }
+		else if ( m is MineSpirit ){ return true; }
 
-			return false;
+		return false;
 		}
 
 		public static bool CanOnlyMoveOnSea( Mobile m )
