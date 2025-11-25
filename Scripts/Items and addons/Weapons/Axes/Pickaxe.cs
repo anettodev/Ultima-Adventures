@@ -70,7 +70,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Minerar' para usar o sistema de automacao."); 
+			list.Add("Diga '.auto-minerar' para usar o sistema de automacao."); 
 		}
 
 		public override void Serialize( GenericWriter writer )

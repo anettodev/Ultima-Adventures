@@ -127,7 +127,7 @@ namespace Server.Items
 			base.AddNameProperties( list );	
 
 			if (!(this is Pickaxe) && !(this is SturdyPickaxe)&& !(this is GargoylesPickaxe))
-				list.Add("Diga '.iniciar Auto-Lenhar' para usar o sistema de automacao."); 
+				list.Add("Diga '.auto-lenhar' para usar o sistema de automacao."); 
 		}
 
 		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list )

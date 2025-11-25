@@ -82,7 +82,7 @@ namespace Server.Engines.Harvest
 			if ( !available && from is PlayerMobile && ((PlayerMobile)from).GetFlag( PlayerFlag.IsAutomated ) )
 			{
 				PlayerMobile pm = (PlayerMobile)from;
-				if ( AdventuresAutomation.TaskTarget.Contains((PlayerMobile)from)) // ran out of resources on the current target area
+				if ( AdventuresAutomation.TaskTarget.ContainsKey((PlayerMobile)from)) // ran out of resources on the current target area
 				{
 					from.SendMessage(55, "Procurando um novo local pois esse local agora está vazio.");
 
@@ -591,7 +591,8 @@ namespace Server.Engines.Harvest
                 if (automated)
                 {
                     AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
-                    AdventuresAutomation.DoAction((PlayerMobile)from);
+                    int delay = AdventuresAutomation.GetDelayForSystem(this);
+                    AdventuresAutomation.SetNextAction((PlayerMobile)from, delay);
                 }
                 return;
             }
@@ -599,11 +600,12 @@ namespace Server.Engines.Harvest
 
 			OnHarvestFinished( from, tool, def, vein, bank, resource, toHarvest );
 			
-			// Clear target after successful harvest and continue automation
+			// Clear target after successful harvest and continue automation with delay
 			if (automated)
 			{
 				AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
-				AdventuresAutomation.DoAction((PlayerMobile)from);
+				int delay = AdventuresAutomation.GetDelayForSystem(this);
+				AdventuresAutomation.SetNextAction((PlayerMobile)from, delay);
 			}
 		}
 
@@ -752,7 +754,8 @@ namespace Server.Engines.Harvest
 				if (automated)
 				{
 					AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
-					AdventuresAutomation.DoAction((PlayerMobile)from);
+					int delay = AdventuresAutomation.GetDelayForSystem(this);
+					AdventuresAutomation.SetNextAction((PlayerMobile)from, delay);
 				}
 
 				return false;
@@ -807,16 +810,23 @@ namespace Server.Engines.Harvest
 
 		public virtual void StartHarvesting( Mobile from, Item tool, object toHarvest )
 		{
+			bool automated = false;
+			if (from is PlayerMobile && ((PlayerMobile)from).GetFlag( PlayerFlag.IsAutomated ) )
+				automated = true;
+
 			if ( !CheckHarvest( from, tool ) )
+			{
+				// Tool check failed - stop automation
+				if (automated)
+				{
+					AdventuresAutomation.StopAction((PlayerMobile)from);
+				}
 				return;
+			}
 
 			int tileID;
 			Map map;
 			Point3D loc;
-
-			bool automated = false;
-			if (from is PlayerMobile && ((PlayerMobile)from).GetFlag( PlayerFlag.IsAutomated ) )
-				automated = true;
 
 			if ( !GetHarvestDetails( from, tool, toHarvest, out tileID, out map, out loc ) )
 			{
@@ -848,7 +858,14 @@ namespace Server.Engines.Harvest
 				return;
 			}
 			else if ( !CheckResources( from, tool, def, map, loc, false ) )
-			{				
+			{
+				// Resources depleted - clear target and try to find new spot
+				if (automated)
+				{
+					AdventuresAutomation.ClearHarvestTarget((PlayerMobile)from);
+					int delay = AdventuresAutomation.GetDelayForSystem(this);
+					AdventuresAutomation.SetNextAction((PlayerMobile)from, delay);
+				}
 				return;
 			}
 			else if ( !CheckHarvest( from, tool, def, toHarvest ) )
@@ -865,8 +882,12 @@ namespace Server.Engines.Harvest
 			{
 				OnConcurrentHarvest( from, tool, def, toHarvest );
 				
+				// Concurrent harvest - set delay to retry instead of stopping
 				if (automated)
-					AdventuresAutomation.StopAction((PlayerMobile)from);
+				{
+					int delay = AdventuresAutomation.GetDelayForSystem(this);
+					AdventuresAutomation.SetNextAction((PlayerMobile)from, delay);
+				}
 
 				return;
 			

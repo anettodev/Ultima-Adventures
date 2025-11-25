@@ -42,7 +42,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Esfolar' para usar o sistema de automação."); 
+			list.Add("Diga '.auto-esfolar' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public override void Serialize( GenericWriter writer )

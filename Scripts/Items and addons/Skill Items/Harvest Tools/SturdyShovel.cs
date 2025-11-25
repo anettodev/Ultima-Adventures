@@ -33,7 +33,7 @@ namespace Server.Items
 		[Constructable]
         public SturdyShovel(int uses) : base(uses, 0xF39)
         {
-            Name = "Pá Resistente";
+            Name = "Pï¿½ Resistente";
             Weight = 5.0;
 			Hue = 0x973;
         }
@@ -47,7 +47,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Minerar' para usar o sistema de automação."); 
+			list.Add("Diga '.auto-minerar' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public override void Serialize( GenericWriter writer )

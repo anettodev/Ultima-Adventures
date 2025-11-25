@@ -1,10 +1,10 @@
 using System; 
-using System.Collections; 
 using System.Collections.Generic;
 using System.Reflection;
 using Server;
 using Server.Items; 
 using Server.Mobiles;
+using Server.Network;
 using Server.Gumps;
 using Server.Targeting;
 using Server.OneTime;
@@ -15,239 +15,578 @@ using Server.Engines.Craft;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Automation system for player actions (fishing, mining, lumberjacking, crafting, etc.)
+	/// Provides automated harvesting and crafting capabilities with configurable delays.
+	/// </summary>
 	public class AdventuresAutomation : Item, IOneTime
 	{
-		public static Hashtable PlayerTool;
-		public static Hashtable PlayerLoc;
-		public static Hashtable TaskNextAction;
-		public static Hashtable TaskTarget;
-		public static Hashtable TaskSystem;
-		public static Hashtable TaskString;
+		#region Static Fields
 
-		public static int fishingdelay = 3;
-		public static int miningdelay = 3;
-		public static int lumberjackingdelay = 3;
-		public static int skinningdelay = 3;
-		public static int millingdelay = 3;
-		public static int craftingdelay = 5;
+		private static Dictionary<PlayerMobile, Item> PlayerTool;
+		private static Dictionary<PlayerMobile, Point3D> PlayerLoc;
+		private static Dictionary<PlayerMobile, int> TaskNextAction;
+		public static Dictionary<PlayerMobile, object> TaskTarget;
+		private static Dictionary<PlayerMobile, HarvestSystem> TaskSystem;
+		private static Dictionary<PlayerMobile, string> TaskString;
+
+		#endregion
+
+		#region Delay Fields
+
+		// Delay constants moved to AdventuresAutomationConstants.cs
+		public static int fishingdelay = AdventuresAutomationConstants.DELAY_FISHING_SECONDS;
+		public static int miningdelay = AdventuresAutomationConstants.DELAY_MINING_SECONDS;
+		public static int lumberjackingdelay = AdventuresAutomationConstants.DELAY_LUMBERJACKING_SECONDS;
+		public static int skinningdelay = AdventuresAutomationConstants.DELAY_SKINNING_SECONDS;
+		public static int millingdelay = AdventuresAutomationConstants.DELAY_MILLING_SECONDS;
+		public static int craftingdelay = AdventuresAutomationConstants.DELAY_CRAFTING_SECONDS;
+
+		#endregion
+
+		#region Timer Fields
 
 		public static int globaltasktimer;
-		private int m_OneTimeType;
-		//private static string globalAction;
+		private static DateTime m_LastStaffNotification = DateTime.MinValue;
 
+		#endregion
+
+		#region Instance Fields
+
+		private int m_OneTimeType;
+
+		#endregion
+
+		#region Properties
+
+
+		/// <summary>
+		/// Gets or sets the OneTime system type identifier
+		/// </summary>
         public int OneTimeType
 		{
 			get{ return m_OneTimeType; }
 			set{ m_OneTimeType = value; }
 		}
+
+		#endregion
+
+		#region Constructors
 		
+		/// <summary>
+		/// Initializes a new instance of AdventuresAutomation
+		/// </summary>
 		[Constructable]
-		public AdventuresAutomation() : base( 0x0EDE )
+		public AdventuresAutomation() : base( AdventuresAutomationConstants.AUTOMATION_ITEM_ID )
 		{
 			Movable = false;
 			Name = "Item de automa��o de aventuras";
 			Visible = false;
-			m_OneTimeType = 3;
-			globaltasktimer = 0;
+			m_OneTimeType = AdventuresAutomationConstants.ONETIME_TYPE_VALUE;
+			globaltasktimer = AdventuresAutomationConstants.TIMER_INITIAL_VALUE;
 			
 			CheckHashTables();
 		}
 
+		/// <summary>
+		/// Initializes all Dictionary collections if they are null.
+		/// Called during construction and deserialization.
+		/// </summary>
 		public static void CheckHashTables()
 		{
+			// Legacy method name kept for compatibility
+			// Now initializes Dictionary collections instead of Hashtable
 			if ( AdventuresAutomation.PlayerLoc == null)
-				AdventuresAutomation.PlayerLoc = new Hashtable();
+				AdventuresAutomation.PlayerLoc = new Dictionary<PlayerMobile, Point3D>();
 			if ( AdventuresAutomation.PlayerTool == null)
-				AdventuresAutomation.PlayerTool = new Hashtable();
+				AdventuresAutomation.PlayerTool = new Dictionary<PlayerMobile, Item>();
 			if ( AdventuresAutomation.TaskNextAction == null)
-				AdventuresAutomation.TaskNextAction = new Hashtable();
+				AdventuresAutomation.TaskNextAction = new Dictionary<PlayerMobile, int>();
 			if ( AdventuresAutomation.TaskTarget == null)
-				AdventuresAutomation.TaskTarget = new Hashtable();
+				AdventuresAutomation.TaskTarget = new Dictionary<PlayerMobile, object>();
 			if ( AdventuresAutomation.TaskSystem == null)
-				AdventuresAutomation.TaskSystem = new Hashtable();
+				AdventuresAutomation.TaskSystem = new Dictionary<PlayerMobile, HarvestSystem>();
 			if ( AdventuresAutomation.TaskString == null)
-				AdventuresAutomation.TaskString = new Hashtable();
+				AdventuresAutomation.TaskString = new Dictionary<PlayerMobile, string>();
+			
+			// Ensure AdventuresAutomation item exists in world for OneTimeTick to work
+			EnsureAutomationItemExists();
+		}
+		
+		/// <summary>
+		/// Ensures the AdventuresAutomation item exists in the world for OneTimeTick to be called
+		/// </summary>
+		/// <summary>
+		/// Validates that the AdventuresAutomation item exists in the world
+		/// If not found, sends a page/message to staff members
+		/// </summary>
+		private static void EnsureAutomationItemExists()
+		{
+			// Check if any AdventuresAutomation item exists in the world
+			bool found = false;
+			foreach (Item item in World.Items.Values)
+			{
+				if (item is AdventuresAutomation && item.Map != Map.Internal)
+				{
+					found = true;
+					break;
+				}
+			}
+			
+			// If not found, notify staff members
+			if (!found)
+			{
+				NotifyStaffMissingAutomationItem();
+			}
+		}
+		
+		/// <summary>
+		/// Notifies staff members that the AdventuresAutomation item is missing
+		/// Prevents spam by only notifying once per minute
+		/// </summary>
+		private static void NotifyStaffMissingAutomationItem()
+		{
+			// Prevent spam - only notify once per minute
+			if (DateTime.UtcNow - m_LastStaffNotification < TimeSpan.FromMinutes(1))
+				return;
+			
+			m_LastStaffNotification = DateTime.UtcNow;
+			
+			string message = "[SYSTEM ALERT] AdventuresAutomation item is missing from the world! Automation system will not work. Please spawn an AdventuresAutomation item using: [add AdventuresAutomation";
+			
+			// Send message to all online staff members
+			int staffNotified = 0;
+			foreach (NetState ns in NetState.Instances)
+			{
+				Mobile m = ns.Mobile;
+				
+				if (m != null && m.AccessLevel >= AccessLevel.Counselor)
+				{
+					m.SendMessage(33, message); // Yellow color for warning
+					staffNotified++;
+				}
+			}
+			
+			// Also log to console
+			Console.WriteLine(message);
+			if (staffNotified == 0)
+			{
+				Console.WriteLine("[WARNING] No staff members are online to receive the alert!");
+			}
 		}
 
-		public static HarvestSystem GetMiningSystem(PlayerMobile pm, Item tool)
+		#endregion
+
+		#region Item Lifecycle
+
+		/// <summary>
+		/// Called when the item is added to a parent (container or world)
+		/// Ensures only one AdventuresAutomation item exists in the server
+			/// </summary>
+		/// <param name="parent">The parent container or location</param>
+		public override void OnAdded(IEntity parent)
 		{
-			// Null check for tool
-			if (tool == null || tool.Deleted)
-				return (HarvestSystem)(Mining.System);
+			base.OnAdded(parent);
+
+			// Only check for duplicates when added to world (not containers)
+			if (parent == null && this.Map != null && this.Map != Map.Internal)
+			{
+				CheckForDuplicate();
+			}
+		}
+
+		/// <summary>
+		/// Called after the item is spawned in the world
+		/// Ensures only one AdventuresAutomation item exists in the server
+		/// </summary>
+		public override void OnAfterSpawn()
+		{
+			base.OnAfterSpawn();
+
+			// Check for duplicates when spawned in world
+			if (this.Map != null && this.Map != Map.Internal)
+			{
+				CheckForDuplicate();
+			}
+		}
+
+		/// <summary>
+		/// Checks if another AdventuresAutomation item exists and removes this instance if duplicate found
+		/// </summary>
+		private void CheckForDuplicate()
+		{
+			// Skip check if this item is already deleted
+			if (this.Deleted)
+				return;
+
+			AdventuresAutomation existingItem = null;
+
+			// Search for existing AdventuresAutomation items in the world
+			foreach (Item item in World.Items.Values)
+			{
+				if (item is AdventuresAutomation && item != this && !item.Deleted && item.Map != null && item.Map != Map.Internal)
+				{
+					existingItem = (AdventuresAutomation)item;
+					break;
+				}
+			}
+
+			// If another instance exists, delete this one
+			if (existingItem != null)
+			{
+				// Try to find who created this (check recent command log or nearby mobiles)
+				Mobile creator = null;
 				
-			HarvestSystem DMining = (HarvestSystem)DynamicMining.GetSystem(tool);
-            HarvestSystem miningSystem = (DMining != null) ? DMining : (HarvestSystem)(Mining.System);
-			return miningSystem;
+				// Check if item is in a mobile's inventory
+				if (this.RootParent is Mobile)
+					creator = (Mobile)this.RootParent;
+				else
+				{
+					// Try to find nearby staff member who might have created it
+					if (this.Map != null)
+					{
+						IPooledEnumerable<Mobile> mobiles = this.Map.GetMobilesInRange(this.Location, 10);
+						foreach (Mobile m in mobiles)
+						{
+							if (m != null && m.AccessLevel >= AccessLevel.GameMaster)
+							{
+								creator = m;
+								break;
+							}
+						}
+						mobiles.Free();
+					}
+				}
+
+				// Delete this duplicate instance
+				this.Delete();
+
+				// Notify creator if available
+				if (creator != null)
+				{
+					creator.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, 
+						"AdventuresAutomation item already exists in the world! This duplicate has been removed.");
+					creator.SendMessage(AdventuresAutomationConstants.MSG_COLOR_WARNING, 
+						"Only one AdventuresAutomation item can exist at a time. Use the existing one instead.");
+				}
+				else
+				{
+					// Log to console if creator not found
+					Console.WriteLine("[WARNING] Duplicate AdventuresAutomation item was created and removed. Only one instance should exist.");
+				}
+			}
+		}
+
+		#endregion
+
+		#region Dictionary Accessor Helpers
+
+		/// <summary>
+		/// Gets the task string for the specified player
+		/// </summary>
+		private static string GetTaskString(PlayerMobile pm)
+		{
+			string value;
+			return TaskString.TryGetValue(pm, out value) ? value : "";
+		}
+
+		/// <summary>
+		/// Gets the player tool for the specified player
+		/// </summary>
+		private static Item GetPlayerTool(PlayerMobile pm)
+		{
+			Item value;
+			PlayerTool.TryGetValue(pm, out value);
+			return value;
+		}
+
+		/// <summary>
+		/// Gets the task target for the specified player
+		/// </summary>
+		private static object GetTaskTarget(PlayerMobile pm)
+		{
+			object value;
+			TaskTarget.TryGetValue(pm, out value);
+			return value;
+		}
+
+		/// <summary>
+		/// Gets the task system for the specified player
+		/// </summary>
+		private static HarvestSystem GetTaskSystem(PlayerMobile pm)
+		{
+			HarvestSystem value;
+			TaskSystem.TryGetValue(pm, out value);
+			return value;
+		}
+
+		/// <summary>
+		/// Gets the player location for the specified player
+		/// </summary>
+		private static Point3D GetPlayerLoc(PlayerMobile pm)
+		{
+			Point3D value;
+			PlayerLoc.TryGetValue(pm, out value);
+			return value;
+		}
+
+		/// <summary>
+		/// Gets the next action timer for the specified player
+		/// </summary>
+		private static int GetTaskNextAction(PlayerMobile pm)
+		{
+			int value;
+			TaskNextAction.TryGetValue(pm, out value);
+			return value;
+		}
+
+		#endregion
+
+		#region Action Handlers
+
+		/// <summary>
+		/// Handles fishing action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleFishingAction(PlayerMobile pm, out Item tool, out int delay)
+		{
+			tool = null;
+			delay = 0;
+
+			//find tool
+			tool = pm.FindItemOnLayer( Layer.OneHanded );
+			if (tool == null || !(tool is FishingPole) )
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_FISHING_POLE);
+				return false;
+			}
+			
+			//find target
+			HarvestTarget(pm, AdventuresAutomationStringConstants.ACTION_STRING_FISHING, tool);
+
+			delay = fishingdelay; // in seconds, for fishing
+
+			TaskSystem[pm] = (HarvestSystem)(Fishing.System);
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_FISHING;
+			return true;
+		}
+
+		/// <summary>
+		/// Handles mining action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleMiningAction(PlayerMobile pm, out Item tool, out int delay)
+		{
+			tool = null;
+			delay = 0;
+
+			// possible tools
+			tool = pm.FindItemOnLayer( Layer.OneHanded );
+
+			if (tool == null)
+				tool = pm.Backpack.FindItemByType(typeof(Shovel));
+			if (tool == null)
+				tool = pm.Backpack.FindItemByType(typeof(OreShovel));
+			if (tool == null)
+				tool = pm.Backpack.FindItemByType(typeof(SturdyShovel));
+
+            // find tool
+            if (tool == null || !(BaseAxe.IsMiningTool(tool)) )
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_MINING_TOOL);
+				return false;
+			}
+            
+			HarvestSystem miningSystem = GetMiningSystem(pm, (Item)tool);
+			// Allow auto-mining with DynamicMining systems (MineSpirit locations)
+			// Previously blocked to force manual mining, but now supports auto-mining
+
+            delay = miningdelay; // in seconds
+            HarvestTarget(pm, AdventuresAutomationStringConstants.ACTION_STRING_MINING, tool); //find target
+            TaskSystem[pm] = miningSystem;
+            TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_MINING;
+			return true;
         }
 
-        public static void StartTask( PlayerMobile pm, string speech )
+		/// <summary>
+		/// Handles lumberjacking action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleLumberjackingAction(PlayerMobile pm, out Item tool, out int delay)
 		{
-			CheckHashTables();
+			tool = null;
+			delay = 0;
 
-			string task = "";
-			bool success = false;
-		
-			if ( pm.GetFlag( PlayerFlag.IsAutomated ) )
+			//find tool
+			tool = pm.FindItemOnLayer( Layer.OneHanded ); //some axes are one handed, some are two
+
+			if (tool == null || (tool != null && !(tool is BaseAxe) ) || BaseAxe.IsMiningTool(tool)) 
+				tool = pm.FindItemOnLayer( Layer.TwoHanded );
+
+			if (tool == null || (tool != null && !(tool is BaseAxe) ) || BaseAxe.IsMiningTool(tool)) 
 			{
-				pm.SendMessage(55, "Voc� j� est� realizando uma tarefa autom�tica. Se quiser para, digite: '.parar' ou '.stop'.");
-				return;
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_AXE);
+				return false;
 			}
-			else if ( pm.Backpack == null || pm.Backpack.Deleted)
+			
+			//find target
+			HarvestTarget(pm, AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING, tool);
+
+			delay = lumberjackingdelay; // in seconds
+
+			TaskSystem[pm] = (HarvestSystem)(Lumberjacking.System);
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING;
+			return true;
+		}
+
+		/// <summary>
+		/// Handles skinning action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleSkinningAction(PlayerMobile pm, out int delay)
+		{
+			delay = 0;
+
+			//find tool
+			Item tool = pm.Backpack.FindItemByType(typeof(SkinningKnife));
+			Item tool2 = pm.Backpack.FindItemByType(typeof(Scissors));
+			
+			if ( (tool == null || tool2 == null) || (tool != null && !(tool is SkinningKnife) ) || (tool2 != null && !(tool2 is Scissors) ) )
 			{
-				pm.SendMessage(55, "Voc� n�o tem uma mochila por algum motivo.");
-				return;
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_SKINNING_TOOLS);
+				return false;
 			}
-			else if ( !pm.Alive )
+
+			delay = skinningdelay; // in seconds
+
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_SKINNING;
+			return true;
+		}
+
+		/// <summary>
+		/// Handles milling action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleMillingAction(PlayerMobile pm, out Item tool, out int delay)
+		{
+			tool = null;
+			delay = 0;
+
+			Item wheat = pm.Backpack.FindItemByType(typeof(WheatSheaf));
+			if (wheat == null)
 			{
-				pm.SendMessage(55, "Voc� est� morto e n�o pode fazer isso.");
-				return;
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_WHEAT);
+				return false;
 			}
-			else if ( pm.Map == null )
+			
+			IPooledEnumerable eable = pm.Map.GetItemsInRange( pm.Location, AdventuresAutomationConstants.MILL_SEARCH_RANGE );
+			try
 			{
-				pm.SendMessage(55, "Voc� se encontra em um local inv�lido!");
-				return;
-			}
-
-			bool startAutoAction = false;
-			int delay = 0;
-			Item tool = null;
-			object target = null;
-
-			//listing actions
-			if (Insensitive.Contains( speech, "auto-listar" ))
-			{
-				pm.Say("Posso fazer as seguintes a��es autom�ticas:");
-				pm.Say("Auto-Pescar, Auto-Minerar, Auto-Lenhar");
-				pm.Say("Auto-Moer, Auto-Esfolar, Auto-Massa, Auto-Panificar");
-                return;
-			}
-
-			//start task initiation here
-			if (Insensitive.Contains( speech, "auto-pescar" ))
-			{	
-				//find tool
-				tool = pm.FindItemOnLayer( Layer.OneHanded );
-				if (tool == null || (tool != null && !(tool is FishingPole) ) )
-				{
-					pm.SendMessage(55, "Voc� precisa segurar uma vara de pescar para pescar.");
-					return;
-				}
-				
-				//find target
-				HarvestTarget(pm, "fishing", tool);
-
-				delay = fishingdelay; // in seconds, for fishing
-
-				TaskSystem.Add(pm, (HarvestSystem)(Fishing.System));
-				TaskString.Add(pm, "fishing");
-			}
-			else if (Insensitive.Contains( speech, "auto-minerar" ))
-			{	
-				//////////////////////////////////////////////////////////////
-				// possible tools
-				tool = pm.FindItemOnLayer( Layer.OneHanded );
-
-				if (tool == null)
-					tool = pm.Backpack.FindItemByType(typeof(Shovel));
-				if (tool == null)
-					tool = pm.Backpack.FindItemByType(typeof(OreShovel));
-				if (tool == null)
-					tool = pm.Backpack.FindItemByType(typeof(SturdyShovel));
-
-                // find tool
-                if (tool == null || !(BaseAxe.IsMiningTool(tool)) )
-				{
-					pm.SendMessage(55, "Voc� precisa equipar uma picareta ou possuir uma p� para minerar.");
-					return;
-				}
-                //////////////////////////////////////////////////////////////
-                
-				HarvestSystem miningSystem = GetMiningSystem(pm, (Item)tool);//(HarvestSystem)(Mining.System);
-				// Allow auto-mining with DynamicMining systems (MineSpirit locations)
-				// Previously blocked to force manual mining, but now supports auto-mining
-				/*if (miningSystem is DynamicMining)
-				{
-					pm.SendMessage(55, "Voc� sente que est� pr�ximo de um veio de min�rio raro e precisa procurar manualmente.");
-                    return;
-                }*/
-
-                delay = miningdelay; // in seconds
-                HarvestTarget(pm, "mining", tool); //find target
-                TaskSystem.Add(pm, miningSystem); //TaskSystem.Add(pm, (HarvestSystem)(Mining.System));
-                TaskString.Add(pm, "mining");
-            }
-			else if (Insensitive.Contains( speech, "auto-lenhar" ))
-			{	
-				//find tool
-				tool = pm.FindItemOnLayer( Layer.OneHanded ); //some axes are one handed, some are two
-
-				if (tool == null || (tool != null && !(tool is BaseAxe) ) || BaseAxe.IsMiningTool(tool)) 
-					tool = pm.FindItemOnLayer( Layer.TwoHanded );
-
-				if (tool == null || (tool != null && !(tool is BaseAxe) ) || BaseAxe.IsMiningTool(tool)) 
-				{
-					pm.SendMessage(55, "Voc� precisa segurar um machado para cortar �rvores.");
-					return;
-				}
-				
-				//find target
-				HarvestTarget(pm, "lumberjacking", tool);
-
-				delay = lumberjackingdelay; // in seconds
-
-				TaskSystem.Add(pm, (HarvestSystem)(Lumberjacking.System));
-				TaskString.Add(pm, "lumberjacking");
-			}
-			else if (Insensitive.Contains( speech, "auto-esfolar" ))
-			{	
-				//find tool
-				bool hastools = false;
-				tool = pm.Backpack.FindItemByType(typeof(SkinningKnife));
-				Item tool2 = pm.Backpack.FindItemByType(typeof(Scissors));
-				
-				if ( (tool == null || tool2 == null) || (tool != null && !(tool is SkinningKnife) ) || (tool2 != null && !(tool2 is Scissors) ) )
-				{
-					pm.SendMessage(55, "Voc� precisa de uma faca e uma tesoura em sua mochila para fazer isso.");
-					return;
-				}
-
-				delay = skinningdelay; // in seconds
-
-				TaskString.Add(pm, "skinning");
-			}
-			else if (Insensitive.Contains( speech, "auto-moer" ))
-			{
-				Item wheat = pm.Backpack.FindItemByType(typeof(WheatSheaf));
-				if (wheat == null)
-				{
-					pm.SendMessage(55, "Voc� precisa de trigo na mochila para moer farinha!");
-					return;
-				}
-				
-				IPooledEnumerable eable = pm.Map.GetItemsInRange( pm.Location, 3 );
 				foreach ( Item item in eable )
 				{
 					if (tool == null && item is IFlourMill)
 						tool = (Item)item;
 				}
-				
-				if (tool == null)
-				{
-					pm.SendMessage("You need to be near a flour mill to mill wheat.");
-					return;
-				}
-				
-				delay = millingdelay; // in seconds
-
-				TaskString.Add(pm, "milling");
 			}
-			else if (Insensitive.Contains( speech, "auto-massa" ))
+			finally
 			{
-				Map mp = pm.Map;
-				//find water
-				IPooledEnumerable eable = mp.GetItemsInRange( pm.Location, 2);
-				bool water = false;
+				eable.Free();
+			}
+			
+			if (tool == null)
+			{
+				pm.SendMessage(AdventuresAutomationStringConstants.MSG_NEED_FLOUR_MILL);
+				return false;
+			}
+			
+			delay = millingdelay; // in seconds
 
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_MILLING;
+			return true;
+		}
+
+		/// <summary>
+		/// Handles dough making action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleDoughAction(PlayerMobile pm, out Item tool, out int delay)
+		{
+			tool = null;
+			delay = 0;
+
+			if (!FindWaterSource(pm))
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_WATER_FOR_DOUGH);
+				return false;
+			}
+
+			tool = FindCraftTool(pm, AdventuresAutomationStringConstants.ACTION_STRING_DOUGH);
+			if (tool == null)
+				return false;
+
+			delay = craftingdelay;
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_DOUGH;
+			return true;
+		}
+
+		/// <summary>
+		/// Handles bread making action initialization
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">Output parameter for the tool found</param>
+		/// <param name="delay">Output parameter for the delay</param>
+		/// <returns>True if action was set up successfully, false otherwise</returns>
+		private static bool HandleBreadAction(PlayerMobile pm, out Item tool, out int delay)
+		{
+			tool = null;
+			delay = 0;
+
+			if (!FindOven(pm))
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NEED_OVEN);
+				return false;
+			}
+
+			tool = FindCraftTool(pm, AdventuresAutomationStringConstants.ACTION_STRING_BREAD);
+			if (tool == null)
+				return false;
+
+			delay = craftingdelay;
+			TaskString[pm] = AdventuresAutomationStringConstants.ACTION_STRING_BREAD;
+			return true;
+		}
+
+		/// <summary>
+		/// Finds a water source near the player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <returns>True if water source found, false otherwise</returns>
+		private static bool FindWaterSource(PlayerMobile pm)
+		{
+			Map mp = pm.Map;
+			//find water
+			IPooledEnumerable eable = mp.GetItemsInRange( pm.Location, AdventuresAutomationConstants.WATER_SEARCH_RANGE_ITEMS);
+			bool water = false;
+
+			try
+			{
 				foreach ( Item item in eable )
 				{
 					string iName = item.ItemData.Name.ToUpper();
@@ -259,93 +598,236 @@ namespace Server.Items
 						water = true;		
 
 					bool soaked;
-					Server.Items.DrinkingFunctions.CheckWater( pm, 2, out soaked );		
+					Server.Items.DrinkingFunctions.CheckWater( pm, AdventuresAutomationConstants.WATER_SEARCH_RANGE_ITEMS, out soaked );		
 
 					if (soaked)
 						water = true;																			 
 				}
+			}
+			finally
+			{
+				eable.Free();
+			}
 
-				if (!water)//try water tiles
+			if (!water)//try water tiles
+			{
+				for ( int x = -AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; !water && x <= AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; ++x )
 				{
-					for ( int x = -1; !water && x <= 1; ++x )
+					if ((pm.X + x) != pm.X)
 					{
-						if ((pm.X + x) != pm.X)
+						for ( int y = -AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; !water && y <= AdventuresAutomationConstants.WATER_SEARCH_RANGE_TILES; ++y )
 						{
-							for ( int y = -1; !water && y <= 1; ++y )
+							double dist = Math.Sqrt(x*x+y*y);
+
+							if ( dist <= AdventuresAutomationConstants.WATER_SEARCH_DISTANCE_MAX )
 							{
-								double dist = Math.Sqrt(x*x+y*y);
+								LandTile landTile = pm.Map.Tiles.GetLandTile( pm.X + x, pm.Y + y ); //mining and fishing relies on landtiles
 
-								if ( dist <= 1 )
-								{
-									LandTile landTile = pm.Map.Tiles.GetLandTile( pm.X + x, pm.Y + y ); //mining and fishing relies on landtiles
-
-									if ( Server.Misc.Worlds.IsWaterTile( landTile.ID, 0 )) 
-										water = true;
-								}
+								if ( Server.Misc.Worlds.IsWaterTile( landTile.ID, 0 )) 
+									water = true;
 							}
 						}
 					}
 				}
-
-				if (!water) // ok didnt find anything
-				{
-					pm.SendMessage(55, "Voc� precisa de uma fonte de �gua pr�xima para fazer massa.");
-					return;
-				}
-
-				tool = FindCraftTool(pm, "dough");
-
-				delay = craftingdelay;
-				TaskString.Add(pm, "dough");
 			}
-			else if (Insensitive.Contains( speech, "auto-panificar" ))
-			{
-				Map mp = pm.Map;
-				//find water
-				IPooledEnumerable eable = mp.GetItemsInRange( pm.Location, 2);
-				bool water = false;
 
+			return water;
+		}
+
+		/// <summary>
+		/// Finds an oven near the player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <returns>True if oven found, false otherwise</returns>
+		private static bool FindOven(PlayerMobile pm)
+		{
+			Map mp = pm.Map;
+			//find oven
+			IPooledEnumerable eable = mp.GetItemsInRange( pm.Location, AdventuresAutomationConstants.WATER_SEARCH_RANGE_ITEMS);
+			bool ovenFound = false;
+
+			try
+			{
 				foreach ( Item item in eable )
 				{
 					string iName = item.ItemData.Name.ToUpper();
 					
 					if( iName.IndexOf("OVEN") != -1 ) 
-						water = true;																							 
+						ovenFound = true;																							 
 				}
+			}
+			finally
+			{
+				eable.Free();
+			}
 
-				if (!water) // ok didnt find anything
-				{
-					pm.SendMessage(55, "Voc� precisa de um forno pr�ximo para fazer p�o.");
+			return ovenFound;
+		}
+
+		#endregion
+
+		#region Harvest System Integration
+
+		/// <summary>
+		/// Gets the appropriate mining system (DynamicMining for MineSpirit locations, or standard Mining)
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">The mining tool</param>
+		/// <returns>The harvest system to use</returns>
+		public static HarvestSystem GetMiningSystem(PlayerMobile pm, Item tool)
+		{
+			// Null check for tool
+			if (tool == null || tool.Deleted)
+				return (HarvestSystem)(Mining.System);
+				
+			HarvestSystem DMining = (HarvestSystem)DynamicMining.GetSystem(tool);
+            HarvestSystem miningSystem = (DMining != null) ? DMining : (HarvestSystem)(Mining.System);
+			return miningSystem;
+        }
+
+		#region Validation Methods
+
+		/// <summary>
+		/// Validates if player can start automation
+		/// </summary>
+		/// <param name="pm">The player mobile to validate</param>
+		/// <returns>True if player can start automation, false otherwise</returns>
+		private static bool ValidatePlayerForAutomation(PlayerMobile pm)
+		{
+			if ( pm.GetFlag( PlayerFlag.IsAutomated ) )
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_ALREADY_AUTOMATED);
+				return false;
+			}
+			else if ( pm.Backpack == null || pm.Backpack.Deleted)
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NO_BACKPACK);
+				return false;
+			}
+			else if ( !pm.Alive )
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_PLAYER_DEAD);
+				return false;
+			}
+			else if ( pm.Map == null )
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_INVALID_LOCATION);
+				return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Validates if tool is valid (not null and not deleted)
+		/// </summary>
+		/// <param name="tool">The tool to validate</param>
+		/// <returns>True if tool is valid, false otherwise</returns>
+		private static bool IsValidTool(Item tool)
+		{
+			return tool != null && !tool.Deleted;
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Core Automation Logic
+
+		/// <summary>
+		/// Starts an automation task based on player speech command
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="speech">The speech command</param>
+		public static void StartTask( PlayerMobile pm, string speech )
+		{
+			CheckHashTables();
+			
+			// Ensure automation item exists in world for OneTimeTick to work
+			EnsureAutomationItemExists();
+		
+			if (!ValidatePlayerForAutomation(pm))
+				return;
+
+			int delay = 0;
+			Item tool = null;
+
+			//listing actions
+			if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_LIST_ACTIONS ))
+			{
+				pm.Say(AdventuresAutomationStringConstants.MSG_AVAILABLE_ACTIONS);
+				pm.Say(AdventuresAutomationStringConstants.MSG_HARVEST_ACTIONS);
+				pm.Say(AdventuresAutomationStringConstants.MSG_CRAFTING_ACTIONS);
+                return;
+			}
+
+			//start task initiation here
+			if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_FISHING ))
+			{
+				if (!HandleFishingAction(pm, out tool, out delay))
 					return;
-				}
-
-				tool = FindCraftTool(pm, "bread");
-
-				delay = craftingdelay;
-				TaskString.Add(pm, "bread");
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_MINING ))
+			{
+				if (!HandleMiningAction(pm, out tool, out delay))
+					return;
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_LUMBERJACKING ))
+			{
+				if (!HandleLumberjackingAction(pm, out tool, out delay))
+					return;
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_SKINNING ))
+			{
+				if (!HandleSkinningAction(pm, out delay))
+					return;
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_MILLING ))
+			{
+				if (!HandleMillingAction(pm, out tool, out delay))
+					return;
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_DOUGH ))
+			{
+				if (!HandleDoughAction(pm, out tool, out delay))
+					return;
+			}
+			else if (Insensitive.Contains( speech, AdventuresAutomationStringConstants.COMMAND_BREAD ))
+			{
+				if (!HandleBreadAction(pm, out tool, out delay))
+					return;
 			}
 
             // Setup auto-action
-            PlayerTool.Add(pm, tool);
-			SetNextAction(pm, delay);
+            PlayerTool[pm] = tool;
+			// Don't set delay here - DoAction is called immediately, delay will be set after harvest completes
 
 			if (!pm.GetFlag(PlayerFlag.IsAutomated))
 				pm.SetFlag(PlayerFlag.IsAutomated, true);
 			else {
-                pm.SendMessage(55, "Voc� j� est� realizando uma tarefa autom�tica. Se quiser para, digite: '.parar' ou '.stop'.");
+                pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_ALREADY_AUTOMATED);
             }
 
-			PlayerLoc.Add(pm, pm.Location);	
+			PlayerLoc[pm] = pm.Location;	
 			DoAction(pm); 
 		}
 
+		#endregion
+
+		#region Harvest and Craft Target Finding
+
+		/// <summary>
+		/// Finds a craft tool in the player's backpack for the specified craft type
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="make">The craft type identifier (dough, bread, etc.)</param>
+		/// <returns>The craft tool if found, null otherwise</returns>
 		public static Item FindCraftTool(PlayerMobile pm, string make)
 		{
 				//find tool
 				Item tool = null;
 				CraftSystem system = null;
 
-				if (make == "dough" || make == "bread" )
+				if (make == AdventuresAutomationStringConstants.ACTION_STRING_DOUGH || make == AdventuresAutomationStringConstants.ACTION_STRING_BREAD )
 				{
 					system = DefCooking.CraftSystem;
 				}
@@ -359,259 +841,345 @@ namespace Server.Items
 				}
 				if (tool == null)
 				{
-					string name = "p�o";
-					if (make == "dough")
-						name = "massa";
+					string name = AdventuresAutomationStringConstants.ITEM_NAME_BREAD;
+					if (make == AdventuresAutomationStringConstants.ACTION_STRING_DOUGH)
+						name = AdventuresAutomationStringConstants.ITEM_NAME_DOUGH;
 					
-					pm.SendMessage("Voc� precisa da ferramenta adequada para criar " + name + " .");
+					pm.SendMessage(string.Format(AdventuresAutomationStringConstants.MSG_NEED_CRAFT_TOOL_FORMAT, name));
 					AdventuresAutomation.StopAction(pm);
 				}
 				return tool;
 		}
 
+		/// <summary>
+		/// Finds a harvest target for the specified action and tool
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="action">The action string (fishing, mining, lumberjacking)</param>
+		/// <param name="tool">The harvest tool</param>
 		public static void HarvestTarget(PlayerMobile pm, string action, Item tool)
 		{
-				int range = 4;
-				//globalAction = action;
+			if (!IsValidTool(tool))
+			{
+				// Tool invalid - stop automation
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NO_RESOURCES_FOUND);
+				pm.Say(AdventuresAutomationStringConstants.MSG_FINISHED_HERE);
+				StopAction(pm);
+				return;
+			}
 
-                if (action == "mining" || action == "lumberjacking")
-					range = 2;
+			int range = GetHarvestRange(action);
+			Map mp = pm.Map;
+			object target = null;
+			int harvestx = 0;
+			int harvesty = 0;
+			int harvestz = 0;
 
-				int harvestx = 0;
-				int harvesty = 0;
-				int harvestz = 0;
-				object target = null;
-				Map mp = pm.Map;
+			// Search land tiles first
+			target = FindTargetInLandTiles(pm, action, tool, mp, range, ref harvestx, ref harvesty, ref harvestz);
 
-				for ( int x = -range; x <= range; ++x )
+			// If no target found in land tiles, search static tiles
+			if (target == null)
+			{
+				target = FindTargetInStaticTiles(pm, action, tool, mp, range, ref harvestx, ref harvesty, ref harvestz);
+			}
+
+			if (harvestx != 0 && harvesty != 0 && target != null)
+			{
+				if (TaskTarget.ContainsKey(pm)) 
+				{ 
+					TaskTarget.Remove(pm); 
+				}
+					
+				TaskTarget[pm] = target;
+			}
+			else
+			{
+				// No target found - stop automation with proper messages
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_NO_RESOURCES_FOUND);
+				pm.Say(AdventuresAutomationStringConstants.MSG_FINISHED_HERE);
+				StopAction(pm);
+			}
+		}
+
+		/// <summary>
+		/// Gets the harvest range for the specified action
+		/// </summary>
+		/// <param name="action">The action string</param>
+		/// <returns>Harvest range in tiles</returns>
+		private static int GetHarvestRange(string action)
+		{
+			if (action == AdventuresAutomationStringConstants.ACTION_STRING_MINING || action == AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING)
+				return AdventuresAutomationConstants.HARVEST_RANGE_MINING_LUMBERJACKING;
+			return AdventuresAutomationConstants.HARVEST_RANGE_DEFAULT;
+		}
+
+		/// <summary>
+		/// Finds harvest target in land tiles
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="action">The action string</param>
+		/// <param name="tool">The harvest tool</param>
+		/// <param name="mp">The map</param>
+		/// <param name="range">Search range</param>
+		/// <param name="harvestx">Output parameter for X coordinate</param>
+		/// <param name="harvesty">Output parameter for Y coordinate</param>
+		/// <param name="harvestz">Output parameter for Z coordinate</param>
+		/// <returns>Target object if found, null otherwise</returns>
+		private static object FindTargetInLandTiles(PlayerMobile pm, string action, Item tool, Map mp, int range, ref int harvestx, ref int harvesty, ref int harvestz)
+		{
+			for ( int x = -range; x <= range; ++x )
+			{
+				if ((pm.X + x) != pm.X)
 				{
-					if ((pm.X + x) != pm.X)
+					for ( int y = -range; y <= range; ++y )
 					{
-						for ( int y = -range; y <= range; ++y )
+						double dist = Math.Sqrt(x*x+y*y);
+
+						if ( dist <= range && (harvestx == 0 || harvesty == 0) )
 						{
-							double dist = Math.Sqrt(x*x+y*y);
+							LandTile landTile = mp.Tiles.GetLandTile( pm.X + x, pm.Y + y );
 
-							if ( dist <= range && (harvestx == 0 || harvesty == 0) )
+							if (action == AdventuresAutomationStringConstants.ACTION_STRING_FISHING)
 							{
-								LandTile landTile = mp.Tiles.GetLandTile( pm.X + x, pm.Y + y ); //mining and fishing relies on landtiles
-
-								if ( (action == "fishing" && Server.Misc.Worlds.IsWaterTile( (landTile.ID), 1 )) )
+								object target = TryFindFishingTargetInLandTile(pm, tool, mp, landTile, pm.X + x, pm.Y + y);
+								if (target != null)
 								{
-									//pm.SendMessage(66, "REPEAT!! ****");
-									// Null check for tool before using it
-									if (tool == null || tool.Deleted)
-										continue;
-										
-									HarvestSystem system = (HarvestSystem)(Fishing.System);
-									if (system == null)
-										continue;
-										
-									Point3D loc = new Point3D(pm.X + x, pm.Y + y, landTile.Z);
-									HarvestDefinition def = system.GetDefinition( landTile.ID );
-									if (def != null && pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
-									{
-										harvestx = pm.X + x;
-										harvesty = pm.Y + y;
-										harvestz = landTile.Z;
-										target = (object)(new LandTarget(loc, mp));
-										//pm.SendMessage(66, "target x: " + harvestx + " y: " + harvesty);
-									}
+									harvestx = pm.X + x;
+									harvesty = pm.Y + y;
+									harvestz = landTile.Z;
+									return target;
 								}
-								if ( (action == "mining" && Server.Misc.Worlds.IsMiningTile( landTile.ID, 0 )) )
+							}
+							else if (action == AdventuresAutomationStringConstants.ACTION_STRING_MINING)
+							{
+								object target = TryFindMiningTargetInLandTile(pm, tool, mp, landTile, pm.X + x, pm.Y + y);
+								if (target != null)
 								{
-									//pm.SendMessage(66, "REPEAT!! ****");
-									// Null check for tool before calling GetMiningSystem
-									if (tool == null || tool.Deleted)
-										continue;
-										
-									// Use GetMiningSystem to support both Mining.System and DynamicMining (MineSpirit)
-									HarvestSystem system = GetMiningSystem(pm, tool);
-									if (system == null)
-										continue;
-										
-									Point3D loc = new Point3D(pm.X + x, pm.Y + y, landTile.Z);
-									HarvestDefinition def = system.GetDefinition( landTile.ID );
-									if (def != null && pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
-									{
-										harvestx = pm.X + x;
-										harvesty = pm.Y + y;
-										harvestz = landTile.Z;
-										target = (object)(new LandTarget(loc, mp));
-									}
-								}
-								if (harvestx == 0 && harvesty == 0) // above didnt work some fishing spots are statics and so are trees
-								{
-
-                                StaticTile[] tiles = mp.Tiles.GetStaticTiles( pm.X + x, pm.Y + y, true );
-
-									if (action == "fishing") //try to find fishing static targets
-									{
-                                    //pm.SendMessage(63, "REPEAT2!! ****");
-                                    // Null check for tool before using it
-                                    if (tool == null || tool.Deleted)
-                                        continue;
-                                        
-                                    for ( int i = 0; (harvestx == 0 || harvesty == 0) && i < tiles.Length; ++i )
-										{
-											StaticTile tile = tiles[i];
-
-											if ( Server.Misc.Worlds.IsWaterTile( (tile.ID+0x4000), 1 ) )
-											{
-
-												Point3D loc = new Point3D(pm.X + x, pm.Y + y, mp.GetAverageZ( pm.X + x, pm.Y ));
-												HarvestSystem system = (HarvestSystem)(Fishing.System);
-												
-												if (system == null)
-													continue;
-													
-												HarvestDefinition def = system.GetDefinition( tile.ID + 0x4000 );
-
-												if (def == null || loc == Point3D.Zero)
-												{
-													continue;
-												}
-
-												if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
-												{
-													harvestx = pm.X + x;
-													harvesty = pm.Y + y;
-													harvestz = mp.GetAverageZ( harvestx, harvesty );
-													target = (object)(new StaticTarget(new Point3D(harvestx, harvesty, harvestz), tile.ID ));
-												}
-											}
-										}
-									}
-									/*else if (action == "mining") //not used, but left just in case // MINING SAND!!
-									{
-										for ( int i = 0; (harvestx == 0 || harvesty == 0) && i < tiles.Length; ++i )
-										{
-											StaticTile tile = tiles[i];
-
-											if ( Server.Misc.Worlds.IsMiningTile( tile.ID, 0 ) )
-											{
-
-												Point3D loc = new Point3D(pm.X + x, pm.Y + y, mp.GetAverageZ( pm.X + x, pm.Y ));
-												HarvestSystem system = (HarvestSystem)(Fishing.System);
-												HarvestDefinition def = system.GetDefinition( tile.ID );
-
-												if (def == null || system == null || loc == Point3D.Zero)
-												{
-													pm.SendMessage(33, "Ocorreu um problema. Fa�a uma captura de tela e avise ao staff team.");
-													if (def == null)
-														pm.SendMessage("def is null");
-													if (system == null)
-														pm.SendMessage("system is null");
-													if (loc == Point3D.Zero)
-														pm.SendMessage("loc is zero");
-															
-													continue;
-												}
-
-												if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
-												{
-													harvestx = pm.X + x;
-													harvesty = pm.Y + y;
-													harvestz = mp.GetAverageZ( harvestx, harvesty );
-													target = (object)(new StaticTarget(new Point3D(harvestx, harvesty, harvestz), tile.ID ));
-												}
-											}
-										}
-									}*/
-
-									if ( action == "lumberjacking") // lumberjacking relies on statics only.
-									{
-										// Null check for tool before using it
-										if (tool == null || tool.Deleted)
-											continue;
-											
-										for ( int i = 0; (harvestx == 0 || harvesty == 0) && i < tiles.Length; ++i )
-										{
-											StaticTile tile = tiles[i];
-
-											if ( Server.Misc.Worlds.IsTreeTile( (tile.ID + 0x4000) ) )
-											{
-													Point3D loc = new Point3D(pm.X + x, pm.Y + y, mp.GetAverageZ( pm.X + x, pm.Y ));
-													HarvestSystem system = (HarvestSystem)(Lumberjacking.System);
-													
-													if (system == null)
-														continue;
-														
-													HarvestDefinition def = system.GetDefinition( tile.ID + 0x4000 );
-
-													if (def == null || loc == Point3D.Zero)
-													{
-														continue;
-													}
-
-													if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
-													{
-														harvestx = pm.X+x;
-														harvesty = pm.Y+y;
-														harvestz = mp.GetAverageZ( harvestx, harvesty );
-														target = (object)(new StaticTarget(new Point3D(harvestx, harvesty, harvestz), tile.ID ));
-													}
-											}
-										}
-									}
+									harvestx = pm.X + x;
+									harvesty = pm.Y + y;
+									harvestz = landTile.Z;
+									return target;
 								}
 							}
 						}
 					}
 				}
-				if (harvestx != 0 && harvesty != 0)
-				{
-
-					if (TaskTarget.Contains(pm)) 
-					{ 
-						TaskTarget.Remove(pm); 
-						//pm.SendMessage(66, "remove"); 
-					}
-						
-					//pm.SendMessage(66, "target: " + target);
-					TaskTarget.Add(pm, target);
-				}
-				else
-				{
-					pm.SendMessage(55, "N�o foi poss�vel encontrar recursos pr�ximos.");
-					pm.Say("*Acho que acabei por aqui.*");
-
-					StopAction(pm);
-					return;
-				}
+			}
+			return null;
 		}
 
+		/// <summary>
+		/// Tries to find a fishing target in a land tile
+		/// </summary>
+		private static object TryFindFishingTargetInLandTile(PlayerMobile pm, Item tool, Map mp, LandTile landTile, int x, int y)
+		{
+			if (!IsValidTool(tool) || !Server.Misc.Worlds.IsWaterTile(landTile.ID, 1))
+				return null;
+
+			HarvestSystem system = (HarvestSystem)(Fishing.System);
+			if (system == null)
+				return null;
+
+			Point3D loc = new Point3D(x, y, landTile.Z);
+			HarvestDefinition def = system.GetDefinition(landTile.ID);
+			if (def != null && pm.InLOS(loc) && system.CheckResources(pm, tool, def, mp, loc, false))
+			{
+				return new LandTarget(loc, mp);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Tries to find a mining target in a land tile
+		/// </summary>
+		private static object TryFindMiningTargetInLandTile(PlayerMobile pm, Item tool, Map mp, LandTile landTile, int x, int y)
+		{
+			if (!IsValidTool(tool) || !Server.Misc.Worlds.IsMiningTile(landTile.ID, 0))
+				return null;
+
+			HarvestSystem system = GetMiningSystem(pm, tool);
+			if (system == null)
+				return null;
+
+			Point3D loc = new Point3D(x, y, landTile.Z);
+			HarvestDefinition def = system.GetDefinition(landTile.ID);
+			if (def != null && pm.InLOS(loc) && system.CheckResources(pm, tool, def, mp, loc, false))
+			{
+				return new LandTarget(loc, mp);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Finds harvest target in static tiles
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="action">The action string</param>
+		/// <param name="tool">The harvest tool</param>
+		/// <param name="mp">The map</param>
+		/// <param name="range">Search range</param>
+		/// <param name="harvestx">Output parameter for X coordinate</param>
+		/// <param name="harvesty">Output parameter for Y coordinate</param>
+		/// <param name="harvestz">Output parameter for Z coordinate</param>
+		/// <returns>Target object if found, null otherwise</returns>
+		private static object FindTargetInStaticTiles(PlayerMobile pm, string action, Item tool, Map mp, int range, ref int harvestx, ref int harvesty, ref int harvestz)
+		{
+			for ( int x = -range; x <= range; ++x )
+			{
+				if ((pm.X + x) != pm.X)
+				{
+					for ( int y = -range; y <= range; ++y )
+					{
+						double dist = Math.Sqrt(x*x+y*y);
+
+						if ( dist <= range && (harvestx == 0 || harvesty == 0) )
+						{
+							StaticTile[] tiles = mp.Tiles.GetStaticTiles( pm.X + x, pm.Y + y, true );
+
+							if (action == AdventuresAutomationStringConstants.ACTION_STRING_FISHING)
+							{
+								object target = TryFindFishingTargetInStaticTiles(pm, tool, mp, tiles, pm.X + x, pm.Y + y);
+								if (target != null)
+								{
+									harvestx = pm.X + x;
+									harvesty = pm.Y + y;
+									harvestz = mp.GetAverageZ(harvestx, harvesty);
+									return target;
+								}
+							}
+							else if (action == AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING)
+							{
+								object target = TryFindLumberjackingTargetInStaticTiles(pm, tool, mp, tiles, pm.X + x, pm.Y + y);
+								if (target != null)
+								{
+									harvestx = pm.X + x;
+									harvesty = pm.Y + y;
+									harvestz = mp.GetAverageZ(harvestx, harvesty);
+									return target;
+								}
+							}
+						}
+					}
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Tries to find a fishing target in static tiles
+		/// </summary>
+		private static object TryFindFishingTargetInStaticTiles(PlayerMobile pm, Item tool, Map mp, StaticTile[] tiles, int x, int y)
+		{
+			if (!IsValidTool(tool))
+				return null;
+
+			HarvestSystem system = (HarvestSystem)(Fishing.System);
+			if (system == null)
+				return null;
+
+			for ( int i = 0; i < tiles.Length; ++i )
+			{
+				StaticTile tile = tiles[i];
+
+				if ( Server.Misc.Worlds.IsWaterTile( (tile.ID+AdventuresAutomationConstants.STATIC_TILE_ID_OFFSET), 1 ) )
+				{
+					Point3D loc = new Point3D(x, y, mp.GetAverageZ(x, y));
+					HarvestDefinition def = system.GetDefinition( tile.ID + AdventuresAutomationConstants.STATIC_TILE_ID_OFFSET );
+
+					if (def == null || loc == Point3D.Zero)
+						continue;
+
+					if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
+					{
+						return new StaticTarget(new Point3D(x, y, mp.GetAverageZ(x, y)), tile.ID );
+					}
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Tries to find a lumberjacking target in static tiles
+		/// </summary>
+		private static object TryFindLumberjackingTargetInStaticTiles(PlayerMobile pm, Item tool, Map mp, StaticTile[] tiles, int x, int y)
+		{
+			if (!IsValidTool(tool))
+				return null;
+
+			HarvestSystem system = (HarvestSystem)(Lumberjacking.System);
+			if (system == null)
+				return null;
+
+			for ( int i = 0; i < tiles.Length; ++i )
+			{
+				StaticTile tile = tiles[i];
+
+				if ( Server.Misc.Worlds.IsTreeTile( (tile.ID + AdventuresAutomationConstants.STATIC_TILE_ID_OFFSET) ) )
+				{
+					Point3D loc = new Point3D(x, y, mp.GetAverageZ(x, y));
+					HarvestDefinition def = system.GetDefinition( tile.ID + AdventuresAutomationConstants.STATIC_TILE_ID_OFFSET );
+
+					if (def == null || loc == Point3D.Zero)
+						continue;
+
+					if (pm.InLOS(loc) && system.CheckResources( pm, tool, def, mp, loc, false ))
+					{
+						return new StaticTarget(new Point3D(x, y, mp.GetAverageZ(x, y)), tile.ID );
+					}
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Clears the harvest target for the specified player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
 		public static void ClearHarvestTarget( PlayerMobile pm )
 		{
-			if (pm != null && TaskTarget.Contains(pm))
+			if (pm != null && TaskTarget.ContainsKey(pm))
 			{
 				TaskTarget.Remove(pm);
 			}
 		}
 
+		/// <summary>
+		/// Stops automation for the specified player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
 		public static void StopAction( PlayerMobile pm )
 		{
 			if (pm != null) 
 			{
                 pm.SetFlag(PlayerFlag.IsAutomated, false);
 
-                if (PlayerLoc.Contains(pm))
+                if (PlayerLoc.ContainsKey(pm))
                     PlayerLoc.Remove(pm);
-                if (PlayerTool.Contains(pm))
+                if (PlayerTool.ContainsKey(pm))
                     PlayerTool.Remove(pm);
-                if (TaskNextAction.Contains(pm))
+                if (TaskNextAction.ContainsKey(pm))
                     TaskNextAction.Remove(pm);
-                if (TaskTarget.Contains(pm))
+                if (TaskTarget.ContainsKey(pm))
                     TaskTarget.Remove(pm);
-                if (TaskSystem.Contains(pm))
+                if (TaskSystem.ContainsKey(pm))
                     TaskSystem.Remove(pm);
-                if (TaskString.Contains(pm))
+                if (TaskString.ContainsKey(pm))
                     TaskString.Remove(pm);
 
-                //globalAction = null;
-                pm.SendMessage(55, "* A��o autom�tica parada! *");
+                pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_NORMAL, AdventuresAutomationStringConstants.MSG_AUTOMATION_STOPPED);
             }
 		}
 
+		#endregion
+
+		#region Utility Methods
+
+		/// <summary>
+		/// Copies properties from source item to destination item
+		/// </summary>
+		/// <param name="dest">Destination item</param>
+		/// <param name="src">Source item</param>
         private static void CopyProperties(Item dest, Item src)
         {
             PropertyInfo[] props = src.GetType().GetProperties();
@@ -622,51 +1190,52 @@ namespace Server.Items
                 {
                     if (props[i].CanRead && props[i].CanWrite)
                     {
-                        //Console.WriteLine( "Setting {0} = {1}", props[i].Name, props[i].GetValue( src, null ) );
                         props[i].SetValue(dest, props[i].GetValue(src, null), null);
                     }
                 }
                 catch
                 {
-                    //Console.WriteLine( "Denied" );
+                    // Property copy failed, continue with next property
                 }
             }
         }
 
+		/// <summary>
+		/// Checks player hunger and thirst, automatically consumes food/water if needed
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
         public static void CheckFood(PlayerMobile pm)
 		{
-			if (pm.Hunger < 15)
+			if (pm.Hunger < AdventuresAutomationConstants.FOOD_CHECK_THRESHOLD)
 			{
 				Food munch = (Food)pm.Backpack.FindItemByType(typeof(Food));
 				if (munch != null)
 					munch.Eat((Mobile)pm);
 			}
-			if (pm.Thirst < 15)
+			if (pm.Thirst < AdventuresAutomationConstants.THIRST_CHECK_THRESHOLD)
 			{
 				Waterskin munch = (Waterskin)pm.Backpack.FindItemByType(typeof(Waterskin));
 
-				if (munch != null && !(munch.ItemID == 0xA21 || munch.ItemID == 0x4971 ))
+				if (munch != null && !(munch.ItemID == AdventuresAutomationConstants.WATERSKIN_ITEMID_1 || munch.ItemID == AdventuresAutomationConstants.WATERSKIN_ITEMID_2 ))
 					munch.OnDoubleClick((Mobile)pm);
 			}
 
 		}
 		
-		public static void DoAction(PlayerMobile pm)
-		{
-            string action = "";
-            foreach (DictionaryEntry de in TaskString)
-            {
-                if (de.Key == pm)
-                {
-                    action = (string)de.Value;
-                    continue;
-                }
-            }
+		#region DoAction Helper Methods
 
-            if (pm.Backpack.TotalWeight >= (pm.MaxWeight * 1.1))
+		/// <summary>
+		/// Checks if player is overweight and handles item dropping
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="action">The current action string</param>
+		/// <returns>True if overweight was handled, false if not overweight</returns>
+		private static bool CheckWeightOverload(PlayerMobile pm, string action)
+		{
+			if (pm.Backpack.TotalWeight >= (pm.MaxWeight * AdventuresAutomationConstants.WEIGHT_OVERLOAD_MULTIPLIER))
 			{
-                pm.PlaySound(pm.Female ? 0x31C : 0x42C);
-                pm.Say("*argh!*");
+                pm.PlaySound(pm.Female ? AdventuresAutomationConstants.SOUND_OVERWEIGHT_FEMALE : AdventuresAutomationConstants.SOUND_OVERWEIGHT_MALE);
+                pm.Say(AdventuresAutomationStringConstants.MSG_OVERWEIGHT_EXPRESSION);
 
                 Type[] fishingList = new Type[]
                 {
@@ -677,26 +1246,23 @@ namespace Server.Items
 					typeof(NewFish)
                 };
                 Type resource = typeof(Item);
-				if (action == "mining") { resource = typeof(BaseOre); }
-                else if (action == "lumberjacking") { resource = typeof(BaseLog); }
-                else if (action == "fishing") { resource = fishingList[Utility.Random(fishingList.Length)];}
-                else if (action == "skinning") { resource = typeof(BaseLeather); }
+				if (action == AdventuresAutomationStringConstants.ACTION_STRING_MINING) { resource = typeof(BaseOre); }
+                else if (action == AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING) { resource = typeof(BaseLog); }
+                else if (action == AdventuresAutomationStringConstants.ACTION_STRING_FISHING) { resource = fishingList[Utility.Random(fishingList.Length)];}
+                else if (action == AdventuresAutomationStringConstants.ACTION_STRING_SKINNING) { resource = typeof(BaseLeather); }
 
 				if (pm.Backpack.FindItemByType(resource) != null) 
 				{
                     Container backpack = pm.Backpack;
                     Item obj = pm.Backpack.FindItemByType(resource);
 					// Calc Loss
-                    int loss = 1;
-                    if ((obj.Amount / 10) > 1)
-                        loss = Utility.RandomMinMax(1, (int)(obj.Amount / 10));
+                    int loss = AdventuresAutomationConstants.WEIGHT_LOSS_MINIMUM;
+                    if ((obj.Amount / AdventuresAutomationConstants.WEIGHT_LOSS_DIVISOR) > 1)
+                        loss = Utility.RandomMinMax(AdventuresAutomationConstants.WEIGHT_LOSS_MINIMUM, (int)(obj.Amount / AdventuresAutomationConstants.WEIGHT_LOSS_DIVISOR));
 					// subtract amount and move original item again to the backpack
 					obj.Amount -= loss;
-					//obj.Consume(loss);
 
-                    ///////////////////////////////////////////////////////////////
                     // create new item with loss amount
-                    ///////////////////////////////////////////////////////////////
                     Type t = obj.GetType();
                     ConstructorInfo c = t.GetConstructor(Type.EmptyTypes);
 
@@ -716,97 +1282,166 @@ namespace Server.Items
                                 newItem.MoveToWorld(pm.Location, pm.Map);// drop the losses on the floor
                                 newItem.InvalidateProperties();
 
-                                pm.SendMessage(55, "Voc� est� muito pesado e deixa alguns itens cairem no ch�o.");
+                                pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_OVERWEIGHT_DROP_ITEMS);
 							}
 						}
 						catch
 						{
-                            pm.SendMessage(55, "Voc� est� muito acima do peso m�ximo suportado!.");
+                            pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_OVERWEIGHT_PERIOD);
                             StopAction(pm);
-                            return;
+                            return true;
 						}
 					}
                 }
                 else
 				{
-                    pm.SendMessage(55, "Voc� est� muito acima do peso m�ximo suportado!");
+                    pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_OVERWEIGHT);
                     StopAction(pm);
                 }
+				return true;
 			}
-			if (pm.Hunger <= 3 || pm.Thirst <= 3)
-			{
-				pm.SendMessage(55, "Estou com muita fome ou sede para fazer isso agora.");
-				StopAction(pm);
-			}
-			CheckFood(pm);
+			return false;
+		}
 
-			Point3D loc = pm.Location; //check if player moved, if so, stop
-			foreach( DictionaryEntry de in PlayerLoc )
+		/// <summary>
+		/// Gets the delay for the specified harvest system
+		/// </summary>
+		/// <param name="system">The harvest system</param>
+		/// <returns>Delay in seconds</returns>
+		public static int GetDelayForSystem(HarvestSystem system)
+		{
+			if (system is Fishing)
+				return AdventuresAutomationConstants.DELAY_FISHING_SECONDS;
+			else if (system is Mining || system is DynamicMining)
+				return AdventuresAutomationConstants.DELAY_MINING_SECONDS;
+			else if (system is Lumberjacking)
+				return AdventuresAutomationConstants.DELAY_LUMBERJACKING_SECONDS;
+			else
+				return AdventuresAutomationConstants.DELAY_CRAFTING_SECONDS;
+		}
+
+		/// <summary>
+		/// Performs the automation action for the specified player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		public static void DoAction(PlayerMobile pm)
+		{
+			if (pm == null)
+				return;
+
+			// Check if player is still flagged as automated
+			if (!pm.GetFlag(PlayerFlag.IsAutomated))
 			{
-				if (de.Key == pm)
+				// Player is no longer automated, clean up
+				if (TaskNextAction.ContainsKey(pm))
+					TaskNextAction.Remove(pm);
+				return;
+			}
+
+			string action = GetTaskString(pm);
+			Item tool = GetPlayerTool(pm);
+			
+			if (action == null || action == "")
+			{
+				// Task string missing but player is still automated - try to re-initialize from tool
+				if (tool != null)
 				{
-					Point3D oldloc = (Point3D)de.Value;
-					if (loc.X != oldloc.X || loc.Y != oldloc.Y)
+					// Try to determine action from tool type
+					if (tool is FishingPole)
+						action = AdventuresAutomationStringConstants.ACTION_STRING_FISHING;
+					else if (BaseAxe.IsMiningTool(tool))
+						action = AdventuresAutomationStringConstants.ACTION_STRING_MINING;
+					else if (tool is BaseAxe && !BaseAxe.IsMiningTool(tool))
+						action = AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING;
+					
+					if (action != null && action != "")
 					{
-						pm.SendMessage(55, "Voc� se moveu e parou de fazer a a��o.");
+						TaskString[pm] = action;
+						// Re-initialize system if needed
+						if (!TaskSystem.ContainsKey(pm))
+						{
+							if (action == AdventuresAutomationStringConstants.ACTION_STRING_FISHING)
+								TaskSystem[pm] = (HarvestSystem)(Fishing.System);
+							else if (action == AdventuresAutomationStringConstants.ACTION_STRING_MINING)
+								TaskSystem[pm] = GetMiningSystem(pm, tool);
+							else if (action == AdventuresAutomationStringConstants.ACTION_STRING_LUMBERJACKING)
+								TaskSystem[pm] = (HarvestSystem)(Lumberjacking.System);
+						}
+					}
+					else
+					{
+						pm.Say(AdventuresAutomationStringConstants.MSG_FORGOT_ACTION);
 						StopAction(pm);
 						return;
 					}
 				}
+				else
+				{
+					pm.Say(AdventuresAutomationStringConstants.MSG_FORGOT_ACTION);
+					StopAction(pm);
+					return;
+				}
 			}
 
-			if (action == "")
-			{
-				pm.Say(55, "esqueci o que estava fazendo...");
+			// Check weight overload
+			if (CheckWeightOverload(pm, action))
 				return;
+
+			// Check hunger and thirst
+			if (pm.Hunger <= AdventuresAutomationConstants.FOOD_STOP_THRESHOLD || pm.Thirst <= AdventuresAutomationConstants.THIRST_STOP_THRESHOLD)
+			{
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_TOO_HUNGRY_OR_THIRSTY);
+				StopAction(pm);
+			}
+			CheckFood(pm);
+
+			// Check if player moved
+			Point3D loc = pm.Location;
+			Point3D oldloc;
+			if (PlayerLoc.TryGetValue(pm, out oldloc))
+			{
+				if (loc.X != oldloc.X || loc.Y != oldloc.Y)
+				{
+					pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_MOVED_STOPPED_ACTION);
+					StopAction(pm);
+					return;
+				}
 			}
 			
-			//some actions don't need harvest system so hijack them here
-			if (action == "skinning")
+			// Some actions don't need harvest system so handle them here
+			if (action == AdventuresAutomationStringConstants.ACTION_STRING_SKINNING)
 			{
 				SkinSomething(pm);
 				return;
 			}
-			else if (action == "milling")
+			else if (action == AdventuresAutomationStringConstants.ACTION_STRING_MILLING)
 			{
 				MillSomething(pm);
 				return;
 			}
 
-			Item tool = null; // get tool from hashtable
-			foreach( DictionaryEntry de in PlayerTool )
-			{
-				if (de.Key == pm)
-				{
-					tool = (Item)de.Value;
-					continue;
-				}
-			}
-
 			if (tool == null)
 			{
-				pm.Say(55, "H� um problema com minha ferramenta.");
+				pm.Say(AdventuresAutomationStringConstants.MSG_TOOL_PROBLEM);
 				return;
 			}
 
-			if (action == "dough")
+			if (action == AdventuresAutomationStringConstants.ACTION_STRING_DOUGH)
 			{
-				// Null check for tool before using it
 				if (tool == null || tool.Deleted)
 				{
-					pm.Say(55, "Há um problema com minha ferramenta.");
+					pm.Say(AdventuresAutomationStringConstants.MSG_TOOL_PROBLEM);
 					StopAction(pm);
 					return;
 				}
 				MakeDough(pm, tool);
 				return;
 			}
-			if (action == "bread")
+			if (action == AdventuresAutomationStringConstants.ACTION_STRING_BREAD)
 			{
-				// Null check for tool before using it
 				if (tool == null || tool.Deleted)
 				{
-					pm.Say(55, "Há um problema com minha ferramenta.");
+					pm.Say(AdventuresAutomationStringConstants.MSG_TOOL_PROBLEM);
 					StopAction(pm);
 					return;
 				}
@@ -814,94 +1449,103 @@ namespace Server.Items
 				return;
 			}
 
-			/*if ( !TaskSystem.Contains(pm) ) //no harvestsystem defined yet
-			{	
-				if (tool is BaseHarvestTool)
-					((BaseHarvestTool)tool).HarvestSystem.BeginHarvesting( (Mobile)pm, tool );
-			}*/
-			if (!TaskTarget.Contains(pm))// ran out of resource on the last spot
+			// Find harvest target if needed
+			if (!TaskTarget.ContainsKey(pm))
 			{
 				HarvestTarget(pm, action, tool);
+				
+				// If HarvestTarget didn't find a target, it will have called StopAction
+				// Check if automation was stopped
+				if (!pm.GetFlag(PlayerFlag.IsAutomated))
+					return;
 			}
-			if (TaskSystem.Contains(pm) && TaskTarget.Contains(pm)) 
+
+			HarvestSystem hs;
+			object harvestTarget;
+			if (TaskSystem.TryGetValue(pm, out hs) && TaskTarget.TryGetValue(pm, out harvestTarget)) 
 			{
-
-				object o = null;
-				foreach( DictionaryEntry de in TaskTarget )
+				if (harvestTarget != null && hs != null)
 				{
-					
-					if (de.Key == pm)
-					{
-						o = (object)de.Value;
-						continue;
-					}
+					// Start harvesting - delay will be set after harvest completes in HarvestSystem.FinishHarvesting
+					// All failure cases in StartHarvesting now handle delay setting for automation
+					hs.StartHarvesting(pm, tool, harvestTarget);
 				}
-
-				HarvestSystem hs = null;
-				foreach( DictionaryEntry de in TaskSystem )
+				else
 				{
-					
-					if (de.Key == pm)
-					{
-						hs = (HarvestSystem)de.Value;
-						continue;
-					}
+					// Invalid target or system - clear and retry with delay
+					if (TaskTarget.ContainsKey(pm))
+						TaskTarget.Remove(pm);
+					int delay = GetDelayForSystem(hs != null ? hs : GetTaskSystem(pm));
+					if (delay == 0)
+						delay = AdventuresAutomationConstants.DELAY_MINING_SECONDS;
+					SetNextAction(pm, delay);
 				}
-
-				if (o != null && hs != null && hs is HarvestSystem)
-				{
-					int delay = 0;
-
-					if (hs is Fishing)
-						delay = AdventuresAutomation.fishingdelay;
-					else if (hs is Mining || hs is DynamicMining)
-						delay = AdventuresAutomation.miningdelay;
-					else if (hs is Lumberjacking)
-						delay = AdventuresAutomation.lumberjackingdelay;
-
-					SetNextAction(pm, delay);	
-					hs.StartHarvesting( pm, tool, o );
-				}
+			}
+			else
+			{
+				// No target or system found - try to find target again with delay
+				// This handles cases where HarvestTarget was called but didn't set a target
+				int delay = AdventuresAutomationConstants.DELAY_MINING_SECONDS;
+				if (hs != null)
+					delay = GetDelayForSystem(hs);
+				SetNextAction(pm, delay);
 			}
 		}
-		
+
+		#endregion
+
+		#endregion
+
+		#region Action Handlers
+
+		/// <summary>
+		/// Handles skinning automation action
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
 		public static void SkinSomething(PlayerMobile pm)
 		{
 			bool foundcorpse = false;
 			bool foundhides = false;
-			IPooledEnumerable eable = pm.Map.GetItemsInRange( pm.Location, 3 );
-
-			foreach ( Item item in eable )
+			IPooledEnumerable eable = pm.Map.GetItemsInRange( pm.Location, AdventuresAutomationConstants.SKINNING_SEARCH_RANGE );
+			try
 			{
-				if (!foundcorpse && item is ICarvable && pm.InLOS(item) )
-				{
-					((ICarvable)item).Carve(pm, pm.Backpack.FindItemByType(typeof(SkinningKnife)));
-					foundcorpse = true;
 
-					pm.CheckSkill(SkillName.Forensics, 0, 50 ); // you can gain skill doing this 
-				}
-			}
-			if (!foundcorpse) // all corpses are carved, check for hides
-			{
 				foreach ( Item item in eable )
 				{
-					if (!foundhides && item is Corpse && ((Corpse)item).Carved)
+					if (!foundcorpse && item is ICarvable && pm.InLOS(item) )
 					{
-						BaseHides hide = (BaseHides)((Container)item).FindItemByType(typeof(BaseHides));
-						
-						if (hide != null)
-						{
-							if (BaseHides.CutHides((Mobile)pm, hide))
-								foundhides = true;
+						((ICarvable)item).Carve(pm, pm.Backpack.FindItemByType(typeof(SkinningKnife)));
+						foundcorpse = true;
 
-							pm.CheckSkill(SkillName.Tailoring, 0, 50 ); // you can gain skill doing this 
+						pm.CheckSkill(SkillName.Forensics, AdventuresAutomationConstants.SKILL_CHECK_MIN, AdventuresAutomationConstants.SKILL_CHECK_MAX ); // you can gain skill doing this 
+					}
+				}
+				if (!foundcorpse) // all corpses are carved, check for hides
+				{
+					foreach ( Item item in eable )
+					{
+						if (!foundhides && item is Corpse && ((Corpse)item).Carved)
+						{
+							BaseHides hide = (BaseHides)((Container)item).FindItemByType(typeof(BaseHides));
+							
+							if (hide != null)
+							{
+								if (BaseHides.CutHides((Mobile)pm, hide))
+									foundhides = true;
+
+								pm.CheckSkill(SkillName.Tailoring, AdventuresAutomationConstants.SKILL_CHECK_MIN, AdventuresAutomationConstants.SKILL_CHECK_MAX ); // you can gain skill doing this 
+							}
 						}
 					}
 				}
 			}
+			finally
+			{
+				eable.Free();
+			}
 			if (!foundcorpse && !foundhides)
 			{
-                pm.Say("*Acho que acabei por aqui.*");
+                pm.Say(AdventuresAutomationStringConstants.MSG_FINISHED_HERE);
                 AdventuresAutomation.StopAction(pm);
 			}
 			else 
@@ -910,19 +1554,20 @@ namespace Server.Items
 			}
 				
 		}
-		
+
+		/// <summary>
+		/// Handles milling automation action
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
 		public static void MillSomething(PlayerMobile pm)
 		{
 			bool millwheat = false;
 			
-			IFlourMill mill = null; // get tool from hashtable
-			foreach( DictionaryEntry de in PlayerTool )
+			IFlourMill mill = null; // get tool from dictionary
+			Item toolItem;
+			if (PlayerTool.TryGetValue(pm, out toolItem))
 			{
-				if (de.Key == pm)
-				{
-					mill = (IFlourMill)de.Value;
-					continue;
-				}
+				mill = toolItem as IFlourMill;
 			}
 			
 			WheatSheaf wheat = (WheatSheaf)pm.Backpack.FindItemByType(typeof(WheatSheaf));
@@ -943,12 +1588,12 @@ namespace Server.Items
 
 				millwheat = true;
 
-				pm.CheckSkill(SkillName.Cooking, 0, 50 ); // you can gain skill doing this 
+				pm.CheckSkill(SkillName.Cooking, AdventuresAutomationConstants.SKILL_CHECK_MIN, AdventuresAutomationConstants.SKILL_CHECK_MAX ); // you can gain skill doing this 
 			}
 
 			if (!millwheat)
 			{
-                pm.Say("*Acho que acabei por aqui.*");
+                pm.Say(AdventuresAutomationStringConstants.MSG_FINISHED_HERE);
                 AdventuresAutomation.StopAction(pm);
 			}
 			else 
@@ -958,6 +1603,11 @@ namespace Server.Items
 				
 		}
 
+		/// <summary>
+		/// Handles dough making automation action
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">The craft tool</param>
 		public static void MakeDough(PlayerMobile pm, Item tool)
 		{
 			//will need to add this for any items that are automated sadly
@@ -971,18 +1621,22 @@ namespace Server.Items
 			Type resource4 = null;
 			int r4amount = 0;
 
-			int minskill = 0;
-			int maxskill = 60;
+			int minskill = AdventuresAutomationConstants.DOUGH_MIN_SKILL;
+			int maxskill = AdventuresAutomationConstants.DOUGH_MAX_SKILL;
 
 			int delay = craftingdelay;
 
 			Type tomake = typeof(Dough);
 			SkillName skill = SkillName.Cooking;
-			Console.WriteLine("1");
 
-			Make(pm, (BaseTool)tool, "dough", skill, tomake, delay, minskill, maxskill, resource1, r1amount, resource2, r2amount, resource3, r3amount, resource4, r4amount );
+			Make(pm, (BaseTool)tool, AdventuresAutomationStringConstants.ACTION_STRING_DOUGH, skill, tomake, delay, minskill, maxskill, resource1, r1amount, resource2, r2amount, resource3, r3amount, resource4, r4amount );
 		}
 
+		/// <summary>
+		/// Handles bread making automation action
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">The craft tool</param>
 		public static void MakeBread(PlayerMobile pm, Item tool)
 		{
 			//will need to add this for any items that are automated sadly
@@ -996,17 +1650,36 @@ namespace Server.Items
 			Type resource4 = null;
 			int r4amount = 0;
 
-			int minskill = 30;
-			int maxskill = 80;
+			int minskill = AdventuresAutomationConstants.BREAD_MIN_SKILL;
+			int maxskill = AdventuresAutomationConstants.BREAD_MAX_SKILL;
 
 			int delay = craftingdelay;
 
 			Type tomake = typeof(BreadLoaf);
 			SkillName skill = SkillName.Cooking;
 
-			Make(pm, (BaseTool)tool, "bread", skill, tomake, delay, minskill, maxskill, resource1, r1amount, resource2, r2amount, resource3, r3amount, resource4, r4amount );
+			Make(pm, (BaseTool)tool, AdventuresAutomationStringConstants.ACTION_STRING_BREAD, skill, tomake, delay, minskill, maxskill, resource1, r1amount, resource2, r2amount, resource3, r3amount, resource4, r4amount );
 		}
 
+		/// <summary>
+		/// Generic crafting method for automation
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="tool">The craft tool</param>
+		/// <param name="thing">The item name being crafted</param>
+		/// <param name="skill">The skill required</param>
+		/// <param name="tomake">The type of item to create</param>
+		/// <param name="delay">Delay in seconds</param>
+		/// <param name="minskill">Minimum skill required</param>
+		/// <param name="maxskill">Maximum skill for success</param>
+		/// <param name="Resource1">First resource type</param>
+		/// <param name="r1">First resource amount</param>
+		/// <param name="Resource2">Second resource type</param>
+		/// <param name="r2">Second resource amount</param>
+		/// <param name="Resource3">Third resource type</param>
+		/// <param name="r3">Third resource amount</param>
+		/// <param name="Resource4">Fourth resource type</param>
+		/// <param name="r4">Fourth resource amount</param>
 		public static void Make(PlayerMobile pm, BaseTool tool, string thing, SkillName skill, Type tomake, int delay, int minskill, int maxskill, Type Resource1, int r1, Type Resource2, int r2, Type Resource3, int r3, Type Resource4, int r4  )
 		{
 			//crafting system is bullshit complicated.  bypassing it.
@@ -1016,15 +1689,15 @@ namespace Server.Items
 				tool = (BaseTool)FindCraftTool(pm, thing); // try to find a new tool
 				if (tool == null)
 				{
-					pm.Say("*Aff! Estou sem ferramentas.*");
-                    pm.SendMessage(55, "Sua ferramenta n�o pode ser mais usada e n�o h� outra em sua mochila.");
+					pm.Say(AdventuresAutomationStringConstants.MSG_OUT_OF_TOOLS);
+                    pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_TOOL_BROKEN_NO_REPLACEMENT);
                     AdventuresAutomation.StopAction(pm);
 				}
 			}
 
 			if ((int)pm.Skills[SkillName.Cooking].Value < minskill)
 			{
-				pm.Say(55, "Ainda n�o sei como fazer isso.");
+				pm.Say(AdventuresAutomationStringConstants.MSG_SKILL_TOO_LOW);
 				AdventuresAutomation.StopAction(pm);
 			}
 
@@ -1120,61 +1793,150 @@ namespace Server.Items
 				Item reward = (Item)Activator.CreateInstance(tomake);
 				pm.Backpack.DropItem(reward);
 
-				pm.SendMessage("Eba! Fiz uma comida (" + thing + ").");
+				pm.SendMessage(string.Format(AdventuresAutomationStringConstants.MSG_CRAFT_SUCCESS_FORMAT, thing));
 			}
 			else
-				pm.SendMessage(55, "Voc� falhou e desperdi�ou alguns recursos.");
+				pm.SendMessage(AdventuresAutomationConstants.MSG_COLOR_ERROR, AdventuresAutomationStringConstants.MSG_CRAFT_FAILED);
 			
 
 			((BaseTool)tool).UsesRemaining --;
 			SetNextAction(pm, delay);
 		}
 
+		/// <summary>
+		/// Handles not enough resources error
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="thing">The item name being crafted</param>
 		public static void NotEnoughResource(PlayerMobile pm, string thing)
 		{
-			pm.Say("Hmm..tem algo faltando para criar isto. ("+thing+")");
+			pm.Say(string.Format(AdventuresAutomationStringConstants.MSG_NOT_ENOUGH_RESOURCES_FORMAT, thing));
 			AdventuresAutomation.StopAction(pm);
 		}
-		
+
+		#endregion
+
+		#region Timer System
+
+		/// <summary>
+		/// Sets the next action timer for the specified player
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="delay">Delay in seconds</param>
 		public static void SetNextAction(PlayerMobile pm, int delay)
 		{
-			if (TaskNextAction.Contains(pm) )
+			if (pm == null || pm.Deleted)
+				return;
+
+			// Only set delay if player is still flagged as automated
+			if (!pm.GetFlag(PlayerFlag.IsAutomated))
+				return;
+
+			// Ensure minimum delay of 1 second
+			if (delay < 1)
+				delay = 1;
+
+			if (TaskNextAction.ContainsKey(pm))
 				TaskNextAction.Remove(pm);
 		
-			if ( (AdventuresAutomation.globaltasktimer + delay) > 30)
-				delay = (AdventuresAutomation.globaltasktimer + delay) - 30;
-			else 
-				delay += AdventuresAutomation.globaltasktimer;
+			// Calculate next timer value (current timer + delay)
+			int nextTimer = globaltasktimer + delay;
+			
+			// Handle wrap-around if exceeds max value
+			// Timer goes: 0, 1, 2, ..., 29, 30, then wraps to 0
+			// So if nextTimer > 30, wrap to (nextTimer - 30 - 1)
+			if (nextTimer > AdventuresAutomationConstants.TIMER_MAX_VALUE)
+			{
+				nextTimer = nextTimer - AdventuresAutomationConstants.TIMER_MAX_VALUE - 1;
+				// Ensure it's not negative
+				if (nextTimer < 0)
+					nextTimer = 0;
+			}
 
-            //pm.SendMessage(66, "Task Delay => (" + delay + ")");
-            TaskNextAction.Add(pm, delay);	
+            TaskNextAction[pm] = nextTimer;
 		}
 
+		/// <summary>
+		/// Called by OneTime system to process automation timers
+		/// </summary>
 		public void OneTimeTick()
 		{
 			CheckHashTables();
 
-			ArrayList automated = new ArrayList();
-			foreach( DictionaryEntry de in TaskNextAction )
+			List<PlayerMobile> automated = new List<PlayerMobile>();
+			
+			// Check players in TaskNextAction dictionary for timer matches
+			foreach( KeyValuePair<PlayerMobile, int> kvp in TaskNextAction )
 			{
-                if (de.Key is PlayerMobile && (int)de.Value == globaltasktimer )
+                if (kvp.Value == globaltasktimer )
 				{
-					automated.Add((PlayerMobile)de.Key);
+					// Only add if player is still flagged as automated
+					if (kvp.Key != null && !kvp.Key.Deleted && kvp.Key.GetFlag(PlayerFlag.IsAutomated))
+						automated.Add(kvp.Key);
                 }
             }
 
+            // Process all automated players
             for ( int i = 0; i < automated.Count; ++i )
 			{
-                DoAction((PlayerMobile)automated[ i ]);
+                DoAction(automated[ i ]);
 			}
 
 			globaltasktimer ++;
 			
-			if (globaltasktimer > 30)
-				globaltasktimer = 0;
+			if (globaltasktimer > AdventuresAutomationConstants.TIMER_MAX_VALUE)
+				globaltasktimer = AdventuresAutomationConstants.TIMER_INITIAL_VALUE;
 
 		}
 
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Deserializes AdventuresAutomation instance
+		/// </summary>
+		/// <param name="serial">Serialization reader</param>
+		public AdventuresAutomation(Serial serial) : base(serial)
+		{
+		}
+
+		/// <summary>
+		/// Serializes AdventuresAutomation instance
+		/// </summary>
+		/// <param name="writer">Generic writer</param>
+		public override void Serialize( GenericWriter writer )
+		{
+			base.Serialize( writer );
+            		writer.Write( (int) 0 ); // version
+			
+		}
+
+		/// <summary>
+		/// Deserializes AdventuresAutomation instance
+		/// </summary>
+		/// <param name="reader">Generic reader</param>
+		public override void Deserialize( GenericReader reader )
+		{
+			base.Deserialize( reader );
+            		int version = reader.ReadInt();
+
+			m_OneTimeType = AdventuresAutomationConstants.ONETIME_TYPE_VALUE;
+			globaltasktimer = AdventuresAutomationConstants.TIMER_INITIAL_VALUE;
+			
+			CheckHashTables();
+			
+		}
+
+		#endregion
+
+		#region Utility Methods (Legacy)
+
+		/// <summary>
+		/// Removes item from specified layer (legacy method, may not be used)
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="layer">The layer to remove item from</param>
 		public static void UndressItem(PlayerMobile pm, Layer layer)
 		{
 			Item item = pm.FindItemOnLayer( layer );
@@ -1183,31 +1945,7 @@ namespace Server.Items
 				pm.PlaceInBackpack( item );
 		}
 
-		public AdventuresAutomation(Serial serial) : base(serial)
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-            		writer.Write( (int) 0 ); // version
-			
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-            		int version = reader.ReadInt();
-
-			m_OneTimeType = 3;
-			globaltasktimer = 0;
-			
-			CheckHashTables();
-			
-		}
+		#endregion
 		
 	}
 }
-
-
-

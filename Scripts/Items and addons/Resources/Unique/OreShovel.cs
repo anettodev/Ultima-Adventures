@@ -33,14 +33,14 @@ namespace Server.Items
 		[Constructable]
 		public OreShovel( int uses ) : base( uses, 0xF3A )
 		{
-			Name = "Pá de Ferro";
+			Name = "Pï¿½ de Ferro";
 			Weight = 2.0;
         }
 
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
-			list.Add( "* Apenas extrai minério/pedra de ferro! *" );
+			list.Add( "* Apenas extrai minï¿½rio/pedra de ferro! *" );
 		}
 		
 		public override void AddNameProperties( ObjectPropertyList list )
@@ -48,7 +48,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Minerar' para usar o sistema de automação."); 
+			list.Add("Diga '.auto-minerar' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public OreShovel( Serial serial ) : base( serial )

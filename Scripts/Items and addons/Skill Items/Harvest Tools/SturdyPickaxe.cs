@@ -63,7 +63,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Minerar' para usar o sistema de automação."); 
+			list.Add("Diga '.auto-minerar' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public SturdyPickaxe( Serial serial ) : base( serial )

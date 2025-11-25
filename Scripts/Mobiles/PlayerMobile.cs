@@ -6616,7 +6616,8 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				
 				string speech = e.Speech;
 				
-				if ( (Insensitive.Contains( speech, ".iniciar" ) || Insensitive.Contains( speech, ".start" ) || Insensitive.Contains( speech, ".init" )) && !GetFlag( PlayerFlag.IsAutomated ) )
+				// Check for automation commands starting with .auto-
+				if ( Insensitive.StartsWith( speech, ".auto-" ) && !GetFlag( PlayerFlag.IsAutomated ) )
 				{
 					AdventuresAutomation.StartTask(this, speech);
 				}

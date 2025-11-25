@@ -204,7 +204,7 @@ namespace Server.Items
 			
 			base.AddNameProperties( list );	
 			
-			list.Add("Diga '.iniciar Auto-Moer' para usar o sistema de automação."); 
+			list.Add("Diga '.auto-moer' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public override void Serialize( GenericWriter writer )

@@ -32,7 +32,7 @@ namespace Server.Items
 		[Constructable]
 		public Shovel( int uses ) : base( uses, 0xF39 )
 		{
-            Name = "Pá";
+            Name = "Pï¿½";
             Weight = 2.0;
         }
 		
@@ -42,7 +42,7 @@ namespace Server.Items
 			base.AddNameProperties( list );	
 			
 			if (!(this is Monocle))
-				list.Add("Diga '.iniciar Auto-Minerar' para usar o sistema de automação."); 
+				list.Add("Diga '.auto-minerar' para usar o sistema de automaï¿½ï¿½o."); 
 		}
 
 		public Shovel( Serial serial ) : base( serial )
