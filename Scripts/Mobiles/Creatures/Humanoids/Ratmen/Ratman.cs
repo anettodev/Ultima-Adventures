@@ -54,6 +54,7 @@ namespace Server.Mobiles
 
 		public override bool CanRummageCorpses{ get{ return true; } }
 		public override int Hides{ get{ return 8; } }
+		public override HideType HideType{ get{ return HideType.Spined; } }
 
 		public Ratman( Serial serial ) : base( serial )
 		{

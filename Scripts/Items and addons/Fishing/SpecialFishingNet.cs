@@ -44,8 +44,8 @@ namespace Server.Items
         public override void AddNameProperties(ObjectPropertyList list)
 		{
             base.AddNameProperties(list);
-			list.Add( 1070722, "Use This On The High Seas");
-			list.Add( 1049644, "Requires 60 Fishing");
+			list.Add( 1070722, FishingStringConstants.FormatProperty(FishingStringConstants.PROP_USE_HIGH_SEAS));
+			list.Add( 1049644, FishingStringConstants.FormatSkillRequirement(60.0, "Fishing"));
         }
 
 		public override void Serialize( GenericWriter writer )
@@ -78,28 +78,28 @@ namespace Server.Items
 		{
 			if ( m_InUse )
 			{
-				from.SendLocalizedMessage( 1010483 ); // Someone is already using that net!
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_NET_IN_USE);
 			}
 			else if ( from.Skills[SkillName.Fishing].Value < 60.0 )
 			{
-				from.SendMessage("You are not skilled enough at fishing to use this net.");
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_NOT_SKILLED);
 			}
 			else if ( Worlds.IsOnBoat( from ) == false )
 			{
-				from.SendMessage("You'll need to be on your boat to use this net.");
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_NEED_BOAT);
 			}
 			else if ( Worlds.BoatToCloseToTown( from ) == true )
 			{
-				from.SendMessage("You'll need to go out to deeper waters to use this net.");
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_NEED_DEEPER_WATER);
 			}
 			else if ( IsChildOf( from.Backpack ) )
 			{
-				from.SendLocalizedMessage( 1010484 ); // Where do you wish to use the net?
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.PROMPT_WHERE_USE_NET);
 				from.BeginTarget( -1, true, TargetFlags.None, new TargetCallback( OnTarget ) );
 			}
 			else
 			{
-				from.SendLocalizedMessage( 1042001 ); // That must be in your pack for you to use it.
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_MUST_BE_IN_PACK);
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace Server.Items
 
 			if ( !from.InRange( p3D, 6 ) )
 			{
-				from.SendLocalizedMessage( 500976 ); // You need to be closer to the water to fish!
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_TOO_FAR_WATER);
 			}
 			else if ( hasWater )
 			{
@@ -154,11 +154,11 @@ namespace Server.Items
 
 				Timer.DelayCall( TimeSpan.FromSeconds( 1.5 ), TimeSpan.FromSeconds( 1.0 ), 20, new TimerStateCallback( DoEffect ), new object[]{ p, 0, from } );
 
-				from.SendLocalizedMessage( 1010487 ); // You plunge the net into the sea...
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.MSG_PLUNGE_NET);
 			}
 			else
 			{
-				from.SendLocalizedMessage( 1010485 ); // You can only use this net in deep water!
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_ONLY_DEEP_WATER);
 			}
 		}
 

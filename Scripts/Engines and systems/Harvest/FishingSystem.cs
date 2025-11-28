@@ -170,11 +170,37 @@ namespace Server.Engines.Harvest
         }
 
         /// <summary>
+        /// Performs the fishing visual effect on both the player and the target location
+        /// </summary>
+        public override void DoHarvestingEffect(Mobile from, Item tool, HarvestDefinition def, Map map, Point3D loc)
+        {
+            // Call base to animate the player
+            base.DoHarvestingEffect(from, tool, def, map, loc);
+
+            // Send visual effect to the target water tile (water splash/ripple effect)
+            if (map != null)
+            {
+                // Use water splash effect (0x352D) similar to fishing nets
+                // Duration: 16, speed: 4
+                Effects.SendLocationEffect(loc, map, 0x352D, 16, 4);
+                // Play water sound effect
+                Effects.PlaySound(loc, map, 0x364);
+            }
+        }
+
+        /// <summary>
         /// Sends success message for fishing
+        /// Skips the resource message if a mutation occurred (mutation already sent its own message)
         /// </summary>
         public override void SendSuccessTo(Mobile from, Item item, HarvestResource resource)
         {
-            base.SendSuccessTo(from, item, resource);
+            // If item is not a regular Fish, it's a mutation and already sent its own message
+            // Don't send the "Você pescou um peixe comum!" message for mutations
+            if (item is Fish)
+            {
+                base.SendSuccessTo(from, item, resource);
+            }
+            // Mutations already sent their message in MutateType, so we skip the resource message
         }
 
         /// <summary>

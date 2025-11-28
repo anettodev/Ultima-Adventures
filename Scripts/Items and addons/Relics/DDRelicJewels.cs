@@ -3,82 +3,103 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicJewels : Item
+	/// <summary>
+	/// Jewel relic item with random type (necklace, amulet, ring, earrings) and quality.
+	/// </summary>
+	public class DDRelicJewels : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
-		[Constructable]
-		public DDRelicJewels() : base( 0x4210 )
+		private const int BASE_ITEM_ID = 0x4210;
+		private const int RANDOM_JEWEL_TYPE_MIN = 0;
+		private const int RANDOM_JEWEL_TYPE_MAX = RelicConstants.RANDOM_JEWEL_TYPE_MAX;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>
+		/// Structure for jewel variant data
+		/// </summary>
+		private struct JewelVariant
 		{
-			Weight = 5;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			public int ItemID;
+			public string TypeName;
+
+			public JewelVariant(int itemID, string typeName)
+			{
+				this.ItemID = itemID;
+				this.TypeName = typeName;
+			}
+		}
+
+		/// <summary>
+		/// Array of jewel variants
+		/// </summary>
+		private static readonly JewelVariant[] JewelVariants = new JewelVariant[]
+		{
+			new JewelVariant(0x4210, RelicStringConstants.ITEM_TYPE_NECKLACE),
+			new JewelVariant(0x4210, RelicStringConstants.ITEM_TYPE_AMULET),
+			new JewelVariant(0x4210, RelicStringConstants.ITEM_TYPE_MEDALLION),
+			new JewelVariant(0x4212, RelicStringConstants.ITEM_TYPE_RING),
+			new JewelVariant(0x4213, RelicStringConstants.ITEM_TYPE_EARRINGS_SET),
+			new JewelVariant(0x4212, RelicStringConstants.ITEM_TYPE_RING),
+			new JewelVariant(0x4213, RelicStringConstants.ITEM_TYPE_EARRINGS_SET),
+			new JewelVariant(0x4212, RelicStringConstants.ITEM_TYPE_RING),
+			new JewelVariant(0x4213, RelicStringConstants.ITEM_TYPE_EARRINGS_PAIR)
+		};
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new jewel relic with random type and quality
+		/// </summary>
+		[Constructable]
+		public DDRelicJewels() : base(BASE_ITEM_ID)
+		{
+			Weight = RelicConstants.WEIGHT_LIGHT;
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			string sType = "";
-			switch ( Utility.RandomMinMax( 0, 8 ) ) 
-			{
-				case 0: ItemID = 0x4210; sType = "necklace"; break;
-				case 1: ItemID = 0x4210; sType = "amulet"; break;
-				case 2: ItemID = 0x4210; sType = "medallion"; break;
-				case 3: ItemID = 0x4212; sType = "ring"; break;
-				case 4: ItemID = 0x4213; sType = "set of earrings"; break;
-				case 5: ItemID = 0x4212; sType = "ring"; break;
-				case 6: ItemID = 0x4213; sType = "set of earrings"; break;
-				case 7: ItemID = 0x4212; sType = "ring"; break;
-				case 8: ItemID = 0x4213; sType = "pair of earrings"; break;
-			}
+			int variant = Utility.RandomMinMax(RANDOM_JEWEL_TYPE_MIN, RANDOM_JEWEL_TYPE_MAX);
+			JewelVariant jewel = JewelVariants[variant];
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-			Name = sLook + " " + sType;
+			ItemID = jewel.ItemID;
+
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			Name = quality + jewel.TypeName;
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicJewels(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the jewels relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the jewels relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
 		}
+
+		#endregion
 	}
 }

@@ -4,45 +4,72 @@ using Server.Misc;
 
 namespace Server.Items
 {
-	public class DDRelicBook : Item
+	/// <summary>
+	/// Book relic item with random book appearance and title.
+	/// </summary>
+	public class DDRelicBook : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
+		private const int BASE_ITEM_ID = 0xFBD;
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new book relic with random appearance and title
+		/// </summary>
 		[Constructable]
-		public DDRelicBook() : base( 0xFBD )
+		public DDRelicBook() : base(BASE_ITEM_ID)
 		{
-			Weight = 5;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			Weight = RelicConstants.WEIGHT_LIGHT;
 			ItemID = RandomThings.GetRandomBookItemID();
 			Hue = RandomThings.GetRandomColor(0);
 			Name = Server.Misc.RandomThings.GetBookTitle();
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			from.SendMessage(55, "Esta é apenas mais uma história, mas pode valer alguma coisa.");
-			return;
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicBook(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display book message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			from.SendMessage(RelicConstants.MSG_COLOR_ERROR, RelicStringConstants.MSG_BOOK_STORY);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the book relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
+
+		/// <summary>
+		/// Deserializes the book relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
+
+		#endregion
 	}
 }

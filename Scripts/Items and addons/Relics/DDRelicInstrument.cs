@@ -3,100 +3,175 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicInstrument : Item
+	/// <summary>
+	/// Instrument relic item that can be flipped between two ItemID states.
+	/// Supports harp and lute with quality descriptors.
+	/// </summary>
+	public class DDRelicInstrument : DDRelicBase
 	{
-		public int RelicGoldValue;
+		#region Constants
+
+		private const int BASE_ITEM_ID = 0x41FD;
+		private const int RANDOM_INSTRUMENT_MIN = 0;
+		private const int RANDOM_INSTRUMENT_MAX = 1;
+		private const int RANDOM_DECORATIVE_MIN = 0;
+		private const int RANDOM_DECORATIVE_MAX = 2;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>First ItemID for flipping</summary>
 		public int RelicFlipID1;
+
+		/// <summary>Second ItemID for flipping</summary>
 		public int RelicFlipID2;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID1 { get { return RelicFlipID1; } set { RelicFlipID1 = value; InvalidateProperties(); } }
-
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID2 { get { return RelicFlipID2; } set { RelicFlipID2 = value; InvalidateProperties(); } }
-
-		[Constructable]
-		public DDRelicInstrument() : base( 0x41FD )
+		/// <summary>
+		/// Structure for instrument variant data
+		/// </summary>
+		private struct InstrumentVariant
 		{
-			Weight = 10;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			public int ItemID;
+			public int FlipID1;
+			public int FlipID2;
+			public string TypeName;
+
+			public InstrumentVariant(int itemID, int flipID1, int flipID2, string typeName)
+			{
+				this.ItemID = itemID;
+				this.FlipID1 = flipID1;
+				this.FlipID2 = flipID2;
+				this.TypeName = typeName;
+			}
+		}
+
+		/// <summary>
+		/// Array of instrument variants
+		/// </summary>
+		private static readonly InstrumentVariant[] InstrumentVariants = new InstrumentVariant[]
+		{
+			new InstrumentVariant(0x41FD, 0x41FD, 0x41FC, "harpa"),
+			new InstrumentVariant(0x420C, 0x420C, 0x420D, "alaúde")
+		};
+
+		/// <summary>Decorative terms for instruments</summary>
+		private static readonly string[] DECORATIVE_TERMS = new[]
+		{
+			"decorativa", "cerimonial", "ornamental"
+		};
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets the first flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID1
+		{
+			get { return RelicFlipID1; }
+			set { RelicFlipID1 = value; InvalidateProperties(); }
+		}
+
+		/// <summary>
+		/// Gets or sets the second flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID2
+		{
+			get { return RelicFlipID2; }
+			set { RelicFlipID2 = value; InvalidateProperties(); }
+		}
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new instrument relic with random type and quality
+		/// </summary>
+		[Constructable]
+		public DDRelicInstrument() : base(BASE_ITEM_ID)
+		{
+			Weight = RelicConstants.WEIGHT_MEDIUM;
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-			
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 2 ) )
-			{
-				case 0:	sDecon = "decorative";		break;
-				case 1:	sDecon = "ceremonial";		break;
-				case 2:	sDecon = "ornamental";		break;
-			}
+			int variant = Utility.RandomMinMax(RANDOM_INSTRUMENT_MIN, RANDOM_INSTRUMENT_MAX);
+			InstrumentVariant instrument = InstrumentVariants[variant];
 
-			switch ( Utility.RandomMinMax( 0, 1 ) ) 
-			{
-				case 0: ItemID = 0x41FD; RelicFlipID1 = 0x41FD; RelicFlipID2 = 0x41FC; Name = sLook + ", " + sDecon + " harp"; break;
-				case 1: ItemID = 0x420C; RelicFlipID1 = 0x420C; RelicFlipID2 = 0x420D; Name = sLook + ", " + sDecon + " lute"; break;
-			}
+			ItemID = instrument.ItemID;
+			RelicFlipID1 = instrument.FlipID1;
+			RelicFlipID2 = instrument.FlipID2;
+
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			int decorativeIndex = Utility.RandomMinMax(RANDOM_DECORATIVE_MIN, RANDOM_DECORATIVE_MAX);
+			string decorative = DECORATIVE_TERMS[decorativeIndex];
+
+			Name = quality + ", " + decorative + " " + instrument.TypeName;
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			if ( !IsChildOf( from.Backpack ) )
-			{
-				from.SendMessage( "This can be identified to determine its value." );
-				from.SendMessage( "This must be in your backpack to flip." );
-			}
-			else
-			{
-				if ( this.ItemID == RelicFlipID1 ){ this.ItemID = RelicFlipID2; } else { this.ItemID = RelicFlipID1; }
-			}
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicInstrument(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to flip instrument or show identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
-            writer.Write( RelicFlipID1 );
-            writer.Write( RelicFlipID2 );
+			if (!IsChildOf(from.Backpack))
+			{
+				from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
+				from.SendMessage(RelicStringConstants.MSG_MUST_BE_IN_PACK);
+			}
+			else
+			{
+				if (ItemID == RelicFlipID1)
+				{
+					ItemID = RelicFlipID2;
+				}
+				else
+				{
+					ItemID = RelicFlipID1;
+				}
+			}
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the instrument relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
-            RelicFlipID1 = reader.ReadInt();
-            RelicFlipID2 = reader.ReadInt();
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicFlipID1);
+			writer.Write(RelicFlipID2);
 		}
+
+		/// <summary>
+		/// Deserializes the instrument relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+			RelicFlipID1 = reader.ReadInt();
+			RelicFlipID2 = reader.ReadInt();
+		}
+
+		#endregion
 	}
 }

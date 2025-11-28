@@ -65,7 +65,7 @@ namespace Server.Engines.Craft
 		/// </summary>
 		private static readonly HashSet<Type> m_TailorNonColorables = new HashSet<Type>
 		{
-			typeof(MinersPouch), typeof(LumberjackPouch),
+			typeof(MinersPouch), typeof(LumberjackPouch), typeof(TailoringPouch),
 			typeof(OrcHelm), typeof(BoneHelm),
 			typeof(BoneGloves), typeof(BoneArms),
 			typeof(BoneLegs), typeof(BoneChest)
@@ -121,9 +121,19 @@ namespace Server.Engines.Craft
 
 		/// <summary>
 		/// Gets the minimum chance of success at minimum skill level.
+		/// Rucksacks have a custom success chance (30% at 100 tailoring, 50% at 120 tailoring).
 		/// </summary>
 		public override double GetChanceAtMin(CraftItem item)
 		{
+			// Check if this is a rucksack (MagicRuckSack or its derived types)
+			if (item.ItemType == typeof(AlchemyPouch) || 
+			    item.ItemType == typeof(MinersPouch) || 
+			    item.ItemType == typeof(LumberjackPouch) ||
+			    item.ItemType == typeof(TailoringPouch))
+			{
+				return TailoringConstants.RUCKSACK_CHANCE_AT_MIN;
+			}
+
 			return TailoringConstants.CHANCE_AT_MIN_SKILL;
 		}
 
@@ -418,14 +428,24 @@ namespace Server.Engines.Craft
 			AddLeatherCraft(typeof(Backpack), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_BACKPACK, 50.0, 60.1, 15);
 			AddLeatherCraft(typeof(RuggedBackpack), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_RUGGED_BACKPACK, 60.0, 70.1, 25);
 
-			index = AddCraft(typeof(MinersPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_MINERS_POUCH, 90.0, 100.1, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, 50, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			// Miners Pouch - Requires 100 Magery, 100-120 Tailoring, 50 GoliathLeather
+			index = AddCraft(typeof(MinersPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_MINERS_POUCH, TailoringConstants.RUCKSACK_TAILORING_MIN, TailoringConstants.RUCKSACK_TAILORING_MAX, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, TailoringConstants.RUCKSACK_GOLIATH_LEATHER_AMOUNT, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
 			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_MINERS_POUCH, TailoringConstants.MAGERY_SKILL_MAX_MINERS_POUCH);
-			AddRes(index, typeof(PlatinumIngot), TailoringStringConstants.RESOURCE_PLATINUM_INGOTS, 8, TailoringConstants.MSG_INSUFFICIENT_RESOURCES);
 			SetUseSubRes2(index, true);
 
-			index = AddCraft(typeof(LumberjackPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_LUMBERJACK_POUCH, 90.0, 100.1, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, 50, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			// Lumberjack Pouch - Requires 100 Magery, 100-120 Tailoring, 50 GoliathLeather
+			index = AddCraft(typeof(LumberjackPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_LUMBERJACK_POUCH, TailoringConstants.RUCKSACK_TAILORING_MIN, TailoringConstants.RUCKSACK_TAILORING_MAX, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, TailoringConstants.RUCKSACK_GOLIATH_LEATHER_AMOUNT, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
 			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_LUMBERJACK_POUCH, TailoringConstants.MAGERY_SKILL_MAX_LUMBERJACK_POUCH);
-			AddRes(index, typeof(RosewoodBoard), TailoringStringConstants.RESOURCE_ROSEWOOD_BOARDS, 8, TailoringConstants.MSG_INSUFFICIENT_RESOURCES);
+			SetUseSubRes2(index, true);
+
+			// Alchemy Pouch - Requires 100 Magery, 100-120 Tailoring, 50 GoliathLeather
+			index = AddCraft(typeof(AlchemyPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_ALCHEMY_POUCH, TailoringConstants.RUCKSACK_TAILORING_MIN, TailoringConstants.RUCKSACK_TAILORING_MAX, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, TailoringConstants.RUCKSACK_GOLIATH_LEATHER_AMOUNT, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_ALCHEMY_POUCH, TailoringConstants.MAGERY_SKILL_MAX_ALCHEMY_POUCH);
+			SetUseSubRes2(index, true);
+
+			// Tailoring Pouch - Requires 100 Magery, 100-120 Tailoring, 50 GoliathLeather
+			index = AddCraft(typeof(TailoringPouch), TailoringStringConstants.GROUP_BAGS, TailoringStringConstants.ITEM_TAILORING_POUCH, TailoringConstants.RUCKSACK_TAILORING_MIN, TailoringConstants.RUCKSACK_TAILORING_MAX, typeof(GoliathLeather), TailoringConstants.MSG_GOLIATH_LEATHER, TailoringConstants.RUCKSACK_GOLIATH_LEATHER_AMOUNT, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSkill(index, SkillName.Magery, TailoringConstants.MAGERY_SKILL_MIN_TAILORING_POUCH, TailoringConstants.MAGERY_SKILL_MAX_TAILORING_POUCH);
 			SetUseSubRes2(index, true);
 		}
 
@@ -454,6 +474,8 @@ namespace Server.Engines.Craft
 			AddSubRes2(typeof(SpinedLeather), TailoringConstants.MSG_LEATHER_SPINED, TailoringConstants.SKILL_REQ_LEATHER_SPINED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
 			AddSubRes2(typeof(HornedLeather), TailoringConstants.MSG_LEATHER_HORNED, TailoringConstants.SKILL_REQ_LEATHER_HORNED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
 			AddSubRes2(typeof(BarbedLeather), TailoringConstants.MSG_LEATHER_BARBED, TailoringConstants.SKILL_REQ_LEATHER_BARBED, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSubRes2(typeof(VolcanicLeather), TailoringConstants.MSG_LEATHER_VOLCANIC, TailoringConstants.SKILL_REQ_LEATHER_VOLCANIC, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
+			AddSubRes2(typeof(GoliathLeather), TailoringStringConstants.RESOURCE_GOLIATH_LEATHER, TailoringConstants.SKILL_REQ_LEATHER_GOLIATH, TailoringConstants.MSG_LEATHER, TailoringConstants.MSG_INSUFFICIENT_GOLIATH_LEATHER);
 		}
 
 		#endregion

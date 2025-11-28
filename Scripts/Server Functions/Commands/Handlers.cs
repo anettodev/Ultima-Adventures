@@ -26,6 +26,9 @@ namespace Server.Commands
 		{
 			CommandSystem.Prefix = "[";
 
+			Register( "Coord", AccessLevel.Counselor, new CommandEventHandler( Coord_OnCommand ) );
+			Register( "SOSInfo", AccessLevel.Counselor, new CommandEventHandler( SOSInfo_OnCommand ) );
+			Register( "SOS", AccessLevel.Counselor, new CommandEventHandler( SOSInfo_OnCommand ) );
 			Register( "Go", AccessLevel.Counselor, new CommandEventHandler( Go_OnCommand ) );
 
 			Register( "DropHolding", AccessLevel.Counselor, new CommandEventHandler( DropHolding_OnCommand ) );
@@ -697,6 +700,112 @@ namespace Server.Commands
 			}
 
 			return ( map != null && map != Map.Internal );
+		}
+
+		[Usage( "Coord [deg min (N | S) deg min (E | W)]" )]
+		[Description( "Converts sextant coordinates to map X, Y, Z coordinates and displays them without teleporting. Format: Coord [lat_deg] [lat_min] [N|S] [long_deg] [long_min] [E|W]" )]
+		[Aliases( "Coordinates", "ConvertCoord" )]
+		private static void Coord_OnCommand( CommandEventArgs e )
+		{
+			Mobile from = e.Mobile;
+
+			if ( e.Length != 6 )
+			{
+				from.SendMessage( "Format: Coord [lat_deg] [lat_min] [N|S] [long_deg] [long_min] [E|W]" );
+				from.SendMessage( "Example: Coord 88 32 N 116 11 W" );
+				return;
+			}
+
+			Map map = from.Map;
+			if ( map == null || map == Map.Internal )
+			{
+				from.SendMessage( "You must be on a valid map to convert coordinates." );
+				return;
+			}
+
+			// Format: Coord [lat_deg] [lat_min] [N|S] [long_deg] [long_min] [E|W]
+			// Parameters: e.GetInt32(0)=lat_deg, e.GetInt32(1)=lat_min, e.GetString(2)=N|S, 
+			//             e.GetInt32(3)=long_deg, e.GetInt32(4)=long_min, e.GetString(5)=E|W
+			Point3D p = Sextant.ReverseLookup( map, e.GetInt32( 3 ), e.GetInt32( 0 ), e.GetInt32( 4 ), e.GetInt32( 1 ), Insensitive.Equals( e.GetString( 5 ), "E" ), Insensitive.Equals( e.GetString( 2 ), "S" ) );
+
+			if ( p != Point3D.Zero )
+			{
+				from.SendMessage( 0x482, "Coordinates: X={0}, Y={1}, Z={2} on {3}", p.X, p.Y, p.Z, map.Name );
+			}
+			else
+			{
+				from.SendMessage( "Sextant reverse lookup failed. Check that the coordinates are valid for this map." );
+			}
+		}
+
+		[Usage( "SOSInfo" )]
+		[Description( "Target an SOS item to display its TargetLocation and TargetMap properties." )]
+		[Aliases( "SOS", "GetSOS" )]
+		private static void SOSInfo_OnCommand( CommandEventArgs e )
+		{
+			Mobile from = e.Mobile;
+			from.SendMessage( "Target an SOS item to view its location information." );
+			from.Target = new SOSInfoTarget();
+		}
+
+		private class SOSInfoTarget : Target
+		{
+			public SOSInfoTarget() : base( -1, false, TargetFlags.None )
+			{
+			}
+
+			protected override void OnTarget( Mobile from, object targeted )
+			{
+				if ( targeted is SOS )
+				{
+					SOS sos = (SOS)targeted;
+
+					Point3D loc = sos.TargetLocation;
+					Map map = sos.TargetMap;
+
+					from.SendMessage( 0x482, "=== SOS Information ===" );
+					from.SendMessage( 0x482, "Target Location: X={0}, Y={1}, Z={2}", loc.X, loc.Y, loc.Z );
+					
+					if ( map != null )
+					{
+						from.SendMessage( 0x482, "Target Map: {0}", map.Name );
+					}
+					else
+					{
+						from.SendMessage( 0x482, "Target Map: (null)" );
+					}
+
+					if ( !string.IsNullOrEmpty( sos.MapWorld ) )
+					{
+						from.SendMessage( 0x482, "World: {0}", sos.MapWorld );
+					}
+
+					if ( !string.IsNullOrEmpty( sos.ShipName ) )
+					{
+						from.SendMessage( 0x482, "Ship Name: {0}", sos.ShipName );
+					}
+
+					from.SendMessage( 0x482, "Level: {0} {1}", sos.Level, sos.IsAncient ? "(Ancient)" : "" );
+
+					// Also display in sextant format if possible
+					if ( map != null && loc != Point3D.Zero )
+					{
+						int xLong = 0, yLat = 0;
+						int xMins = 0, yMins = 0;
+						bool xEast = false, ySouth = false;
+
+						if ( Sextant.Format( loc, map, ref xLong, ref yLat, ref xMins, ref yMins, ref xEast, ref ySouth ) )
+						{
+							string sextantFormat = String.Format( "{0}°{1}'{2}, {3}°{4}'{5}", yLat, yMins, ySouth ? "S" : "N", xLong, xMins, xEast ? "E" : "W" );
+							from.SendMessage( 0x482, "Sextant Format: {0}", sextantFormat );
+						}
+					}
+				}
+				else
+				{
+					from.SendMessage( "That is not an SOS item." );
+				}
+			}
 		}
 
 		[Usage( "Go [name | serial | (x y [z]) | (deg min (N | S) deg min (E | W))]" )]

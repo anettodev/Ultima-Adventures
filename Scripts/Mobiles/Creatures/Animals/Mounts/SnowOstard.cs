@@ -80,6 +80,8 @@ Name = "a greater snow ostard";
 	}
 
 		public override int Meat{ get{ return 3; } }
+		public override int Hides{ get{ return 12; } }
+		public override HideType HideType{ get{ return HideType.Horned; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.FruitsAndVegies | FoodType.GrainsAndHay; } }
 		public override PackInstinct PackInstinct{ get{ return PackInstinct.Ostard; } }
 

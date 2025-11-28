@@ -121,9 +121,9 @@ namespace Server.Items
         {
             base.AddNameProperties(list);
             if (IsAncient)
-                list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Pergaminho Ancestral", "#8be4fc"));
+                list.Add(1070722, FishingStringConstants.FormatPropertyOrange(FishingStringConstants.PROP_ANCIENT_SCROLL));
 
-            list.Add(1049644, ItemNameHue.UnifiedItemProps.SetColor("Para encontrar o naufrágio basta navegar para a localização e usar a vara de pescar.", "#ffe066"));
+            list.Add(1049644, FishingStringConstants.FormatProperty(FishingStringConstants.PROP_SOS_INSTRUCTIONS));
         }
 
         public override void Serialize( GenericWriter writer )
@@ -161,9 +161,8 @@ namespace Server.Items
 			}
 			else
 			{
-                from.SendMessage(55, "O item precisa estar em sua mochila para que você possa ler");
-                //from.SendLocalizedMessage( 1042001 ); // That must be in your pack for you to use it.
-            }
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_MUST_BE_IN_PACK_READ);
+			}
 		}
 
 		private class MessageGump : Gump
@@ -189,6 +188,7 @@ namespace Server.Items
 				AddImage(46, 26, 1247);
 				AddHtml( 102, 58, 284, 202, @"<BODY><BASEFONT Color=#111111><BIG>" + story + "</BIG></BASEFONT></BODY>", (bool)false, (bool)true);
 				AddHtml( 102, 264, 280, 22, @"<BODY><BASEFONT Color=#000000><BIG><b>" + fmt + "</b></BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 102, 290, 280, 22, @"<BODY><BASEFONT Color=#000000>* Utilize um Sextante Mágico.</BASEFONT></BODY>", (bool)false, (bool)false);
 			}
 
 			public override void OnResponse( NetState state, RelayInfo info ) 

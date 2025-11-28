@@ -114,7 +114,7 @@ namespace Server.Mobiles
 		public override int Hides{ get{ return 20; } }
 		public override int Scales{ get{ return 10; } }
 		public override ScaleType ScaleType{ get{ return ScaleType.Black; } }
-		public override HideType HideType{ get{ return HideType.Draconic; } }
+		public override HideType HideType{ get{ return HideType.Barbed; } }
 
         public override int GetAngerSound()
         {

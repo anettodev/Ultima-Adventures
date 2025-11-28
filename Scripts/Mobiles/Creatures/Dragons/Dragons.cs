@@ -47,7 +47,7 @@ namespace Server.Mobiles
 		public override int TreasureMapLevel{ get{ if ( rBody == 61 ){ return 2; } else { return 4; } } }
 		public override int Meat{ get{ if ( rBody == 61 ){ return 9; } else { return 19; } } }
 		public override int Hides{ get{ if ( rBody == 61 ){ return 10; } else { return 20; } } }
-		public override HideType HideType{ get{ return HideType.Draconic; } }
+		public override HideType HideType{ get{ return HideType.Barbed; } }
 		public override int Scales{ get{ if ( rBody == 61 ){ return 3; } else { return 7; } } }
 		public override bool CanAngerOnTame { get { if ( rBody == 61 ){ return false; } else { return true; } } }
 		public override bool CanChew { get{return true;}}

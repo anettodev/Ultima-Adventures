@@ -707,14 +707,15 @@ namespace Server.Items
 				CargoVendor = "Leatherworker or Tanner"; 
 				ItemID = 0x5093;
 				int rare = Utility.RandomMinMax( 1, 2048 );
-				if ( rare <= 1 ){ CargoMaterial = 12; Name = "crate of alien hides"; Hue = MaterialInfo.GetMaterialColor( "alien", "", 0 );					CargoContains = "AlienHides"; 		CargoQty = (int)(CargoValue/14);	}
-				else if ( rare <= 2 ){ CargoMaterial = 11; Name = "crate of dinosaur hides"; Hue = MaterialInfo.GetMaterialColor( "dinosaur", "", 0 );		CargoContains = "DinosaurHides"; 	CargoQty = (int)(CargoValue/14);	}
-				else if ( rare <= 4 ){ CargoMaterial = 10; Name = "crate of hellish hides"; Hue = MaterialInfo.GetMaterialColor( "hellish", "", 0 );		CargoContains = "HellishHides"; 	CargoQty = (int)(CargoValue/14);	}
-				else if ( rare <= 8 ){ CargoMaterial = 9; Name = "crate of draconic hides"; Hue = MaterialInfo.GetMaterialColor( "draconic", "", 0 );		CargoContains = "DraconicHides"; 	CargoQty = (int)(CargoValue/12);	}
-				else if ( rare <= 16 ){ CargoMaterial = 8; Name = "crate of goliath hides"; Hue = MaterialInfo.GetMaterialColor( "goliath", "", 0 );		CargoContains = "GoliathHides"; 	CargoQty = (int)(CargoValue/12);	}
-				else if ( rare <= 32 ){ CargoMaterial = 7; Name = "crate of frozen hides"; Hue = MaterialInfo.GetMaterialColor( "frozen", "", 0 );			CargoContains = "FrozenHides"; 		CargoQty = (int)(CargoValue/10);	}
-				else if ( rare <= 64 ){ CargoMaterial = 6; Name = "crate of volcanic hides"; Hue = MaterialInfo.GetMaterialColor( "volcanic", "", 0 );		CargoContains = "VolcanicHides"; 	CargoQty = (int)(CargoValue/10);	}
-				else if ( rare <= 128 ){ CargoMaterial = 5; Name = "crate of necrotic hides"; Hue = MaterialInfo.GetMaterialColor( "necrotic", "", 0 );		CargoContains = "NecroticHides"; 	CargoQty = (int)(CargoValue/8);		}
+				// TODO: Future implementation - Special hide types disabled
+				//if ( rare <= 1 ){ CargoMaterial = 12; Name = "crate of alien hides"; Hue = MaterialInfo.GetMaterialColor( "alien", "", 0 );					CargoContains = "AlienHides"; 		CargoQty = (int)(CargoValue/14);	}
+				//else if ( rare <= 2 ){ CargoMaterial = 11; Name = "crate of dinosaur hides"; Hue = MaterialInfo.GetMaterialColor( "dinosaur", "", 0 );		CargoContains = "DinosaurHides"; 	CargoQty = (int)(CargoValue/14);	}
+				//else if ( rare <= 4 ){ CargoMaterial = 10; Name = "crate of hellish hides"; Hue = MaterialInfo.GetMaterialColor( "hellish", "", 0 );		CargoContains = "HellishHides"; 	CargoQty = (int)(CargoValue/14);	}
+				//else if ( rare <= 8 ){ CargoMaterial = 9; Name = "crate of draconic hides"; Hue = MaterialInfo.GetMaterialColor( "draconic", "", 0 );		CargoContains = "DraconicHides"; 	CargoQty = (int)(CargoValue/12);	}
+				if ( rare <= 16 ){ CargoMaterial = 8; Name = "crate of goliath hides"; Hue = MaterialInfo.GetMaterialColor( "goliath", "", 0 );		CargoContains = "GoliathHides"; 	CargoQty = (int)(CargoValue/12);	}
+				//else if ( rare <= 32 ){ CargoMaterial = 7; Name = "crate of frozen hides"; Hue = MaterialInfo.GetMaterialColor( "frozen", "", 0 );			CargoContains = "FrozenHides"; 		CargoQty = (int)(CargoValue/10);	}
+				//else if ( rare <= 64 ){ CargoMaterial = 6; Name = "crate of volcanic hides"; Hue = MaterialInfo.GetMaterialColor( "volcanic", "", 0 );		CargoContains = "VolcanicHides"; 	CargoQty = (int)(CargoValue/10);	}
+				//else if ( rare <= 128 ){ CargoMaterial = 5; Name = "crate of necrotic hides"; Hue = MaterialInfo.GetMaterialColor( "necrotic", "", 0 );		CargoContains = "NecroticHides"; 	CargoQty = (int)(CargoValue/8);		}
 				else if ( rare <= 256 ){ CargoMaterial = 4; Name = "crate of serpent hides"; Hue = MaterialInfo.GetMaterialColor( "serpent", "", 0 );		CargoContains = "BarbedHides"; 		CargoQty = (int)(CargoValue/8);		}
 				else if ( rare <= 512 ){ CargoMaterial = 3; Name = "crate of lizard hides"; Hue = MaterialInfo.GetMaterialColor( "lizard", "", 0 );			CargoContains = "HornedHides"; 		CargoQty = (int)(CargoValue/6);		}
 				else if ( rare <= 1024 ){ CargoMaterial = 2; Name = "crate of deep sea hides"; Hue = MaterialInfo.GetMaterialColor( "deep sea", "", 0 );	CargoContains = "SpinedHides"; 		CargoQty = (int)(CargoValue/6);		}

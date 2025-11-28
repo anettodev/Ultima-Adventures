@@ -3,110 +3,125 @@ using Server;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Alchemy Rucksack - Specialized container for alchemical crafting items.
+	/// Provides 50% weight reduction for reagents, bottles, jars, and alchemy tools.
+	/// Allows nesting of other AlchemyPouch containers.
+	/// </summary>
 	[Flipable( 0x1C10, 0x1CC6 )]
-    public class AlchemyPouch : LargeSack
-    {
+	public class AlchemyPouch : MagicRuckSack
+	{
+		#region Constants
+
+		/// <summary>Alchemy-themed color hues (magical, potion-related, mystical)</summary>
+		private static readonly int[] ALCHEMY_HUES = new int[] 
+		{ 
+			0x89F,  // Purple (original)
+			1912,   // Blue/water
+			1956,   // Purple/magic
+			2086,   // Red/fire
+			2114,   // Orange/amber
+			2262    // Cyan/blue
+		};
+
+		#endregion
+
+		#region Abstract Property Implementations
+
+		/// <summary>
+		/// Array of hue values specific to alchemy (magical, potion-related colors).
+		/// </summary>
+		protected override int[] SkillHues { get { return ALCHEMY_HUES; } }
+
+		/// <summary>
+		/// Display name for alchemy rucksack (PT-BR).
+		/// </summary>
+		protected override string ItemName { get { return "alchemy rucksack"; } }
+
+		/// <summary>
+		/// Tooltip description explaining the weight reduction benefit (PT-BR).
+		/// </summary>
+		protected override string TooltipDescription { get { return "Esta bolsa reduz o peso dos itens alquímicos pela metade."; } }
+
+		/// <summary>
+		/// Error message when invalid item type is attempted (PT-BR).
+		/// </summary>
+		protected override string RejectionMessage { get { return "Esta bolsa serve apenas para guardar itens alquímicos."; } }
+
+		/// <summary>
+		/// Maximum number of different item types (standardized to 12).
+		/// </summary>
+		protected override int MaxItemsOverride { get { return DEFAULT_MAX_ITEMS; } }
+
+		/// <summary>
+		/// Alchemy rucksacks allow nesting of other AlchemyPouch containers.
+		/// </summary>
+		protected override bool CanNestContainers { get { return true; } }
+
+		/// <summary>
+		/// Type of container that can be nested (AlchemyPouch).
+		/// </summary>
+		protected override Type NestableContainerType { get { return typeof( AlchemyPouch ); } }
+
+		#endregion
+
+		#region Constructors
+
 		[Constructable]
 		public AlchemyPouch() : base()
 		{
-			Weight = 1.0;
-			MaxItems = 50;
-			Name = "alchemy rucksack";
-			Hue = 0x89F;
 		}
-
-		public override bool OnDragDropInto( Mobile from, Item dropped, Point3D p )
-        {
-			if ( dropped is Container && !(dropped is AlchemyPouch) )
-			{
-                from.SendMessage("You can only use another alchemy rucksack within this sack.");
-                return false;
-			}
-            else if ( Server.Misc.MaterialInfo.IsReagent( dropped ) || 
-						dropped is GodBrewing || 
-						dropped is Bottle || 
-						dropped is Jar || 
-						dropped is MortarPestle || 
-						dropped is SurgeonsKnife || 
-						dropped is GardenTool || 
-						dropped is AlchemyPouch )
-			{
-				return base.OnDragDropInto(from, dropped, p);
-			}
-			else
-            {
-                from.SendMessage("This rucksack is for small alchemical crafting items.");
-                return false;
-            }
-
-            return base.OnDragDropInto(from, dropped, p);
-        }
-
-		public override bool OnDragDrop( Mobile from, Item dropped )
-        {
-			if ( dropped is Container && !(dropped is AlchemyPouch) )
-			{
-                from.SendMessage("You can only use another alchemy rucksack within this sack.");
-                return false;
-			}
-            else if ( Server.Misc.MaterialInfo.IsReagent( dropped ) || dropped is GodBrewing || dropped is Bottle || dropped is Jar || dropped is MortarPestle || dropped is SurgeonsKnife || dropped is GardenTool || dropped is AlchemyPouch )
-			{
-				return base.OnDragDrop(from, dropped);
-			}
-			else
-            {
-                from.SendMessage("This rucksack is for small alchemical crafting items.");
-                return false;
-            }
-
-            return base.OnDragDrop(from, dropped);
-        }
 
 		public AlchemyPouch( Serial serial ) : base( serial )
 		{
 		}
 
+		#endregion
+
+		#region Abstract Method Implementations
+
+		/// <summary>
+		/// Validates if an item can be stored in the alchemy rucksack.
+		/// Accepts: reagents, bottles, jars, alchemy tools, GodBrewing items, and other AlchemyPouch.
+		/// </summary>
+		/// <param name="item">The item to validate</param>
+		/// <returns>True if the item is valid for alchemy rucksack</returns>
+		protected override bool IsValidItem( Item item )
+		{
+			return Server.Misc.MaterialInfo.IsReagent( item ) || 
+				   item is GodBrewing || 
+				   item is Bottle || 
+				   item is Jar || 
+				   item is MortarPestle || 
+				   item is SurgeonsKnife || 
+				   item is GardenTool || 
+				   item is AlchemyPouch;
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the alchemy pouch for saving to the world state.
+		/// </summary>
+		/// <param name="writer">The generic writer to write to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 			writer.Write( (int) 0 ); // version
 		}
 
+		/// <summary>
+		/// Deserializes the alchemy pouch from the world state.
+		/// </summary>
+		/// <param name="reader">The generic reader to read from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
-			Weight = 1.0;
-			MaxItems = 50;
-			Name = "alchemy rucksack";
 		}
 
-		public override int GetTotal(TotalType type)
-        {
-			if (type != TotalType.Weight)
-				return base.GetTotal(type);
-			else
-			{
-				return (int)(TotalItemWeights() * (0.05));
-			}
-        }
-
-		public override void UpdateTotal(Item sender, TotalType type, int delta)
-        {
-            if (type != TotalType.Weight)
-                base.UpdateTotal(sender, type, delta);
-            else
-                base.UpdateTotal(sender, type, (int)(delta * (0.05)));
-        }
-
-		private double TotalItemWeights()
-        {
-			double weight = 0.0;
-
-			foreach (Item item in Items)
-				weight += (item.Weight * (double)(item.Amount));
-
-			return weight;
-        }
+		#endregion
 	}
 }

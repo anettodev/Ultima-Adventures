@@ -129,6 +129,9 @@ namespace Server.Engines.Craft
 		/// <summary>Barbed Leather</summary>
 		public const string MSG_LEATHER_BARBED = TailoringStringConstants.LEATHER_BARBED;
 
+		/// <summary>Volcanic Leather</summary>
+		public const string MSG_LEATHER_VOLCANIC = TailoringStringConstants.LEATHER_VOLCANIC;
+
 		#endregion
 
 		#region Item Names (PT-BR) - Hats
@@ -351,6 +354,12 @@ namespace Server.Engines.Craft
 		/// <summary>Skill required for barbed leather</summary>
 		public const double SKILL_REQ_LEATHER_BARBED = 80.0;
 
+		/// <summary>Skill required for volcanic leather</summary>
+		public const double SKILL_REQ_LEATHER_VOLCANIC = 82.0;
+
+		/// <summary>Skill required for goliath leather</summary>
+		public const double SKILL_REQ_LEATHER_GOLIATH = 85.0;
+
 		#endregion
 
 		#region Magery Skill Requirements
@@ -368,16 +377,47 @@ namespace Server.Engines.Craft
 		public const double MAGERY_SKILL_MAX_WITCH_HAT = 100.0;
 
 		/// <summary>Magery skill minimum for miners pouch</summary>
-		public const double MAGERY_SKILL_MIN_MINERS_POUCH = 90.0;
+		public const double MAGERY_SKILL_MIN_MINERS_POUCH = 100.0;
 
 		/// <summary>Magery skill maximum for miners pouch</summary>
 		public const double MAGERY_SKILL_MAX_MINERS_POUCH = 100.0;
 
 		/// <summary>Magery skill minimum for lumberjack pouch</summary>
-		public const double MAGERY_SKILL_MIN_LUMBERJACK_POUCH = 90.0;
+		public const double MAGERY_SKILL_MIN_LUMBERJACK_POUCH = 100.0;
 
 		/// <summary>Magery skill maximum for lumberjack pouch</summary>
 		public const double MAGERY_SKILL_MAX_LUMBERJACK_POUCH = 100.0;
+
+		/// <summary>Magery skill minimum for alchemy pouch</summary>
+		public const double MAGERY_SKILL_MIN_ALCHEMY_POUCH = 100.0;
+
+		/// <summary>Magery skill maximum for alchemy pouch</summary>
+		public const double MAGERY_SKILL_MAX_ALCHEMY_POUCH = 100.0;
+
+		/// <summary>Magery skill minimum for tailoring pouch</summary>
+		public const double MAGERY_SKILL_MIN_TAILORING_POUCH = 100.0;
+
+		/// <summary>Magery skill maximum for tailoring pouch</summary>
+		public const double MAGERY_SKILL_MAX_TAILORING_POUCH = 100.0;
+
+		#endregion
+
+		#region Rucksack Crafting Success Chances
+
+		/// <summary>Minimum success chance for rucksacks at 100 tailoring (30%)</summary>
+		public const double RUCKSACK_CHANCE_AT_MIN = 0.3;
+
+		/// <summary>Maximum success chance for rucksacks at 120 tailoring (50%)</summary>
+		public const double RUCKSACK_CHANCE_AT_MAX = 0.5;
+
+		/// <summary>Tailoring skill minimum for rucksacks</summary>
+		public const double RUCKSACK_TAILORING_MIN = 100.0;
+
+		/// <summary>Tailoring skill maximum for rucksacks</summary>
+		public const double RUCKSACK_TAILORING_MAX = 120.0;
+
+		/// <summary>Goliath leather amount required for rucksacks</summary>
+		public const int RUCKSACK_GOLIATH_LEATHER_AMOUNT = 50;
 
 		#endregion
 	}

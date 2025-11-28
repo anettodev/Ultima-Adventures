@@ -3,236 +3,420 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicStatue : Item
+	/// <summary>
+	/// Statue relic item that can be flipped between two ItemID states.
+	/// Supports 38 different statue types with material variations and special weights/values.
+	/// </summary>
+	public class DDRelicStatue : DDRelicBase
 	{
-		public int RelicGoldValue;
+		#region Constants
+
+		private const int BASE_ITEM_ID = 0x1224;
+		private const int RANDOM_MATERIAL_TYPE_MIN = 0;
+		private const int RANDOM_MATERIAL_TYPE_MAX = 7;
+		private const int RANDOM_MATERIAL_SPECIAL_MIN = 0;
+		private const int RANDOM_MATERIAL_SPECIAL_MAX = 50;
+		private const int RANDOM_STATUE_TYPE_MIN = 0;
+		private const int RANDOM_STATUE_TYPE_MAX = 37;
+		private const int WEIGHT_STANDARD = 60;
+		private const int WEIGHT_HEAVY = 100;
+		private const int WEIGHT_VERY_HEAVY = 150;
+		private const int VALUE_MULTIPLIER = 2;
+		private const int VALUE_RANGE_MIN_1 = 100;
+		private const int VALUE_RANGE_MAX_1 = 400;
+		private const int VALUE_RANGE_MIN_2 = 150;
+		private const int VALUE_RANGE_MAX_2 = 500;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>First ItemID for flipping</summary>
 		public int RelicFlipID1;
+
+		/// <summary>Second ItemID for flipping</summary>
 		public int RelicFlipID2;
+
+		/// <summary>Description text for the statue material</summary>
 		public string RelicDescription;
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		/// <summary>
+		/// Structure for statue variant data
+		/// </summary>
+		private struct StatueVariant
+		{
+			public int ItemID;
+			public int FlipID1;
+			public int FlipID2;
+			public string NameSuffix;
+			public int Weight;
+			public int ValueMin;
+			public int ValueMax;
+			public bool HasSpecialMaterial;
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID1 { get { return RelicFlipID1; } set { RelicFlipID1 = value; InvalidateProperties(); } }
+			public StatueVariant(int itemID, int flipID1, int flipID2, string nameSuffix, int weight, int valueMin, int valueMax, bool hasSpecialMaterial)
+			{
+				this.ItemID = itemID;
+				this.FlipID1 = flipID1;
+				this.FlipID2 = flipID2;
+				this.NameSuffix = nameSuffix;
+				this.Weight = weight;
+				this.ValueMin = valueMin;
+				this.ValueMax = valueMax;
+				this.HasSpecialMaterial = hasSpecialMaterial;
+			}
+		}
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID2 { get { return RelicFlipID2; } set { RelicFlipID2 = value; InvalidateProperties(); } }
+		/// <summary>
+		/// Array of statue variants (38 total)
+		/// </summary>
+		private static readonly StatueVariant[] StatueVariants = new StatueVariant[]
+		{
+			new StatueVariant(0x1224, 0x1224, 0x139A, "estátua de uma mulher", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1225, 0x1225, 0x1225, "estátua de um homem", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1226, 0x1226, 0x139B, "estátua de um anjo", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1226, 0x1226, 0x139B, "estátua de um demônio", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1227, 0x1227, 0x139C, "estátua de um homem", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1228, 0x1228, 0x139D, "estátua de um pássaro", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x1228, 0x1228, 0x139D, "estátua de um pégaso", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x12CA, 0x12CA, 0x12CB, "busto de um homem", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x207C, 0x207C, 0x207C, "estátua de um anjo", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x42BB, 0x42BB, 0x42BB, "estátua de uma gárgula", WEIGHT_HEAVY, VALUE_RANGE_MIN_1, VALUE_RANGE_MAX_1, false),
+			new StatueVariant(0x42BB, 0x42BB, 0x42BB, "estátua de um demônio", WEIGHT_HEAVY, VALUE_RANGE_MIN_1, VALUE_RANGE_MAX_1, false),
+			new StatueVariant(0x42C2, 0x42C2, 0x42C2, "estátua de uma criatura estranha", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x40BC, 0x40BC, 0x40BC, "estátua de uma medusa", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x42C5, 0x42C5, 0x42C5, "estátua de um demônio", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x42BC, 0x42BC, 0x42BC, "busto de um demônio", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x48A8, 0x48A8, 0x48A9, "estátua de cabeça de dragão", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x4578, 0x4578, 0x4579, "estátua de um cavalo-marinho", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x457A, 0x457A, 0x457B, "estátua de uma sereia", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x457C, 0x457C, 0x457D, "estátua de um grifo", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x42C0, 0x42C0, 0x42C1, "estátua de um demônio", WEIGHT_HEAVY, VALUE_RANGE_MIN_1, VALUE_RANGE_MAX_1, false),
+			new StatueVariant(0x3F19, 0x3F19, 0x3F1A, "estátua de um deus", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x3F1B, 0x3F1B, 0x3F1C, "estátua de um cavaleiro", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x4688, 0x4688, 0x4689, "estátua de um gato", WEIGHT_STANDARD, 0, 0, true),
+			new StatueVariant(0x3142, 0x3143, 0x3142, "estátua de um leão", WEIGHT_HEAVY, VALUE_RANGE_MIN_1, VALUE_RANGE_MAX_1, false),
+			new StatueVariant(0x3182, 0x3182, 0x3182, "estátua de um leão", WEIGHT_HEAVY, VALUE_RANGE_MIN_1, VALUE_RANGE_MAX_1, false),
+			new StatueVariant(0x31C1, 0x31C1, 0x31C2, "estátua de um pégaso", WEIGHT_VERY_HEAVY, VALUE_RANGE_MIN_2, VALUE_RANGE_MAX_2, false),
+			new StatueVariant(0x31C7, 0x31C8, 0x31C7, "estátua de um cavaleiro", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31CB, 0x31CB, 0x31CC, "estátua de um explorador", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31CD, 0x31CD, 0x31CE, "estátua de um mago", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31CF, 0x31CF, 0x31D0, "estátua de um lanceiro", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31D1, 0x31D1, 0x31D2, "estátua de um sacerdote", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31D3, 0x31D3, 0x31D4, "estátua de um rei", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31FC, 0x31FC, 0x31FD, "estátua de um deus", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x31FE, 0x31FE, 0x31FF, "estátua de um guarda", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x320B, 0x320B, 0x3219, "estátua de um elfo", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x320C, 0x320C, 0x3212, "estátua de um elfo", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x321F, 0x321F, 0x3225, "estátua de um elfo", WEIGHT_STANDARD, 0, 0, false),
+			new StatueVariant(0x322B, 0x322B, 0x3235, "estátua de um elfo", WEIGHT_STANDARD, 0, 0, false)
+		};
 
-		[CommandProperty(AccessLevel.Owner)]
-		public string Relic_Describe { get { return RelicDescription; } set { RelicDescription = value; InvalidateProperties(); } }
+		/// <summary>Material descriptions</summary>
+		private static readonly string[] MATERIAL_DESCRIPTIONS = new[]
+		{
+			"Feito de pedra colorida",
+			"Feito de pedra colorida",
+			"Feito de pedra colorida",
+			"Feito de pedra colorida",
+			"Feito de pedra colorida",
+			"Feito de pedra colorida",
+			"Feito de pedra",
+			"Feito de pedra"
+		};
 
+		/// <summary>Special material descriptions with hues</summary>
+		private struct MaterialData
+		{
+			public string Description;
+			public int Hue;
+			public bool MultiplyValue;
+			public bool MultiplyWeight;
+
+			public MaterialData(string description, int hue, bool multiplyValue, bool multiplyWeight)
+			{
+				this.Description = description;
+				this.Hue = hue;
+				this.MultiplyValue = multiplyValue;
+				this.MultiplyWeight = multiplyWeight;
+			}
+		}
+
+		/// <summary>Special material data</summary>
+		private static readonly MaterialData[] SPECIAL_MATERIALS = new MaterialData[]
+		{
+			new MaterialData("Feito de bronze", 0xB9A, false, false),
+			new MaterialData("Feito de jade", 0xB93, false, false),
+			new MaterialData("Feito de granito", 0xB8E, false, false),
+			new MaterialData("Feito de mármore", 0xB8B, false, false),
+			new MaterialData("Feito de cobre", 0x972, false, false),
+			new MaterialData("Feito de gelo", 0x480, false, false),
+			new MaterialData("Feito de prata", 0x835, false, false),
+			new MaterialData("Feito de ametista", 0x492, false, false),
+			new MaterialData("Feito de esmeralda", 0x5B4, false, false),
+			new MaterialData("", 0, false, false), // Case 9 - skip
+			new MaterialData("Feito de granada", 0x48F, false, false),
+			new MaterialData("Feito de ônix", 0x497, false, false),
+			new MaterialData("Feito de quartzo", 0x4AC, false, false),
+			new MaterialData("Feito de rubi", 0x5B5, false, false),
+			new MaterialData("Feito de safira", 0x5B6, false, false),
+			new MaterialData("Feito de espinélio", 0x48B, false, false),
+			new MaterialData("Feito de rubi estrela", 0x48E, false, false),
+			new MaterialData("Feito de topázio", 0x488, false, false),
+			new MaterialData("Feito de marfim", 0x47E, false, false),
+			new MaterialData("Feito de ouro maciço", 0x4AC, true, true)
+		};
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets the first flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID1
+		{
+			get { return RelicFlipID1; }
+			set { RelicFlipID1 = value; InvalidateProperties(); }
+		}
+
+		/// <summary>
+		/// Gets or sets the second flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID2
+		{
+			get { return RelicFlipID2; }
+			set { RelicFlipID2 = value; InvalidateProperties(); }
+		}
+
+		/// <summary>
+		/// Gets or sets the statue description
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public string Relic_Describe
+		{
+			get { return RelicDescription; }
+			set { RelicDescription = value; InvalidateProperties(); }
+		}
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new statue relic with random type and material
+		/// </summary>
 		[Constructable]
-		public DDRelicStatue() : base( 0x1224 )
+		public DDRelicStatue() : base(BASE_ITEM_ID)
 		{
-			Weight = 60;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			Weight = WEIGHT_STANDARD;
 
-			string sMade = "Made of colored stone";
-			switch ( Utility.RandomMinMax( 0, 7 ) ) 
-			{
-				case 0: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 1: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 2: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 3: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 4: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 5: Hue = Server.Misc.RandomThings.GetRandomColor(0); break;
-				case 6: Hue = 0; sMade = "Made of stone"; break;
-				case 7: Hue = 0; sMade = "Made of stone"; break;
-			}
+			string materialDescription = GetMaterialDescription();
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm();
+
+			int statueType = Utility.RandomMinMax(RANDOM_STATUE_TYPE_MIN, RANDOM_STATUE_TYPE_MAX);
+			StatueVariant statue = StatueVariants[statueType];
+
+			ItemID = statue.ItemID;
+			RelicFlipID1 = statue.FlipID1;
+			RelicFlipID2 = statue.FlipID2;
+			Weight = statue.Weight;
+
+			// Apply special material for cat statue (case 22)
+			if (statue.HasSpecialMaterial)
 			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-			
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 2 ) )
-			{
-				case 0:	sDecon = "decorative";		break;
-				case 1:	sDecon = "ceremonial";		break;
-				case 2:	sDecon = "ornamental";		break;
+				materialDescription = "Feito de ônix";
+				Hue = 0;
 			}
 
-			switch ( Utility.RandomMinMax( 0, 50 ) )
-			{
-				case 0:		sMade = "Made of bronze";		Hue = 0xB9A;	break;
-				case 1:		sMade = "Made of jade";			Hue = 0xB93;	break;
-				case 2:		sMade = "Made of granite";		Hue = 0xB8E;	break;
-				case 3:		sMade = "Made of marble";		Hue = 0xB8B;	break;
-				case 4:		sMade = "Made of copper";		Hue = 0x972;	break;
-				case 5:		sMade = "Made of ice";			Hue = 0x480;	break;
-				case 6:		sMade = "Made of silver";		Hue = 0x835;	break;
-				case 7:		sMade = "Made of amethyst";		Hue = 0x492;	break;
-				case 8:		sMade = "Made of emerald";		Hue = 0x5B4;	break;
-				case 10:	sMade = "Made of garnet";		Hue = 0x48F;	break;
-				case 11:	sMade = "Made of onyx";			Hue = 0x497;	break;
-				case 12:	sMade = "Made of quartz";		Hue = 0x4AC;	break;
-				case 13:	sMade = "Made of ruby";			Hue = 0x5B5;	break;
-				case 14:	sMade = "Made of sapphire";		Hue = 0x5B6;	break;
-				case 15:	sMade = "Made of spinel";		Hue = 0x48B;	break;
-				case 16:	sMade = "Made of star ruby";	Hue = 0x48E;	break;
-				case 17:	sMade = "Made of topaz";		Hue = 0x488;	break;
-				case 18:	sMade = "Made of ivory";		Hue = 0x47E;	break;
-				case 19:	sMade = "Made of solid gold";	Hue = 0x4AC;	RelicGoldValue = RelicGoldValue * 2; Weight = Weight * 2; break;
-			}
-			RelicDescription = sMade;
+			RelicDescription = materialDescription;
 
-			switch ( Utility.RandomMinMax( 0, 37 ) ) 
+			// Apply special value/weight for certain statues
+			if (statue.ValueMin > 0 && statue.ValueMax > 0)
 			{
-				case 0: ItemID = 0x1224; RelicFlipID1 = 0x1224; RelicFlipID2 = 0x139A; Name = sLook + ", " + sDecon + " statue of a woman"; break;
-				case 1: ItemID = 0x1225; RelicFlipID1 = 0x1225; RelicFlipID2 = 0x1225; Name = sLook + ", " + sDecon + " statue of a man"; break;
-				case 2: ItemID = 0x1226; RelicFlipID1 = 0x1226; RelicFlipID2 = 0x139B; Name = sLook + ", " + sDecon + " statue of an angel"; break;
-				case 3: ItemID = 0x1226; RelicFlipID1 = 0x1226; RelicFlipID2 = 0x139B; Name = sLook + ", " + sDecon + " statue of a demon"; break;
-				case 4: ItemID = 0x1227; RelicFlipID1 = 0x1227; RelicFlipID2 = 0x139C; Name = sLook + ", " + sDecon + " statue of a man"; break;
-				case 5: ItemID = 0x1228; RelicFlipID1 = 0x1228; RelicFlipID2 = 0x139D; Name = sLook + ", " + sDecon + " statue of a bird"; break;
-				case 6: ItemID = 0x1228; RelicFlipID1 = 0x1228; RelicFlipID2 = 0x139D; Name = sLook + ", " + sDecon + " statue of a pegasus"; break;
-				case 7: ItemID = 0x12CA; RelicFlipID1 = 0x12CA; RelicFlipID2 = 0x12CB; Name = sLook + ", " + sDecon + " bust of a man"; break;
-				case 8: ItemID = 0x207C; RelicFlipID1 = 0x207C; RelicFlipID2 = 0x207C; Name = sLook + ", " + sDecon + " statue of an angel"; break;
-				case 9: ItemID = 0x42BB; RelicFlipID1 = 0x42BB; RelicFlipID2 = 0x42BB; Name = sLook + ", " + sDecon + " statue of a gargoyle"; Weight = 100; RelicGoldValue = Utility.RandomMinMax( 100, 400 ); break;
-				case 10: ItemID = 0x42BB; RelicFlipID1 = 0x42BB; RelicFlipID2 = 0x42BB; Name = sLook + ", " + sDecon + " statue of a demon"; Weight = 100; RelicGoldValue = Utility.RandomMinMax( 100, 400 ); break;
-				case 11: ItemID = 0x42C2; RelicFlipID1 = 0x42C2; RelicFlipID2 = 0x42C2; Name = sLook + ", " + sDecon + " statue of an odd creature"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 12: ItemID = 0x40BC; RelicFlipID1 = 0x40BC; RelicFlipID2 = 0x40BC; Name = sLook + ", " + sDecon + " statue of a medusa"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 13: ItemID = 0x42C5; RelicFlipID1 = 0x42C5; RelicFlipID2 = 0x42C5; Name = sLook + ", " + sDecon + " statue of a demon"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 14: ItemID = 0x42BC; RelicFlipID1 = 0x42BC; RelicFlipID2 = 0x42BC; Name = sLook + ", " + sDecon + " bust of a demon"; break;
-				case 15: ItemID = 0x48A8; RelicFlipID1 = 0x48A8; RelicFlipID2 = 0x48A9; Name = sLook + ", " + sDecon + " statue of dragon head"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 16: ItemID = 0x4578; RelicFlipID1 = 0x4578; RelicFlipID2 = 0x4579; Name = sLook + ", " + sDecon + " statue of a sea horse"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 17: ItemID = 0x457A; RelicFlipID1 = 0x457A; RelicFlipID2 = 0x457B; Name = sLook + ", " + sDecon + " statue of a mermaid"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 18: ItemID = 0x457C; RelicFlipID1 = 0x457C; RelicFlipID2 = 0x457D; Name = sLook + ", " + sDecon + " statue of a gryphon"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 19: ItemID = 0x42C0; RelicFlipID1 = 0x42C0; RelicFlipID2 = 0x42C1; Name = sLook + ", " + sDecon + " statue of a demon"; Weight = 100; RelicGoldValue = Utility.RandomMinMax( 100, 400 ); break;
-				case 20: ItemID = 0x3F19; RelicFlipID1 = 0x3F19; RelicFlipID2 = 0x3F1A; Name = sLook + ", " + sDecon + " statue of a god"; break;
-				case 21: ItemID = 0x3F1B; RelicFlipID1 = 0x3F1B; RelicFlipID2 = 0x3F1C; Name = sLook + ", " + sDecon + " statue of a knight"; break;
-				case 22: ItemID = 0x4688; RelicFlipID1 = 0x4688; RelicFlipID2 = 0x4689; Name = sLook + ", " + sDecon + " statue of a cat"; sMade = "Made of onyx"; Hue = 0; RelicDescription = sMade; break;
-				case 23: ItemID = 0x3142; RelicFlipID1 = 0x3143; RelicFlipID2 = 0x3142; Name = sLook + ", " + sDecon + " statue of a lion"; Weight = 100; RelicGoldValue = Utility.RandomMinMax( 100, 400 ); break;
-				case 24: ItemID = 0x3182; RelicFlipID1 = 0x3182; RelicFlipID2 = 0x3182; Name = sLook + ", " + sDecon + " statue of a lion"; Weight = 100; RelicGoldValue = Utility.RandomMinMax( 100, 400 ); break;
-				case 25: ItemID = 0x31C1; RelicFlipID1 = 0x31C1; RelicFlipID2 = 0x31C2; Name = sLook + ", " + sDecon + " statue of a pegasus"; Weight = 150; RelicGoldValue = Utility.RandomMinMax( 150, 500 ); break;
-				case 26: ItemID = 0x31C7; RelicFlipID1 = 0x31C8; RelicFlipID2 = 0x31C7; Name = sLook + ", " + sDecon + " statue of a knight"; break;
-				case 27: ItemID = 0x31CB; RelicFlipID1 = 0x31CB; RelicFlipID2 = 0x31CC; Name = sLook + ", " + sDecon + " statue of an explorer"; break;
-				case 28: ItemID = 0x31CD; RelicFlipID1 = 0x31CD; RelicFlipID2 = 0x31CE; Name = sLook + ", " + sDecon + " statue of a wizard"; break;
-				case 29: ItemID = 0x31CF; RelicFlipID1 = 0x31CF; RelicFlipID2 = 0x31D0; Name = sLook + ", " + sDecon + " statue of a spearman"; break;
-				case 30: ItemID = 0x31D1; RelicFlipID1 = 0x31D1; RelicFlipID2 = 0x31D2; Name = sLook + ", " + sDecon + " statue of a priest"; break;
-				case 31: ItemID = 0x31D3; RelicFlipID1 = 0x31D3; RelicFlipID2 = 0x31D4; Name = sLook + ", " + sDecon + " statue of a king"; break;
-				case 32: ItemID = 0x31FC; RelicFlipID1 = 0x31FC; RelicFlipID2 = 0x31FD; Name = sLook + ", " + sDecon + " statue of a god"; break;
-				case 33: ItemID = 0x31FE; RelicFlipID1 = 0x31FE; RelicFlipID2 = 0x31FF; Name = sLook + ", " + sDecon + " statue of a guard"; break;
-				case 34: ItemID = 0x320B; RelicFlipID1 = 0x320B; RelicFlipID2 = 0x3219; Name = sLook + ", " + sDecon + " statue of an elf"; break;
-				case 35: ItemID = 0x320C; RelicFlipID1 = 0x320C; RelicFlipID2 = 0x3212; Name = sLook + ", " + sDecon + " statue of an elf"; break;
-				case 36: ItemID = 0x321F; RelicFlipID1 = 0x321F; RelicFlipID2 = 0x3225; Name = sLook + ", " + sDecon + " statue of an elf"; break;
-				case 37: ItemID = 0x322B; RelicFlipID1 = 0x322B; RelicFlipID2 = 0x3235; Name = sLook + ", " + sDecon + " statue of an elf"; break;
+				RelicGoldValue = Utility.RandomMinMax(statue.ValueMin, statue.ValueMax);
 			}
+
+			Name = quality + ", " + decorative + " " + statue.NameSuffix;
 		}
 
-        public override void AddNameProperties(ObjectPropertyList list)
-		{
-            base.AddNameProperties(list);
-			list.Add( 1049644, RelicDescription);
-        }
-
-		public override void OnDoubleClick( Mobile from )
-		{
-			if ( !IsChildOf( from.Backpack ) )
-			{
-				from.SendMessage( "This can be identified to determine its value." );
-				from.SendMessage( "This must be in your backpack to flip." );
-			}
-			else
-			{
-				if ( this.ItemID == RelicFlipID1 ){ this.ItemID = RelicFlipID2; } else { this.ItemID = RelicFlipID1; }
-			}
-		}
-
-		public static void MakeOriental( Item item )
-		{
-			DDRelicStatue relic = (DDRelicStatue)item;
-
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-			
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 5 ) )
-			{
-				case 0:	sDecon = "decorative";		break;
-				case 1:	sDecon = "ceremonial";		break;
-				case 2:	sDecon = "ornamental";		break;
-				case 3:	sDecon = Server.Misc.RandomThings.GetRandomOrientalNation();		break;
-				case 4:	sDecon = Server.Misc.RandomThings.GetRandomOrientalNation();		break;
-				case 5:	sDecon = Server.Misc.RandomThings.GetRandomOrientalNation();		break;
-			}
-
-			string OwnerName = Server.Misc.RandomThings.GetRandomOrientalName();
-			string OwnerTitle = Server.LootPackEntry.MagicItemAdj( "end", true, false, item.ItemID );
-
-			switch ( Utility.RandomMinMax( 0, 4 ) ) 
-			{
-				case 0: relic.ItemID = 0x1947; relic.RelicFlipID1 = 0x1947; relic.RelicFlipID2 = 0x1948; relic.Name = sLook + ", " + sDecon + " statue of Budah"; break;
-				case 1: relic.ItemID = 0x2419; relic.RelicFlipID1 = 0x2419; relic.RelicFlipID2 = 0x2419; relic.Name = sLook + ", " + sDecon + " sculpture"; break;
-				case 2: relic.ItemID = 0x241A; relic.RelicFlipID1 = 0x241A; relic.RelicFlipID2 = 0x241A; relic.Name = sLook + ", " + sDecon + " sculpture"; break;
-				case 3: relic.ItemID = 0x241B; relic.RelicFlipID1 = 0x241B; relic.RelicFlipID2 = 0x241B; relic.Name = sLook + ", " + sDecon + " sculpture"; break;
-				case 4: relic.ItemID = 0x2848; relic.RelicFlipID1 = 0x2848; relic.RelicFlipID2 = 0x2849; relic.Name = sLook + " sculpture of " + OwnerName + " " + OwnerTitle; break;
-			}
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicStatue(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Property Display
+
+		/// <summary>
+		/// Adds description information to the item properties
+		/// </summary>
+		public override void AddNameProperties(ObjectPropertyList list)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
-            writer.Write( RelicFlipID1 );
-            writer.Write( RelicFlipID2 );
-            writer.Write( RelicDescription );
+			base.AddNameProperties(list);
+			list.Add(1049644, RelicDescription);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to flip statue or show identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
-            RelicFlipID1 = reader.ReadInt();
-            RelicFlipID2 = reader.ReadInt();
-            RelicDescription = reader.ReadString();
+			if (!IsChildOf(from.Backpack))
+			{
+				from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
+				from.SendMessage(RelicStringConstants.MSG_MUST_BE_IN_PACK);
+			}
+			else
+			{
+				if (ItemID == RelicFlipID1)
+				{
+					ItemID = RelicFlipID2;
+				}
+				else
+				{
+					ItemID = RelicFlipID1;
+				}
+			}
 		}
+
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Gets a random material description and applies hue
+		/// </summary>
+		/// <returns>Material description string</returns>
+		private string GetMaterialDescription()
+		{
+			int materialType = Utility.RandomMinMax(RANDOM_MATERIAL_TYPE_MIN, RANDOM_MATERIAL_TYPE_MAX);
+			string material = MATERIAL_DESCRIPTIONS[materialType];
+
+			if (materialType < 6)
+			{
+				Hue = Server.Misc.RandomThings.GetRandomColor(0);
+			}
+			else
+			{
+				Hue = 0;
+			}
+
+			// Check for special materials (0-50 range)
+			int specialMaterial = Utility.RandomMinMax(RANDOM_MATERIAL_SPECIAL_MIN, RANDOM_MATERIAL_SPECIAL_MAX);
+			if (specialMaterial < SPECIAL_MATERIALS.Length && !string.IsNullOrEmpty(SPECIAL_MATERIALS[specialMaterial].Description))
+			{
+				MaterialData materialData = SPECIAL_MATERIALS[specialMaterial];
+				material = materialData.Description;
+				Hue = materialData.Hue;
+
+				if (materialData.MultiplyValue)
+				{
+					RelicGoldValue = RelicGoldValue * VALUE_MULTIPLIER;
+				}
+
+				if (materialData.MultiplyWeight)
+				{
+					Weight = Weight * VALUE_MULTIPLIER;
+				}
+			}
+
+			return material;
+		}
+
+		/// <summary>
+		/// Converts a statue relic to oriental style with special naming
+		/// </summary>
+		/// <param name="item">The statue item to convert</param>
+		public static void MakeOriental(Item item)
+		{
+			DDRelicStatue relic = item as DDRelicStatue;
+			if (relic == null)
+			{
+				return;
+			}
+
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm(true);
+			string ownerName = Server.Misc.RandomThings.GetRandomOrientalName();
+			string ownerTitle = Server.LootPackEntry.MagicItemAdj("end", true, false, item.ItemID);
+
+			int orientalType = Utility.RandomMinMax(0, 4);
+
+			switch (orientalType)
+			{
+				case 0:
+					relic.ItemID = 0x1947;
+					relic.RelicFlipID1 = 0x1947;
+					relic.RelicFlipID2 = 0x1948;
+					relic.Name = quality + ", " + decorative + " estátua de Buda";
+					break;
+				case 1:
+					relic.ItemID = 0x2419;
+					relic.RelicFlipID1 = 0x2419;
+					relic.RelicFlipID2 = 0x2419;
+					relic.Name = quality + ", " + decorative + " escultura";
+					break;
+				case 2:
+					relic.ItemID = 0x241A;
+					relic.RelicFlipID1 = 0x241A;
+					relic.RelicFlipID2 = 0x241A;
+					relic.Name = quality + ", " + decorative + " escultura";
+					break;
+				case 3:
+					relic.ItemID = 0x241B;
+					relic.RelicFlipID1 = 0x241B;
+					relic.RelicFlipID2 = 0x241B;
+					relic.Name = quality + ", " + decorative + " escultura";
+					break;
+				case 4:
+					relic.ItemID = 0x2848;
+					relic.RelicFlipID1 = 0x2848;
+					relic.RelicFlipID2 = 0x2849;
+					relic.Name = quality + " escultura de " + ownerName + " " + ownerTitle;
+					break;
+			}
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the statue relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicFlipID1);
+			writer.Write(RelicFlipID2);
+			writer.Write(RelicDescription);
+		}
+
+		/// <summary>
+		/// Deserializes the statue relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+			RelicFlipID1 = reader.ReadInt();
+			RelicFlipID2 = reader.ReadInt();
+			RelicDescription = reader.ReadString();
+		}
+
+		#endregion
 	}
 }

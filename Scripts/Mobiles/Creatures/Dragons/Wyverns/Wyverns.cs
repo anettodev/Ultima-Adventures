@@ -109,7 +109,7 @@ Name = "a greater wyvern";
 
 		public override int Meat{ get{ return 10; } }
 		public override int Hides{ get{ return 20; } }
-		public override HideType HideType{ get{ return HideType.Draconic; } }
+		public override HideType HideType{ get{ return HideType.Horned; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.Meat; } }
 		public override bool CanAngerOnTame { get { return true; } }
 

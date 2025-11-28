@@ -67,7 +67,7 @@ namespace Server.Items
             Hue = hue;
         }
 
-        protected BaseGuildTool(Serial serial) : base(serial) { }
+        public BaseGuildTool(Serial serial) : base(serial) { }
 
         #endregion
 

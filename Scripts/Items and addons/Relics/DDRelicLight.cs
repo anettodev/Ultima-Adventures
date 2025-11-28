@@ -3,247 +3,312 @@ using Server;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// First type of light relic item (candelabra variant 1).
+	/// Inherits from BaseLight and provides decorative lighting.
+	/// </summary>
 	public class DDRelicLight1 : BaseLight
 	{
+		#region Constants
+
+		private const int LIT_ITEM_ID = 0x40BE;
+		private const int UNLIT_ITEM_ID = 0x4039;
+		private const double WEIGHT_VALUE = 20.0;
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>Gold value of the relic</summary>
 		public int RelicGoldValue;
-		
+
+		/// <summary>Gets the lit ItemID</summary>
+		public override int LitItemID { get { return LIT_ITEM_ID; } }
+
+		/// <summary>Gets the unlit ItemID</summary>
+		public override int UnlitItemID { get { return UNLIT_ITEM_ID; } }
+
+		/// <summary>
+		/// Gets or sets the relic's gold value
+		/// </summary>
 		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		public int Relic_Value
+		{
+			get { return RelicGoldValue; }
+			set { RelicGoldValue = value; InvalidateProperties(); }
+		}
 
-		public override int LitItemID{ get { return 0x40BE; } }
-		public override int UnlitItemID{ get { return 0x4039; } }
+		#endregion
 
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new light relic with random quality
+		/// </summary>
 		[Constructable]
-		public DDRelicLight1() : base( 0x4039 )
+		public DDRelicLight1() : base(UNLIT_ITEM_ID)
 		{
 			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
 			Duration = TimeSpan.Zero;
 			BurntOut = false;
 			Burning = false;
 			Light = LightType.Circle225;
-			Weight = 20.0;
+			Weight = WEIGHT_VALUE;
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 3 ) )
-			{
-				case 0:	sDecon = ", decorative";		break;
-				case 1:	sDecon = ", ornamental";		break;
-				case 2:	sDecon = "";		break;
-				case 3:	sDecon = "";		break;
-			}
-
-			Name = sLook + sDecon + " candelabra";
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm();
+			Name = quality + decorative + " candelabra";
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
-		}
-
-		public DDRelicLight1( Serial serial ) : base( serial )
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		public DDRelicLight1(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 );
-            writer.Write( RelicGoldValue );
+			from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the light relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicGoldValue);
+		}
+
+		/// <summary>
+		/// Deserializes the light relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
 			int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			RelicGoldValue = reader.ReadInt();
 		}
+
+		#endregion
 	}
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/// <summary>
+	/// Second type of light relic item (candelabra variant 2).
+	/// Inherits from BaseLight and provides decorative lighting.
+	/// </summary>
 	public class DDRelicLight2 : BaseLight
 	{
+		#region Constants
+
+		private const int LIT_ITEM_ID = 0xB1D;
+		private const int UNLIT_ITEM_ID = 0xA27;
+		private const double WEIGHT_VALUE = 20.0;
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>Gold value of the relic</summary>
 		public int RelicGoldValue;
-		
+
+		/// <summary>Gets the lit ItemID</summary>
+		public override int LitItemID { get { return LIT_ITEM_ID; } }
+
+		/// <summary>Gets the unlit ItemID</summary>
+		public override int UnlitItemID { get { return UNLIT_ITEM_ID; } }
+
+		/// <summary>
+		/// Gets or sets the relic's gold value
+		/// </summary>
 		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		public int Relic_Value
+		{
+			get { return RelicGoldValue; }
+			set { RelicGoldValue = value; InvalidateProperties(); }
+		}
 
-		public override int LitItemID{ get { return 0xB1D; } }
-		public override int UnlitItemID{ get { return 0xA27; } }
+		#endregion
 
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new light relic with random quality
+		/// </summary>
 		[Constructable]
-		public DDRelicLight2() : base( 0xA27 )
+		public DDRelicLight2() : base(UNLIT_ITEM_ID)
 		{
 			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
 			Duration = TimeSpan.Zero;
 			BurntOut = false;
 			Burning = false;
 			Light = LightType.Circle225;
-			Weight = 20.0;
+			Weight = WEIGHT_VALUE;
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 3 ) )
-			{
-				case 0:	sDecon = ", decorative";		break;
-				case 1:	sDecon = ", ornamental";		break;
-				case 2:	sDecon = "";		break;
-				case 3:	sDecon = "";		break;
-			}
-
-			Name = sLook + sDecon + " candelabra";
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm();
+			Name = quality + decorative + " candelabra";
 		}
 
-		public DDRelicLight2( Serial serial ) : base( serial )
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		public DDRelicLight2(Serial serial) : base(serial)
 		{
 		}
 
-		public override void OnDoubleClick( Mobile from )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
+			from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the light relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 );
-            writer.Write( RelicGoldValue );
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicGoldValue);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the light relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
+			base.Deserialize(reader);
 			int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			RelicGoldValue = reader.ReadInt();
 		}
+
+		#endregion
 	}
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/// <summary>
+	/// Third type of light relic item (candelabra variant 3).
+	/// Inherits from BaseLight and provides decorative lighting.
+	/// </summary>
 	public class DDRelicLight3 : BaseLight
 	{
+		#region Constants
+
+		private const int LIT_ITEM_ID = 0xB26;
+		private const int UNLIT_ITEM_ID = 0xA29;
+		private const double WEIGHT_VALUE = 20.0;
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>Gold value of the relic</summary>
 		public int RelicGoldValue;
-		
+
+		/// <summary>Gets the lit ItemID</summary>
+		public override int LitItemID { get { return LIT_ITEM_ID; } }
+
+		/// <summary>Gets the unlit ItemID</summary>
+		public override int UnlitItemID { get { return UNLIT_ITEM_ID; } }
+
+		/// <summary>
+		/// Gets or sets the relic's gold value
+		/// </summary>
 		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		public int Relic_Value
+		{
+			get { return RelicGoldValue; }
+			set { RelicGoldValue = value; InvalidateProperties(); }
+		}
 
-		public override int LitItemID{ get { return 0xB26; } }
-		public override int UnlitItemID{ get { return 0xA29; } }
+		#endregion
 
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new light relic with random quality
+		/// </summary>
 		[Constructable]
-		public DDRelicLight3() : base( 0xA29 )
+		public DDRelicLight3() : base(UNLIT_ITEM_ID)
 		{
 			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
 			Duration = TimeSpan.Zero;
 			BurntOut = false;
 			Burning = false;
 			Light = LightType.Circle225;
-			Weight = 20.0;
+			Weight = WEIGHT_VALUE;
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 3 ) )
-			{
-				case 0:	sDecon = ", decorative";		break;
-				case 1:	sDecon = ", ornamental";		break;
-				case 2:	sDecon = "";		break;
-				case 3:	sDecon = "";		break;
-			}
-
-			Name = sLook + sDecon + " candelabra";
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm();
+			Name = quality + decorative + " candelabra";
 		}
 
-		public DDRelicLight3( Serial serial ) : base( serial )
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		public DDRelicLight3(Serial serial) : base(serial)
 		{
 		}
 
-		public override void OnDoubleClick( Mobile from )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
+			from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the light relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 );
-            writer.Write( RelicGoldValue );
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicGoldValue);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the light relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
+			base.Deserialize(reader);
 			int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			RelicGoldValue = reader.ReadInt();
 		}
+
+		#endregion
 	}
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

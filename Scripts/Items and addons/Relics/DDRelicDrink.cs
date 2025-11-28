@@ -7,139 +7,189 @@ using Server.Prompts;
 
 namespace Server.Items
 {
-	public class DDRelicDrink : Item
+	/// <summary>
+	/// Drink relic item that can be consumed to restore thirst and stamina.
+	/// Supports bottles, barrels, and kegs with various liquid types.
+	/// </summary>
+	public class DDRelicDrink : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
-		[Constructable]
-		public DDRelicDrink() : base( 0x9C7 )
+		private const int BASE_ITEM_ID = 0x9C7;
+		private const int DRINK_TYPE_MIN = 1;
+		private const int DRINK_TYPE_MAX = 4;
+		private const int RANDOM_LIQUID_MIN = 0;
+		private const int RANDOM_LIQUID_MAX = 5;
+		private const int WEIGHT_BOTTLE = 3;
+		private const int WEIGHT_BOTTLE_CULTURE = 5;
+		private const int WEIGHT_BARREL = 100;
+		private const int WEIGHT_KEG = 50;
+		private const int HUE_KEG = 0x96D;
+		private const int THIRST_RESTORE = 5;
+		private const int THIRST_MAX = 20;
+		private const int STAMINA_DIVISOR = 5;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>Item IDs for standard bottle variants</summary>
+		private static readonly int[] BOTTLE_ITEM_IDS = new[]
 		{
-			string sType = " bottle of ";
+			0x9C7, 0x99B, 0x99F
+		};
 
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+		/// <summary>Item IDs for culture bottle variants</summary>
+		private static readonly int[] CULTURE_BOTTLE_ITEM_IDS = new[]
+		{
+			0x543F, 0x5440, 0x5441
+		};
 
-			int drinktype = Utility.RandomMinMax( 1, 4 );
+		/// <summary>Item IDs for keg variants</summary>
+		private static readonly int[] KEG_ITEM_IDS = new[]
+		{
+			0x1940, 0x1AD6, 0x1AD7
+		};
 
-			if ( drinktype == 1 )
+		/// <summary>Liquid type names</summary>
+		private static readonly string[] LIQUID_TYPES = new[]
+		{
+			"rum", "grog", "brandy", "whiskey", "brandy"
+		};
+
+		/// <summary>Drinking sound IDs</summary>
+		private static readonly int[] DRINK_SOUNDS = new[]
+		{
+			0x30, 0x2D6
+		};
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new drink relic with random type and liquid
+		/// </summary>
+		[Constructable]
+		public DDRelicDrink() : base(BASE_ITEM_ID)
+		{
+			string containerType = " garrafa de ";
+
+			int drinkType = Utility.RandomMinMax(DRINK_TYPE_MIN, DRINK_TYPE_MAX);
+
+			if (drinkType == 1)
 			{
-				Weight = 3;
-				ItemID = Utility.RandomList( 0x9C7, 0x99B, 0x99F );
+				Weight = WEIGHT_BOTTLE;
+				ItemID = Utility.RandomList(BOTTLE_ITEM_IDS);
 				Hue = Server.Misc.RandomThings.GetRandomColor(0);
-				sType = " bottle of ";
+				containerType = " garrafa de ";
 			}
-			else if ( drinktype == 2 )
+			else if (drinkType == 2)
 			{
-				Weight = 5;
-				ItemID = Utility.RandomList( 0x543F, 0x5440, 0x5441 );
+				Weight = WEIGHT_BOTTLE_CULTURE;
+				ItemID = Utility.RandomList(CULTURE_BOTTLE_ITEM_IDS);
 				Hue = Server.Misc.RandomThings.GetRandomColor(0);
-				sType = " bottle of " + NameList.RandomName( "cultures" ) + " ";
+				containerType = " garrafa de " + NameList.RandomName("cultures") + " ";
 			}
-			else if ( drinktype == 3 )
+			else if (drinkType == 3)
 			{
-				Weight = 100;
+				Weight = WEIGHT_BARREL;
 				ItemID = 0xFAE;
-				sType = " barrel of ";
+				containerType = " barril de ";
 			}
 			else
 			{
-				Weight = 50;
-				ItemID = Utility.RandomList( 0x1940, 0x1AD6, 0x1AD7 );
-				Hue = 0x96D;
-				sType = " keg of ";
-
+				Weight = WEIGHT_KEG;
+				ItemID = Utility.RandomList(KEG_ITEM_IDS);
+				Hue = HUE_KEG;
+				containerType = " barril de ";
 			}
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			int liquidIndex = Utility.RandomMinMax(RANDOM_LIQUID_MIN, RANDOM_LIQUID_MAX);
+			string liquid = LIQUID_TYPES[liquidIndex];
 
-			string sLiquid = "rum";
-			switch ( Utility.RandomMinMax( 0, 5 ) ) 
-			{
-				case 0: sLiquid = "rum"; break;
-				case 1: sLiquid = "grog"; break;
-				case 2: sLiquid = "brandy"; break;
-				case 3: sLiquid = "whiskey"; break;
-				case 4: sLiquid = "brandy"; break;
-			}
-
-			Name = sLook + sType + sLiquid;
+			Name = quality + containerType + liquid;
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			Target t;
-			int number;
-
-				// increase characters thirst value based on type of drink
-				if ( from.Thirst < 20 )
-				{
-					// WIZARD DID THIS SO YOU GET A LITTLE EXTRA WHILE DRINKING
-					int nEatStam = from.StamMax / 5;
-					if ( from.Stam < from.StamMax )
-						from.Stam += nEatStam;
-
-					from.Thirst += 5;
-					// Send message to character about their current thirst value
-					int iThirst = from.Thirst;
-					if ( iThirst < 5 )
-						from.SendMessage( "You drink the water but are still extremely thirsty" );
-					else if ( iThirst < 10 )
-						from.SendMessage( "You drink the water and feel less thirsty" );
-					else if ( iThirst < 15 )
-						from.SendMessage( "You drink the water and feel much less thirsty" ); 
-					else
-						from.SendMessage( "You drink the water and are no longer thirsty" );
-
-					this.Consume();
-					from.PlaySound( Utility.RandomList( 0x30, 0x2D6 ) );
-				}
-				else
-				{
-					from.SendMessage( "You are simply too quenched to drink anymore" );
-					from.Thirst = 20;
-				}
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicDrink(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to consume drink and restore thirst/stamina
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			if (from.Thirst < THIRST_MAX)
+			{
+				// Restore stamina (WIZARD feature)
+				int staminaRestore = from.StamMax / STAMINA_DIVISOR;
+				if (from.Stam < from.StamMax)
+				{
+					from.Stam += staminaRestore;
+				}
+
+				from.Thirst += THIRST_RESTORE;
+
+				// Send message based on current thirst value
+				int currentThirst = from.Thirst;
+				if (currentThirst < 5)
+				{
+					from.SendMessage("Você bebe a água mas ainda está extremamente sedento");
+				}
+				else if (currentThirst < 10)
+				{
+					from.SendMessage("Você bebe a água e sente menos sede");
+				}
+				else if (currentThirst < 15)
+				{
+					from.SendMessage("Você bebe a água e sente muito menos sede");
+				}
+				else
+				{
+					from.SendMessage("Você bebe a água e não está mais sedento");
+				}
+
+				Consume();
+				from.PlaySound(Utility.RandomList(DRINK_SOUNDS));
+			}
+			else
+			{
+				from.SendMessage("Você está simplesmente muito saciado para beber mais");
+				from.Thirst = THIRST_MAX;
+			}
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the drink relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
+
+		/// <summary>
+		/// Deserializes the drink relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
+
+		#endregion
 	}
 }

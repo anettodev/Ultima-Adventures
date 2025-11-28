@@ -55,8 +55,8 @@ namespace Server.Misc
 				//else if ( weapon.Resource == CraftResource.RegularWood ){ material = "wooden"; }
 				else if (weapon.Resource == CraftResource.AshTree) { material = "carvalho branco"; }
 				else if (weapon.Resource == CraftResource.CherryTree) { material = "cerejeira"; }
-				else if (weapon.Resource == CraftResource.EbonyTree) { material = "ébano"; }
-				else if (weapon.Resource == CraftResource.GoldenOakTree) { material = "ipê-amarelo"; }
+				else if (weapon.Resource == CraftResource.EbonyTree) { material = "ï¿½bano"; }
+				else if (weapon.Resource == CraftResource.GoldenOakTree) { material = "ipï¿½-amarelo"; }
 				else if (weapon.Resource == CraftResource.HickoryTree) { material = "nogueira branca"; }
 				/*else if ( weapon.Resource == CraftResource.MahoganyTree ){ material = "mahogany"; }
 				else if ( weapon.Resource == CraftResource.OakTree ){ material = "oak"; }
@@ -64,7 +64,7 @@ namespace Server.Misc
 				else if (weapon.Resource == CraftResource.RosewoodTree) { material = "pau-brasil"; }
 				/*else if ( weapon.Resource == CraftResource.DriftwoodTree ){ material = "driftwood"; }
 				else if ( weapon.Resource == CraftResource.WalnutTree ){ material = "walnut"; }*/
-				else if (weapon.Resource == CraftResource.ElvenTree) { material = "élfica"; }
+				else if (weapon.Resource == CraftResource.ElvenTree) { material = "ï¿½lfica"; }
 				/*else if ( weapon.Resource == CraftResource.GhostTree ){ material = "ghostwood"; }
 				else if ( weapon.Resource == CraftResource.PetrifiedTree ){ material = "petrified"; }*/
 			}
@@ -106,8 +106,8 @@ namespace Server.Misc
 				//else if ( armor.Resource == CraftResource.RegularWood ){ material = "wooden"; }
 				else if (armor.Resource == CraftResource.AshTree) { material = "carvalho cinza"; }
 				else if (armor.Resource == CraftResource.CherryTree) { material = "cerejeira"; }
-				else if (armor.Resource == CraftResource.EbonyTree) { material = "ébano"; }
-				else if (armor.Resource == CraftResource.GoldenOakTree) { material = "ipê-amarelo"; }
+				else if (armor.Resource == CraftResource.EbonyTree) { material = "ï¿½bano"; }
+				else if (armor.Resource == CraftResource.GoldenOakTree) { material = "ipï¿½-amarelo"; }
 				else if (armor.Resource == CraftResource.HickoryTree) { material = "nogueira branca"; }
 				/*else if ( armor.Resource == CraftResource.MahoganyTree ){ material = "mahogany"; }
 				else if ( armor.Resource == CraftResource.OakTree ){ material = "oak"; }
@@ -115,7 +115,7 @@ namespace Server.Misc
 				else if (armor.Resource == CraftResource.RosewoodTree) { material = "pau-brasil"; }
 				/*else if ( armor.Resource == CraftResource.DriftwoodTree ){ material = "driftwood"; }
 				else if ( armor.Resource == CraftResource.WalnutTree ){ material = "walnut"; }*/
-				else if (armor.Resource == CraftResource.ElvenTree) { material = "élfica"; }
+				else if (armor.Resource == CraftResource.ElvenTree) { material = "ï¿½lfica"; }
 				/*else if ( armor.Resource == CraftResource.GhostTree ){ material = "ghostwood"; }
 				else if ( armor.Resource == CraftResource.PetrifiedTree ){ material = "petrified"; }*/
 			}
@@ -126,11 +126,11 @@ namespace Server.Misc
 				{
 					if (tool.Resource == CraftResource.AshTree) { material = "carvalho cinza"; }
 					else if (tool.Resource == CraftResource.CherryTree) { material = "cerejeira"; }
-					else if (tool.Resource == CraftResource.EbonyTree) { material = "ébano"; }
-					else if (tool.Resource == CraftResource.GoldenOakTree) { material = "ipê-amarelo"; }
+					else if (tool.Resource == CraftResource.EbonyTree) { material = "ï¿½bano"; }
+					else if (tool.Resource == CraftResource.GoldenOakTree) { material = "ipï¿½-amarelo"; }
 					else if (tool.Resource == CraftResource.HickoryTree) { material = "nogueira branca"; }
 					else if (tool.Resource == CraftResource.RosewoodTree) { material = "pau-brasil"; }
-					else if (tool.Resource == CraftResource.ElvenTree) { material = "élfica"; }
+					else if (tool.Resource == CraftResource.ElvenTree) { material = "ï¿½lfica"; }
 					else material = "regular";
                 }
             }

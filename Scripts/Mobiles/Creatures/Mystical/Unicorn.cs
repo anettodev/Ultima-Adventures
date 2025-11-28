@@ -125,6 +125,7 @@ namespace Server.Mobiles
 		public override Poison PoisonImmune{ get{ return Poison.Deadly; } }
 		public override int Meat{ get{ return 3; } }
 		public override int Hides{ get{ return 10; } }
+		public override HideType HideType{ get{ return HideType.Horned; } }
 		public override int Furs{ get{ return Utility.RandomList( 0, 0, 0, 5 ); } }
 		public override FurType FurType{ get{ return FurType.White; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.FruitsAndVegies | FoodType.GrainsAndHay; } }

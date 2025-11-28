@@ -3,154 +3,199 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicCoins : Item
+	/// <summary>
+	/// Coin relic item that can be flipped between two ItemID states.
+	/// Features complex naming with age and symbol descriptions.
+	/// </summary>
+	public class DDRelicCoins : DDRelicBase
 	{
-		public int RelicGoldValue;
+		#region Constants
+
+		private const int BASE_ITEM_ID = 0xE1A;
+		private const int RANDOM_COIN_TYPE_MIN = 0;
+		private const int RANDOM_COIN_TYPE_MAX = 1;
+		private const int RANDOM_AGE_MIN = 0;
+		private const int RANDOM_AGE_MAX = 13;
+		private const int RANDOM_SYMBOL_MIN = 0;
+		private const int RANDOM_SYMBOL_MAX = 33;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>First ItemID for flipping</summary>
 		public int RelicFlipID1;
+
+		/// <summary>Second ItemID for flipping</summary>
 		public int RelicFlipID2;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID1 { get { return RelicFlipID1; } set { RelicFlipID1 = value; InvalidateProperties(); } }
-
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID2 { get { return RelicFlipID2; } set { RelicFlipID2 = value; InvalidateProperties(); } }
-
-		[Constructable]
-		public DDRelicCoins() : base( 0xE1A )
+		/// <summary>
+		/// Structure for coin variant data
+		/// </summary>
+		private struct CoinVariant
 		{
-			Weight = 5;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			public int ItemID;
+			public int FlipID1;
+			public int FlipID2;
 
-			string sValue = "";
-			string sAge = "";
+			public CoinVariant(int itemID, int flipID1, int flipID2)
+			{
+				this.ItemID = itemID;
+				this.FlipID1 = flipID1;
+				this.FlipID2 = flipID2;
+			}
+		}
 
+		/// <summary>
+		/// Array of coin variants
+		/// </summary>
+		private static readonly CoinVariant[] CoinVariants = new CoinVariant[]
+		{
+			new CoinVariant(0xE1A, 0xE1A, 0xFA4),
+			new CoinVariant(0xE1B, 0xE1B, 0xFA5)
+		};
+
+		/// <summary>Age descriptions for coins</summary>
+		private static readonly string[] AGE_DESCRIPTIONS = new[]
+		{
+			"de uma civilização há muito morta",
+			"de uma raça antiga",
+			"de uma ordem secreta",
+			"de uma terra distante",
+			"de origem desconhecida",
+			"de muito tempo atrás",
+			"de uma cidade perdida",
+			"de uma terra misteriosa",
+			"dos tempos sombrios",
+			"de uma raça antiga",
+			"de uma raça perdida",
+			"de uma terra desaparecida",
+			"de uma era desconhecida",
+			"usadas séculos atrás"
+		};
+
+		/// <summary>Symbol descriptions for coins</summary>
+		private static readonly string[] SYMBOL_DESCRIPTIONS = new[]
+		{
+			"torre", "grifo", "coroa", "espada", "machado", "leão", "urso", "morcego", "javali", "búfalo",
+			"quimera", "cobra", "demônio", "diabo", "anjo", "dragão", "cão", "águia", "falcão", "hipogrifo",
+			"cavalo", "lobo", "pégaso", "carneiro", "caveira", "aranha", "unicórnio", "escorpião", "mão", "punho",
+			"olho", "cruz", "mulher", "homem"
+		};
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets the first flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID1
+		{
+			get { return RelicFlipID1; }
+			set { RelicFlipID1 = value; InvalidateProperties(); }
+		}
+
+		/// <summary>
+		/// Gets or sets the second flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID2
+		{
+			get { return RelicFlipID2; }
+			set { RelicFlipID2 = value; InvalidateProperties(); }
+		}
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new coin relic with random type, age, and symbol
+		/// </summary>
+		[Constructable]
+		public DDRelicCoins() : base(BASE_ITEM_ID)
+		{
+			Weight = RelicConstants.WEIGHT_LIGHT;
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
+			int coinType = Utility.RandomMinMax(RANDOM_COIN_TYPE_MIN, RANDOM_COIN_TYPE_MAX);
+			CoinVariant coin = CoinVariants[coinType];
 
-			switch ( Utility.RandomMinMax( 0, 1 ) ) 
-			{
-				case 0: ItemID = 0xE1A; RelicFlipID1 = 0xE1A; RelicFlipID2 = 0xFA4; break;
-				case 1: ItemID = 0xE1B; RelicFlipID1 = 0xE1B; RelicFlipID2 = 0xFA5; break;
-			}
+			ItemID = coin.ItemID;
+			RelicFlipID1 = coin.FlipID1;
+			RelicFlipID2 = coin.FlipID2;
 
-			switch ( Utility.RandomMinMax( 0, 13 ) )
-			{
-				case 0:	sAge = "from a long dead civilization";		break;
-				case 1:	sAge = "from an ancient race";				break;
-				case 2:	sAge = "of a secret order";					break;
-				case 3:	sAge = "of a far off land";					break;
-				case 4:	sAge = "of unknown origin";					break;
-				case 5:	sAge = "from long ago";						break;
-				case 6:	sAge = "from a lost city";					break;
-				case 7:	sAge = "from a mysterious land";			break;
-				case 8:	sAge = "from the dark times";				break;
-				case 9:	sAge = "of an old race";					break;
-				case 10:sAge = "of a lost race";					break;
-				case 11:sAge = "from a missing land";				break;
-				case 12:sAge = "from an unknown era";				break;
-				case 13:sAge = "used centuries ago";				break;
-			}
+			int ageIndex = Utility.RandomMinMax(RANDOM_AGE_MIN, RANDOM_AGE_MAX);
+			string age = AGE_DESCRIPTIONS[ageIndex];
 
-			switch ( Utility.RandomMinMax( 0, 33 ) )
-			{
-				case 0:	sValue = "tower";	break;
-				case 1: sValue = "griffin";	break;
-				case 2:	sValue = "crown";	break;
-				case 3:	sValue = "sword";	break;
-				case 4:	sValue = "axe";		break;
-				case 5:	sValue = "lion";	break;
-				case 6:	sValue = "bear";	break;
-				case 7:	sValue = "bat";		break;
-				case 8:	sValue = "boar";	break;
-				case 9:	sValue = "buffalo";	break;
-				case 10:sValue = "chimera";	break;
-				case 11:sValue = "snake";	break;
-				case 12:sValue = "demon";	break;
-				case 13:sValue = "devil";	break;
-				case 14:sValue = "angel";	break;
-				case 15:sValue = "dragon";	break;
-				case 16:sValue = "dog";		break;
-				case 17:sValue = "eagle";	break;
-				case 18:sValue = "hawk";	break;
-				case 19:sValue = "hippogriff";	break;
-				case 20:sValue = "horse";	break;
-				case 21:sValue = "wolf";	break;
-				case 22:sValue = "pegasus";	break;
-				case 23:sValue = "ram";		break;
-				case 24:sValue = "skull";	break;
-				case 25:sValue = "spider";	break;
-				case 26:sValue = "unicorn";	break;
-				case 27:sValue = "scorpion";	break;
-				case 28:sValue = "hand";	break;
-				case 29:sValue = "fist";	break;
-				case 30:sValue = "eye";		break;
-				case 31:sValue = "cross";	break;
-				case 32:sValue = "woman";	break;
-				case 33:sValue = "man";		break;
-			}
+			int symbolIndex = Utility.RandomMinMax(RANDOM_SYMBOL_MIN, RANDOM_SYMBOL_MAX);
+			string symbol = SYMBOL_DESCRIPTIONS[symbolIndex];
 
-			Name = "coins " + sAge + " with symbols of a " + sValue + " on them";
+			Name = "moedas " + age + " com símbolos de " + symbol + " nelas";
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			if ( !IsChildOf( from.Backpack ) )
-			{
-				from.SendMessage( "This can be identified to determine its value." );
-				from.SendMessage( "This must be in your backpack to flip." );
-			}
-			else
-			{
-				if ( this.ItemID == RelicFlipID1 ){ this.ItemID = RelicFlipID2; } else { this.ItemID = RelicFlipID1; }
-			}
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicCoins(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to flip coin or show identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
-            writer.Write( RelicFlipID1 );
-            writer.Write( RelicFlipID2 );
+			if (!IsChildOf(from.Backpack))
+			{
+				from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
+				from.SendMessage(RelicStringConstants.MSG_MUST_BE_IN_PACK);
+			}
+			else
+			{
+				if (ItemID == RelicFlipID1)
+				{
+					ItemID = RelicFlipID2;
+				}
+				else
+				{
+					ItemID = RelicFlipID1;
+				}
+			}
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the coin relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
-            RelicFlipID1 = reader.ReadInt();
-            RelicFlipID2 = reader.ReadInt();
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicFlipID1);
+			writer.Write(RelicFlipID2);
 		}
+
+		/// <summary>
+		/// Deserializes the coin relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+			RelicFlipID1 = reader.ReadInt();
+			RelicFlipID2 = reader.ReadInt();
+		}
+
+		#endregion
 	}
 }

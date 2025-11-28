@@ -39,6 +39,26 @@ namespace Server.Items
 			{
 				m_Type = value;
 				InvalidateProperties();
+				
+				// Automatically set hue and name based on potion type
+				if ( m_Held > 0 )
+				{
+					// Create a temporary potion to get its color
+					BasePotion tempPotion = FillBottle();
+					if ( tempPotion != null )
+					{
+						this.Hue = GetPotionColor( tempPotion );
+						tempPotion.Delete(); // Clean up temporary potion
+					}
+					// Update the name based on the type
+					SetColorKeg( this, this );
+				}
+				else
+				{
+					// Empty keg has default hue and name
+					this.Hue = 0x96D;
+					this.Name = "empty potion keg";
+				}
 			}
 		}
 

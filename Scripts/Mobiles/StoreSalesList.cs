@@ -1473,7 +1473,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( AutoResPotion ), 8600, 1, 0x0E0F, 0x494 ) ); }
 
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 			}
 		}
 
@@ -3249,27 +3248,28 @@ namespace Server.Mobiles
 				if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedHides ), 3 ); }  
 				if ( MyServerSettings.BuyChance() ){Add( typeof( HornedHides ), 3 ); }  
 				if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedHides ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticHides ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicHides ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenHides ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoliathHides ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicHides ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HellishHides ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurHides ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienHides ), 7 ); }  
+				// TODO: Future implementation - Special hide types disabled
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticHides ), 4 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicHides ), 5 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenHides ), 5 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicHides ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( HellishHides ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurHides ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienHides ), 7 ); }  
 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Leather ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicLeather ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenLeather ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoliathLeather ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicLeather ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HellishLeather ), 8 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurLeather ), 8 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienLeather ), 8 ); }  
+			if ( MyServerSettings.BuyChance() ){Add( typeof( Leather ), 3 ); }  
+			// TODO: Future implementation - Special leather types disabled from NPC sales
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
+			// TODO: Future implementation - Special leather types disabled
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicLeather ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenLeather ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicLeather ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( HellishLeather ), 8 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurLeather ), 8 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienLeather ), 8 ); }  
 			} 
 		} 
 	}
@@ -3426,7 +3426,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( VinePatchAddonDeed ), 16400, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HopsPatchDeed ), 16400, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( HealingDragonJar ), 500, Utility.Random( 1,5 ), 0xF39, 0x966 ) ); }
 			}
 		}
@@ -3474,7 +3473,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Jar ), 5, Utility.Random( 1,100 ), 0x10B4, 0 ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( CBookDruidicHerbalism ), 50, Utility.Random( 1,100 ), 0x2D50, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AppleTreeDeed ), 16400, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CherryBlossomTreeDeed ), 15400, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DarkBrownTreeDeed ), 15400, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
@@ -3547,7 +3545,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 1,100 ), 0x1E27, 0x979 ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( CBookDruidicHerbalism ), 50, Utility.Random( 1,100 ), 0x2D50, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantA ), Utility.Random( 5000,10000 ), 1, 0x113F, 0 ) ); }
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantB ), Utility.Random( 5000,10000 ), 1, 0x1151, 0 ) ); }
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantC ), Utility.Random( 5000,10000 ), 1, 0x1164, 0 ) ); }
@@ -4335,27 +4332,28 @@ namespace Server.Mobiles
 				if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedHides ), 3 ); }  
 				if ( MyServerSettings.BuyChance() ){Add( typeof( HornedHides ), 3 ); }  
 				if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedHides ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticHides ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicHides ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenHides ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoliathHides ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicHides ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HellishHides ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurHides ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienHides ), 7 ); }  
+				// TODO: Future implementation - Special hide types disabled
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticHides ), 4 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicHides ), 5 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenHides ), 5 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicHides ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( HellishHides ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurHides ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienHides ), 7 ); }  
 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Leather ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicLeather ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenLeather ), 6 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoliathLeather ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicLeather ), 7 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HellishLeather ), 8 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurLeather ), 8 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienLeather ), 8 ); }  
+			if ( MyServerSettings.BuyChance() ){Add( typeof( Leather ), 3 ); }  
+			// TODO: Future implementation - Special leather types disabled from NPC sales
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
+			// TODO: Future implementation - Special leather types disabled
+			//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicLeather ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenLeather ), 6 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicLeather ), 7 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( HellishLeather ), 8 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurLeather ), 8 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienLeather ), 8 ); }  
 
 				if ( MyServerSettings.BuyChance() ){Add( typeof( Waterskin ), 2 ); } 
 			} 
@@ -6601,7 +6599,6 @@ namespace Server.Mobiles
 				Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 1,100 ), 0x1E27, 0x979 ) );
 				Add( new GenericBuyInfo( typeof( CBookNecroticAlchemy ), 50, Utility.Random( 1,100 ), 0x2253, 0x4AA ) );
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
@@ -6715,7 +6712,6 @@ namespace Server.Mobiles
 				Add( new GenericBuyInfo( "undead horse", typeof( NecroHorse ), 500000, 5, 0x2617, 0xB97 ) );
 				Add( new GenericBuyInfo( "daemon servant", typeof( DaemonMount ), 350000, 5, 11669, 0x4AA ) );
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
@@ -6913,7 +6909,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( GraveyardGatewayScroll ), Utility.Random( 10,100 ), Utility.Random( 1,5 ), 0x1007, 0x2EA ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( HellsBrandScroll ), Utility.Random( 10,100 ), Utility.Random( 1,5 ), 0x1007, 0x54C ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
 				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
@@ -7027,8 +7022,7 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( GhostPhaseScroll ), Utility.Random( 10,100 ), Utility.Random( 1,5 ), 0x1007, 0x47E ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( GraveyardGatewayScroll ), Utility.Random( 10,100 ), Utility.Random( 1,5 ), 0x1007, 0x2EA ) ); }
 				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( HellsBrandScroll ), Utility.Random( 10,100 ), Utility.Random( 1,5 ), 0x1007, 0x54C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) ); }
+				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( WoodenCoffin ), 100, 1, 0x2800, 0 ) ); }
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( WoodenCasket ), 100, 1, 0x27E9, 0 ) ); }
 				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( StoneCoffin ), 180, 1, 0x27E0, 0 ) ); }
@@ -9405,7 +9399,6 @@ namespace Server.Mobiles
 				Add( new GenericBuyInfo( typeof( NecromancerSpellbook ), 115, Utility.Random( 50,200 ), 0x2253, 0 ) );
 				Add( new GenericBuyInfo( typeof( TarotDeck ), 5, Utility.Random( 50,200 ), 0x12AB, 0 ) ); 
 				Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) );
-				Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) );
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( BlackDyeTub ), 5000, Utility.Random( 1,1 ), 0xFAB, 0x1 ) ); }
 				Add( new GenericBuyInfo( typeof( reagents_magic_jar2 ), 1500, Utility.Random( 250,1000 ), 0x1007, 0xB97 ) );
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( HellsGateScroll ), Utility.Random( 10,100 ), Utility.Random( 1,3 ), 0x1007, 0x54F ) ); }
@@ -9640,7 +9633,6 @@ namespace Server.Mobiles
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( InvulnerabilityPotion ), 8300, 1, 0x180F, 0x48F ) ); }
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( AutoResPotion ), 8600, 1, 0x0E0F, 0x494 ) ); }
 				Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) );
-				Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) );
 			}
 		}
 
@@ -9829,7 +9821,6 @@ namespace Server.Mobiles
 				Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 50,200 ), 0x1E27, 0x979 ) );
 				Add( new GenericBuyInfo( typeof( CBookDruidicHerbalism ), 50, Utility.Random( 1,100 ), 0x2D50, 0 ) );
 				Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) );
-				Add( new GenericBuyInfo( typeof( AlchemyPouch ), Utility.Random( 2900,3500 ), Utility.Random( 1,2 ), 0x1C10, 0x89F ) );
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( AppleTreeDeed ), 10640, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( CherryBlossomTreeDeed ), 10540, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }
 				if ( MyServerSettings.SellChance() ){ Add( new GenericBuyInfo( typeof( DarkBrownTreeDeed ), 10540, Utility.Random( 1,2 ), 0x14F0, 0 ) ); }

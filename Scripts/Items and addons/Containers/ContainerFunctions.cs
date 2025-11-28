@@ -205,10 +205,13 @@ namespace Server.Misc
 					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Serpent Island" ){ idropped = new ObsidianIngot(); }
 					else */if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( opener ) == true ){ idropped = new SpinedLeather(); }
 					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new SteelIngot(); }
-					else */else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new DinosaurLeather(); }
+					else */ // TODO: Future implementation - Special leather types disabled
+					//else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Savaged Empire" ){ idropped = new DinosaurLeather(); }
 					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Island of Umber Veil" ){ idropped = new BrassIngot(); }
 					else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new XormiteIngot(); }
-					else */else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new AlienLeather(); }
+					else */ // TODO: Future implementation - Special leather types disabled
+					//else if ( idropped is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" && opener.Map == Map.TerMur ){ idropped = new AlienLeather(); }
+					// Note: Volcanic leather is enabled for creature drops and loot
 					/*else if ( idropped is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( opener.Map, opener.Location, opener.X, opener.Y ) == "the Underworld" ){ idropped = new MithrilIngot(); }*/
 					else if ((idropped is Cloth) || (idropped is UncutCloth) || (idropped is BoltOfCloth))
 					{
@@ -2106,10 +2109,13 @@ namespace Server.Misc
 				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Serpent Island" ){ loot = new ObsidianIngot(); }
 				else */if ( loot is BaseLeather && Utility.RandomMinMax( 1, 3 ) > 1 && Worlds.IsExploringSeaAreas( from ) == true ){ loot = new SpinedLeather(); }
 				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new SteelIngot(); }
-				else */else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new DinosaurLeather(); }
+				else */ // TODO: Future implementation - Special leather types disabled
+				//else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 10 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" ){ loot = new DinosaurLeather(); }
 				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" ){ loot = new BrassIngot(); }
 				else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new XormiteIngot(); }
-				else */else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new AlienLeather(); }
+				else */ // TODO: Future implementation - Special leather types disabled
+				//else if ( loot is BaseLeather && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" && from.Map == Map.TerMur ){ loot = new AlienLeather(); }
+				// Note: Volcanic leather is enabled for creature drops and loot
 				/*else if ( loot is BaseIngot && Utility.RandomMinMax( 1, 8 ) == 1 && Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Underworld" ){ loot = new MithrilIngot(); }*/
 				else if ((loot is Cloth) || (loot is UncutCloth) || (loot is BoltOfCloth))
 				{

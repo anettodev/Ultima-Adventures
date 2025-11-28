@@ -62,7 +62,7 @@ namespace Server.Mobiles
 
 		public override int Meat{ get{ return 1; } }
 		public override int Hides{ get{ return 12; } }
-		public override HideType HideType{ get{ return HideType.Horned; } }
+		public override HideType HideType{ get{ return HideType.Spined; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.Meat | FoodType.Fish; } }
 
 		public Alligator(Serial serial) : base(serial)

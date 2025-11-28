@@ -6,116 +6,181 @@ using Server.Network;
 
 namespace Server.Items
 {
-	public class DDRelicOrbs : Item
+	/// <summary>
+	/// Crystal ball relic item with random appearance and scrying functionality.
+	/// Displays random visions when double-clicked.
+	/// </summary>
+	public class DDRelicOrbs : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
+		private const int BASE_ITEM_ID = 0xE2F;
+		private const int RANDOM_ORB_TYPE_MIN = 0;
+		private const int RANDOM_ORB_TYPE_MAX = 5;
+		private const int RANDOM_VISION_MIN = 0;
+		private const int RANDOM_VISION_MAX = 51;
+		private const int MESSAGE_COLOR = 0x14C;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>
+		/// Structure for orb variant data
+		/// </summary>
+		private struct OrbVariant
+		{
+			public int ItemID;
+			public int Weight;
+
+			public OrbVariant(int itemID, int weight)
+			{
+				this.ItemID = itemID;
+				this.Weight = weight;
+			}
+		}
+
+		/// <summary>
+		/// Array of orb variants
+		/// </summary>
+		private static readonly OrbVariant[] OrbVariants = new OrbVariant[]
+		{
+			new OrbVariant(0xE2F, RelicConstants.WEIGHT_HEAVY),
+			new OrbVariant(0x4FD6, RelicConstants.WEIGHT_HEAVY),
+			new OrbVariant(0xE2D, RelicConstants.WEIGHT_HEAVY),
+			new OrbVariant(0x468A, RelicConstants.WEIGHT_HEAVY),
+			new OrbVariant(0x468B, RelicConstants.WEIGHT_VERY_HEAVY_40),
+			new OrbVariant(0x573E, RelicConstants.WEIGHT_VERY_HEAVY_30)
+		};
+
+		/// <summary>Spell caster names for crystal ball naming</summary>
+		private static readonly string[] SPELL_CASTER_NAMES = new[]
+		{
+			"Clyz", "Achug", "Theram", "Quale", "Lutin", "Gad", "Croeq", "Achund", "Therrisi", "Qualorm",
+			"Lyeit", "Garaso", "Crul", "Ackhine", "Thritai", "Quaso", "Lyetonu", "Garck", "Cuina", "Ackult",
+			"Tig", "Quealt", "Moin", "Garund", "Daror", "Aeny", "Tinalt", "Rador", "Moragh", "Ghagha",
+			"Deet", "Aeru", "Tinkima", "Rakeld", "Morir", "Ghatas", "Deldrad", "Ageick", "Tinut", "Rancwor",
+			"Morosy", "Gosul", "Deldrae", "Agemor", "Tonk", "Ranildu", "Mosat", "Hatalt", "Delz", "Aghai",
+			"Tonolde", "Ranot", "Mosd", "Hatash", "Denad", "Ahiny", "Tonper", "Ranper", "Mosrt", "Hatque",
+			"Denold", "Aldkely", "Torint", "Ransayi", "Mosyl", "Hatskel", "Denyl", "Aleler", "Trooph", "Ranzmor",
+			"Moszight", "Hattia", "Drahono", "Anagh", "Turbelm", "Raydan", "Naldely", "Hiert", "Draold", "Anclor",
+			"Uighta", "Rayxwor", "Nalusk", "Hinalde", "Dynal", "Anl", "Uinga", "Rhit", "Nalwar", "Hinall",
+			"Dyndray", "Antack", "Umnt", "Risormy", "Nag", "Hindend", "Eacki", "Ardburo", "Undaughe", "Risshy",
+			"Nat", "Iade", "Earda", "Ardmose", "Untdran", "Rodiz", "Nator", "Iaper", "Echal", "Ardurne",
+			"Untld", "Rodkali", "Nayth", "Iass", "Echind", "Ardyn", "Uoso", "Rodrado", "Neil", "Iawy",
+			"Echwaro", "Ashaugha", "Urnroth", "Roort", "Nenal", "Iechi", "Eeni", "Ashdend", "Urode", "Ruina",
+			"Newl", "Ightult", "Einea", "Ashye", "Uskdar", "Rynm", "Nia", "Ildaw", "Eldsera", "Asim",
+			"Uskmdan", "Rynryna", "Nikim", "Ildoq", "Eldwen", "Athdra", "Usksough", "Ryns", "Nof", "Inabel",
+			"Eldyril", "Athskel", "Usktoro", "Rynut", "Nook", "Inaony", "Elmkach", "Atkin", "Ustagee", "Samgha",
+			"Nybage", "Inease", "Elmll", "Aughint", "Ustld", "Samnche", "Nyiy", "Ineegh", "Emath", "Aughthere",
+			"Ustton", "Samssam", "Nyseld", "Ineiti", "Emengi", "Avery", "Verporm", "Sawor", "Nysklye", "Ineun",
+			"Emild", "Awch", "Vesrade", "Sayimo", "Nyw", "Ingr", "Emmend", "Banend", "Voraughe", "Sayn",
+			"Oasho", "Isbaugh", "Emnden", "Beac", "Vorril", "Sayskelu", "Oendy", "Islyei", "Endvelm", "Belan",
+			"Vorunt", "Scheach", "Oenthi", "Issy", "Endych", "Beloz", "Whedan", "Scheyer", "Ohato", "Istin",
+			"Engeh", "Beltiai", "Whisam", "Serat", "Oldack", "Iumo", "Engen", "Bliorm", "Whok", "Sernd",
+			"Oldar", "Jyhin", "Engh", "Burold", "Worath", "Skell", "Oldr", "Jyon", "Engraki", "Buror",
+			"Worav", "Skelser", "Oldtar", "Kalov", "Engroth", "Byt", "Worina", "Slim", "Omdser", "Kelol",
+			"Engum", "Cakal", "Worryno", "Snaest", "Ond", "Kinser", "Enhech", "Carr", "Worunty", "Sniund",
+			"Oron", "Koor", "Enina", "Cayld", "Worwaw", "Sosam", "Orrbel", "Lear", "Enk", "Cerar",
+			"Yary", "Stayl", "Osnt", "Leert", "Enlald", "Cerl", "Yawi", "Stol", "Peright", "Legar",
+			"Enskele", "Cerv", "Yena", "Strever", "Perpban", "Lerev", "Eoru", "Chaur", "Yero", "Swaih",
+			"Phiunt", "Lerzshy", "Ernysi", "Chayn", "Yerrves", "Tagar", "Poll", "Llash", "Erque", "Cheimo",
+			"Yhone", "Taienn", "Polrad", "Llotor", "Errusk", "Chekim", "Yradi", "Taiyild", "Polsera", "Loem",
+			"Ervory", "Chreusk", "Zhugar", "Tanen", "Puon", "Loing", "Essisi", "Chrir", "Zirt", "Tasaf",
+			"Quaev", "Lorelmo", "Essnd", "Chroelt", "Zoine", "Tasrr", "Quahang", "Lorud", "Estech", "Cloran",
+			"Zotin", "Thaeng", "Qual", "Lour", "Estkunt", "Etoth", "Esule", "Estnight"
+		};
+
+		/// <summary>Adjective descriptors for crystal ball naming</summary>
+		private static readonly string[] ADJECTIVE_DESCRIPTORS = new[]
+		{
+			"Exotic", "Mysterious", "Enchanted", "Marvelous", "Amazing", "Astonishing", "Mystical", "Astounding",
+			"Magical", "Divine", "Excellent", "Magnificent", "Phenomenal", "Fantastic", "Incredible", "Extraordinary",
+			"Fabulous", "Wondrous", "Glorious", "Lost", "Fabled", "Legendary", "Mythical", "Missing",
+			"Ancestral", "Ornate", "Ultimate", "Rare", "Wonderful", "Sacred", "Almighty", "Supreme",
+			"Mighty", "Unspeakable", "Unknown", "Forgotten"
+		};
+
+		/// <summary>Vision descriptions for scrying</summary>
+		private static readonly string[] VISION_DESCRIPTIONS = new[]
+		{
+			"um príncipe", "um rei", "uma coroa", "uma espada", "um machado", "um leão", "um urso", "um morcego",
+			"uma rainha", "uma princesa", "uma donzela", "um mendigo", "um demônio", "um diabo", "um anjo", "um dragão",
+			"uma sombra", "uma águia", "um falcão", "um bardo", "um cavalo", "um lobo", "um pégaso", "um carneiro",
+			"uma caveira", "uma aranha", "um unicórnio", "um escorpião", "uma pilha de tesouro", "um cadáver",
+			"um olho olhando de volta para você", "uma cruz", "uma mulher", "um homem", "uma floresta",
+			"uma terra coberta de neve", "um oceano", "um deserto", "uma selva", "uma fortaleza",
+			"uma casa", "algumas ruínas", "um castelo", "uma cidade", "uma vila", "uma aldeia",
+			"um forte", "uma masmorra", "uma caverna", "um cemitério", "uma tumba", "uma cripta"
+		};
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new crystal ball relic with random appearance and name
+		/// </summary>
 		[Constructable]
-		public DDRelicOrbs() : base( 0xE2F )
+		public DDRelicOrbs() : base(BASE_ITEM_ID)
 		{
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			int variant = Utility.RandomMinMax(RANDOM_ORB_TYPE_MIN, RANDOM_ORB_TYPE_MAX);
+			OrbVariant orb = OrbVariants[variant];
 
-			switch ( Utility.RandomMinMax( 0, 5 ) ) 
-			{
-				case 0: ItemID = 0xE2F; Weight = 20; break;
-				case 1: ItemID = 0x4FD6; Weight = 20; break;
-				case 2: ItemID = 0xE2D; Weight = 20; break;
-				case 3: ItemID = 0x468A; Weight = 20; break;
-				case 4: ItemID = 0x468B; Weight = 40; break;
-				case 5: ItemID = 0x573E; Weight = 15; break;
-			}
+			ItemID = orb.ItemID;
+			Weight = orb.Weight;
 
-			string[] vSpell1 = new string[] {"Clyz", "Achug", "Theram", "Quale", "Lutin", "Gad", "Croeq", "Achund", "Therrisi", "Qualorm", "Lyeit", "Garaso", "Crul", "Ackhine", "Thritai", "Quaso", "Lyetonu", "Garck", "Cuina", "Ackult", "Tig", "Quealt", "Moin", "Garund", "Daror", "Aeny", "Tinalt", "Rador", "Moragh", "Ghagha", "Deet", "Aeru", "Tinkima", "Rakeld", "Morir", "Ghatas", "Deldrad", "Ageick", "Tinut", "Rancwor", "Morosy", "Gosul", "Deldrae", "Agemor", "Tonk", "Ranildu", "Mosat", "Hatalt", "Delz", "Aghai", "Tonolde", "Ranot", "Mosd", "Hatash", "Denad", "Ahiny", "Tonper", "Ranper", "Mosrt", "Hatque", "Denold", "Aldkely", "Torint", "Ransayi", "Mosyl", "Hatskel", "Denyl", "Aleler", "Trooph", "Ranzmor", "Moszight", "Hattia", "Drahono", "Anagh", "Turbelm", "Raydan", "Naldely", "Hiert", "Draold", "Anclor", "Uighta", "Rayxwor", "Nalusk", "Hinalde", "Dynal", "Anl", "Uinga", "Rhit", "Nalwar", "Hinall", "Dyndray", "Antack", "Umnt", "Risormy", "Nag", "Hindend", "Eacki", "Ardburo", "Undaughe", "Risshy", "Nat", "Iade", "Earda", "Ardmose", "Untdran", "Rodiz", "Nator", "Iaper", "Echal", "Ardurne", "Untld", "Rodkali", "Nayth", "Iass", "Echind", "Ardyn", "Uoso", "Rodrado", "Neil", "Iawy", "Echwaro", "Ashaugha", "Urnroth", "Roort", "Nenal", "Iechi", "Eeni", "Ashdend", "Urode", "Ruina", "Newl", "Ightult", "Einea", "Ashye", "Uskdar", "Rynm", "Nia", "Ildaw", "Eldsera", "Asim", "Uskmdan", "Rynryna", "Nikim", "Ildoq", "Eldwen", "Athdra", "Usksough", "Ryns", "Nof", "Inabel", "Eldyril", "Athskel", "Usktoro", "Rynut", "Nook", "Inaony", "Elmkach", "Atkin", "Ustagee", "Samgha", "Nybage", "Inease", "Elmll", "Aughint", "Ustld", "Samnche", "Nyiy", "Ineegh", "Emath", "Aughthere", "Ustton", "Samssam", "Nyseld", "Ineiti", "Emengi", "Avery", "Verporm", "Sawor", "Nysklye", "Ineun", "Emild", "Awch", "Vesrade", "Sayimo", "Nyw", "Ingr", "Emmend", "Banend", "Voraughe", "Sayn", "Oasho", "Isbaugh", "Emnden", "Beac", "Vorril", "Sayskelu", "Oendy", "Islyei", "Endvelm", "Belan", "Vorunt", "Scheach", "Oenthi", "Issy", "Endych", "Beloz", "Whedan", "Scheyer", "Ohato", "Istin", "Engeh", "Beltiai", "Whisam", "Serat", "Oldack", "Iumo", "Engen", "Bliorm", "Whok", "Sernd", "Oldar", "Jyhin", "Engh", "Burold", "Worath", "Skell", "Oldr", "Jyon", "Engraki", "Buror", "Worav", "Skelser", "Oldtar", "Kalov", "Engroth", "Byt", "Worina", "Slim", "Omdser", "Kelol", "Engum", "Cakal", "Worryno", "Snaest", "Ond", "Kinser", "Enhech", "Carr", "Worunty", "Sniund", "Oron", "Koor", "Enina", "Cayld", "Worwaw", "Sosam", "Orrbel", "Lear", "Enk", "Cerar", "Yary", "Stayl", "Osnt", "Leert", "Enlald", "Cerl", "Yawi", "Stol", "Peright", "Legar", "Enskele", "Cerv", "Yena", "Strever", "Perpban", "Lerev", "Eoru", "Chaur", "Yero", "Swaih", "Phiunt", "Lerzshy", "Ernysi", "Chayn", "Yerrves", "Tagar", "Poll", "Llash", "Erque", "Cheimo", "Yhone", "Taienn", "Polrad", "Llotor", "Errusk", "Chekim", "Yradi", "Taiyild", "Polsera", "Loem", "Ervory", "Chreusk", "Zhugar", "Tanen", "Puon", "Loing", "Essisi", "Chrir", "Zirt", "Tasaf", "Quaev", "Lorelmo", "Essnd", "Chroelt", "Zoine", "Tasrr", "Quahang", "Lorud", "Estech", "Cloran", "Zotin", "Thaeng", "Qual", "Lour", "Estkunt", "Etoth", "Esule", "Estnight"};
-				string sSpell1 = vSpell1[Utility.RandomMinMax( 0, (vSpell1.Length-1) )];
+			string casterName = SPELL_CASTER_NAMES[Utility.RandomMinMax(0, SPELL_CASTER_NAMES.Length - 1)];
+			string adjective = ADJECTIVE_DESCRIPTORS[Utility.RandomMinMax(0, ADJECTIVE_DESCRIPTORS.Length - 1)];
 
-			string[] vSpell2 = new string[] {"Exotic", "Mysterious", "Enchanted", "Marvelous", "Amazing", "Astonishing", "Mystical", "Astounding", "Magical", "Divine", "Excellent", "Magnificent", "Phenomenal", "Fantastic", "Incredible", "Extraordinary", "Fabulous", "Wondrous", "Glorious", "Lost", "Fabled", "Legendary", "Mythical", "Missing", "Ancestral", "Ornate", "Ultimate", "Rare", "Wonderful", "Sacred", "Almighty", "Supreme", "Mighty", "Unspeakable", "Unknown", "Forgotten"};
-				string sSpell2 = vSpell2[Utility.RandomMinMax( 0, (vSpell2.Length-1) )];
-
-			Name = sSpell1 + "'s " + sSpell2 + " Crystal Ball";
+			Name = casterName + "'s " + adjective + " Crystal Ball";
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			string sThing = "";
-			switch ( Utility.RandomMinMax( 0, 51 ) )
-			{
-				case 0:		sThing = "a prince";	break;
-				case 1: 	sThing = "a king";	break;
-				case 2:		sThing = "a crown";	break;
-				case 3:		sThing = "a sword";	break;
-				case 4:		sThing = "an axe";		break;
-				case 5:		sThing = "a lion";	break;
-				case 6:		sThing = "a bear";	break;
-				case 7:		sThing = "a bat";		break;
-				case 8:		sThing = "a queen";	break;
-				case 9:		sThing = "a princess";	break;
-				case 10:	sThing = "a maiden";	break;
-				case 11:	sThing = "a beggar";	break;
-				case 12:	sThing = "a demon";	break;
-				case 13:	sThing = "a devil";	break;
-				case 14:	sThing = "an angel";	break;
-				case 15:	sThing = "a dragon";	break;
-				case 16:	sThing = "a shadow";		break;
-				case 17:	sThing = "an eagle";	break;
-				case 18:	sThing = "a hawk";	break;
-				case 19:	sThing = "a bard";	break;
-				case 20:	sThing = "a horse";	break;
-				case 21:	sThing = "a wolf";	break;
-				case 22:	sThing = "a pegasus";	break;
-				case 23:	sThing = "a ram";		break;
-				case 24:	sThing = "a skull";	break;
-				case 25:	sThing = "a spider";	break;
-				case 26:	sThing = "a unicorn";	break;
-				case 27:	sThing = "a scorpion";	break;
-				case 28:	sThing = "a pile of treasure";	break;
-				case 29:	sThing = "a dead body";	break;
-				case 30:	sThing = "an eye looking back at you";		break;
-				case 31:	sThing = "a cross";					break;
-				case 32:	sThing = "a woman";					break;
-				case 33:	sThing = "a man";					break;
-				case 34:	sThing = "a forest";				break;
-				case 35:	sThing = "a snow covered land";		break;
-				case 36:	sThing = "an ocean";				break;
-				case 37:	sThing = "a desert";				break;
-				case 38:	sThing = "a jungle";				break;
-				case 39:	sThing = "a keep";					break;
-				case 40:	sThing = "a house";					break;
-				case 41:	sThing = "some ruins";				break;
-				case 42:	sThing = "a castle";				break;
-				case 43:	sThing = "a city";					break;
-				case 44:	sThing = "a town";					break;
-				case 45:	sThing = "a village";				break;
-				case 46:	sThing = "a fort";					break;
-				case 47:	sThing = "a dungeon";				break;
-				case 48:	sThing = "a cave";					break;
-				case 49:	sThing = "a cemetery";				break;
-				case 50:	sThing = "a tomb";					break;
-				case 51:	sThing = "a crypt";					break;
-			}
-			from.PrivateOverheadMessage(MessageType.Regular, 0x14C, false, "Dentro da bola voc� pode ver: " + sThing + ".", from.NetState);
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicOrbs(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display random vision
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			int visionIndex = Utility.RandomMinMax(RANDOM_VISION_MIN, RANDOM_VISION_MAX);
+			string vision = VISION_DESCRIPTIONS[visionIndex];
+			from.PrivateOverheadMessage(MessageType.Regular, MESSAGE_COLOR, false, "Dentro da bola você pode ver: " + vision + ".", from.NetState);
 		}
 
-		public override void Deserialize( GenericReader reader )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the orbs relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
+
+		/// <summary>
+		/// Deserializes the orbs relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
+
+		#endregion
 	}
 }

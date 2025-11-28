@@ -3,117 +3,192 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicWeapon : Item
+	/// <summary>
+	/// Weapon relic item that can be flipped between two ItemID states.
+	/// Supports various weapon types with quality descriptors.
+	/// </summary>
+	public class DDRelicWeapon : DDRelicBase
 	{
-		public int RelicGoldValue;
+		#region Constants
+
+		private const int BASE_ITEM_ID = 0x48B0;
+		private const int RANDOM_WEAPON_MIN = 0;
+		private const int RANDOM_WEAPON_MAX = 9;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>First ItemID for flipping</summary>
 		public int RelicFlipID1;
+
+		/// <summary>Second ItemID for flipping</summary>
 		public int RelicFlipID2;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID1 { get { return RelicFlipID1; } set { RelicFlipID1 = value; InvalidateProperties(); } }
+		#endregion
 
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_FlipID2 { get { return RelicFlipID2; } set { RelicFlipID2 = value; InvalidateProperties(); } }
+		#region Properties
 
-		[Constructable]
-		public DDRelicWeapon() : base( 0x48B0 )
+		/// <summary>
+		/// Gets or sets the first flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID1
 		{
-			Weight = 10;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
-			Hue = Server.Misc.RandomThings.GetRandomColor(0);
+			get { return RelicFlipID1; }
+			set { RelicFlipID1 = value; InvalidateProperties(); }
+		}
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
-			
-			string sDecon = "";
-			switch ( Utility.RandomMinMax( 0, 5 ) )
-			{
-				case 0:	sDecon = ", decorative";		break;
-				case 1:	sDecon = ", ceremonial";		break;
-				case 2:	sDecon = ", ornamental";		break;
-			}
+		/// <summary>
+		/// Gets or sets the second flip ItemID
+		/// </summary>
+		[CommandProperty(AccessLevel.Owner)]
+		public int Relic_FlipID2
+		{
+			get { return RelicFlipID2; }
+			set { RelicFlipID2 = value; InvalidateProperties(); }
+		}
 
-			switch ( Utility.RandomMinMax( 0, 9 ) ) 
+		#endregion
+
+		#region Fields
+
+		/// <summary>
+		/// Structure for weapon variant data
+		/// </summary>
+		private struct WeaponVariant
+		{
+			public int ItemID;
+			public int FlipID1;
+			public int FlipID2;
+			public string TypeName;
+
+			public WeaponVariant(int itemID, int flipID1, int flipID2, string typeName)
 			{
-				case 0: ItemID = 0x48B0; RelicFlipID1 = 0x48B0; RelicFlipID2 = 0x48B1; Name = sLook + sDecon + " axe"; break;
-				case 1: ItemID = 0x48B2; RelicFlipID1 = 0x48B2; RelicFlipID2 = 0x48B3; Name = sLook + sDecon + " axe"; break;
-				case 2: ItemID = 0x48BA; RelicFlipID1 = 0x48BA; RelicFlipID2 = 0x48BB; Name = sLook + sDecon + " sword"; break;
-				case 3: ItemID = 0x48BC; RelicFlipID1 = 0x48BC; RelicFlipID2 = 0x48BD; Name = sLook + sDecon + " dagger"; break;
-				case 4: ItemID = 0x48BE; RelicFlipID1 = 0x48BE; RelicFlipID2 = 0x48BF; Name = sLook + sDecon + " trident"; break;
-				case 5: ItemID = 0x48C0; RelicFlipID1 = 0x48C0; RelicFlipID2 = 0x48C1; Name = sLook + sDecon + " war hammer"; break;
-				case 6: ItemID = 0x48C6; RelicFlipID1 = 0x48C6; RelicFlipID2 = 0x48C7; Name = sLook + sDecon + " scythe"; break;
-				case 7: ItemID = 0x48C8; RelicFlipID1 = 0x48C8; RelicFlipID2 = 0x48C9; Name = sLook + sDecon + " pike"; break;
-				case 8: ItemID = 0x48CA; RelicFlipID1 = 0x48CA; RelicFlipID2 = 0x48CB; Name = sLook + sDecon + " lance"; break;
-				case 9: ItemID = 0x48D0; RelicFlipID1 = 0x48D0; RelicFlipID2 = 0x48D1; Name = sLook + sDecon + " swords"; break;
+				this.ItemID = itemID;
+				this.FlipID1 = flipID1;
+				this.FlipID2 = flipID2;
+				this.TypeName = typeName;
 			}
 		}
 
-		public override void OnDoubleClick( Mobile from )
+		/// <summary>
+		/// Array of weapon variants
+		/// </summary>
+		private static readonly WeaponVariant[] WeaponVariants = new WeaponVariant[]
 		{
-			if ( !IsChildOf( from.Backpack ) )
+			new WeaponVariant(0x48B0, 0x48B0, 0x48B1, RelicStringConstants.ITEM_TYPE_AXE),
+			new WeaponVariant(0x48B2, 0x48B2, 0x48B3, RelicStringConstants.ITEM_TYPE_AXE),
+			new WeaponVariant(0x48BA, 0x48BA, 0x48BB, RelicStringConstants.ITEM_TYPE_SWORD),
+			new WeaponVariant(0x48BC, 0x48BC, 0x48BD, RelicStringConstants.ITEM_TYPE_DAGGER),
+			new WeaponVariant(0x48BE, 0x48BE, 0x48BF, RelicStringConstants.ITEM_TYPE_TRIDENT),
+			new WeaponVariant(0x48C0, 0x48C0, 0x48C1, RelicStringConstants.ITEM_TYPE_WAR_HAMMER),
+			new WeaponVariant(0x48C6, 0x48C6, 0x48C7, RelicStringConstants.ITEM_TYPE_SCYTHE),
+			new WeaponVariant(0x48C8, 0x48C8, 0x48C9, RelicStringConstants.ITEM_TYPE_PIKE),
+			new WeaponVariant(0x48CA, 0x48CA, 0x48CB, RelicStringConstants.ITEM_TYPE_LANCE),
+			new WeaponVariant(0x48D0, 0x48D0, 0x48D1, RelicStringConstants.ITEM_TYPE_SWORDS)
+		};
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new weapon relic with random type and quality
+		/// </summary>
+		[Constructable]
+		public DDRelicWeapon() : base(BASE_ITEM_ID)
+		{
+			Weight = RelicConstants.WEIGHT_MEDIUM;
+			Hue = Server.Misc.RandomThings.GetRandomColor(0);
+
+			int variant = Utility.RandomMinMax(RANDOM_WEAPON_MIN, RANDOM_WEAPON_MAX);
+			WeaponVariant weapon = WeaponVariants[variant];
+
+			ItemID = weapon.ItemID;
+			RelicFlipID1 = weapon.FlipID1;
+			RelicFlipID2 = weapon.FlipID2;
+
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm(true);
+			Name = quality + decorative + weapon.TypeName;
+		}
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		public DDRelicWeapon(Serial serial) : base(serial)
+		{
+		}
+
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to flip weapon or show identification message
+		/// </summary>
+		public override void OnDoubleClick(Mobile from)
+		{
+			if (!IsChildOf(from.Backpack))
 			{
-				from.SendMessage( "This can be identified to determine its value." );
-				from.SendMessage( "This must be in your backpack to flip." );
+				from.SendMessage(RelicStringConstants.MSG_IDENTIFY_VALUE);
+				from.SendMessage(RelicStringConstants.MSG_MUST_BE_IN_PACK);
 			}
 			else
 			{
-				if ( this.ItemID == RelicFlipID1 ){ this.ItemID = RelicFlipID2; } else { this.ItemID = RelicFlipID1; }
+				if (ItemID == RelicFlipID1)
+				{
+					ItemID = RelicFlipID2;
+				}
+				else
+				{
+					ItemID = RelicFlipID1;
+				}
 			}
 		}
 
-		public static void MakeOriental( Item item )
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Converts a weapon relic to oriental style with special naming
+		/// </summary>
+		/// <param name="item">The weapon item to convert</param>
+		public static void MakeOriental(Item item)
 		{
-			DDRelicWeapon relic = (DDRelicWeapon)item;
+			DDRelicWeapon relic = item as DDRelicWeapon;
+			if (relic == null)
+			{
+				return;
+			}
 
 			string sLook = "wakizashi";
-			switch ( Utility.RandomMinMax( 0, 13 ) )
+			switch (Utility.RandomMinMax(0, 13))
 			{
-				case 0:	sLook = "wakizashi";	break;
-				case 1:	sLook = "sword";		break;
-				case 2:	sLook = "katana";		break;
-				case 3:	sLook = "tanto";		break;
-				case 4:	sLook = "chokuto";		break;
-				case 5:	sLook = "tsurugi";		break;
-				case 6:	sLook = "tachi";		break;
-				case 7:	sLook = "odachi";		break;
-				case 8:	sLook = "jokoto";		break;
-				case 9:	sLook = "koto";			break;
-				case 10:sLook = "shinto";		break;
-				case 11:sLook = "shinshinto";	break;
-				case 12:sLook = "gendaito";		break;
-				case 13:sLook = "shinsakuto";	break;
+				case 0: sLook = "wakizashi"; break;
+				case 1: sLook = "sword"; break;
+				case 2: sLook = "katana"; break;
+				case 3: sLook = "tanto"; break;
+				case 4: sLook = "chokuto"; break;
+				case 5: sLook = "tsurugi"; break;
+				case 6: sLook = "tachi"; break;
+				case 7: sLook = "odachi"; break;
+				case 8: sLook = "jokoto"; break;
+				case 9: sLook = "koto"; break;
+				case 10: sLook = "shinto"; break;
+				case 11: sLook = "shinshinto"; break;
+				case 12: sLook = "gendaito"; break;
+				case 13: sLook = "shinsakuto"; break;
 			}
 
 			string OwnerName = Server.Misc.RandomThings.GetRandomOrientalName();
-			string OwnerTitle = Server.LootPackEntry.MagicItemAdj( "end", true, false, item.ItemID );
-			
-			relic.Name = sLook + " of " + OwnerName + " " + OwnerTitle; 
+			string OwnerTitle = Server.LootPackEntry.MagicItemAdj("end", true, false, item.ItemID);
 
-			switch ( Utility.RandomMinMax( 0, 9 ) ) 
+			relic.Name = sLook + " of " + OwnerName + " " + OwnerTitle;
+
+			switch (Utility.RandomMinMax(0, 9))
 			{
 				case 0: relic.ItemID = 0x2851; relic.RelicFlipID1 = 0x2851; relic.RelicFlipID2 = 0x2852; break;
 				case 1: relic.ItemID = 0x2853; relic.RelicFlipID1 = 0x2853; relic.RelicFlipID2 = 0x2854; break;
@@ -128,26 +203,32 @@ namespace Server.Items
 			}
 		}
 
-		public DDRelicWeapon(Serial serial) : base(serial)
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the weapon relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
+			base.Serialize(writer);
+			writer.Write(RelicConstants.SERIALIZATION_VERSION);
+			writer.Write(RelicFlipID1);
+			writer.Write(RelicFlipID2);
 		}
 
-		public override void Serialize( GenericWriter writer )
+		/// <summary>
+		/// Deserializes the weapon relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
-            writer.Write( RelicFlipID1 );
-            writer.Write( RelicFlipID2 );
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+			RelicFlipID1 = reader.ReadInt();
+			RelicFlipID2 = reader.ReadInt();
 		}
 
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
-            RelicFlipID1 = reader.ReadInt();
-            RelicFlipID2 = reader.ReadInt();
-		}
+		#endregion
 	}
 }

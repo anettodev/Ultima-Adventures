@@ -76,7 +76,7 @@ namespace Server.Mobiles
 		public override int Meat{ get{ return 10; } }
 		public override MeatType MeatType{ get{ return MeatType.Fish; } }
 		public override int Hides{ get{ return 20; } }
-		public override HideType HideType{ get{ if ( Utility.RandomBool() ){ return HideType.Spined; } else { return HideType.Draconic; } } }
+		public override HideType HideType{ get{ return HideType.Horned; } }
 		public override int Scales{ get{ return 2; } }
 		public override ScaleType ScaleType{ get{ return ( ScaleType.Blue ); } }
 		public override FoodType FavoriteFood{ get{ return FoodType.Meat | FoodType.Fish; } }

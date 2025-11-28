@@ -73,7 +73,7 @@ namespace Server.Mobiles
 		}
 
 		public override bool AutoDispel{ get{ return true; } }
-		public override HideType HideType{ get{ if ( Utility.RandomBool() ){ return HideType.Volcanic; } else { return HideType.Draconic; } } }
+		public override HideType HideType{ get{ if ( Utility.RandomBool() ){ return HideType.Volcanic; } else { return HideType.Barbed; } } }
 		public override int Hides{ get{ return 40; } }
 		public override int Meat{ get{ return 19; } }
 		public override int Scales{ get{ return 12; } }

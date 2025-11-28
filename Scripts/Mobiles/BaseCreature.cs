@@ -5377,20 +5377,21 @@ namespace Server.Mobiles
 					{
 						Item leather = null;
 
-						switch ( HideType )
-						{
-							case HideType.Regular: leather = new Leather( hides ); break;
-							case HideType.Spined: leather = new SpinedLeather( hides ); break;
-							case HideType.Horned: leather = new HornedLeather( hides ); break;
-							case HideType.Barbed: leather = new BarbedLeather( hides ); break;
-							case HideType.Necrotic: leather = new NecroticLeather( hides ); break;
-							case HideType.Volcanic: leather = new VolcanicLeather( hides ); break;
-							case HideType.Frozen: leather = new FrozenLeather( hides ); break;
-							case HideType.Goliath: leather = new GoliathLeather( hides ); break;
-							case HideType.Draconic: leather = new DraconicLeather( hides ); break;
-							case HideType.Hellish: leather = new HellishLeather( hides ); break;
-							case HideType.Dinosaur: leather = new DinosaurLeather( hides ); break;
-							case HideType.Alien: leather = new AlienLeather( hides ); break;
+					switch ( HideType )
+					{
+						case HideType.Regular: leather = new Server.Items.Leather( hides ); break;
+						case HideType.Spined: leather = new Server.Items.SpinedLeather( hides ); break;
+						case HideType.Horned: leather = new Server.Items.HornedLeather( hides ); break;
+					case HideType.Barbed: leather = new Server.Items.BarbedLeather( hides ); break;
+					// TODO: Future implementation - Special leather types disabled
+					//case HideType.Necrotic: leather = new Server.Items.NecroticLeather( hides ); break;
+					case HideType.Volcanic: leather = new Server.Items.VolcanicLeather( hides ); break;
+					//case HideType.Frozen: leather = new Server.Items.FrozenLeather( hides ); break;
+					case HideType.Goliath: leather = new Server.Items.GoliathLeather( hides ); break;
+						//case HideType.Draconic: leather = new DraconicLeather( hides ); break;
+						//case HideType.Hellish: leather = new HellishLeather( hides ); break;
+						//case HideType.Dinosaur: leather = new DinosaurLeather( hides ); break;
+						//case HideType.Alien: leather = new AlienLeather( hides ); break;
 						}
 
 						if ( leather != null )
@@ -5407,29 +5408,30 @@ namespace Server.Mobiles
 					else
 					{
 						if ( HideType == HideType.Regular )
-							corpse.DropItem( new Hides( hides ) );
+							corpse.DropItem( new Server.Items.Hides( hides ) );
 						else if ( HideType == HideType.Spined )
-							corpse.DropItem( new SpinedHides( hides ) );
+							corpse.DropItem( new Server.Items.SpinedHides( hides ) );
 						else if ( HideType == HideType.Horned )
-							corpse.DropItem( new HornedHides( hides ) );
+							corpse.DropItem( new Server.Items.HornedHides( hides ) );
 						else if ( HideType == HideType.Barbed )
-							corpse.DropItem( new BarbedHides( hides ) );
-						else if ( HideType == HideType.Necrotic )
-							corpse.DropItem( new NecroticHides( hides ) );
+							corpse.DropItem( new Server.Items.BarbedHides( hides ) );
+						// TODO: Future implementation - Special hide types disabled
+						//else if ( HideType == HideType.Necrotic )
+						//	corpse.DropItem( new Server.Items.NecroticHides( hides ) );
 						else if ( HideType == HideType.Volcanic )
-							corpse.DropItem( new VolcanicHides( hides ) );
-						else if ( HideType == HideType.Frozen )
-							corpse.DropItem( new FrozenHides( hides ) );
+							corpse.DropItem( new Server.Items.VolcanicHides( hides ) );
+						//else if ( HideType == HideType.Frozen )
+						//	corpse.DropItem( new Server.Items.FrozenHides( hides ) );
 						else if ( HideType == HideType.Goliath )
-							corpse.DropItem( new GoliathHides( hides ) );
-						else if ( HideType == HideType.Draconic )
-							corpse.DropItem( new DraconicHides( hides ) );
-						else if ( HideType == HideType.Hellish )
-							corpse.DropItem( new HellishHides( hides ) );
-						else if ( HideType == HideType.Dinosaur )
-							corpse.DropItem( new DinosaurHides( hides ) );
-						else if ( HideType == HideType.Alien )
-							corpse.DropItem( new AlienHides( hides ) );
+							corpse.DropItem( new Server.Items.GoliathHides( hides ) );
+						//else if ( HideType == HideType.Draconic )
+						//	corpse.DropItem( new DraconicHides( hides ) );
+						//else if ( HideType == HideType.Hellish )
+						//	corpse.DropItem( new HellishHides( hides ) );
+						//else if ( HideType == HideType.Dinosaur )
+						//	corpse.DropItem( new DinosaurHides( hides ) );
+						//else if ( HideType == HideType.Alien )
+						//	corpse.DropItem( new AlienHides( hides ) );
 
 						from.SendLocalizedMessage( 500471 ); // You skin it, and the hides are now in the corpse.
 					}

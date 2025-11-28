@@ -1,175 +1,109 @@
-//Copied directly from AlchemyPouch.cs and modified for ore/ingots  Pretty sure the IsReagent check isn't gonna find logs/boards 
-//because they aren't reagents, but I can't test it.
-
 using System;
 using Server;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Lumberjack Pouch - Specialized container for lumberjacking resources.
+	/// Provides 50% weight reduction for logs and boards.
+	/// </summary>
 	[Flipable( 0x1C10, 0x1CC6 )]
-    public class LumberjackPouch : LargeSack
-    {
-		public override int MaxWeight{ get{ return 800; } }
-		
+	public class LumberjackPouch : MagicRuckSack
+	{
+		#region Constants
+
+		/// <summary>Lumberjack-themed color hues (nature, wood, forest)</summary>
+		private static readonly int[] LUMBERJACK_HUES = new int[] 
+		{ 
+			1151,   // Green/forest
+			0x3bf,  // Brown (wood)
+			1788,   // Gray (bark)
+			2114,   // Amber (sap)
+			2193    // Gold (autumn leaves)
+		};
+
+		#endregion
+
+		#region Abstract Property Implementations
+
+		/// <summary>
+		/// Array of hue values specific to lumberjacking (nature, wood, forest colors).
+		/// </summary>
+		protected override int[] SkillHues { get { return LUMBERJACK_HUES; } }
+
+		/// <summary>
+		/// Display name for lumberjack pouch (PT-BR).
+		/// </summary>
+		protected override string ItemName { get { return "Bolsa m√°gica de madeiras"; } }
+
+		/// <summary>
+		/// Tooltip description explaining the weight reduction benefit (PT-BR).
+		/// </summary>
+		protected override string TooltipDescription { get { return "Esta bolsa reduz o peso das toras e t√°buas de madeira pela metade."; } }
+
+		/// <summary>
+		/// Error message when invalid item type is attempted (PT-BR).
+		/// </summary>
+		protected override string RejectionMessage { get { return "Esta bolsa serve apenas para guardar toras e t√°buas de madeira."; } }
+
+		/// <summary>
+		/// Maximum number of different item types (standardized to 12).
+		/// </summary>
+		protected override int MaxItemsOverride { get { return DEFAULT_MAX_ITEMS; } }
+
+		#endregion
+
+		#region Constructors
+
 		[Constructable]
 		public LumberjackPouch() : base()
 		{
-            Weight = 1.0;
-            MaxItems = 8;
-            Name = "Bolsa m·gica de madeiras";
-            Hue = Utility.RandomList(0x3bf, 1151, 1788, 1912, 1956, 2086, 2114, 2193, 2262);
-        }
-
-        public override void AddNameProperties(ObjectPropertyList list)
-        {
-
-            base.AddNameProperties(list);
-
-            list.Add("Esta bolsa reduz o peso das toras de madeiras pela metade.");
-        }
-
-        public override void Open(Mobile from)
-        {
-            double totalWeight = TotalItemWeights() * (0.5);
-            if (totalWeight > (int)MaxWeight)
-            {
-
-                foreach (Item item in Items)
-                {
-                    from.AddToBackpack(item);
-                    //item.Delete();
-                    break;
-                }
-                from.SendMessage(55, "VocÍ percebe que a bolsa est· com o peso m·ximo suportado e remove algum item antes que ela rasgue.");
-            }
-            else
-            {
-                DisplayTo(from);
-            }
-        }
-
-        public override bool OnDragDropInto( Mobile from, Item dropped, Point3D p )
-        {
-            if ( addItems(from, dropped) ) 
-            {
-                Open(from);
-                return base.OnDragDropInto(from, dropped, p);
-            }
-
-            return false;
-        }
-
-		public override bool OnDragDrop( Mobile from, Item dropped )
-        {
-            if (addItems(from, dropped)) 
-            {
-                Open(from);
-                return base.OnDragDrop(from, dropped);
-            }
-
-            return false;
-        }
-
-		private bool addItems(Mobile from, Item dropped) 
-		{
-            int totalItems = TotalItems();
-            int maxItems = MaxItems;
-            double totalWeight = TotalItemWeights() * (0.5);
-            int itemPlusBagWeight = (int)(totalWeight + ((dropped.Weight * dropped.Amount) * 0.5));
-            //from.SendMessage(33, "Item+Bag : " + itemPlusBagWeight);
-            if (itemPlusBagWeight > (int)MaxWeight)
-            {
-                from.SendMessage(55, "Adicionar este item na bolsa ir· ultrapassar o peso m·ximo suportado.");
-                return false;
-            }
-            else if (totalItems > maxItems)
-            {
-                from.SendMessage(55, "A bolsa j· est· cheia de itens.");
-                return false;
-            }
-            else
-            {
-                if (dropped is Log ||
-                        dropped is AshLog ||
-                        dropped is CherryLog ||
-                        dropped is EbonyLog ||
-                        dropped is GoldenOakLog ||
-                        dropped is HickoryLog ||
-                        /*dropped is MahoganyLog ||
-						dropped is OakLog ||
-						dropped is PineLog ||*/
-                        dropped is RosewoodLog ||
-                        /*dropped is WalnutLog ||
-						dropped is DriftwoodLog ||
-						dropped is GhostLog ||
-						dropped is PetrifiedLog ||*/
-                        dropped is ElvenLog)
-                {
-                    return true; 
-                }
-                else
-                {
-                    from.SendMessage(55, "Esta bolsa serve apenas para guardar toras de madeira.");
-                    return false;
-                }
-            }
-        }
+		}
 
 		public LumberjackPouch( Serial serial ) : base( serial )
 		{
 		}
 
+		#endregion
+
+		#region Abstract Method Implementations
+
+		/// <summary>
+		/// Validates if an item can be stored in the lumberjack pouch.
+		/// Accepts: all log types (BaseLog) and all board types (BaseWoodBoard).
+		/// </summary>
+		/// <param name="item">The item to validate</param>
+		/// <returns>True if the item is valid for lumberjack pouch</returns>
+		protected override bool IsValidItem( Item item )
+		{
+			return item is BaseLog || 
+				   item is BaseWoodBoard;
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the lumberjack pouch for saving to the world state.
+		/// </summary>
+		/// <param name="writer">The generic writer to write to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 			writer.Write( (int) 0 ); // version
 		}
 
+		/// <summary>
+		/// Deserializes the lumberjack pouch from the world state.
+		/// </summary>
+		/// <param name="reader">The generic reader to read from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
-			Weight = 1.0;
-			MaxItems = 8;
-            Name = "Bolsa m·gica de madeiras";
-        }
+		}
 
-		public override int GetTotal(TotalType type)
-        {
-			if (type != TotalType.Weight)
-				return base.GetTotal(type);
-			else
-			{
-				return (int)(TotalItemWeights() * (0.5));
-			}
-        }
-
-		public override void UpdateTotal(Item sender, TotalType type, int delta)
-        {
-            if (type != TotalType.Weight)
-                base.UpdateTotal(sender, type, delta);
-            else
-                base.UpdateTotal(sender, type, (int)(delta * (0.5)));
-        }
-
-		private double TotalItemWeights()
-        {
-			double weight = 0.0;
-
-			foreach (Item item in Items)
-				weight += (item.Weight * (double)(item.Amount));
-
-			return weight;
-        }
-
-        private int TotalItems()
-        {
-            int total = 1;
-
-            foreach (Item item in Items)
-                total += 1;
-
-            return total;
-        }
-    }
+		#endregion
+	}
 }

@@ -89,7 +89,7 @@ Name = "a greater stegladon";
 
 		public override int Meat{ get{ return 5; } }
 		public override int Hides{ get{ return 12; } }
-		public override HideType HideType{ get{ return HideType.Dinosaur; } }
+		public override HideType HideType{ get{ return HideType.Spined; } }
 		public override int Scales{ get{ return 3; } }
 		public override ScaleType ScaleType{ get{ return ScaleType.Dinosaur; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.FruitsAndVegies | FoodType.GrainsAndHay; } }

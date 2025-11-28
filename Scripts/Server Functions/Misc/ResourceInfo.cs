@@ -934,15 +934,15 @@ namespace Server.Items
 		private static CraftResourceInfo[] m_AOSLeatherInfo = new CraftResourceInfo[]
 			{
 				new CraftResourceInfo( 0x000, 												1049353, "Normal",		CraftAttributeInfo.Blank,		CraftResource.RegularLeather,	typeof( Leather ),			typeof( Hides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "deep sea", "", 0 ), 	1049354, "Deep Sea",	CraftAttributeInfo.Spined,		CraftResource.SpinedLeather,	typeof( SpinedLeather ),	typeof( SpinedHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "lizard", "", 0 ), 	1049355, "Lizard",		CraftAttributeInfo.Horned,		CraftResource.HornedLeather,	typeof( HornedLeather ),	typeof( HornedHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "serpent", "", 0 ), 	1049356, "Serpent",		CraftAttributeInfo.Barbed,		CraftResource.BarbedLeather,	typeof( BarbedLeather ),	typeof( BarbedHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "necrotic", "", 0 ), 	1034404, "Necrotic",	CraftAttributeInfo.Necrotic,	CraftResource.NecroticLeather,	typeof( NecroticLeather ),	typeof( NecroticHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "volcanic", "", 0 ), 	1034415, "Volcanic",	CraftAttributeInfo.Volcanic,	CraftResource.VolcanicLeather,	typeof( VolcanicLeather ),	typeof( VolcanicHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "deep sea", "", 0 ), 	1049354, "Spined",	CraftAttributeInfo.Spined,		CraftResource.SpinedLeather,	typeof( SpinedLeather ),	typeof( SpinedHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "lizard", "", 0 ), 	1049355, "Horned",		CraftAttributeInfo.Horned,		CraftResource.HornedLeather,	typeof( HornedLeather ),	typeof( HornedHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "serpent", "", 0 ), 	1049356, "Barbed",		CraftAttributeInfo.Barbed,		CraftResource.BarbedLeather,	typeof( BarbedLeather ),	typeof( BarbedHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "necrotic", "", 0 ), 	1034404, "Necr√≥tico",	CraftAttributeInfo.Necrotic,	CraftResource.NecroticLeather,	typeof( NecroticLeather ),	typeof( NecroticHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "volcanic", "", 0 ), 	1034415, "Volc√¢nico",	CraftAttributeInfo.Volcanic,	CraftResource.VolcanicLeather,	typeof( VolcanicLeather ),	typeof( VolcanicHides ) ),
 				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "frozen", "", 0 ), 	1034426, "Frozen",		CraftAttributeInfo.Frozen,		CraftResource.FrozenLeather,	typeof( FrozenLeather ),	typeof( FrozenHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "goliath", "", 0 ), 	1034371, "Goliath",		CraftAttributeInfo.Goliath,		CraftResource.GoliathLeather,	typeof( GoliathLeather ),	typeof( GoliathHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "draconic", "", 0 ), 	1034382, "Draconic",	CraftAttributeInfo.Draconic,	CraftResource.DraconicLeather,	typeof( DraconicLeather ),	typeof( DraconicHides ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "hellish", "", 0 ), 	1034393, "Hellish",		CraftAttributeInfo.Hellish,		CraftResource.HellishLeather,	typeof( HellishLeather ),	typeof( HellishHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "goliath", "", 0 ), 	1034371, "Goli√°tico",		CraftAttributeInfo.Goliath,		CraftResource.GoliathLeather,	typeof( GoliathLeather ),	typeof( GoliathHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "draconic", "", 0 ), 	1034382, "Draconico",	CraftAttributeInfo.Draconic,	CraftResource.DraconicLeather,	typeof( DraconicLeather ),	typeof( DraconicHides ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "hellish", "", 0 ), 	1034393, "Infernal",		CraftAttributeInfo.Hellish,		CraftResource.HellishLeather,	typeof( HellishLeather ),	typeof( HellishHides ) ),
 				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "dinosaur", "", 0 ), 	1036105, "Dinosaur",	CraftAttributeInfo.Dinosaur,	CraftResource.DinosaurLeather,	typeof( DinosaurLeather ),	typeof( DinosaurHides ) ),
 				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "alien", "", 0 ), 	1034445, "Alien",		CraftAttributeInfo.Alien,		CraftResource.AlienLeather,		typeof( AlienLeather ),		typeof( AlienHides ) )
 			};
@@ -951,9 +951,9 @@ namespace Server.Items
 			{
 				new CraftResourceInfo( 0x000, 													1011542,	"Regular",		CraftAttributeInfo.Blank,			CraftResource.RegularWood,		typeof( Log ),			typeof( Board ) ),
 				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "ash", "", 0 ),			1095399,	"Carvalho Cinza",			CraftAttributeInfo.AshTree,			CraftResource.AshTree,			typeof( AshLog ),		typeof( AshBoard ) ),
-				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "ebony", "", 0 ),			1095401,	"…bano",		CraftAttributeInfo.EbonyTree,		CraftResource.EbonyTree,		typeof( EbonyLog ),		typeof( EbonyBoard ) ),
-                new CraftResourceInfo( MaterialInfo.GetMaterialColor( "elven", "", 0 ),         1095537,    "…lfica",        CraftAttributeInfo.ElvenTree,       CraftResource.ElvenTree,        typeof( ElvenLog ),     typeof( ElvenBoard ) ),
-                new CraftResourceInfo( MaterialInfo.GetMaterialColor( "golden oak", "", 0 ),	1095402,	"IpÍ-Amarelo",	CraftAttributeInfo.GoldenOakTree,	CraftResource.GoldenOakTree,	typeof( GoldenOakLog ),	typeof( GoldenOakBoard ) ),
+				new CraftResourceInfo( MaterialInfo.GetMaterialColor( "ebony", "", 0 ),			1095401,	"√âbano",		CraftAttributeInfo.EbonyTree,		CraftResource.EbonyTree,		typeof( EbonyLog ),		typeof( EbonyBoard ) ),
+                new CraftResourceInfo( MaterialInfo.GetMaterialColor( "elven", "", 0 ),         1095537,    "√âlfica",        CraftAttributeInfo.ElvenTree,       CraftResource.ElvenTree,        typeof( ElvenLog ),     typeof( ElvenBoard ) ),
+                new CraftResourceInfo( MaterialInfo.GetMaterialColor( "golden oak", "", 0 ),	1095402,	"Ip√™-Amarelo",	CraftAttributeInfo.GoldenOakTree,	CraftResource.GoldenOakTree,	typeof( GoldenOakLog ),	typeof( GoldenOakBoard ) ),
                 new CraftResourceInfo( MaterialInfo.GetMaterialColor( "cherry", "", 0 ),        1095400,    "Cerejeira",       CraftAttributeInfo.CherryTree,      CraftResource.CherryTree,       typeof( CherryLog ),    typeof( CherryBoard ) ),
                 new CraftResourceInfo( MaterialInfo.GetMaterialColor( "rosewood", "", 0 ),      1095407,    "Pau-Brasil",     CraftAttributeInfo.RosewoodTree,    CraftResource.RosewoodTree,     typeof( RosewoodLog ),  typeof( RosewoodBoard ) ),
                 new CraftResourceInfo( MaterialInfo.GetMaterialColor( "hickory", "", 0 ),       1095403,    "Nogueira Branca",      CraftAttributeInfo.HickoryTree,     CraftResource.HickoryTree,      typeof( HickoryLog ),   typeof( HickoryBoard ) )
@@ -970,12 +970,12 @@ namespace Server.Items
 
         private static CraftResourceInfo[] m_FabricInfo = new CraftResourceInfo[]
             {
-                new CraftResourceInfo( 0x000,	1011542,    "Algod„o",		CraftAttributeInfo.Cotton,     CraftResource.Cotton,    typeof( Cotton ) ),
+                new CraftResourceInfo( 0x000,	1011542,    "Algod√£o",		CraftAttributeInfo.Cotton,     CraftResource.Cotton,    typeof( Cotton ) ),
                 new CraftResourceInfo( 1382,    1026809,    "Linho",		CraftAttributeInfo.Flax,     CraftResource.Flax,      typeof( Flax ) ),
                 new CraftResourceInfo( 2173,    1074333,    "Seda",        CraftAttributeInfo.Silk,     CraftResource.Silk,      typeof( Silk ) ),
-                new CraftResourceInfo( 0x000,    1026808,    "PoliÈster",        CraftAttributeInfo.Blank,     CraftResource.Poliester/*,      typeof( Poliester )*/ ),
+                new CraftResourceInfo( 0x000,    1026808,    "Poli√©ster",        CraftAttributeInfo.Blank,     CraftResource.Poliester/*,      typeof( Poliester )*/ ),
                 
-                new CraftResourceInfo( 946,    1023613,    "L„",        CraftAttributeInfo.Wool,     CraftResource.Wool,      typeof( Wool ) )
+                new CraftResourceInfo( 946,    1023613,    "L√£",        CraftAttributeInfo.Wool,     CraftResource.Wool,      typeof( Wool ) )
             };
 
         /// <summary>

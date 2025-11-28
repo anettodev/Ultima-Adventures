@@ -563,14 +563,16 @@ namespace Server.Mobiles
 				else if ( skin >= 16384 ){ flesh = "deep sea"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "deep sea", "", 0 ); qty = 75; cost = 4; }
 				else if ( skin >= 8192 ){ flesh = "lizard"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "lizard", "", 0 ); qty = 70; cost = 6; }
 				else if ( skin >= 4096 ){ flesh = "serpent"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "serpent", "", 0 ); qty = 65; cost = 8; }
-				else if ( skin >= 2048 ){ flesh = "necrotic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "necrotic", "", 0 ); qty = 60; cost = 10; }
-				else if ( skin >= 1024 ){ flesh = "volcanic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "volcanic", "", 0 ); qty = 55; cost = 12; }
-				else if ( skin >= 512 ){ flesh = "frozen"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "frozen", "", 0 ); qty = 50; cost = 14; }
+				// TODO: Future implementation - Special hide types disabled
+				//else if ( skin >= 2048 ){ flesh = "necrotic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "necrotic", "", 0 ); qty = 60; cost = 10; }
+				//else if ( skin >= 1024 ){ flesh = "volcanic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "volcanic", "", 0 ); qty = 55; cost = 12; }
+				//else if ( skin >= 512 ){ flesh = "frozen"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "frozen", "", 0 ); qty = 50; cost = 14; }
 				else if ( skin >= 256 ){ flesh = "goliath"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "goliath", "", 0 ); qty = 45; cost = 16; }
-				else if ( skin >= 128 ){ flesh = "draconic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "draconic", "", 0 ); qty = 40; cost = 18; }
-				else if ( skin >= 64 ){ flesh = "hellish"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "hellish", "", 0 ); qty = 35; cost = 20; }
-				else if ( skin >= 32 ){ flesh = "dinosaur"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "dinosaur", "", 0 ); qty = 30; cost = 22; }
-				else { flesh = "alien"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "alien", "", 0 ); qty = 10; cost = 30; }
+				//else if ( skin >= 128 ){ flesh = "draconic"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "draconic", "", 0 ); qty = 40; cost = 18; }
+				//else if ( skin >= 64 ){ flesh = "hellish"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "hellish", "", 0 ); qty = 35; cost = 20; }
+				//else if ( skin >= 32 ){ flesh = "dinosaur"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "dinosaur", "", 0 ); qty = 30; cost = 22; }
+				//else { flesh = "alien"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "alien", "", 0 ); qty = 10; cost = 30; }
+				else { flesh = "serpent"; hide = 0x5093; hue = MaterialInfo.GetMaterialColor( "serpent", "", 0 ); qty = 65; cost = 8; } // Fallback to serpent for disabled types
 
 				crate.CrateQty = Utility.RandomMinMax( qty*5, qty*15 );
 				crate.CrateItem = flesh;

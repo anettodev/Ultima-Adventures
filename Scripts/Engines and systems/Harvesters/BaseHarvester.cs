@@ -728,19 +728,23 @@ namespace Server.Items
 							{resource = new Hides(); resource.Amount = 1;}
 						else 
 						{
-							switch( Utility.Random( chance ) )
+							// Cap chance to 4 since we only have 4 active cases (0-3)
+							int cappedChance = chance > 4 ? 4 : chance;
+							switch( Utility.Random( cappedChance ) )
 							{
 								case 0: resource = new SpinedHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
 								case 1: resource = new HornedHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
 								case 2: resource = new BarbedHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 3: resource = new NecroticHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 4: resource = new VolcanicHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 5: resource = new FrozenHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 6: resource = new GoliathHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 7: resource = new DraconicHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 8: resource = new HellishHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 9: resource = new DinosaurHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
-								case 10: resource = new AlienHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								// TODO: Future implementation - Special hide types disabled
+								//case 3: resource = new NecroticHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 4: resource = new VolcanicHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 5: resource = new FrozenHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								case 3: resource = new GoliathHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 7: resource = new DraconicHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 8: resource = new HellishHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 9: resource = new DinosaurHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								//case 10: resource = new AlienHides(); resource.Amount = Utility.RandomMinMax(1, 2); 		break;
+								default: resource = new Hides(); resource.Amount = 1; break; // Fallback to regular hides
 							}	
 						}					
 					}

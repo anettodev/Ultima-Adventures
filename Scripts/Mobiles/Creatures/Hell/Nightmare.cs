@@ -121,7 +121,7 @@ Name = "a greater nightmare";
 
 		public override int Meat{ get{ return 5; } }
 		public override int Hides{ get{ return 10; } }
-		public override HideType HideType{ get{ return HideType.Hellish; } }
+		public override HideType HideType{ get{ return HideType.Barbed; } }
 		public override int Furs{ get{ return Utility.RandomList( 0, 0, 0, 5 ); } }
 		public override FurType FurType{ get{ return FurType.Regular; } }
 		public override FoodType FavoriteFood{ get{ return FoodType.Fire; } }

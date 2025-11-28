@@ -1,10 +1,21 @@
 using System;
+using Server.Engines.Craft;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Base class for all board types that can be used in carpentry.
+	/// Handles resource properties, tooltip display, and serialization.
+	/// </summary>
 	public class BaseWoodBoard : Item, ICommodity
 	{
+		#region Fields
+
 		private CraftResource m_Resource;
+
+		#endregion
+
+		#region Properties
 
 		[CommandProperty( AccessLevel.GameMaster )]
 		public CraftResource Resource
@@ -13,50 +24,38 @@ namespace Server.Items
 			set { m_Resource = value; InvalidateProperties(); }
 		}
 
+		/// <summary>
+		/// Gets the localization number for the board's resource type.
+		/// Uses dictionary lookup for better performance than switch statement.
+		/// </summary>
 		int ICommodity.DescriptionNumber 
 		{ 
 			get
 			{
-				switch ( m_Resource )
-				{
-					case CraftResource.RegularWood: return 1015101;
-					case CraftResource.AshTree: return 1095389;
-					case CraftResource.CherryTree: return 1095390;
-					case CraftResource.EbonyTree: return 1095391;
-					case CraftResource.GoldenOakTree: return 1095392;
-					case CraftResource.HickoryTree: return 1095393;
-					/*case CraftResource.MahoganyTree: return 1095394;
-					case CraftResource.DriftwoodTree: return 1095410;
-					case CraftResource.OakTree: return 1095395;
-					case CraftResource.PineTree: return 1095396;
-					case CraftResource.GhostTree: return 1095512;*/
-					case CraftResource.RosewoodTree: return 1095397;
-					/*case CraftResource.WalnutTree: return 1095398;
-					case CraftResource.PetrifiedTree: return 1095533;*/
-					case CraftResource.ElvenTree: return 1095536;
-				}
-
-				return LabelNumber;
+				int id;
+				return BoardConstants.LOCALIZATION_IDS.TryGetValue( m_Resource, out id ) ? id : LabelNumber;
 			} 
 		}
 
 		bool ICommodity.IsDeedable { get { return true; } }
 
+		#endregion
+
 		[Constructable]
 		public BaseWoodBoard() : this( 1 )
 		{
-			Name = "Tábua(s)";
+			Name = BoardStringConstants.ITEM_NAME_BOARD;
 		}
 
 		[Constructable]
 		public BaseWoodBoard( int amount ) : this( CraftResource.RegularWood, amount )
 		{
-            Name = "Tábua(s)";
+            Name = BoardStringConstants.ITEM_NAME_BOARD;
         }
 
 		public BaseWoodBoard( Serial serial ) : base( serial )
 		{
-            Name = "Tábua(s)";
+            Name = BoardStringConstants.ITEM_NAME_BOARD;
         }
 
 		[Constructable]
@@ -65,35 +64,80 @@ namespace Server.Items
 		}
 
 		[Constructable]
-		public BaseWoodBoard( CraftResource resource, int amount ) : base( 0x1BD7 )
+		public BaseWoodBoard( CraftResource resource, int amount ) : base( BoardConstants.ITEM_ID_BOARD )
 		{
 			Stackable = true;
 			Amount = amount;
-			Weight = 1;
+			Weight = BoardConstants.WEIGHT_CONSTRUCTOR;
 			m_Resource = resource;
 			Hue = CraftResources.GetHue( resource );
 		}
 
+		#region Property Display
+
+		/// <summary>
+		/// Gets the resource type display name for the tooltip properties.
+		/// Maps CraftResource enum values to PT-BR display names from BoardNameConstants.
+		/// Boards use the same wood types as logs, so we reuse LogNameConstants values.
+		/// </summary>
+		/// <returns>The resource type display name, or null if not found</returns>
+		public virtual string GetResourceTypeDisplayName()
+		{
+			switch ( m_Resource )
+			{
+				case CraftResource.RegularWood: return BoardNameConstants.REGULAR_WOOD_DISPLAY_NAME;
+				case CraftResource.AshTree: return BoardNameConstants.ASH_TREE_DISPLAY_NAME;
+				case CraftResource.EbonyTree: return BoardNameConstants.EBONY_TREE_DISPLAY_NAME;
+				case CraftResource.ElvenTree: return BoardNameConstants.ELVEN_TREE_DISPLAY_NAME;
+				case CraftResource.GoldenOakTree: return BoardNameConstants.GOLDEN_OAK_TREE_DISPLAY_NAME;
+				case CraftResource.CherryTree: return BoardNameConstants.CHERRY_TREE_DISPLAY_NAME;
+				case CraftResource.RosewoodTree: return BoardNameConstants.ROSEWOOD_TREE_DISPLAY_NAME;
+				case CraftResource.HickoryTree: return BoardNameConstants.HICKORY_TREE_DISPLAY_NAME;
+				default: return null;
+			}
+		}
+
+		/// <summary>
+		/// Adds properties to the object property list (tooltip).
+		/// Shows the resource type using custom PT-BR names (including RegularWood).
+		/// </summary>
+		/// <param name="list">The object property list to add to</param>
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
 
-			if ( !CraftResources.IsStandard( m_Resource ) )
+			// Try to get custom PT-BR display name first (includes RegularWood)
+			string customName = GetResourceTypeDisplayName();
+
+			if ( customName != null )
 			{
+				list.Add( 1053099, ItemNameHue.UnifiedItemProps.SetColor( customName, BoardStringConstants.COLOR_CYAN ) );
+			}
+			else if ( !CraftResources.IsStandard( m_Resource ) )
+			{
+				// Fallback to original system if custom name not found (only for non-standard resources)
 				int num = CraftResources.GetLocalizationNumber( m_Resource );
 
 				if ( num > 0 )
 					list.Add( num );
 				else
-					list.Add( CraftResources.GetName( m_Resource ) );
+				{
+					string resourceName = CraftResources.GetName( m_Resource );
+					if ( !string.IsNullOrEmpty( resourceName ) )
+						list.Add( resourceName );
+				}
 			}
 		}
+
+		#endregion
+
+		#region Serialization
 
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int) 3 );
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_CURRENT );
 
 			writer.Write( (int)m_Resource );
 		}
@@ -114,15 +158,23 @@ namespace Server.Items
 					}
 			}
 
-			if ( Weight != 0.5 )
-				Weight = 0.5;
+			if ( Weight != BoardConstants.WEIGHT_DESERIALIZED )
+				Weight = BoardConstants.WEIGHT_DESERIALIZED;
 
 			if ( version <= 1 )
 				m_Resource = CraftResource.RegularWood;
 
-			ItemID = 0x1BD7;
+			ItemID = BoardConstants.ITEM_ID_BOARD;
 		}
+
+		#endregion
 	}
+
+	#region Board Classes
+
+	/// <summary>
+	/// Regular wood board - standard board type
+	/// </summary>
 	public class Board : BaseWoodBoard
 	{
 		[Constructable]
@@ -142,7 +194,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -170,7 +222,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -198,7 +250,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -226,7 +278,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -254,7 +306,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -282,7 +334,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -310,63 +362,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
-	}*/
-	/*public class OakBoard : BaseWoodBoard
-	{
-		[Constructable]
-		public OakBoard() : this( 1 )
-		{
-		}
-
-		[Constructable]
-		public OakBoard( int amount ) : base( CraftResource.OakTree, amount )
-		{
-		}
-
-		public OakBoard( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
-	}*/
-	/*public class PineBoard : BaseWoodBoard
-	{
-		[Constructable]
-		public PineBoard() : this( 1 )
-		{
-		}
-
-		[Constructable]
-		public PineBoard( int amount ) : base( CraftResource.PineTree, amount )
-		{
-		}
-
-		public PineBoard( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -394,7 +390,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -422,92 +418,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
-	}*/
-	/*public class DriftwoodBoard : BaseWoodBoard
-	{
-		[Constructable]
-		public DriftwoodBoard() : this( 1 )
-		{
-		}
-
-		[Constructable]
-		public DriftwoodBoard( int amount ) : base( CraftResource.DriftwoodTree, amount )
-		{
-		}
-
-		public DriftwoodBoard( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
-	}*/
-
-	/*public class GhostBoard : BaseWoodBoard
-	{
-		[Constructable]
-		public GhostBoard() : this( 1 )
-		{
-		}
-
-		[Constructable]
-		public GhostBoard( int amount ) : base( CraftResource.GhostTree, amount )
-		{
-		}
-
-		public GhostBoard( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
-		}
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
-		}
-	}*/
-	/*public class PetrifiedBoard : BaseWoodBoard
-	{
-		[Constructable]
-		public PetrifiedBoard() : this( 1 )
-		{
-		}
-
-		[Constructable]
-		public PetrifiedBoard( int amount ) : base( CraftResource.PetrifiedTree, amount )
-		{
-		}
-
-		public PetrifiedBoard( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -535,7 +446,7 @@ namespace Server.Items
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-			writer.Write( (int)0 ); // version
+			writer.Write( (int)BoardConstants.SERIALIZATION_VERSION_DEFAULT ); // version
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -544,4 +455,6 @@ namespace Server.Items
 			int version = reader.ReadInt();
 		}
 	}
+
+	#endregion
 }

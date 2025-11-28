@@ -43,8 +43,8 @@ namespace Server.Items
         public override void AddNameProperties(ObjectPropertyList list)
 		{
             base.AddNameProperties(list);
-			list.Add( 1070722, "Use em alto mar para procurar algo");
-			list.Add( 1049644, "Requer Skill: 70.0 Fishing");
+			list.Add( 1070722, FishingStringConstants.FormatProperty(FishingStringConstants.PROP_USE_HIGH_SEAS));
+			list.Add( 1049644, FishingStringConstants.FormatSkillRequirement(70.0, "Fishing"));
         }
 
 		public override void Serialize( GenericWriter writer )
@@ -82,19 +82,19 @@ namespace Server.Items
 			}
 			else if ( from.Skills[SkillName.Fishing].Value < 70.0 )
 			{
-				from.SendMessage(55, "Você não tem habilidade suficiente em pescar para usar esta rede.");
+				from.SendMessage(55, "Vocï¿½ nï¿½o tem habilidade suficiente em pescar para usar esta rede.");
 			}
 			else if ( Worlds.IsOnBoat( from ) == false )
 			{
-				from.SendMessage(55, "Você precisará estar no seu barco para usar esta rede.");
+				from.SendMessage(55, "Vocï¿½ precisarï¿½ estar no seu barco para usar esta rede.");
 			}
 			else if ( Worlds.BoatToCloseToTown( from ) == true )
 			{
-				from.SendMessage(55, "Você precisará ir para águas mais profundas para usar esta rede.");
+				from.SendMessage(55, "Vocï¿½ precisarï¿½ ir para ï¿½guas mais profundas para usar esta rede.");
 			}
 			else if ( IsChildOf( from.Backpack ) )
 			{
-                from.SendMessage(55, "Onde você deseja usar a rede de pesca?");
+                from.SendMessage(55, "Onde vocï¿½ deseja usar a rede de pesca?");
                 //from.SendLocalizedMessage( 1010484 ); // Where do you wish to use the net?
 				from.BeginTarget( -1, true, TargetFlags.None, new TargetCallback( OnTarget ) );
 			}
@@ -139,7 +139,7 @@ namespace Server.Items
 
 			if ( !from.InRange( p3D, 6 ) )
 			{
-                from.SendMessage(55, "Você precisa estar mais perto da água para pescar!");
+                from.SendMessage(55, "Vocï¿½ precisa estar mais perto da ï¿½gua para pescar!");
                 //from.SendLocalizedMessage( 500976 ); // You need to be closer to the water to fish!
 			}
 			else if ( hasWater )
@@ -157,12 +157,12 @@ namespace Server.Items
 				Timer.DelayCall( TimeSpan.FromSeconds( 1.5 ), TimeSpan.FromSeconds( 1.0 ), 20, new TimerStateCallback( DoEffect ), new object[]{ p, 0, from } );
                 
 
-                from.SendMessage(55, "Você mergulha a rede no mar");
+                from.SendMessage(55, "Vocï¿½ mergulha a rede no mar");
                 //from.SendLocalizedMessage( 1010487 ); // You plunge the net into the sea...
 			}
 			else
 			{
-				from.SendMessage(55, "Você só pode usar esta rede em águas profundas!");
+				from.SendMessage(55, "Vocï¿½ sï¿½ pode usar esta rede em ï¿½guas profundas!");
 
                 //from.SendLocalizedMessage( 1010485 ); // You can only use this net in deep water!
 			}

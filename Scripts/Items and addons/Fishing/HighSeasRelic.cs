@@ -30,15 +30,15 @@ namespace Server.Items
 
 			switch ( Utility.RandomMinMax( 0, 20 ) )
 			{
-				case 0:	Name = "âncora";				ItemID = 0x897;		Weight = 100.0;		RelicGoldValue = Utility.RandomMinMax( 80, 200 );
+				case 0:	Name = "ï¿½ncora";				ItemID = 0x897;		Weight = 100.0;		RelicGoldValue = Utility.RandomMinMax( 80, 200 );
 					RelicFlipID1 = 0x897;	RelicFlipID2 = 0x898;	Server.Misc.MaterialInfo.ColorPlainMetal( this );	break;
 				case 1:	Name = "barril arruinado";			ItemID = 0x1EB5;	Weight = 20.0;		RelicGoldValue = Utility.RandomMinMax( 20, 80 );
 					RelicFlipID1 = 0x1EB5;	RelicFlipID2 = 0x1EB5;	break;
-				case 2:	Name = "bala de canhão";		ItemID = 0x0E73;	Weight = 10.0;		RelicGoldValue = Utility.RandomMinMax( 10, 20 );
+				case 2:	Name = "bala de canhï¿½o";		ItemID = 0x0E73;	Weight = 10.0;		RelicGoldValue = Utility.RandomMinMax( 10, 20 );
 					RelicFlipID1 = 0x0E73;	RelicFlipID2 = 0x0E73;	break;
-				case 3:	Name = "balas de canhão";		ItemID = 0x0E74;	Weight = 50.0;		RelicGoldValue = Utility.RandomMinMax( 20, 40 );
+				case 3:	Name = "balas de canhï¿½o";		ItemID = 0x0E74;	Weight = 50.0;		RelicGoldValue = Utility.RandomMinMax( 20, 40 );
 					RelicFlipID1 = 0x0E74;	RelicFlipID2 = 0x0E74;	break;
-				case 4:	Name = "relógio quebrado";			ItemID = 0x0C1F;	Weight = 2.0;		RelicGoldValue = Utility.RandomMinMax( 20, 40 );
+				case 4:	Name = "relï¿½gio quebrado";			ItemID = 0x0C1F;	Weight = 2.0;		RelicGoldValue = Utility.RandomMinMax( 20, 40 );
 					RelicFlipID1 = 0x0C1F;	RelicFlipID2 = 0x0C1F;	break;
 				case 5:	Name = "miniatura de navio";			ItemID = 0x14F3;	Weight = 5.0;		RelicGoldValue = Utility.RandomMinMax( 60, 130 );
 					RelicFlipID1 = 0x14F3;	RelicFlipID2 = 0x14F4;	break;
@@ -50,7 +50,7 @@ namespace Server.Items
 					RelicFlipID1 = 0x14F5;	RelicFlipID2 = 0x14F6;	break;
 				case 9:	Name = "corda encharcada";			ItemID = 0x14F8;	Weight = 10.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
 					RelicFlipID1 = 0x14F8;	RelicFlipID2 = 0x14FA;	break;
-				case 10: Name = "chicote de flagelação usado";	ItemID = 0x166E;	Weight = 2.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
+				case 10: Name = "chicote de flagelaï¿½ï¿½o usado";	ItemID = 0x166E;	Weight = 2.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
 					RelicFlipID1 = 0x166E;	RelicFlipID2 = 0x166E;	break;
 				case 11: Name = "ampulheta rachada";	ItemID = 0x1810;	Weight = 2.0;		RelicGoldValue = Utility.RandomMinMax( 20, 40 );
 					RelicFlipID1 = 0x1810;	RelicFlipID2 = 0x1813;	break;
@@ -68,9 +68,9 @@ namespace Server.Items
 					RelicFlipID1 = 0x1047;	RelicFlipID2 = 0x1048;	break;
 				case 18: Name = "sextante quebrado";		ItemID = 0x1057;	Weight = 1.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
 					RelicFlipID1 = 0x1057;	RelicFlipID2 = 0x1058;	break;
-				case 19: Name = "chapéu de pirata rasgado";	ItemID = 0x171B;	Weight = 1.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
+				case 19: Name = "chapï¿½u de pirata rasgado";	ItemID = 0x171B;	Weight = 1.0;		RelicGoldValue = Utility.RandomMinMax( 10, 30 );
 					RelicFlipID1 = 0x171B;	RelicFlipID2 = 0x171B;	break;
-				case 20: Name = "o diário do capitão";
+				case 20: Name = "o diï¿½rio do capitï¿½o";
 							Hue = RandomThings.GetRandomColor(0);
 							ItemID = Utility.RandomList( 0xFBD, 0xFBE, 0xFEF, 0xFF0, 0xFF1, 0xFF2, 0x42BF, 0xE3B, 0xEFA, 0x2253, 0x2254, 0x42BF );
 							Weight = 1.0;
@@ -80,21 +80,21 @@ namespace Server.Items
 
 
 			string boat = RandomThings.GetRandomShipName( "", 0 );
-			RelicOrigin = "Resgatado do Naufrágio: [ " + boat + " ]";
+			RelicOrigin = "Resgatado do Naufrï¿½gio: [ " + boat + " ]";
 		}
 
         public override void AddNameProperties(ObjectPropertyList list)
 		{
             base.AddNameProperties(list);
-			list.Add( 1070722, ItemNameHue.UnifiedItemProps.SetColor(RelicOrigin, "#8be4fc"));
+			list.Add( 1070722, FishingStringConstants.FormatProperty(RelicOrigin));
         }
 
 		public override void OnDoubleClick( Mobile from )
 		{
 			if ( !IsChildOf( from.Backpack ) )
 			{
-				from.SendMessage( 55,"Identifique o item para descobrir o valor." );
-				from.SendMessage(55, "Isso deve estar na sua mochila para virar.");
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.MSG_IDENTIFY_VALUE);
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.MSG_MUST_BE_IN_PACK_FLIP);
 			}
 			else
 			{

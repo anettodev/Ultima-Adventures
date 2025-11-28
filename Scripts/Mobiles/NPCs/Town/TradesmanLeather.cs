@@ -159,14 +159,15 @@ namespace Server.Items
 				if ( CrateItem == "deep sea" ){ from.AddToBackpack ( new SpinedLeather( CrateQty ) ); }
 				else if ( CrateItem == "lizard" ){ from.AddToBackpack ( new HornedLeather( CrateQty ) ); }
 				else if ( CrateItem == "serpent" ){ from.AddToBackpack ( new BarbedLeather( CrateQty ) ); }
-				else if ( CrateItem == "necrotic" ){ from.AddToBackpack ( new NecroticLeather( CrateQty ) ); }
-				else if ( CrateItem == "volcanic" ){ from.AddToBackpack ( new VolcanicLeather( CrateQty ) ); }
-				else if ( CrateItem == "frozen" ){ from.AddToBackpack ( new FrozenLeather( CrateQty ) ); }
+				// TODO: Future implementation - Special leather types disabled
+				//else if ( CrateItem == "necrotic" ){ from.AddToBackpack ( new NecroticLeather( CrateQty ) ); }
+				//else if ( CrateItem == "volcanic" ){ from.AddToBackpack ( new VolcanicLeather( CrateQty ) ); }
+				//else if ( CrateItem == "frozen" ){ from.AddToBackpack ( new FrozenLeather( CrateQty ) ); }
 				else if ( CrateItem == "goliath" ){ from.AddToBackpack ( new GoliathLeather( CrateQty ) ); }
-				else if ( CrateItem == "draconic" ){ from.AddToBackpack ( new DraconicLeather( CrateQty ) ); }
-				else if ( CrateItem == "hellish" ){ from.AddToBackpack ( new HellishLeather( CrateQty ) ); }
-				else if ( CrateItem == "dinosaur" ){ from.AddToBackpack ( new DinosaurLeather( CrateQty ) ); }
-				else if ( CrateItem == "alien" ){ from.AddToBackpack ( new AlienLeather( CrateQty ) ); }
+				//else if ( CrateItem == "draconic" ){ from.AddToBackpack ( new DraconicLeather( CrateQty ) ); }
+				//else if ( CrateItem == "hellish" ){ from.AddToBackpack ( new HellishLeather( CrateQty ) ); }
+				//else if ( CrateItem == "dinosaur" ){ from.AddToBackpack ( new DinosaurLeather( CrateQty ) ); }
+				//else if ( CrateItem == "alien" ){ from.AddToBackpack ( new AlienLeather( CrateQty ) ); }
 				else { from.AddToBackpack ( new Leather( CrateQty ) ); }
 
 				from.PrivateOverheadMessage(MessageType.Regular, 0x14C, false, "You separate the leather into your backpack", from.NetState);

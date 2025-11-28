@@ -3,86 +3,102 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicArts : Item
+	/// <summary>
+	/// Decorative arts relic item with random visual variations.
+	/// Can spawn as goblets, bowls, or scepters with various quality descriptors.
+	/// </summary>
+	public class DDRelicArts : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
+		private const int BASE_ITEM_ID = 0x4210;
+		private const int RANDOM_TYPE_MIN = 0;
+		private const int RANDOM_TYPE_MAX = 2;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>Item IDs for goblet variants</summary>
+		private static readonly int[] GOBLET_ITEM_IDS = new[] { 0x9CB, 0x9B3, 0x9BF, 0x9CB };
+
+		/// <summary>Item IDs for bowl variants</summary>
+		private static readonly int[] BOWL_ITEM_IDS = new[] { 0x42BE, 0x15F8, 0x15FD, 0x1603, 0x1604 };
+
+		/// <summary>Item IDs for scepter variants</summary>
+		private static readonly int[] SCEPTER_ITEM_IDS = new[] { 0xDF2, 0xDF3, 0xDF4, 0xDF5 };
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new decorative arts relic with random type and quality
+		/// </summary>
 		[Constructable]
-		public DDRelicArts() : base( 0x4210 )
+		public DDRelicArts() : base(BASE_ITEM_ID)
 		{
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
+			int type = Utility.RandomMinMax(RANDOM_TYPE_MIN, RANDOM_TYPE_MAX);
+			string itemType;
+			int weight;
 
-			string sType = "";
-			switch ( Utility.RandomMinMax( 0, 2 ) ) 
+			switch (type)
 			{
-				case 0: ItemID = Utility.RandomList( 0x9CB, 0x9B3, 0x9BF, 0x9CB ); sType = " goblet"; Weight = 5; break;
-				case 1: ItemID = Utility.RandomList( 0x42BE, 0x15F8, 0x15FD, 0x1603, 0x1604 ); sType = " bowl"; Weight = 20; break;
-				case 2: ItemID = Utility.RandomList( 0xDF2, 0xDF3, 0xDF4, 0xDF5 ); sType = " scepter"; Weight = 10; break;
+				case 0:
+					ItemID = Utility.RandomList(GOBLET_ITEM_IDS);
+					itemType = RelicStringConstants.ITEM_TYPE_GOBLET;
+					weight = RelicConstants.WEIGHT_LIGHT;
+					break;
+				case 1:
+					ItemID = Utility.RandomList(BOWL_ITEM_IDS);
+					itemType = RelicStringConstants.ITEM_TYPE_BOWL;
+					weight = RelicConstants.WEIGHT_HEAVY;
+					break;
+				default:
+					ItemID = Utility.RandomList(SCEPTER_ITEM_IDS);
+					itemType = RelicStringConstants.ITEM_TYPE_SCEPTER;
+					weight = RelicConstants.WEIGHT_MEDIUM;
+					break;
 			}
 
-			string sLook = "a rare";
-			switch ( Utility.RandomMinMax( 0, 18 ) )
-			{
-				case 0:	sLook = "a rare";	break;
-				case 1:	sLook = "a nice";	break;
-				case 2:	sLook = "a pretty";	break;
-				case 3:	sLook = "a superb";	break;
-				case 4:	sLook = "a delightful";	break;
-				case 5:	sLook = "an elegant";	break;
-				case 6:	sLook = "an exquisite";	break;
-				case 7:	sLook = "a fine";	break;
-				case 8:	sLook = "a gorgeous";	break;
-				case 9:	sLook = "a lovely";	break;
-				case 10:sLook = "a magnificent";	break;
-				case 11:sLook = "a marvelous";	break;
-				case 12:sLook = "a splendid";	break;
-				case 13:sLook = "a wonderful";	break;
-				case 14:sLook = "an extraordinary";	break;
-				case 15:sLook = "estranho";	break;
-				case 16:sLook = "estranho";	break;
-				case 17:sLook = "a unique";	break;
-				case 18:sLook = "incomum";	break;
-			}
+			Weight = weight;
 
-			string sDecon = "decorative";
-			switch ( Utility.RandomMinMax( 0, 3 ) )
-			{
-				case 0:	sDecon = ", decorative";		break;
-				case 1:	sDecon = ", ornamental";		break;
-				case 2:	sDecon = "";		break;
-				case 3:	sDecon = "";		break;
-			}
-
-			Name = sLook + sDecon + sType;
+			string quality = RelicHelper.GetRandomQualityDescriptor();
+			string decorative = RelicHelper.GetRandomDecorativeTerm();
+			Name = quality + decorative + itemType;
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicArts(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the arts relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the arts relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
 		}
+
+		#endregion
 	}
 }

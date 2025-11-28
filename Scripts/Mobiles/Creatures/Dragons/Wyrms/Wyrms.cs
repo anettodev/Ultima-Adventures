@@ -35,7 +35,7 @@ namespace Server.Mobiles
 		public override int TreasureMapLevel{ get{ return 5; } }
 		public override int Meat{ get{ return 19; } }
 		public override int Hides{ get{ return 20; } }
-		public override HideType HideType{ get{ return HideType.Draconic; } }
+		public override HideType HideType{ get{ return HideType.Barbed; } }
 		public override int Scales{ get{ return 9; } }
 		public override bool CanAngerOnTame { get { return true; } }
 		public override bool CanChew { get{return true;}}

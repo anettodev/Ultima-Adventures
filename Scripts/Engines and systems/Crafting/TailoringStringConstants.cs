@@ -114,10 +114,16 @@ namespace Server.Engines.Craft
 		public const string ITEM_RUGGED_BACKPACK = "mochila reforçada";
 
 		/// <summary>Item name: "bolsa mágica de minérios"</summary>
-		public const string ITEM_MINERS_POUCH = "bolsa mágica de minérios";
+		public const string ITEM_MINERS_POUCH = "Bolsa Mágica de Minérios";
 
 		/// <summary>Item name: "bolsa mágica de madeiras"</summary>
-		public const string ITEM_LUMBERJACK_POUCH = "bolsa mágica de madeiras";
+		public const string ITEM_LUMBERJACK_POUCH = "Bolsa Mágica de Madeiras";
+
+		/// <summary>Item name: "bolsa mágica de alquimia"</summary>
+		public const string ITEM_ALCHEMY_POUCH = "Bolsa Mágica de Alquimia";
+
+		/// <summary>Item name: "Bolsa Mágica de Custura"</summary>
+		public const string ITEM_TAILORING_POUCH = "Bolsa Mágica de Custura";
 
 		#endregion
 
@@ -148,10 +154,10 @@ namespace Server.Engines.Craft
 		public const string MSG_CANNOT_WORK_CLOTH = "Você não pode trabalhar este tecido.";
 
 		/// <summary>Resource name: "Couro Golias"</summary>
-		public const string RESOURCE_GOLIATH_LEATHER = "Couro Golias";
+		public const string RESOURCE_GOLIATH_LEATHER = "Couro Goliático";
 
 		/// <summary>Error: "Você não tem couro golias suficiente."</summary>
-		public const string MSG_INSUFFICIENT_GOLIATH_LEATHER = "Você não tem couro golias suficiente.";
+		public const string MSG_INSUFFICIENT_GOLIATH_LEATHER = "Você não tem couro goliático suficiente.";
 
 		/// <summary>Resource name: "Caveira Polida"</summary>
 		public const string RESOURCE_POLISHED_SKULL = "Caveira Polida";
@@ -420,6 +426,9 @@ namespace Server.Engines.Craft
 
 		/// <summary>Leather type: "Couro com Espinhos"</summary>
 		public const string LEATHER_BARBED = "Couro Barbed";
+
+		/// <summary>Leather type: "Couro Vulcanico"</summary>
+		public const string LEATHER_VOLCANIC = "Couro Vulcanico";
 
 		#endregion
 	}

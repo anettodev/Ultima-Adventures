@@ -879,14 +879,27 @@ namespace Server.Engines.Craft
 			}
 
 			double chance;
+			double maxChance = 1.0;
+
+			// Check if this is a rucksack (custom max chance of 50%)
+			if ( craftSystem is DefTailoring )
+			{
+				if ( m_Type == typeof(Server.Items.AlchemyPouch) || 
+				     m_Type == typeof(Server.Items.MinersPouch) || 
+				     m_Type == typeof(Server.Items.LumberjackPouch) ||
+				     m_Type == typeof(Server.Items.TailoringPouch) )
+				{
+					maxChance = 0.5; // Rucksacks cap at 50% success chance
+				}
+			}
 
 			if ( allRequiredSkills )
-				chance = craftSystem.GetChanceAtMin( this ) + ((valMainSkill - minMainSkill) / (maxMainSkill - minMainSkill) * (1.0 - craftSystem.GetChanceAtMin( this )));
+				chance = craftSystem.GetChanceAtMin( this ) + ((valMainSkill - minMainSkill) / (maxMainSkill - minMainSkill) * (maxChance - craftSystem.GetChanceAtMin( this )));
 			else
 				chance = 0.0;
 
 			if ( allRequiredSkills && valMainSkill == maxMainSkill )
-				chance = 1.0;
+				chance = maxChance;
 
 			return chance;
 		}

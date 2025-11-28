@@ -78,14 +78,12 @@ namespace Server.Items
 			{
 				Consume();
 				from.AddToBackpack( new SOS( MapWorld, m_Level ) );
-                from.SendMessage(55, "Você retira a mensagem da garrafa e coloca em sua mochila");
-                //from.LocalOverheadMessage( Network.MessageType.Regular, 0x3B2, 501891 ); // You extract the message from the bottle.
-            }
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.MSG_EXTRACT_MESSAGE);
+			}
 			else
 			{
-                from.SendMessage(55, "O item precisa estar em sua mochila para que você possa ler");
-                //from.SendLocalizedMessage( 1042001 ); // That must be in your pack for you to use it.
-            }
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_MUST_BE_IN_PACK_READ);
+			}
 		}
 	}
 }

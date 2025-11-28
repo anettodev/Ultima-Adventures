@@ -40,7 +40,8 @@ namespace Server.Items
 		{
 			base.AddNameProperties( list );
 
-            list.Add(1070722, ItemNameHue.UnifiedItemProps.SetColor("Resgatado do Naufr·gio: [ " + ShipName + " ]", "#8be4fc"));
+            list.Add(1070722, "* Item decorativo *");
+            list.Add(1070722, "Resgatado do Naufr√°gio: " + ItemNameHue.UnifiedItemProps.SetColor("[ " + ShipName + " ]", "#8be4fc"));
             //list.Add( 1041645 ); // recovered from a shipwreck
             //list.Add( 1049644, ShipName );
 		}

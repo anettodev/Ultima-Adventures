@@ -3,62 +3,116 @@ using Server;
 
 namespace Server.Items
 {
-	public class DDRelicReagent : Item
+	/// <summary>
+	/// Reagent relic item with random bottle appearance and complex name generation.
+	/// </summary>
+	public class DDRelicReagent : DDRelicBase
 	{
-		public int RelicGoldValue;
-		
-		[CommandProperty(AccessLevel.Owner)]
-		public int Relic_Value { get { return RelicGoldValue; } set { RelicGoldValue = value; InvalidateProperties(); } }
+		#region Constants
 
-		[Constructable]
-		public DDRelicReagent() : base( 0x44F1 )
+		private const int BASE_ITEM_ID = 0x44F1;
+		private const int RANDOM_NAME_TYPE_MIN = 1;
+		private const int RANDOM_NAME_TYPE_MAX = 4;
+
+		#endregion
+
+		#region Fields
+
+		/// <summary>Item IDs for reagent bottle variants</summary>
+		private static readonly int[] REAGENT_ITEM_IDS = new[]
 		{
-			Weight = 5;
-			RelicGoldValue = Server.Misc.RelicItems.RelicValue();
-			ItemID = Utility.RandomList( 0xE25, 0xE26, 0xE29, 0xE2A, 0xE2B, 0xE2C );
+			0xE25, 0xE26, 0xE29, 0xE2A, 0xE2B, 0xE2C
+		};
+
+		/// <summary>Creature names for reagent naming (Type 1)</summary>
+		private static readonly string[] CREATURE_NAMES = new[]
+		{
+			"formiga", "animal", "morcego", "urso", "besouro", "javali", "duende", "bugbear", "basilisco", "touro",
+			"froglok", "gato", "centauro", "quimera", "vaca", "crocodilo", "ciclope", "elfo negro", "demônio", "diabo",
+			"doppelganger", "dragão", "drake", "dríade", "anão", "elfo", "ettin", "sapo", "gárgula", "ghoul",
+			"gigante", "gnoll", "gnomo", "goblin", "gorila", "gremlin", "grifo", "bruxa", "hobbit", "harpia",
+			"hipogrifo", "hobgoblin", "cavalo", "hidra", "imp", "kobold", "kraken", "leprechaun", "lagarto", "homem-lagarto",
+			"medusa", "humano", "minotauro", "rato", "naga", "pesadelo", "nixie", "ogro", "orc", "pixie",
+			"pégaso", "fênix", "lagarto gigante", "rato", "cobra gigante", "sátiro", "escorpião", "serpente", "tubarão", "cobra",
+			"esfinge", "aranha gigante", "aranha", "silvano", "sprite", "súcubo", "silvano", "titã", "sapo", "troglodita",
+			"troll", "unicórnio", "vampiro", "doninha", "urso-lobisomem", "rato-lobisomem", "lobisomem", "gato-lobisomem", "lobo", "verme",
+			"wyrm", "wyvern", "iéti", "zumbi"
+		};
+
+		/// <summary>Substance names for reagent naming (Type 1)</summary>
+		private static readonly string[] SUBSTANCE_NAMES = new[]
+		{
+			"bile", "sangue", "pó de osso", "essência", "extrato", "olhos", "cabelo/pele", "ervas", "suco", "óleo",
+			"pó", "sal", "molho", "aroma", "soro", "tempero", "cuspir", "lágrimas", "dentes", "urina"
+		};
+
+		/// <summary>Special reagent names (Type 2)</summary>
+		private static readonly string[] SPECIAL_REAGENT_NAMES = new[]
+		{
+			"formigas", "lama", "bigodes de morcego", "abelhas", "cabelo de gato preto", "sal negro", "sanguessugas", "bigodes de gato", "centopeias", "lascas de caixão",
+			"raios de lua cristalinos", "cílios de ciclope", "escamas de dragão", "poeira de efreet", "poeira elemental", "olho de salamandra", "poeira de fada", "asas de fada", "cinzas de gigante de fogo", "gosma gelatinosa",
+			"fumaça de gênio", "flocos de pele de ghoul", "terra de cemitério", "lama", "cinzas de cão do inferno", "sanguessugas", "terra de lich", "mel do amor", "mosquitos", "tempero de múmia",
+			"poeira mística", "geleia ocre", "cinzas de fênix", "poeira de pixie", "asas de pixie", "pó ritual", "sal de serpente do mar", "escamas de serpente", "escamas de cobra", "areia de feiticeiro",
+			"asas de sprite", "folhas de árvore", "raiz de ceifador", "seiva de ent", "cinzas de vampiro", "essência de víbora", "vespas", "poeira de wisp", "hamamélis", "vermes",
+			"carne de zumbi"
+		};
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new reagent relic with random appearance and name
+		/// </summary>
+		[Constructable]
+		public DDRelicReagent() : base(BASE_ITEM_ID)
+		{
+			Weight = RelicConstants.WEIGHT_LIGHT;
+			ItemID = Utility.RandomList(REAGENT_ITEM_IDS);
 			Hue = Server.Misc.RandomThings.GetRandomColor(0);
 
-			string sName1 = "";
-			string sName2 = "";
-
-			if ( Utility.RandomMinMax( 1, 4 ) > 1 )
+			if (Utility.RandomMinMax(RANDOM_NAME_TYPE_MIN, RANDOM_NAME_TYPE_MAX) > 1)
 			{
-				string[] vName1 = new string[] {"ant", "animal", "bat", "bear", "beetle", "boar", "brownie", "bugbear", "basilisk", "bull", "froglok", "cat", "centaur", "chimera", "cow", "crocodile", "cyclops", "dark elf", "demon", "devil", "doppelganger", "dragon", "drake", "dryad", "dwarf", "elf", "ettin", "frog", "gargoyle", "ghoul", "giant", "gnoll", "gnome", "goblin", "gorilla", "gremlin", "griffin", "hag", "hobbit", "harpy", "hippogriff", "hobgoblin", "horse", "hydra", "imp", "kobold", "kraken", "leprechaun", "lizard", "lizard man", "medusa", "human", "minotaur", "mouse", "naga", "nightmare", "nixie", "ogre", "orc", "pixie", "pegasus", "phoenix", "giant lizard", "rat", "giant snake", "satyr", "scorpion", "serpent", "shark", "snake", "sphinx", "giant spider", "spider", "sylvan", "sprite", "succubus", "sylvan", "titan", "toad", "troglodite", "troll", "unicorn", "vampire", "weasel", "werebear", "wererat", "werewolf", "werecat", "wolf", "worm", "wyrm", "wyvern", "yeti", "zombie"};
-					sName1 = vName1[Utility.RandomMinMax( 0, (vName1.Length-1) )];
-				string[] vName2 = new string[] {"bile", "blood", "bone dust", "essence", "extract", "eyes", "hair/skin", "herbs", "juice", "oil", "powder", "salt", "sauce", "scent", "serum", "spice", "spit", "tears", "teeth", "urine"};
-					sName2 = vName2[Utility.RandomMinMax( 0, (vName2.Length-1) )];
-				Name =  "bottle of " + sName1 + " " + sName2;
+				string creatureName = CREATURE_NAMES[Utility.RandomMinMax(0, CREATURE_NAMES.Length - 1)];
+				string substanceName = SUBSTANCE_NAMES[Utility.RandomMinMax(0, SUBSTANCE_NAMES.Length - 1)];
+				Name = "frasco de " + creatureName + " " + substanceName;
 			}
 			else
 			{
-				string[] vName1 = new string[] {"ants", "slime", "bat whiskers", "bees", "black cat hair", "black salt", "bloodworms", "cat whiskers", "centipedes", "coffin shavings", "crystal moonbeams", "cyclops eyelashes", "dragon scales", "efreet dust", "elemental dust", "eye of newt", "fairy dust", "fairy wings", "fire giant ash", "gelatinous goo", "genie smoke", "ghoul skin flakes", "graveyard dirt", "slime", "hell hound ash", "leeches", "lich dirt", "love honey", "mosquitoes", "mummy spice", "mystic dust", "ochre jelly", "phoenix ash", "pixie dust", "pixie wings", "ritual powder", "sea serpent salt", "serpent scales", "snake scales", "sorcerer sand", "sprite wings", "tree leaves", "reaper root", "ent sap", "vampire ash", "viper essence", "wasps", "wisp dust", "witch hazel", "worms", "zombie flesh"};
-					sName1 = vName1[Utility.RandomMinMax( 0, (vName1.Length-1) )];
-				Name =  "bottle of " + sName1;
+				string specialName = SPECIAL_REAGENT_NAMES[Utility.RandomMinMax(0, SPECIAL_REAGENT_NAMES.Length - 1)];
+				Name = "frasco de " + specialName;
 			}
 		}
 
-		public override void OnDoubleClick( Mobile from )
-		{
-			from.SendMessage( "This can be identified to determine its value." );
-			return;
-		}
-
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
 		public DDRelicReagent(Serial serial) : base(serial)
 		{
 		}
 
-		public override void Serialize( GenericWriter writer )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the reagent relic
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-            writer.Write( (int) 0 ); // version
-            writer.Write( RelicGoldValue );
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the reagent relic
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
-            int version = reader.ReadInt();
-            RelicGoldValue = reader.ReadInt();
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
 		}
+
+		#endregion
 	}
 }

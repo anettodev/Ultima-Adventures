@@ -41,7 +41,7 @@ namespace Server.Items
 				int nPay = fishy.FishGoldValue;
 				if ( pc.NpcGuild == NpcGuild.FishermensGuild ){ nPay = nPay*2; }
 				from.AddToBackpack ( new Gold( nPay ) );
-				from.SendMessage("You are paid " + nPay.ToString() + " gold.");
+				from.SendMessage(FishingStringConstants.COLOR_ERROR, string.Format(FishingStringConstants.MSG_PAID_GOLD, nPay));
 				from.PlaySound( 0x026 );
 				dropped.Delete();
 			}
