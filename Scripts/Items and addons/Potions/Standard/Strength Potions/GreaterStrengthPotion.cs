@@ -5,8 +5,9 @@ namespace Server.Items
 {
 	public class GreaterStrengthPotion : BaseStrengthPotion
 	{
-		public override int StrOffset{ get{ return 20; } }
-		public override TimeSpan Duration{ get{ return TimeSpan.FromMinutes( 2.0 ); } }
+		public override int MinStrength{ get{ return 7; } }
+		public override int MaxStrength{ get{ return 8; } }
+		public override TimeSpan Duration{ get{ return TimeSpan.FromSeconds( 90 ); } } // 90 seconds max
 
 		[Constructable]
 		public GreaterStrengthPotion() : base( PotionEffect.StrengthGreater )

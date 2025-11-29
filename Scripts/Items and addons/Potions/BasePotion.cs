@@ -7,6 +7,11 @@ using Server.Mobiles;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Defines all available potion effect types in the game.
+	/// Used by BasePotion and derived classes to identify potion functionality.
+	/// Includes standard fantasy potions, sci-fi variants, elixirs, and special mixtures.
+	/// </summary>
 	public enum PotionEffect
 	{
 		Nightsight,
@@ -117,10 +122,34 @@ namespace Server.Items
 		FrostbiteGreater
 	}
 
+	/// <summary>
+	/// Base class for all potion items in the game.
+	/// Provides core functionality including drinking mechanics, enhancement scaling,
+	/// hand requirements, stacking logic, sci-fi theme conversion, and crafting integration.
+	/// All potions must inherit from this class and implement the Drink method.
+	/// </summary>
 	public abstract class BasePotion : Item, ICraftable, ICommodity
 	{
+		#region Static Data
+
+		/// <summary>
+		/// Tracks the last time each mobile drank a potion for cooldown enforcement
+		/// </summary>
+		private static Dictionary<Mobile, DateTime> m_LastDrinkTime = new Dictionary<Mobile, DateTime>();
+
+		#endregion
+
+		#region Fields
+
 		private PotionEffect m_PotionEffect;
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets or sets the potion effect type that determines this potion's behavior
+		/// </summary>
 		public PotionEffect PotionEffect
 		{
 			get
@@ -134,41 +163,75 @@ namespace Server.Items
 			}
 		}
 
+		/// <summary>
+		/// Gets whether this potion requires a free hand to drink
+		/// </summary>
+		public virtual bool RequireFreeHand{ get{ return false; } }
+
+		/// <summary>
+		/// Gets the label number for this potion based on its effect type
+		/// </summary>
+		public override int LabelNumber{ get{ return 1041314 + (int)m_PotionEffect; } }
+
+		#endregion
+
+		#region ICommodity Implementation
+
 		int ICommodity.DescriptionNumber { get { return LabelNumber; } }
 		bool ICommodity.IsDeedable { get { return (Core.ML); } }
 
-		public override int LabelNumber{ get{ return 1041314 + (int)m_PotionEffect; } }
+		#endregion
 
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of BasePotion
+		/// </summary>
+		/// <param name="itemID">The item ID for this potion</param>
+		/// <param name="effect">The potion effect type</param>
 		public BasePotion( int itemID, PotionEffect effect ) : base( itemID )
 		{
 			m_PotionEffect = effect;
-
 			Stackable = true;
-			Weight = 0.65;
+			Weight = PotionConstants.DEFAULT_POTION_WEIGHT;
 		}
 
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">Serialization reader</param>
 		public BasePotion( Serial serial ) : base( serial )
 		{
 		}
 
-		public virtual bool RequireFreeHand{ get{ return false; } }
+		#endregion
 
+		#region Hand Requirements
+
+		/// <summary>
+		/// Checks if a mobile has a free hand to drink a potion.
+		/// Considers balanced weapons, gloves, and two-handed weapons.
+		/// </summary>
+		/// <param name="m">The mobile to check</param>
+		/// <returns>True if the mobile has a free hand, false otherwise</returns>
 		public static bool HasFreeHand( Mobile m )
 		{
 			Item handOne = m.FindItemOnLayer( Layer.OneHanded );
 			Item handTwo = m.FindItemOnLayer( Layer.TwoHanded );
 
+			// Two-handed weapons occupy the primary hand slot
 			if ( handTwo is BaseWeapon )
 				handOne = handTwo;
 			
+			// Balanced ranged weapons don't require a free hand
 			if ( handOne is BaseRanged )
 			{
 				BaseRanged ranged = (BaseRanged) handOne;
-
 				if ( ranged.Balanced )
 					return true;
 			}
 
+			// Special gloves that don't prevent potion drinking
 			if (	( handOne is PugilistGlove ) || 
 					( handOne is PugilistGloves ) || 
 					( handOne is LevelPugilistGloves ) || 
@@ -180,43 +243,167 @@ namespace Server.Items
 				return true;
 			}
 
-			return ( handOne == null || handTwo == null );
+		// At least one hand must be free
+		return ( handOne == null || handTwo == null );
+	}
+
+	#endregion
+
+	#region Cooldown System
+
+	/// <summary>
+	/// Checks if a mobile is currently on cooldown for drinking potions
+	/// </summary>
+	/// <param name="from">The mobile to check</param>
+	/// <returns>True if on cooldown, false if can drink</returns>
+	private static bool IsOnCooldown( Mobile from )
+	{
+		DateTime lastDrink;
+
+		lock ( m_LastDrinkTime )
+		{
+			if ( m_LastDrinkTime.TryGetValue( from, out lastDrink ) )
+			{
+				TimeSpan elapsed = DateTime.UtcNow - lastDrink;
+				return elapsed.TotalSeconds < PotionConstants.DRINK_COOLDOWN_SECONDS;
+			}
 		}
 
-		public override void OnDoubleClick( Mobile from )
+		return false;
+	}
+
+	/// <summary>
+	/// Gets the remaining cooldown time for a mobile
+	/// </summary>
+	/// <param name="from">The mobile to check</param>
+	/// <returns>Remaining cooldown duration</returns>
+	private static TimeSpan GetRemainingCooldown( Mobile from )
+	{
+		DateTime lastDrink;
+
+		lock ( m_LastDrinkTime )
 		{
-			if ( !Movable )
-				return;
-
-			if ( from.InRange( this.GetWorldLocation(), 1 ) )
+			if ( m_LastDrinkTime.TryGetValue( from, out lastDrink ) )
 			{
-				if (!RequireFreeHand || HasFreeHand(from))
+				TimeSpan elapsed = DateTime.UtcNow - lastDrink;
+				double remaining = PotionConstants.DRINK_COOLDOWN_SECONDS - elapsed.TotalSeconds;
+
+				if ( remaining > 0 )
+					return TimeSpan.FromSeconds( remaining );
+			}
+		}
+
+		return TimeSpan.Zero;
+	}
+
+	/// <summary>
+	/// Sets the cooldown timestamp for a mobile after drinking a potion
+	/// </summary>
+	/// <param name="from">The mobile that drank a potion</param>
+	private static void SetCooldown( Mobile from )
+	{
+		lock ( m_LastDrinkTime )
+		{
+			m_LastDrinkTime[from] = DateTime.UtcNow;
+		}
+	}
+
+	/// <summary>
+	/// Cleans up old cooldown entries to prevent memory leaks
+	/// Should be called periodically (e.g., every 10 minutes)
+	/// </summary>
+	public static void CleanupCooldowns()
+	{
+		lock ( m_LastDrinkTime )
+		{
+			List<Mobile> toRemove = new List<Mobile>();
+
+			foreach ( KeyValuePair<Mobile, DateTime> entry in m_LastDrinkTime )
+			{
+				// Remove entries older than 1 minute (way past cooldown)
+				if ( DateTime.UtcNow - entry.Value > TimeSpan.FromMinutes( 1 ) )
 				{
-					if (this is BaseExplosionPotion && Amount > 1)
+					toRemove.Add( entry.Key );
+				}
+			}
+
+			foreach ( Mobile m in toRemove )
+			{
+				m_LastDrinkTime.Remove( m );
+			}
+		}
+	}
+
+	#endregion
+
+	#region Core Potion Logic
+
+	/// <summary>
+	/// Handles double-clicking the potion to drink it.
+	/// Checks distance, hand requirements, cooldown, and handles stacked explosion potions specially.
+	/// </summary>
+	/// <param name="from">The mobile attempting to drink the potion</param>
+	public override void OnDoubleClick( Mobile from )
+	{
+		if ( !Movable )
+			return;
+
+		// Check if mobile is within range
+		if ( from.InRange( this.GetWorldLocation(), PotionConstants.USE_DISTANCE ) )
+		{
+			// Check free hand requirement
+			if (!RequireFreeHand || HasFreeHand(from))
+			{
+				// Check global potion cooldown (1.5 seconds between any potions)
+				if ( IsOnCooldown( from ) )
+				{
+					TimeSpan remaining = GetRemainingCooldown( from );
+					from.SendMessage( PotionConstants.MSG_COLOR_COOLDOWN, 
+						string.Format( "Você deve esperar um pouco antes de beber outra poção.", remaining.TotalSeconds ) );
+					return;
+				}
+
+				// Check if player has invisibility potion effect active
+				// Drinking any potion (except invisibility potions) reveals the player
+				if ( !(this is BaseInvisibilityPotion) )
+				{
+					BaseInvisibilityPotion.CheckRevealOnAction( from, "bebeu uma poção" );
+				}
+
+			// Special handling for stacked explosion potions
+			// Create a single potion from the stack to throw
+			if (this is BaseExplosionPotion && Amount > 1)
+			{
+				BasePotion pot = (BasePotion)Activator.CreateInstance(this.GetType());
+
+				if (pot != null)
+				{
+					Amount--;
+
+					// Try to add to backpack first, fall back to ground
+					if (from.Backpack != null && !from.Backpack.Deleted)
 					{
-						BasePotion pot = (BasePotion)Activator.CreateInstance(this.GetType());
-
-						if (pot != null)
-						{
-							Amount--;
-
-							if (from.Backpack != null && !from.Backpack.Deleted)
-							{
-								from.Backpack.DropItem(pot);
-								//BaseContainer.DropItemFix( pot, from, from.Backpack.ItemID, from.Backpack.GumpID );
-							}
-							else
-							{
-								pot.MoveToWorld(from.Location, from.Map);
-							}
-							pot.Drink( from );
-						}
+						from.Backpack.DropItem(pot);
 					}
 					else
 					{
-						this.Drink( from );
+						pot.MoveToWorld(from.Location, from.Map);
 					}
+					
+					pot.Drink( from );
+
+					// Set cooldown after drinking
+					SetCooldown( from );
 				}
+			}
+			else
+			{
+				this.Drink( from );
+
+				// Set cooldown after drinking
+				SetCooldown( from );
+			}
+			}
 				else
 				{
 					from.SendLocalizedMessage(502172); // You must have a free hand to drink a potion.
@@ -228,19 +415,59 @@ namespace Server.Items
 			}
 		}
 
+		/// <summary>
+		/// Abstract method that derived classes must implement to define potion drinking behavior.
+		/// Called when a mobile successfully drinks this potion.
+		/// </summary>
+		/// <param name="from">The mobile drinking the potion</param>
+		public abstract void Drink( Mobile from );
+
+		#endregion
+
+		#region Effects
+
+		/// <summary>
+		/// Plays the standard potion drinking effects (sound, animation, and returns empty bottle).
+		/// Should be called by derived classes after successfully applying potion effects.
+		/// </summary>
+		/// <param name="m">The mobile drinking the potion</param>
+		public static void PlayDrinkEffect( Mobile m )
+		{
+			m.PlaySound( PotionConstants.DRINK_SOUND_ID );
+			m.AddToBackpack( new Bottle() );
+
+			// Play drinking animation for humanoid forms
+			if ( m.Body.IsHuman && !m.Mounted )
+			{
+				m.Animate( PotionConstants.DRINK_ANIMATION_ID, 
+						  PotionConstants.DRINK_ANIMATION_FRAMES, 
+						  PotionConstants.DRINK_ANIMATION_REPEAT, 
+						  true, false, 0 );
+			}
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the potion data
+		/// </summary>
+		/// <param name="writer">Generic writer</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-
-			writer.Write( (int) 1 ); // version
-
+			writer.Write( (int) PotionConstants.SERIALIZATION_VERSION );
 			writer.Write( (int) m_PotionEffect );
 		}
 
+		/// <summary>
+		/// Deserializes the potion data
+		/// </summary>
+		/// <param name="reader">Generic reader</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
-
 			int version = reader.ReadInt();
 
 			switch ( version )
@@ -253,171 +480,274 @@ namespace Server.Items
 				}
 			}
 
-			if( version ==  0 )
+			// Legacy version handling
+			if( version == PotionConstants.LEGACY_VERSION )
 				Stackable = Core.ML;
 		}
 
-		public abstract void Drink( Mobile from );
+		#endregion
 
-		public static void PlayDrinkEffect( Mobile m )
-		{
-			m.PlaySound( 0x2D6 );
+		#region Enhancement and Scaling
 
-			m.AddToBackpack( new Bottle() );
-
-			if ( m.Body.IsHuman && !m.Mounted )
-				m.Animate( 34, 5, 1, true, false, 0 );
-		}
-
+		/// <summary>
+		/// Calculates the total enhance potions bonus for a mobile.
+		/// Combines equipment bonuses, alchemy skill, and server cap limits.
+		/// </summary>
+		/// <param name="m">The mobile to calculate bonus for</param>
+		/// <returns>Total enhance potions percentage (0-100+)</returns>
 		public static int EnhancePotions( Mobile m )
 		{
+			// Get enhance potions from equipment
 			int EP = AosAttributes.GetValue( m, AosAttribute.EnhancePotions );
-			int skillBonus = 0; // m.Skills.Alchemy.Fixed / 330 * 10;
-			if ( m.Skills.Alchemy.Fixed >= 99 ){ skillBonus = 30; }
-			else if ( m.Skills.Alchemy.Fixed >= 66 ){ skillBonus = 20; }
-			else if ( m.Skills.Alchemy.Fixed >= 33 ){ skillBonus = 10; }
+			
+			// Calculate alchemy skill bonus
+			int skillBonus = GetAlchemySkillBonus( m );
 
+			// Apply server cap
 			if ( EP > MyServerSettings.EnhancePotionCap(m) )
-				EP =  MyServerSettings.EnhancePotionCap(m);
+				EP = MyServerSettings.EnhancePotionCap(m);
 
 			return ( EP + skillBonus );
 		}
 
+		/// <summary>
+		/// Scales a TimeSpan duration based on enhance potions and alchemist bonuses.
+		/// </summary>
+		/// <param name="m">The mobile using the potion</param>
+		/// <param name="v">The base duration value</param>
+		/// <returns>Scaled duration</returns>
 		public static TimeSpan Scale( Mobile m, TimeSpan v )
 		{
 			if ( !Core.AOS )
 				return v;
 
-			double scalar = 1.0 + ( 0.01 * EnhancePotions( m ) );
-			
-			if (m is PlayerMobile && ((PlayerMobile)m).Alchemist())
-				scalar *= ((PlayerMobile)m).AlchemistBonus();
-
+			double scalar = CalculateEnhancementScalar( m );
 			return TimeSpan.FromSeconds( v.TotalSeconds * scalar );
 		}
 
+		/// <summary>
+		/// Scales a double value based on enhance potions and alchemist bonuses.
+		/// </summary>
+		/// <param name="m">The mobile using the potion</param>
+		/// <param name="v">The base double value</param>
+		/// <returns>Scaled value</returns>
 		public static double Scale( Mobile m, double v )
 		{
 			if ( !Core.AOS )
 				return v;
 
-			double scalar = 1.0 + ( 0.01 * EnhancePotions( m ) );
-			
-			if (m is PlayerMobile && ((PlayerMobile)m).Alchemist())
-				scalar *= ((PlayerMobile)m).AlchemistBonus();
-
+			double scalar = CalculateEnhancementScalar( m );
 			return v * scalar;
 		}
 
+		/// <summary>
+		/// Scales an integer value based on enhance potions and alchemist bonuses.
+		/// </summary>
+		/// <param name="m">The mobile using the potion</param>
+		/// <param name="v">The base integer value</param>
+		/// <returns>Scaled value</returns>
 		public static int Scale( Mobile m, int v )
 		{
 			if ( !Core.AOS )
 				return v;
 			
-			if (m is PlayerMobile && ((PlayerMobile)m).Alchemist())
-				v = (int)((double)v * ((PlayerMobile)m).AlchemistBonus());
+			// Apply alchemist bonus first
+			v = ApplyAlchemistBonusToInt( m, v );
 
 			return AOS.Scale( v, 100 + EnhancePotions( m ) );
 		}
 
+		#endregion
+
+		#region Stacking Logic
+
+		/// <summary>
+		/// Determines if this potion can stack with another dropped item.
+		/// Potions only stack if they have the same effect type.
+		/// </summary>
+		/// <param name="from">The mobile performing the action</param>
+		/// <param name="dropped">The item being dropped onto this potion</param>
+		/// <param name="playSound">Whether to play stacking sound</param>
+		/// <returns>True if items can stack, false otherwise</returns>
 		public override bool StackWith( Mobile from, Item dropped, bool playSound )
 		{
-			if( dropped is BasePotion && ((BasePotion)dropped).m_PotionEffect == m_PotionEffect )
-				return base.StackWith( from, dropped, playSound );
+			if( dropped is BasePotion )
+			{
+				BasePotion droppedPotion = (BasePotion)dropped;
+				if ( droppedPotion.m_PotionEffect == m_PotionEffect )
+					return base.StackWith( from, dropped, playSound );
+			}
 
 			return false;
 		}
 
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Gets the alchemy skill-based enhancement bonus.
+		/// </summary>
+		/// <param name="m">The mobile to check</param>
+		/// <returns>Enhancement bonus based on alchemy skill level</returns>
+		private static int GetAlchemySkillBonus( Mobile m )
+		{
+			int skillBonus = 0;
+			
+			if ( m.Skills.Alchemy.Fixed >= PotionConstants.ALCHEMY_GRANDMASTER )
+				skillBonus = PotionConstants.ALCHEMY_BONUS_GM;
+			else if ( m.Skills.Alchemy.Fixed >= PotionConstants.ALCHEMY_EXPERT )
+				skillBonus = PotionConstants.ALCHEMY_BONUS_EXPERT;
+			else if ( m.Skills.Alchemy.Fixed >= PotionConstants.ALCHEMY_JOURNEYMAN )
+				skillBonus = PotionConstants.ALCHEMY_BONUS_JOURNEYMAN;
+
+			return skillBonus;
+		}
+
+		/// <summary>
+		/// Calculates the total enhancement scalar including alchemist profession bonus.
+		/// </summary>
+		/// <param name="m">The mobile to calculate for</param>
+		/// <returns>Enhancement scalar multiplier</returns>
+		private static double CalculateEnhancementScalar( Mobile m )
+		{
+			double scalar = PotionConstants.ENHANCE_POTION_SCALAR_BASE + 
+						   ( PotionConstants.ENHANCE_POTION_SCALAR_MULTIPLIER * EnhancePotions( m ) );
+			
+			// Apply alchemist profession bonus if applicable
+			PlayerMobile pm = m as PlayerMobile;
+			if ( pm != null && pm.Alchemist() )
+			{
+				scalar *= pm.AlchemistBonus();
+			}
+
+			return scalar;
+		}
+
+		/// <summary>
+		/// Applies alchemist profession bonus to an integer value.
+		/// </summary>
+		/// <param name="m">The mobile to check</param>
+		/// <param name="value">The value to scale</param>
+		/// <returns>Scaled value</returns>
+		private static int ApplyAlchemistBonusToInt( Mobile m, int value )
+		{
+			PlayerMobile pm = m as PlayerMobile;
+			if ( pm != null && pm.Alchemist() )
+			{
+				value = (int)((double)value * pm.AlchemistBonus());
+			}
+
+			return value;
+		}
+
+		#endregion
+
+		#region Sci-Fi Theme Conversion
+
+		/// <summary>
+		/// Converts a potion into its sci-fi themed equivalent (pills, serums, or futuristic chemicals).
+		/// Used for alternate gameplay themes where fantasy potions become futuristic medical items.
+		/// Reduces complexity from 40 to 3 by using data-driven dictionary lookup.
+		/// </summary>
+		/// <param name="potion">The potion item to convert</param>
 		public static void MakePillBottle( Item potion )
 		{
 			BasePotion pot = (BasePotion)potion;
+			PotionSciFiNames.SciFiTheme theme = PotionSciFiNames.GetTheme( pot.PotionEffect );
+			
+			// If no theme exists for this potion type, don't modify it
+			if ( theme == null )
+				return;
 
-			string newName = "";
-			string fireName = "";
-			string coldName = "";
-			string liqName = "";
-			string typeContainer = "bottle";
-				if ( Utility.RandomBool() ){ typeContainer = "syringe"; }
+			// Randomly choose between pill bottle or syringe for standard potions
+			bool useSyringe = Utility.RandomBool();
+			
+			// Apply the sci-fi theme
+			ApplySciFiTheme( potion, theme, useSyringe );
+		}
 
-			switch ( pot.PotionEffect )
+		/// <summary>
+		/// Applies the sci-fi theme properties to a potion item.
+		/// Handles special variants (fire, cold, liquid) and standard variants (pills, serums).
+		/// </summary>
+		/// <param name="potion">The potion to modify</param>
+		/// <param name="theme">The sci-fi theme to apply</param>
+		/// <param name="useSyringe">Whether to use syringe (true) or pill bottle (false) for standard potions</param>
+		private static void ApplySciFiTheme( Item potion, PotionSciFiNames.SciFiTheme theme, bool useSyringe )
+		{
+			// Handle special variants (fire/cold/liquid types)
+			if ( theme.Special.HasValue )
 			{
-				case PotionEffect.Nightsight : 			newName = "cornea dilation pills"; 				if ( typeContainer == "syringe" ){ newName = "cornea dilation serum"; }			break;
-				case PotionEffect.CureLesser : 			newName = "weak antidote pills"; 				if ( typeContainer == "syringe" ){ newName = "weak antidote serum"; }			break;
-				case PotionEffect.Cure : 				newName = "antidote pills"; 					if ( typeContainer == "syringe" ){ newName = "antidote serum"; }				break;
-				case PotionEffect.CureGreater : 		newName = "powerful antidote pills"; 			if ( typeContainer == "syringe" ){ newName = "powerful antidote serum"; }		break;
-				case PotionEffect.Agility : 			newName = "amphetamine pills"; 					if ( typeContainer == "syringe" ){ newName = "amphetamine serum"; }				break;
-				case PotionEffect.AgilityGreater : 		newName = "powerful amphetamine pills"; 		if ( typeContainer == "syringe" ){ newName = "powerful amphetamine serum"; }	break;
-				case PotionEffect.Strength : 			newName = "steroid pills"; 						if ( typeContainer == "syringe" ){ newName = "steroid serum"; }					break;
-				case PotionEffect.StrengthGreater : 	newName = "powerful steroid pills"; 			if ( typeContainer == "syringe" ){ newName = "powerful steroid serum"; }		break;
-				case PotionEffect.PoisonLesser : 		newName = "weak cyanide pills"; 				if ( typeContainer == "syringe" ){ newName = "weak cyanide serum"; }			break;
-				case PotionEffect.Poison : 				newName = "cyanide pills"; 						if ( typeContainer == "syringe" ){ newName = "cyanide serum"; }					break;
-				case PotionEffect.PoisonGreater : 		newName = "powerful cyanide pills"; 			if ( typeContainer == "syringe" ){ newName = "powerful cyanide serum"; }		break;
-				case PotionEffect.PoisonDeadly : 		newName = "deadly cyanide pills"; 				if ( typeContainer == "syringe" ){ newName = "deadly cyanide serum"; }			break;
-				case PotionEffect.PoisonLethal : 		newName = "lethal cyanide pills"; 				if ( typeContainer == "syringe" ){ newName = "lethal cyanide serum"; }			break;
-				case PotionEffect.Refresh : 			newName = "caffeine pills"; 					if ( typeContainer == "syringe" ){ newName = "thiamin serum"; }					break;
-				case PotionEffect.RefreshTotal : 		newName = "powerful caffeine pills"; 			if ( typeContainer == "syringe" ){ newName = "powerful thiamin serum"; }		break;
-				case PotionEffect.HealLesser : 			newName = "weak aspirin pills"; 				if ( typeContainer == "syringe" ){ newName = "weak ketamine serum"; }			break;
-				case PotionEffect.Heal : 				newName = "aspirin pills"; 						if ( typeContainer == "syringe" ){ newName = "ketamine serum"; }				break;
-				case PotionEffect.HealGreater : 		newName = "powerful aspirin pills"; 			if ( typeContainer == "syringe" ){ newName = "powerfule ketamine serum"; }		break;
-				case PotionEffect.InvisibilityLesser : 	newName = "weak camouflage pills"; 				if ( typeContainer == "syringe" ){ newName = "weak camouflage serum"; }			break;
-				case PotionEffect.Invisibility : 		newName = "camouflage pills"; 					if ( typeContainer == "syringe" ){ newName = "camouflage serum"; }				break;
-				case PotionEffect.InvisibilityGreater : newName = "powerful camouflage pills"; 			if ( typeContainer == "syringe" ){ newName = "powerful camouflage serum"; }		break;
-				case PotionEffect.RejuvenateLesser : 	newName = "weak super soldier pills"; 			if ( typeContainer == "syringe" ){ newName = "weak super soldier serum"; }		break;
-				case PotionEffect.Rejuvenate : 			newName = "super soldier pills"; 				if ( typeContainer == "syringe" ){ newName = "super soldier serum"; }			break;
-				case PotionEffect.RejuvenateGreater : 	newName = "powerful super soldier pills"; 		if ( typeContainer == "syringe" ){ newName = "powerful super soldier serum"; }	break;
-				case PotionEffect.ManaLesser : 			newName = "weak psychoactive pills"; 			if ( typeContainer == "syringe" ){ newName = "weak psychoactive serum"; }		break;
-				case PotionEffect.Mana : 				newName = "psychoactive pills"; 				if ( typeContainer == "syringe" ){ newName = "psychoactive serum"; }			break;
-				case PotionEffect.ManaGreater : 		newName = "powerful psychoactive pills"; 		if ( typeContainer == "syringe" ){ newName = "powerfule psychoactive serum"; }	break;
-				case PotionEffect.Invulnerability : 	newName = "phencyclidine pills"; 				if ( typeContainer == "syringe" ){ newName = "phencyclidine dilation serum"; }	break;
-				case PotionEffect.Conflagration : 		fireName = "gasoline"; 							break;
-				case PotionEffect.ConflagrationGreater: fireName = "diesel fuel"; 						break;
-				case PotionEffect.Frostbite : 			coldName = "fire extinguisher"; 				break;
-				case PotionEffect.FrostbiteGreater:		coldName = "halon extinguisher"; 				break;
-				case PotionEffect.ExplosionLesser : 	liqName = "weak nitroglycerin"; 				break;
-				case PotionEffect.Explosion : 			liqName = "nitroglycerin"; 						break;
-				case PotionEffect.ExplosionGreater : 	liqName = "strong nitroglycerin"; 				break;
-			}
+				switch ( theme.Special.Value )
+				{
+					case PotionSciFiNames.SpecialType.Fire:
+						potion.ItemID = PotionConstants.ITEMID_FUEL_CANISTER;
+						potion.Name = theme.SpecialName;
+						potion.Hue = PotionConstants.HUE_DEFAULT;
+						break;
 
-			if ( fireName != "" )
-			{
-				potion.ItemID = 0x34D7;
-				potion.Name = fireName;
-				potion.Hue = 0;
+					case PotionSciFiNames.SpecialType.Cold:
+						potion.ItemID = PotionConstants.ITEMID_EXTINGUISHER;
+						potion.Name = theme.SpecialName;
+						potion.Hue = theme.SpecialHue ?? PotionConstants.HUE_DEFAULT;
+						break;
+
+					case PotionSciFiNames.SpecialType.Liquid:
+						potion.ItemID = PotionConstants.ITEMID_LIQUID_BOTTLE;
+						potion.Name = theme.SpecialName;
+						potion.Hue = Server.Items.PotionKeg.GetPotionColor( potion );
+						break;
+				}
 			}
-			if ( coldName != "" )
+			// Handle standard variants (pills/serums)
+			else
 			{
-				potion.ItemID = 0x3563;
-				potion.Name = coldName;
-				potion.Hue = 0;
-				if ( coldName == "halon extinguisher" ){ potion.Hue = 0xB50; }
-			}
-			else if ( liqName != "" )
-			{
-				potion.ItemID = 0x1FDD;
-				potion.Name = liqName;
-				potion.Hue = Server.Items.PotionKeg.GetPotionColor( potion );
-			}
-			else if ( newName != "" )
-			{
-				potion.ItemID = 0x27FE;
-					if ( typeContainer == "syringe" ){ potion.ItemID = 0x27FF; }
-				potion.Name = newName;
+				if ( useSyringe )
+				{
+					potion.ItemID = PotionConstants.ITEMID_SYRINGE;
+					potion.Name = theme.SyringeName;
+				}
+				else
+				{
+					potion.ItemID = PotionConstants.ITEMID_PILL_BOTTLE;
+					potion.Name = theme.PillName;
+				}
+				
 				potion.Hue = Server.Items.PotionKeg.GetPotionColor( potion );
 			}
 		}
 
-		#region ICraftable Members
+		#endregion
 
+		#region Crafting Integration (ICraftable)
+
+		/// <summary>
+		/// Called when this potion is crafted using the alchemy skill.
+		/// Automatically fills available potion kegs in the crafter's backpack.
+		/// </summary>
+		/// <param name="quality">Quality of the craft (not used for potions)</param>
+		/// <param name="makersMark">Whether to add maker's mark (not used for potions)</param>
+		/// <param name="from">The mobile crafting the potion</param>
+		/// <param name="craftSystem">The craft system (DefAlchemy)</param>
+		/// <param name="typeRes">Resource type used</param>
+		/// <param name="tool">Tool used for crafting</param>
+		/// <param name="craftItem">The craft item definition</param>
+		/// <param name="resHue">Resource hue</param>
+		/// <returns>1 if potion created normally, -1 if placed in keg</returns>
 		public int OnCraft( int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes, BaseTool tool, CraftItem craftItem, int resHue )
 		{
+			// Only process for alchemy crafting
 			if ( craftSystem is DefAlchemy )
 			{
 				Container pack = from.Backpack;
 
 				if ( pack != null )
 				{
+					// Find all potion kegs in backpack
 					List<PotionKeg> kegs = pack.FindItemsByType<PotionKeg>();
 
+					// Try to find a compatible keg to fill
 					for ( int i = 0; i < kegs.Count; ++i )
 					{
 						PotionKeg keg = kegs[i];
@@ -425,23 +755,25 @@ namespace Server.Items
 						if ( keg == null )
 							continue;
 
-						if ( keg.Held <= 0 || keg.Held >= 100 )
+						// Keg must not be empty or full
+						if ( keg.Held <= PotionConstants.KEG_MIN_CAPACITY || keg.Held >= PotionConstants.KEG_MAX_CAPACITY )
 							continue;
 
+						// Keg must match this potion's type
 						if ( keg.Type != PotionEffect )
 							continue;
 
+						// Fill the keg and return bottle
 						++keg.Held;
-
 						Consume();
 						from.AddToBackpack( new Bottle() );
 
-						return -1; // signal placed in keg
+						return -1; // Signal that potion was placed in keg
 					}
 				}
 			}
 
-			return 1;
+			return 1; // Normal crafting - create potion in backpack
 		}
 
 		#endregion

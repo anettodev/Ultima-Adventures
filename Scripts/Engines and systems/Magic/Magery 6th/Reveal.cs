@@ -341,19 +341,20 @@ namespace Server.Spells.Sixth
 				eable.Free();
 			}
 
-			for ( int i = 0; i < targets.Count; ++i )
-			{
-				Mobile m = targets[i];
-				int chance = revealChances[m];
+		for ( int i = 0; i < targets.Count; ++i )
+		{
+			Mobile m = targets[i];
+			int chance = revealChances[m];
 
-				m.RevealingAction();
+			// NOTE: RevealingAction() automatically handles invisibility potion cleanup
+			m.RevealingAction();
 
-				m.FixedParticles( MOBILE_PARTICLE_EFFECT_ID, MOBILE_PARTICLE_COUNT, MOBILE_PARTICLE_SPEED, MOBILE_PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
-				m.PlaySound( MOBILE_SOUND_EFFECT );
+			m.FixedParticles( MOBILE_PARTICLE_EFFECT_ID, MOBILE_PARTICLE_COUNT, MOBILE_PARTICLE_SPEED, MOBILE_PARTICLE_DURATION, Server.Items.CharacterDatabase.GetMySpellHue( Caster, 0 ), 0, EffectLayer.Head );
+			m.PlaySound( MOBILE_SOUND_EFFECT );
 
-				// Send success messages to both caster and revealed player
-				SendRevealSuccessMessages( Caster, m, chance );
-			}
+			// Send success messages to both caster and revealed player
+			SendRevealSuccessMessages( Caster, m, chance );
+		}
 		}
 
 		/// <summary>
@@ -403,37 +404,46 @@ namespace Server.Spells.Sixth
 			revealed.SendMessage( Spell.MSG_COLOR_ERROR, revealedMessage );
 		}
 
-		/// <summary>
-		/// Reveal uses DetectHidden vs. Hiding and Stealth skills
-		/// Invisibility spell always reveals (100%)
-		/// Formula: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10), clamped 10-80%
-		/// </summary>
-		private static bool CheckDifficulty( Mobile from, Mobile m, out int chance )
+	/// <summary>
+	/// Reveal uses DetectHidden vs. Hiding and Stealth skills
+	/// Invisibility spell always reveals (100%)
+	/// Invisibility POTIONS: Lesser 100%, Regular 70%, Greater 50% - weaker than skill-based hiding
+	/// Formula for skill-based hiding: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10), clamped 10-80%
+	/// </summary>
+	private static bool CheckDifficulty( Mobile from, Mobile m, out int chance )
+	{
+		// Reveal always reveals vs. invisibility spell
+		if ( !Core.AOS || InvisibilitySpell.HasTimer( m ) )
 		{
-			// Reveal always reveals vs. invisibility spell
-			if ( !Core.AOS || InvisibilitySpell.HasTimer( m ) )
-			{
-				chance = 100;
-				return true;
-			}
+			chance = 100;
+			return true;
+		}
 
-			int detectHidden = from.Skills[SkillName.DetectHidden].Fixed;
-			int hiding = m.Skills[SkillName.Hiding].Fixed;
-			int stealth = m.Skills[SkillName.Stealth].Fixed;
-
-			// Formula: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10)
-			// Hiding impact: each point difference = 0.5%
-			// Stealth impact: each 10 points = -1%
-			chance = 50 - ((hiding - detectHidden) / 2) - (stealth / 10);
-
-			// Clamp between 10% (minimum) and 80% (maximum)
-			if ( chance < 10 )
-				chance = 10;
-			if ( chance > 80 )
-				chance = 80;
-
+		// Check for invisibility POTIONS (balanced reveal chance by potion tier)
+		// Lesser: 100%, Regular: 70%, Greater: 50%
+		if ( BaseInvisibilityPotion.HasActiveEffect( m ) )
+		{
+			chance = BaseInvisibilityPotion.GetRevealChance( m );
 			return chance > Utility.Random( 100 );
 		}
+
+		int detectHidden = from.Skills[SkillName.DetectHidden].Fixed;
+		int hiding = m.Skills[SkillName.Hiding].Fixed;
+		int stealth = m.Skills[SkillName.Stealth].Fixed;
+
+		// Formula for skill-based hiding: 50 - ((Hiding - DetectHidden) / 2) - (Stealth / 10)
+		// Hiding impact: each point difference = 0.5%
+		// Stealth impact: each 10 points = -1%
+		chance = 50 - ((hiding - detectHidden) / 2) - (stealth / 10);
+
+		// Clamp between 10% (minimum) and 80% (maximum)
+		if ( chance < 10 )
+			chance = 10;
+		if ( chance > 80 )
+			chance = 80;
+
+		return chance > Utility.Random( 100 );
+	}
 
 		#endregion
 

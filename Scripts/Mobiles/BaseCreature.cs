@@ -6745,12 +6745,19 @@ namespace Server.Mobiles
 				this.CantWalk = false;
 				this.Hidden = false;
 			}
-			if ( CanOnlyMoveOnSea( this ) ){ this.CantWalk = true; }
+		if ( CanOnlyMoveOnSea( this ) ){ this.CantWalk = true; }
 
-			Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
-
-			base.RevealingAction();
+		Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
+		
+		// IMPORTANT: If using invisibility potion, remove the effect properly
+		// This cleans up the active effect table and resets the cooldown
+		if ( Server.Items.BaseInvisibilityPotion.HasActiveEffect( this ) )
+		{
+			Server.Items.BaseInvisibilityPotion.RemoveEffect( this );
 		}
+
+		base.RevealingAction();
+	}
 
 		public void RemoveFollowers()
 		{

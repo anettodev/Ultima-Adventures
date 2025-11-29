@@ -3511,42 +3511,71 @@ namespace Server.Mobiles
 			return false;
 		}
 
-		public virtual void DetectHidden()
-		{
-			if( m_Mobile.Deleted || m_Mobile.Map == null )
-				return;
+	public virtual void DetectHidden()
+	{
+		if( m_Mobile.Deleted || m_Mobile.Map == null )
+			return;
 
-			m_Mobile.DebugSay( "Checking for hidden players" );
+		m_Mobile.DebugSay( "Checking for hidden players" );
 
-			double srcSkill = m_Mobile.Skills[SkillName.DetectHidden].Value;
+		double srcSkill = m_Mobile.Skills[SkillName.DetectHidden].Value;
 
-			if( srcSkill <= 0 )
-				return;
+		if( srcSkill <= 0 )
+			return;
 
-			foreach( Mobile trg in m_Mobile.GetMobilesInRange( m_Mobile.RangePerception ) )
+		// Use half of RangePerception for Detect Hidden (5-9 tiles based on AI type)
+		int detectionRange = m_Mobile.RangePerception / 2;
+		if ( detectionRange < 1 )
+			detectionRange = 1;
+
+		foreach( Mobile trg in m_Mobile.GetMobilesInRange( detectionRange ) )
 			{
 				if( trg != m_Mobile && trg.Player && trg.Alive && trg.Hidden && trg.AccessLevel == AccessLevel.Player && m_Mobile.InLOS( trg )  )
 				{
 					if ( m_Mobile.Controlled && m_Mobile.ControlMaster == trg && m_Mobile.Combatant != trg ) // final - tamed pets revealing their owners.
 						return;
 					
-					m_Mobile.DebugSay( "Trying to detect {0}", trg.Name );
+			m_Mobile.DebugSay( "Trying to detect {0}", trg.Name );
 
-					double trgHiding = trg.Skills[SkillName.Hiding].Value / 2.9;
-					double trgStealth = trg.Skills[SkillName.Stealth].Value / 1.8;
+			// Check if target is using invisibility potion (balanced reveal chance by tier)
+			// Lesser: 100%, Regular: 70%, Greater: 50%
+			bool isUsingInvisibilityPotion = Server.Items.BaseInvisibilityPotion.HasActiveEffect( trg );
+			bool potionRevealSuccess = false;
 
-					double chance = srcSkill / 1.2 - Math.Min( trgHiding, trgStealth );
+			if ( isUsingInvisibilityPotion )
+			{
+				int revealChance = Server.Items.BaseInvisibilityPotion.GetRevealChance( trg );
+				potionRevealSuccess = ( Utility.Random( 100 ) < revealChance );
+			}
 
-					if( chance < srcSkill / 10 )
-						chance = srcSkill / 10;
+			// Calculate skill check for normal hiding/stealth (only if not using potion)
+			double trgHiding = trg.Skills[SkillName.Hiding].Value / 2.9;
+			double trgStealth = trg.Skills[SkillName.Stealth].Value / 1.8;
 
-					chance /= 100;
+			double chance = srcSkill / 1.2 - Math.Min( trgHiding, trgStealth );
 
-					if( chance > Utility.RandomDouble() )
-					{
-						trg.RevealingAction();
-						trg.SendLocalizedMessage( 500814 ); // You have been revealed!
-					}
+			if( chance < srcSkill / 10 )
+				chance = srcSkill / 10;
+
+			chance /= 100;
+
+			// Reveal if: potion reveal succeeds OR skill check succeeds
+			if( potionRevealSuccess || chance > Utility.RandomDouble() )
+			{
+				// NOTE: RevealingAction() automatically handles invisibility potion cleanup
+				trg.RevealingAction();
+				
+				// Send different message based on reveal reason
+				if ( potionRevealSuccess )
+				{
+					int revealChance = Server.Items.BaseInvisibilityPotion.GetRevealChance( trg );
+					trg.SendMessage( 0x22, string.Format( "{0} detectou sua poção de invisibilidade ({1}% chance)! Você foi revelado!", m_Mobile.Name, revealChance ) ); // Red
+				}
+				else
+				{
+					trg.SendLocalizedMessage( 500814 ); // You have been revealed!
+				}
+			}
 				}
 			}
 		}
@@ -3739,21 +3768,32 @@ namespace Server.Mobiles
 					}
 				}
 
-				if( m_Owner.CanDetectHidden && DateTime.UtcNow > m_Owner.m_NextDetectHidden )
-				{
-					m_Owner.DetectHidden();
+			if( m_Owner.CanDetectHidden && DateTime.UtcNow > m_Owner.m_NextDetectHidden )
+			{
+				m_Owner.DetectHidden();
 
-					// Not exactly OSI style, approximation.
-					int delay = (15000 / m_Owner.m_Mobile.Int);
+				// Not exactly OSI style, approximation.
+				int delay = (15000 / m_Owner.m_Mobile.Int);
 
-					if( delay > 60 )
-						delay = 60;
+				// Tiered detection intervals based on INT (more vigilant at lower INT)
+				// INT < 250:   Cap at 50s (45-55s interval) - Guards, vendors, town NPCs
+				// INT 250-299: Cap at 45s (40-50s interval) - Smart guards, advanced NPCs
+				// INT 300-400: Cap at 40s (36-44s interval) - Mages, intelligent creatures
+				// INT > 400:   Cap at 60s (natural formula) - Boss creatures, high-tier monsters
+				if( m_Owner.m_Mobile.Int < 250 && delay > 50 )
+					delay = 50;
+				else if( m_Owner.m_Mobile.Int >= 250 && m_Owner.m_Mobile.Int < 300 && delay > 45 )
+					delay = 45;
+				else if( m_Owner.m_Mobile.Int >= 300 && m_Owner.m_Mobile.Int <= 400 && delay > 40 )
+					delay = 40;
+				else if( delay > 60 )
+					delay = 60;
 
-					int min = delay * (9 / 10); // 13s at 1000 int, 33s at 400 int, 54s at <250 int
-					int max = delay * (10 / 9); // 16s at 1000 int, 41s at 400 int, 66s at <250 int
+				int min = delay * (9 / 10); // 13s at 1000 int, 36s at 300-400 int, 40s at 250-299 int, 45s at <250 int
+				int max = delay * (10 / 9); // 16s at 1000 int, 44s at 300-400 int, 50s at 250-299 int, 55s at <250 int
 
-					m_Owner.m_NextDetectHidden = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( min, max ) );
-				}
+				m_Owner.m_NextDetectHidden = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( min, max ) );
+			}
 
 				/* + NPC schedules + */
 				Container pack = m_Owner.m_Mobile.Backpack;

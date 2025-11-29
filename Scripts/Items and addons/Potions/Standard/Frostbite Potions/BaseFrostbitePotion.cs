@@ -1,22 +1,66 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Server;
 using Server.Network;
 using Server.Targeting;
 using Server.Spells;
 using Server.Mobiles;
+using Server.Items.Helpers;
 
 namespace Server.Items
 {
-	public abstract class BaseFrostbitePotion : BasePotion
+	/// <summary>
+	/// Base class for all frostbite potions.
+	/// 50% chance to paralyze enemies in the explosion area and creates ice patches.
+	/// Regular: 3 second paralyze, Greater: 5 second paralyze.
+	/// Ice patches deal cold damage over time.
+	/// Throwable with countdown and area effect.
+	/// </summary>
+	public abstract class BaseFrostbitePotion : BaseThrowablePotion
 	{
-		public abstract int MinDamage{ get; }
-		public abstract int MaxDamage{ get; }
+	#region Abstract Properties
 
-		//public override int Hue{ get { return ( Server.Items.PotionKeg.GetPotionColor( this ) ); } }
+	/// <summary>Gets the minimum damage for ice patches</summary>
+	public abstract int MinDamage{ get; }
 
-		public override bool RequireFreeHand{ get{ return false; } }
+	/// <summary>Gets the maximum damage for ice patches</summary>
+	public abstract int MaxDamage{ get; }
+
+	/// <summary>Gets the paralyze duration in seconds</summary>
+	public abstract double ParalyzeDuration{ get; }
+
+	/// <summary>Gets the ice patch duration in seconds (how long ice patches last)</summary>
+	public abstract double IcePatchDuration{ get; }
+
+	#endregion
+
+		#region Throwable Potion Configuration
+
+		/// <summary>Flying potion item ID during throw</summary>
+		protected override int FlyingPotionItemID { get { return FrostbiteConstants.FLYING_POTION_ITEM_ID; } }
+
+		/// <summary>Potion type name for messages</summary>
+		protected override string PotionTypeName { get { return "poção de congelamento"; } }
+
+		/// <summary>Base cooldown between throws (30 seconds, reduced by Chemist)</summary>
+		protected override double BaseCooldownSeconds { get { return FrostbiteConstants.BASE_COOLDOWN_SECONDS; } }
+
+		/// <summary>Effect radius (2 tiles)</summary>
+		protected override int EffectRadius { get { return FrostbiteConstants.EXPLOSION_RADIUS; } }
+
+		/// <summary>Countdown message color (cyan for ice)</summary>
+		protected override int CountdownMessageColor { get { return 0x59; } } // Cyan
+
+		/// <summary>Initial countdown delay (0.5 seconds for faster countdown)</summary>
+		protected override double CountdownInitialDelay { get { return 0.5; } }
+
+		/// <summary>Countdown tick interval (0.75 seconds for 3 second total)</summary>
+		/// <remarks>Total time: 0.5 + (0.75 * 3) = 2.75 seconds ≈ 3 seconds</remarks>
+		protected override double CountdownTickInterval { get { return 0.75; } }
+
+		#endregion
+
+		#region Constructors
 
 		public BaseFrostbitePotion( PotionEffect effect ) : base( 0x180F, effect )
 		{
@@ -26,44 +70,13 @@ namespace Server.Items
 		{
 		}
 
-		public override void Drink( Mobile from )
-		{
-			if ( Core.AOS && (from.Paralyzed || from.Blessed || from.Frozen || (from.Spell != null && from.Spell.IsCasting)) )
-			{
-				from.SendMessage( "You cannot do that yet." );
-				return;
-			}
-			else if ( !from.Region.AllowHarmful( from, from ) )
-			{
-				from.SendMessage( "That doesn't feel like a good idea." ); 
-				return;
-			}
+		#endregion
 
-			int delay = GetDelay( from );
-
-			if ( delay > 0 )
-			{
-				from.SendLocalizedMessage( 1072529, String.Format( "{0}\t{1}", delay, delay > 1 ? "seconds." : "second." ) ); // You cannot use that for another ~1_NUM~ ~2_TIMEUNITS~
-				return;
-			}
-
-			ThrowTarget targ = from.Target as ThrowTarget;
-
-			if ( targ != null && targ.Potion == this )
-				return;
-
-			from.RevealingAction();
-
-			if ( !m_Users.Contains( from ) )
-				m_Users.Add( from );
-
-			from.Target = new ThrowTarget( this );
-		}
+		#region Serialization
 
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
-
 			writer.Write( (int) 0 ); // version
 		}
 
@@ -73,163 +86,274 @@ namespace Server.Items
 			int version = reader.ReadInt();
 		}
 
-		private List<Mobile> m_Users = new List<Mobile>();
+		#endregion
 
-		public void Explode_Callback( object state )
+		#region Countdown Visual Effects
+
+		/// <summary>
+		/// Displays ice visual effect on each countdown tick
+		/// </summary>
+		protected override void OnCountdownTick( Point3D loc, Map map, int timer )
 		{
-			object[] states = (object[]) state;
-
-			Explode( (Mobile) states[ 0 ], (Point3D) states[ 1 ], (Map) states[ 2 ] );
+			// Ice mist effect during countdown
+			Effects.SendLocationEffect( loc, map, 0x376A, 20, 10, 0x481, 0 ); // Ice blue effect
 		}
 
-		public virtual void Explode( Mobile from, Point3D loc, Map map )
+		/// <summary>
+		/// Plays sound when potion lands
+		/// </summary>
+		protected override void OnLanding( Point3D loc, Map map )
 		{
-			if ( Deleted || map == null )
-				return;
+			Effects.PlaySound( loc, map, 0x28 ); // Ice crack sound
+		}
 
-			Consume();
-			
-			// Check if any other players are using this potion
-			for ( int i = 0; i < m_Users.Count; i ++ )
+		#endregion
+
+		#region Area Effect Implementation
+
+		/// <summary>
+		/// Plays detonation visual and sound effects
+		/// </summary>
+		protected override void PlayDetonationEffects( Point3D loc, Map map )
+		{
+			// Explosion sound (ice blast)
+			Effects.PlaySound( loc, map, FrostbiteConstants.EXPLOSION_SOUND_ID );
+
+			// Large ice explosion visual
+			Effects.SendLocationEffect( loc, map, 0x3818, 20, 10, 0x481, 0 );
+		}
+
+		/// <summary>
+		/// Applies area effect: Creates ice patches that continuously attempt to paralyze enemies
+		/// No immediate damage or paralyze on explosion
+		/// Ice patches roll 50% paralyze chance every tick (every second) for each enemy
+		/// </summary>
+		protected override void ApplyAreaEffect( Mobile from, bool direct, Point3D loc, Map map )
+		{
+			// Mark thrower as criminal (throwing frostbite is a hostile act)
+			if ( from != null && from.Player )
 			{
-				ThrowTarget targ = m_Users[ i ].Target as ThrowTarget;
-
-				if ( targ != null && targ.Potion == this )
-					Target.Cancel( from );
+				from.Criminal = true;
 			}
 
-			// Effects
-			Effects.PlaySound( loc, map, 0x20C );
+			// Create ice field pattern (5x5 grid)
+			// Ice patches will handle paralyze rolls every tick (every second)
+			// Each mobile gets independent 50% roll per tick
+			CreateIceFieldPattern( from, loc, map );
+		}
 
-			for ( int i = -2; i <= 2; i ++ )
+		#endregion
+
+		#region Frostbite Effect Logic
+
+		/// <summary>
+		/// Checks if target can be affected by frostbite (INCLUDING the caster)
+		/// </summary>
+		private bool CanAffectTarget( Mobile from, Mobile target )
+		{
+			// Caster CAN be paralyzed by their own frostbite potion
+			return SpellHelper.ValidIndirectTarget( from, target ) && 
+				   from.CanBeHarmful( target, false );
+		}
+
+		/// <summary>
+		/// Applies frostbite effect: 50% chance to paralyze (no damage)
+		/// Uses same visual/sound effects as ParalyzeField for consistency
+		/// </summary>
+		private void ApplyFrostbiteEffect( Mobile from, Mobile target )
+		{
+			if ( from != null )
+				from.DoHarmful( target );
+
+			// 50% chance to paralyze
+			bool paralyzed = ( Utility.RandomDouble() < 0.50 );
+
+			if ( paralyzed )
 			{
-				for ( int j = -2; j <= 2; j ++ )
+				// Apply paralyze effect (no damage, only freeze)
+				target.Paralyze( TimeSpan.FromSeconds( ParalyzeDuration ) );
+
+				// Visual and sound effects (EXACT SAME as ParalyzeField line 246-247)
+				target.PlaySound( FrostbiteConstants.PARALYZE_SOUND_ID );
+				target.FixedEffect( 
+					FrostbiteConstants.PARALYZE_EFFECT_ID, 
+					FrostbiteConstants.PARALYZE_EFFECT_COUNT, 
+					FrostbiteConstants.PARALYZE_EFFECT_DURATION, 
+					Server.Items.CharacterDatabase.GetMySpellHue( from, 0 ), 
+					0 
+				);
+
+				// Send message to victim
+				target.SendMessage( 0x59, "Você foi congelado!" ); // Cyan
+			}
+			else
+			{
+				// Failed to paralyze - show frost effect but no freeze
+				target.FixedParticles( 
+					FrostbiteConstants.ICE_MIST_EFFECT_ID, 
+					FrostbiteConstants.ICE_MIST_EFFECT_SPEED, 
+					FrostbiteConstants.ICE_MIST_EFFECT_DURATION, 
+					FrostbiteConstants.ICE_MIST_EFFECT_NUMBER, 
+					EffectLayer.Waist 
+				);
+				target.PlaySound( FrostbiteConstants.ICE_CRACK_SOUND_ID );
+
+				// Send message to victim
+				target.SendMessage( 0x59, "Você resistiu ao efeito de congelamento!" ); // Cyan
+			}
+		}
+
+		#endregion
+
+		#region Ice Field Creation
+
+		/// <summary>
+		/// Creates a pattern of ice patches in a grid around the explosion point
+		/// Ice patches attempt to paralyze enemies every tick (50% chance)
+		/// </summary>
+		private void CreateIceFieldPattern( Mobile from, Point3D loc, Map map )
+		{
+			for ( int i = -FrostbiteConstants.EXPLOSION_RADIUS; i <= FrostbiteConstants.EXPLOSION_RADIUS; i++ )
+			{
+				for ( int j = -FrostbiteConstants.EXPLOSION_RADIUS; j <= FrostbiteConstants.EXPLOSION_RADIUS; j++ )
 				{
 					Point3D p = new Point3D( loc.X + i, loc.Y + j, loc.Z );
 
-					if ( map.CanFit( p, 12, true, false ) && from.InLOS( p ) )
-						new InternalItem( from, p, map, MinDamage, MaxDamage );
+					if ( map.CanFit( p, FrostbiteConstants.ITEM_HEIGHT_CHECK, true, false ) && from.InLOS( p ) )
+						new IcePatch( from, p, map, ParalyzeDuration, IcePatchDuration );
 				}
 			}
 		}
 
-		#region Delay
-		private static Hashtable m_Delay = new Hashtable();
-
-		public static void AddDelay( Mobile m )
-		{
-			Timer timer = m_Delay[ m ] as Timer;
-
-			if ( timer != null )
-				timer.Stop();
-
-            //Quicker Cooldown for alchemists based on enhance potion
-            double scalar = 1.0;
-            if (m is PlayerMobile && ((PlayerMobile)m).Alchemist())
-                scalar = 1.0 + (0.02 * EnhancePotions(m));
-
-
-            m_Delay[ m ] = Timer.DelayCall( TimeSpan.FromSeconds( 30 / scalar), new TimerStateCallback( EndDelay_Callback ), m );	
-		}
-
-		public static int GetDelay( Mobile m )
-		{
-			Timer timer = m_Delay[ m ] as Timer;
-
-			if ( timer != null && timer.Next > DateTime.UtcNow )
-				return (int) (timer.Next - DateTime.UtcNow).TotalSeconds;
-
-			return 0;
-		}
-
-		private static void EndDelay_Callback( object obj )
-		{
-			if ( obj is Mobile )
-				EndDelay( (Mobile) obj );
-		}
-
-		public static void EndDelay( Mobile m )
-		{
-			Timer timer = m_Delay[ m ] as Timer;
-
-			if ( timer != null )
-			{
-				timer.Stop();
-				m_Delay.Remove( m );
-			}
-		}
 		#endregion
 
-		private class ThrowTarget : Target
+		#region Nested Classes
+
+		/// <summary>
+		/// Ice patch that attempts to paralyze enemies every tick
+		/// Lasts 10 seconds, rolls 50% paralyze chance every second for each mobile
+		/// </summary>
+		public class IcePatch : Item
 		{
-			private BaseFrostbitePotion m_Potion;
+			#region Fields
 
-			public BaseFrostbitePotion Potion
-			{
-				get{ return m_Potion; }
-			}
-
-			public ThrowTarget( BaseFrostbitePotion potion ) : base( 12, true, TargetFlags.None )
-			{
-				m_Potion = potion;
-			}
-
-			protected override void OnTarget( Mobile from, object targeted )
-			{
-				if ( m_Potion.Deleted || m_Potion.Map == Map.Internal )
-					return;
-					
-				IPoint3D p = targeted as IPoint3D;
-
-				if ( p == null || from.Map == null )
-					return;
-
-				// Add delay
-				BaseFrostbitePotion.AddDelay( from );
-
-				SpellHelper.GetSurfaceTop( ref p );
-
-				from.RevealingAction();
-
-				IEntity to;
-
-				if ( p is Mobile )
-					to = (Mobile)p;
-				else
-					to = new Entity( Serial.Zero, new Point3D( p ), from.Map );
-
-				Effects.SendMovingEffect( from, to, 0xF0D, 7, 0, false, false, m_Potion.Hue, 0 );
-				Timer.DelayCall( TimeSpan.FromSeconds( 1.5 ), new TimerStateCallback( m_Potion.Explode_Callback ), new object[] { from, new Point3D( p ), from.Map } );
-			}
-		}
-
-		public class InternalItem : Item
-		{
 			private Mobile m_From;
-			private int m_MinDamage;
-			private int m_MaxDamage;
+			private double m_ParalyzeDuration; // Duration in seconds (3.0 or 5.0)
 			private DateTime m_End;
 			private Timer m_Timer;
 
-			public Mobile From{ get{ return m_From; } }
+			#endregion
 
+			#region Properties
+
+			public Mobile From{ get{ return m_From; } }
 			public override bool BlocksFit{ get{ return true; } }
 
-			public InternalItem( Mobile from, Point3D loc, Map map, int min, int max ) : base( 0x3400 )
+			#endregion
+
+		#region Constructors
+
+		public IcePatch( Mobile from, Point3D loc, Map map, double paralyzeDuration, double icePatchDuration ) : base( FrostbiteConstants.ICE_PATCH_ITEM_ID )
+		{
+			Movable = false;
+			Hue = FrostbiteConstants.ICE_PATCH_HUE;
+
+			MoveToWorld( loc, map );
+
+			m_From = from;
+			m_ParalyzeDuration = paralyzeDuration;
+			m_End = DateTime.UtcNow + TimeSpan.FromSeconds( icePatchDuration );
+
+			m_Timer = new IcePatchTimer( this, m_End );
+			m_Timer.Start();
+		}
+
+		public IcePatch( Serial serial ) : base( serial )
+		{
+		}
+
+		#endregion
+
+		#region Visual Effects Application
+
+		/// <summary>
+		/// Checks if mobile is in valid range for ice effects
+		/// </summary>
+		private bool IsInIcePatchRange( Mobile m )
+		{
+			return (m.Z + FrostbiteConstants.Z_AXIS_HEIGHT_CHECK) > this.Z && 
+				   (this.Z + FrostbiteConstants.ITEM_HEIGHT_CHECK) > m.Z;
+		}
+
+		/// <summary>
+		/// Checks if target can be affected by ice effects (INCLUDING the caster)
+		/// </summary>
+		private bool CanDamageTarget( Mobile m )
+		{
+			// Caster CAN be paralyzed by their own ice patches
+			return SpellHelper.ValidIndirectTarget( m_From, m ) && 
+				   m_From.CanBeHarmful( m, false );
+		}
+
+		/// <summary>
+		/// Attempts to paralyze a mobile every tick (50% chance per tick)
+		/// Skips if already paralyzed
+		/// Uses ParalyzeField visual/sound effects
+		/// </summary>
+		private void ApplyIceDamage( Mobile m )
+		{
+			// Skip if already paralyzed (don't re-paralyze)
+			if ( m.Paralyzed || m.Frozen )
 			{
-				Movable = false;
-				Hue = 0xB78;
-
-				MoveToWorld( loc, map );
-
-				m_From = from;
-				m_End = DateTime.UtcNow + TimeSpan.FromSeconds( 10 );
-
-				SetDamage( min, max );
-
-				m_Timer = new InternalTimer( this, m_End );
-				m_Timer.Start();
+				return;
 			}
+
+			// 50% chance to paralyze (rolled EVERY TICK for EACH mobile independently)
+			bool paralyzed = ( Utility.RandomDouble() < FrostbiteConstants.PARALYZE_CHANCE );
+
+			if ( paralyzed )
+			{
+				// Mark harmful action
+				if ( m_From != null )
+					m_From.DoHarmful( m );
+
+				// Apply paralyze effect
+				m.Paralyze( TimeSpan.FromSeconds( GetParalyzeDuration() ) );
+
+				// Visual and sound effects (EXACT SAME as ParalyzeField)
+				m.PlaySound( FrostbiteConstants.PARALYZE_SOUND_ID );
+				m.FixedEffect( 
+					FrostbiteConstants.PARALYZE_EFFECT_ID, 
+					FrostbiteConstants.PARALYZE_EFFECT_COUNT, 
+					FrostbiteConstants.PARALYZE_EFFECT_DURATION, 
+					Server.Items.CharacterDatabase.GetMySpellHue( m_From, 0 ), 
+					0 
+				);
+			}
+			else
+			{
+				// Subtle ice effect for failed paralyze attempt (lighter visual)
+				m.FixedParticles( 
+					FrostbiteConstants.ICE_HIT_EFFECT_ID, 
+					5, // Lighter effect (half particles)
+					FrostbiteConstants.ICE_HIT_EFFECT_SPEED, 
+					FrostbiteConstants.ICE_HIT_EFFECT_NUMBER, 
+					EffectLayer.Waist 
+				);
+			}
+		}
+
+		/// <summary>
+		/// Gets paralyze duration for this ice patch
+		/// </summary>
+		private double GetParalyzeDuration()
+		{
+			return m_ParalyzeDuration;
+		}
+
+			#endregion
+
+			#region Event Handlers
 
 			public override void OnAfterDelete()
 			{
@@ -239,122 +363,125 @@ namespace Server.Items
 					m_Timer.Stop();
 			}
 
-			public InternalItem( Serial serial ) : base( serial )
-			{
-			}
-
-			public int GetDamage(){ return Utility.RandomMinMax( m_MinDamage, m_MaxDamage ); }
-
-			private void SetDamage( int min, int max )
-			{
-				/* 	new way to apply alchemy bonus according to Stratics' calculator.
-					this gives a mean to values 25, 50, 75 and 100. Stratics' calculator is outdated.
-					Those goals will give 2 to alchemy bonus. It's not really OSI-like but it's an approximation. */
-
-				m_MinDamage = min;
-				m_MaxDamage = max;
-
-				if( m_From == null )
-					return;
-
-				int alchemySkill = m_From.Skills.Alchemy.Fixed;
-				int alchemyBonus = alchemySkill / 125 + alchemySkill / 250 ;
-
-				m_MinDamage = Scale( m_From, m_MinDamage + alchemyBonus );
-				m_MaxDamage = Scale( m_From, m_MaxDamage + alchemyBonus );
-			}
-
-			public override void Serialize( GenericWriter writer )
-			{
-				base.Serialize( writer );
-
-				writer.Write( (int) 0 ); // version
-
-				writer.Write( (Mobile) m_From );
-				writer.Write( (DateTime) m_End );
-				writer.Write( (int) m_MinDamage );
-				writer.Write( (int) m_MaxDamage );
-			}
-
-			public override void Deserialize( GenericReader reader )
-			{
-				base.Deserialize( reader );
-
-				int version = reader.ReadInt();
-				
-				m_From = reader.ReadMobile();
-				m_End = reader.ReadDateTime();
-				m_MinDamage = reader.ReadInt();
-				m_MaxDamage = reader.ReadInt();
-
-				m_Timer = new InternalTimer( this, m_End );
-				m_Timer.Start();
-			}
-
 			public override bool OnMoveOver( Mobile m )
 			{
-				// WIZARD CHANGED
-				if ( Visible && m_From != null )
+				if ( Visible && m_From != null && IsInIcePatchRange( m ) && CanDamageTarget( m ) )
 				{
-					m_From.DoHarmful( m );
-
-					AOS.Damage( true, m, m_From, GetDamage(), 0, 0, 100, 0, 0 );
-					m.PlaySound( 0x108 );
+					ApplyIceDamage( m );
 				}
 
 				return true;
 			}
 
-			private class InternalTimer : Timer
+			#endregion
+
+		#region Serialization
+
+		public override void Serialize( GenericWriter writer )
+		{
+			base.Serialize( writer );
+			writer.Write( (int) 1 ); // version 1 - changed to paralyze duration
+
+			writer.Write( (Mobile) m_From );
+			writer.Write( (DateTime) m_End );
+			writer.Write( (double) m_ParalyzeDuration );
+		}
+
+		public override void Deserialize( GenericReader reader )
+		{
+			base.Deserialize( reader );
+			int version = reader.ReadInt();
+			
+			m_From = reader.ReadMobile();
+			m_End = reader.ReadDateTime();
+
+			switch ( version )
 			{
-				private InternalItem m_Item;
+				case 1:
+				{
+					m_ParalyzeDuration = reader.ReadDouble();
+					break;
+				}
+				case 0:
+				{
+					// Old version with damage values - discard and default to 3.0s paralyze
+					int minDamage = reader.ReadInt();
+					int maxDamage = reader.ReadInt();
+					m_ParalyzeDuration = 3.0; // Default to regular frostbite duration
+					break;
+				}
+			}
+
+			m_Timer = new IcePatchTimer( this, m_End );
+			m_Timer.Start();
+		}
+
+		#endregion
+
+		#region Nested Timer Class
+
+		/// <summary>
+		/// Timer that manages ice patch lifecycle (visual/sound effects only, no damage)
+		/// </summary>
+		private class IcePatchTimer : Timer
+			{
+				private IcePatch m_Patch;
 				private DateTime m_End;
 
-				public InternalTimer( InternalItem item, DateTime end ) : base( TimeSpan.Zero, TimeSpan.FromSeconds( 1.0 ) )
+				public IcePatchTimer( IcePatch patch, DateTime end ) : base( TimeSpan.Zero, TimeSpan.FromSeconds( FrostbiteConstants.TIMER_TICK_INTERVAL ) )
 				{
-					m_Item = item;
+					m_Patch = patch;
 					m_End = end;
-
 					Priority = TimerPriority.FiftyMS;
 				}
 
 				protected override void OnTick()
 				{
-					if ( m_Item.Deleted )
+					if ( m_Patch.Deleted )
 						return;
 
-					if ( DateTime.UtcNow > m_End )
-					{
-						m_Item.Delete();
-						Stop();
-						return;
-					}
+				// Check if patch has expired
+				if ( DateTime.UtcNow > m_End )
+				{
+					m_Patch.Delete();
+					Stop();
+					return;
+				}
 
-					Mobile from = m_Item.From;
+				Mobile from = m_Patch.From;
 
-					if ( m_Item.Map == null || from == null )
-						return;
-					
+				if ( m_Patch.Map == null || from == null )
+					return;
+
+				// Apply visual/sound effects to all mobiles standing on this ice patch
+				ProcessMobilesInIce();
+				}
+
+			/// <summary>
+			/// Finds and applies visual/sound effects to all mobiles standing on the ice patch (no damage)
+			/// </summary>
+			private void ProcessMobilesInIce()
+				{
 					List<Mobile> mobiles = new List<Mobile>();
 
-					foreach( Mobile mobile in m_Item.GetMobilesInRange( 0 ) )
+					foreach( Mobile mobile in m_Patch.GetMobilesInRange( FrostbiteConstants.ICE_DAMAGE_RANGE ) )
 						mobiles.Add( mobile );
 
 					for( int i = 0; i < mobiles.Count; i++ )
 					{
 						Mobile m = mobiles[i];
 						
-						if ( (m.Z + 16) > m_Item.Z && (m_Item.Z + 12) > m.Z && (!Core.AOS || m != from) && SpellHelper.ValidIndirectTarget( from, m ) && from.CanBeHarmful( m, false ) )
+						if ( m_Patch.IsInIcePatchRange( m ) && m_Patch.CanDamageTarget( m ) )
 						{
-							if ( from != null )
-								from.DoHarmful( m );
-							
-							AOS.Damage( m, from, m_Item.GetDamage(), 0, 0, 100, 0, 0 );
-							m.PlaySound( 0x108 );
-						}              
+							m_Patch.ApplyIceDamage( m );
+						}
 					}
 				}
 			}
+
+			#endregion
 		}
+
+		#endregion
 	}
 }

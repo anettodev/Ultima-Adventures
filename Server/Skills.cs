@@ -938,20 +938,24 @@ namespace Server
 			else if ( !from.AllowSkillUse( (SkillName)skillID ) )
 				return false;
 
-			if ( skillID >= 0 && skillID < SkillInfo.Table.Length )
+		if ( skillID >= 0 && skillID < SkillInfo.Table.Length )
+		{
+			SkillInfo info = SkillInfo.Table[skillID];
+
+			if ( info.Callback != null )
 			{
-				SkillInfo info = SkillInfo.Table[skillID];
-
-				if ( info.Callback != null )
+				if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null && Server.Items.BandageHelpers.IsCurrentlyBandaging(from) == false)
 				{
-					if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null && Server.Items.BandageHelpers.IsCurrentlyBandaging(from) == false)
-					{
-						from.DisruptiveAction();
+					// Check if player has invisibility potion effect active
+					// Using a skill reveals the player
+					Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( from, "usou uma habilidade" );
 
-						from.NextSkillTime = Core.TickCount + (int)(info.Callback(from)).TotalMilliseconds;
+					from.DisruptiveAction();
 
-						return true;
-					}
+					from.NextSkillTime = Core.TickCount + (int)(info.Callback(from)).TotalMilliseconds;
+
+					return true;
+				}
 					else
 					{
 						from.SendSkillMessage();

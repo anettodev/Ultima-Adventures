@@ -55,32 +55,58 @@ namespace Server.SkillHandlers
 				if ( !src.CheckSkill( SkillName.DetectHidden, 0.0, 100.0 ) )
 					range /= 2;
 
-				BaseHouse house = BaseHouse.FindHouseAt( p, src.Map, 16 );
+			BaseHouse house = BaseHouse.FindHouseAt( p, src.Map, 16 );
 
-				bool inHouse = ( house != null && house.IsFriend( src ) );
+			bool inHouse = ( house != null && house.IsFriend( src ) );
 
-				if ( inHouse )
-					range = 22;
+			if ( inHouse )
+				range = 10;
 
 				if ( range > 0 )
 				{
 					IPooledEnumerable inRange = src.Map.GetMobilesInRange( p, range );
 
-					foreach ( Mobile trg in inRange )
-					{
-						if ( trg.Hidden && src != trg )
-						{
-							double ss = srcSkill + Utility.Random( 21 ) - 10;
-							double ts = trg.Skills[SkillName.Hiding].Value + Utility.Random( 21 ) - 10;
+			foreach ( Mobile trg in inRange )
+			{
+				if ( trg.Hidden && src != trg )
+				{
+					// Check if target is using invisibility potion (balanced reveal chance by tier)
+					// Lesser: 100%, Regular: 70%, Greater: 50%
+					bool isUsingInvisibilityPotion = BaseInvisibilityPotion.HasActiveEffect( trg );
+					bool potionRevealSuccess = false;
 
-							if ( src.AccessLevel >= trg.AccessLevel && ( ss >= ts || ( inHouse && house.IsInside( trg ) ) ) )
-							{
-								trg.RevealingAction();
-								trg.SendLocalizedMessage( 500814 ); // You have been revealed!
-								foundAnyone = true;
-							}
-						}
+					if ( isUsingInvisibilityPotion )
+					{
+						int revealChance = BaseInvisibilityPotion.GetRevealChance( trg );
+						potionRevealSuccess = ( Utility.Random( 100 ) < revealChance );
 					}
+					
+					// Calculate skill check for normal hiding/stealth (only if not using potion)
+					double ss = srcSkill + Utility.Random( 21 ) - 10;
+					double ts = trg.Skills[SkillName.Hiding].Value + Utility.Random( 21 ) - 10;
+
+					// Reveal if: potion reveal succeeds OR skill check succeeds
+					if ( src.AccessLevel >= trg.AccessLevel && ( potionRevealSuccess || ss >= ts || ( inHouse && house.IsInside( trg ) ) ) )
+					{
+						// NOTE: RevealingAction() automatically handles invisibility potion cleanup
+						trg.RevealingAction();
+						
+						// Send different message based on reveal reason
+						if ( potionRevealSuccess )
+						{
+							int revealChance = BaseInvisibilityPotion.GetRevealChance( trg );
+							trg.SendMessage( 0x22, string.Format( "Sua poção de invisibilidade foi detectada ({0}% chance)! Você foi revelado!", revealChance ) ); // Red
+							src.SendMessage( 0x59, string.Format( "Você detectou {0} usando uma poção de invisibilidade ({1}% chance)!", trg.Name, revealChance ) ); // Cyan
+						}
+						else
+						{
+							trg.SendLocalizedMessage( 500814 ); // You have been revealed!
+						}
+						
+						foundAnyone = true;
+					}
+				}
+			}
 
 					inRange.Free();
 

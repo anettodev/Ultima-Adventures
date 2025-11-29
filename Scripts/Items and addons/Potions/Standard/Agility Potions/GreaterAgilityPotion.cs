@@ -5,8 +5,9 @@ namespace Server.Items
 {
 	public class GreaterAgilityPotion : BaseAgilityPotion
 	{
-		public override int DexOffset{ get{ return 20; } }
-		public override TimeSpan Duration{ get{ return TimeSpan.FromMinutes( 2.0 ); } }
+		public override int MinDexterity{ get{ return 7; } }
+		public override int MaxDexterity{ get{ return 8; } }
+		public override TimeSpan Duration{ get{ return TimeSpan.FromSeconds( 90 ); } } // 90 seconds max
 
 		[Constructable]
 		public GreaterAgilityPotion() : base( PotionEffect.AgilityGreater )

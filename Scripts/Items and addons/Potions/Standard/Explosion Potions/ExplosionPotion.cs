@@ -5,8 +5,8 @@ namespace Server.Items
 {
 	public class ExplosionPotion : BaseExplosionPotion
 	{
-		public override int MinDamage { get { return 50; } }
-		public override int MaxDamage { get { return 60; } }
+		public override int MinDamage { get { return 20; } }
+		public override int MaxDamage { get { return 32; } }
 
 		[Constructable]
 		public ExplosionPotion() : base( PotionEffect.Explosion )

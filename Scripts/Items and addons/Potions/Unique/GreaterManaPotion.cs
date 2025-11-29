@@ -6,8 +6,8 @@ namespace Server.Items
 	public class GreaterManaPotion : BaseManaRefreshPotion
 	{
 		public override int MinMana { get{ return 20; } }
-		public override int MaxMana { get{ return 25; } }
-		public override double Delay { get{ return 10.0; } }
+		public override int MaxMana { get{ return 28; } }
+		public override double Delay { get{ return 6.0; } }
 
 		[Constructable]
 		public GreaterManaPotion( ) : base( PotionEffect.ManaGreater )

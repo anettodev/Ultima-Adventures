@@ -72,9 +72,29 @@ namespace Server.Items
 			int version = reader.ReadInt();
 		}
 
-		#endregion
+	#endregion
 
-		#region Core Logic
+	#region Property Display
+
+	/// <summary>
+	/// Adds custom properties to the object property list
+	/// </summary>
+	/// <param name="list">The object property list</param>
+	public override void GetProperties( ObjectPropertyList list )
+	{
+		base.GetProperties( list );
+		
+		// Display potion type in custom cyan color (#8be4fc) with brackets
+		string potionName = PotionMetadata.GetKegName( this.PotionEffect );
+		if ( potionName != null )
+		{
+			list.Add( 1070722, string.Format( "<BASEFONT COLOR=#8be4fc>[{0}]", potionName ) ); // Custom cyan color #8be4fc
+		}
+	}
+
+	#endregion
+
+	#region Core Logic
 
 		/// <summary>
 		/// Applies poison to the specified mobile
@@ -106,16 +126,16 @@ namespace Server.Items
 			}
 		}
 
-		#endregion
+	#endregion
 
-		#region Helper Methods
+	#region Skill and Throw Helper Methods
 
-		/// <summary>
-		/// Gets the skill level requirement for this poison potion type
-		/// </summary>
-		/// <param name="defaultLevel">Default skill level if type not recognized</param>
-		/// <returns>Skill level requirement</returns>
-		private int GetSkillLevel( int defaultLevel )
+	/// <summary>
+	/// Gets the skill level requirement for this poison potion type
+	/// </summary>
+	/// <param name="defaultLevel">Default skill level if type not recognized</param>
+	/// <returns>Skill level requirement</returns>
+	private int GetSkillLevel( int defaultLevel )
 		{
 			if ( this is PoisonPotion )
 				return PoisonPotionConstants.SKILL_LEVEL_REGULAR;

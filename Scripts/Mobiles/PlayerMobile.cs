@@ -1608,6 +1608,14 @@ namespace Server.Mobiles
 
 		// Remove invisibility timer and force unhiding
 		Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
+		
+		// IMPORTANT: If using invisibility potion, remove the effect properly
+		// This cleans up the active effect table and resets the cooldown
+		// This comprehensive fix covers ALL reveal scenarios (damage, movement, actions, spells, etc.)
+		if ( Server.Items.BaseInvisibilityPotion.HasActiveEffect( this ) )
+		{
+			Server.Items.BaseInvisibilityPotion.RemoveEffect( this );
+		}
 
 		Item ring = this.FindItemOnLayer( Layer.Ring );
 		if (ring != null && ring is OneRing)
@@ -1904,17 +1912,23 @@ namespace Server.Mobiles
 			if ( !Alive )
 				Server.Movement.MovementImpl.IgnoreMovableImpassables = true;
 
-			res = base.Move( d );
+		res = base.Move( d );
 
-			Server.Movement.MovementImpl.IgnoreMovableImpassables = false;
+		Server.Movement.MovementImpl.IgnoreMovableImpassables = false;
 
-			if ( !res )
-				return false;
+		if ( !res )
+			return false;
 
-			m_NextMovementTime += speed;
+		// Check for invisibility potion reveal on movement
+	if ( res && this.Hidden )
+	{
+		Server.Items.BaseInvisibilityPotion.CheckRevealOnMove( this );
+	}
 
-			return true;
-		}
+		m_NextMovementTime += speed;
+
+		return true;
+	}
 
 		public void AmbientSounds( bool test )
 		{
@@ -4441,12 +4455,13 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			}
 		}
 
-		// CRITICAL FIX: Since Server.exe won't be recompiled, add RevealingAction here
-		// This ensures hidden players are revealed when taking damage
-		if ( amount > 0 && Hidden && AccessLevel == AccessLevel.Player )
-		{
-			RevealingAction();
-		}
+	// CRITICAL FIX: Since Server.exe won't be recompiled, add RevealingAction here
+	// This ensures hidden players are revealed when taking damage
+	// NOTE: RevealingAction() also handles invisibility potion cleanup automatically
+	if ( amount > 0 && Hidden && AccessLevel == AccessLevel.Player )
+	{
+		RevealingAction();
+	}
 
 		base.Damage( amount, from );
 	}
@@ -5992,27 +6007,51 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			if( AccessLevel != AccessLevel.Player )
 				return true;
 
-			if( Hidden && DesignContext.Find( this ) == null )	//Hidden & NOT customizing a house
+		if( Hidden && DesignContext.Find( this ) == null )	//Hidden & NOT customizing a house
+		{
+			if( !Mounted && Skills.Stealth.Value >= 25.0 )
 			{
-				if( !Mounted && Skills.Stealth.Value >= 25.0 )
-				{
-					bool running = (d & Direction.Running) != 0;
+				bool running = (d & Direction.Running) != 0;
 
-					if( running )
+				if( running )
+				{
+					if( (AllowedStealthSteps -= 2) <= 0 )
 					{
-						if( (AllowedStealthSteps -= 2) <= 0 )
+						// Check if player is using invisibility potion
+						// Potions have FIXED steps - reveal immediately when running depletes steps
+						if ( Server.Items.BaseInvisibilityPotion.HasActiveEffect( this ) )
+						{
+							Server.Items.BaseInvisibilityPotion.RemoveEffect( this );
+							SendMessage( 0x22, "Você correu demais e foi revelado!" ); // Red
+						}
+						else
+						{
+							// Normal skill-based stealth: reveal on running out of steps
 							RevealingAction();
+						}
 					}
-					else if( AllowedStealthSteps-- <= 0 )
+				}
+				else if( AllowedStealthSteps-- <= 0 )
+				{
+					// Check if player is using invisibility potion
+					// Potions have FIXED steps (no auto-refresh) - reveal immediately when steps reach 0
+					if ( Server.Items.BaseInvisibilityPotion.HasActiveEffect( this ) )
 					{
+						Server.Items.BaseInvisibilityPotion.RemoveEffect( this );
+						SendMessage( 0x22, "Seus passos furtivos se esgotaram e você foi revelado!" ); // Red
+					}
+					else
+					{
+						// Normal skill-based stealth: auto-refresh (try to stealth again)
 						Server.SkillHandlers.Stealth.OnUse( this );
 					}
 				}
-				else
-				{
-					RevealingAction();
-				}
 			}
+			else
+			{
+				RevealingAction();
+			}
+		}
 
 			FlavorText( false );
 			AmbientSounds( false );

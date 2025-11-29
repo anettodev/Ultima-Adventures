@@ -22,20 +22,29 @@ namespace Server.SkillHandlers
 			SkillInfo.Table[21].Callback = new SkillUseCallback( OnUse );
 		}
 
-		public static TimeSpan OnUse( Mobile m )
+	public static TimeSpan OnUse( Mobile m )
+	{
+		if ( m.Spell != null )
 		{
-			if ( m.Spell != null )
-			{
-				m.SendLocalizedMessage( 501238 ); // You are busy doing something else and cannot hide.
-				return TimeSpan.FromSeconds( 2.5 );
-			}
+			m.SendLocalizedMessage( 501238 ); // You are busy doing something else and cannot hide.
+			return TimeSpan.FromSeconds( 2.5 );
+		}
 
-			if ( Core.ML && m.Target != null )
-			{
-				Targeting.Target.Cancel( m );
-			}
+		if ( Core.ML && m.Target != null )
+		{
+			Targeting.Target.Cancel( m );
+		}
 
-			double bonus = 0.0;
+	// Check if player has active invisibility potion effect
+	// Using the skill reveals them from potion, but allows normal skill check to proceed
+	if ( Server.Items.BaseInvisibilityPotion.HasActiveEffect( m ) )
+	{
+		m.SendMessage( 0x59, "O efeito da poção de invisibilidade se dissipa ao usar suas próprias habilidades..." ); // Cyan
+		Server.Items.BaseInvisibilityPotion.RemoveEffect( m ); // Reveals player and resets cooldown
+		// Now proceed with normal Hiding skill check below
+	}
+
+		double bonus = 0.0;
 
 			BaseHouse house = BaseHouse.FindHouseAt( m );
 

@@ -92,11 +92,14 @@ namespace Server.Engines.Craft
 		/// <summary>Message: "You must be near an anvil and a forge to smith items." (cliloc 1044267)</summary>
 		public const string NOTICE_MUST_BE_NEAR_ANVIL_AND_FORGE = "Você deve estar perto de uma bigorna e uma forja para forjar itens.";
 
-		/// <summary>Message: "You must learn that recipe from a scroll." (cliloc 1072847)</summary>
-		public const string NOTICE_MUST_LEARN_RECIPE = "Você deve aprender essa receita de um pergaminho.";
+	/// <summary>Message: "You must learn that recipe from a scroll." (cliloc 1072847)</summary>
+	public const string NOTICE_MUST_LEARN_RECIPE = "Você deve aprender essa receita de um pergaminho.";
 
-		/// <summary>Message: "You must be near an anvil" (cliloc 1044266)</summary>
-		public const string NOTICE_MUST_BE_NEAR_ANVIL = "Você deve estar perto de uma bigorna.";
+	/// <summary>Message: "You have not learned this recipe." (cliloc 1073620)</summary>
+	public const string NOTICE_RECIPE_NOT_LEARNED = "Você não aprendeu esta receita.";
+
+	/// <summary>Message: "You must be near an anvil" (cliloc 1044266)</summary>
+	public const string NOTICE_MUST_BE_NEAR_ANVIL = "Você deve estar perto de uma bigorna.";
 
 		/// <summary>Message: "You must be near a forge." (cliloc 1044265)</summary>
 		public const string NOTICE_MUST_BE_NEAR_FORGE = "Você deve estar perto de uma forja.";

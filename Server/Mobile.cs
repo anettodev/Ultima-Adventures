@@ -4280,14 +4280,18 @@ namespace Server
 			else if( this.Region.OnDoubleClick( this, item ) )
 				okay = true;
 
-			if( okay )
-			{
-				if( !item.Deleted )
-					item.OnItemUsed( this, item );
+		if( okay )
+		{
+			// Check if player has invisibility potion effect active
+			// Using/double-clicking items/tools reveals the player
+			Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( this, "usou um item" );
 
-				if( !item.Deleted )
-					item.OnDoubleClick( this );
-			}
+			if( !item.Deleted )
+				item.OnItemUsed( this, item );
+
+			if( !item.Deleted )
+				item.OnDoubleClick( this );
+		}
 		}
 
 		public virtual void Use( Mobile m )

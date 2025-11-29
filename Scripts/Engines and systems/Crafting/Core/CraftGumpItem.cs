@@ -117,8 +117,8 @@ namespace Server.Engines.Craft
 				TextDefinition.AddHtmlText( this, 170, 302 + (m_OtherCount++ * 20), 310, 18, RequiredExpansionMessage( craftItem.RequiredExpansion ), false, false, supportsEx ? LabelColor : RedLabelColor, supportsEx ? LabelHue : RedLabelHue );
 			}
 
-			if( needsRecipe )
-				AddHtmlLocalized( 170, 302 + (m_OtherCount++ * 20), 310, 18, 1073620, RedLabelColor, false, false ); // You have not learned this recipe.
+		if( needsRecipe )
+			TextDefinition.AddHtmlText( this, 170, 302 + (m_OtherCount++ * 20), 310, 18, CraftGumpStringConstants.NOTICE_RECIPE_NOT_LEARNED, false, false, RedLabelColor, RedLabelHue );
 
 		}
 
