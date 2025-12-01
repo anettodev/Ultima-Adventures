@@ -10,6 +10,7 @@ using Server.Engines.BulkOrders;
 using Server.Regions;
 using Server.Custom;
 using Server.Multis;
+using Server.Mobiles.Vendors;
 
 namespace Server.Mobiles
 {
@@ -1017,33 +1018,17 @@ namespace Server.Mobiles
 
 				if (!m_pricesadjusted)
 				{
-					if (this.Karma > 0 ) //good vendor
-						money = AdjustPrices( money, true);
-					else if (this.Karma < 0 )
-						money = AdjustPrices( money, false);
-					else if (this.Karma == 0)
-					{
-						if (from.Karma >= 0)
-							money = AdjustPrices( money, true);
-						else
-							money = AdjustPrices( money, false);
-					}
-
+					// Use centralized price manager for buy prices
+					money = VendorPriceManager.CalculateBuyPrice(money, this, from, null);
 					buyItem.Price = money;
 
-					
-					if (this.Karma > 0 ) //good vendor
-						amount = AdjustAmount( amount, true);
-					else if (this.Karma < 0 )
-						amount = AdjustAmount( amount, false);
-					else if (this.Karma == 0)
+					// Use centralized price manager for stock amounts (if Order/Chaos enabled)
+					if (VendorConstants.ENABLE_ORDER_CHAOS_PRICING)
 					{
-						if (from.Karma >= 0)
-							amount = AdjustAmount( amount, true);
-						else
-							amount = AdjustAmount( amount, false);
+						bool isGoodVendor = this.Karma > 0 || (this.Karma == 0 && from != null && from.Karma >= 0);
+						amount = VendorPriceManager.CalculateStockAmount(amount, isGoodVendor);
 					}
-
+					
 					buyItem.Amount = amount;
 
 					m_pricesadjusted = true;
@@ -1249,17 +1234,8 @@ namespace Server.Mobiles
 
 							if (!m_sellingpriceadjusted)
 							{
-								if (this.Karma > 0 ) //good vendor
-									money = AdjustPrices( money, true);
-								else if (this.Karma < 0 )
-									money = AdjustPrices( money, false);
-								else if (this.Karma == 0)
-								{
-									if (from.Karma >= 0)
-										money = AdjustPrices( money, true);
-									else
-										money = AdjustPrices( money, false);
-								}
+								// Use centralized price manager for sell prices
+								money = VendorPriceManager.CalculateSellPrice(money, item, this, from, barter);
 
 								m_sellingpriceadjusted = true;
 							}
@@ -2883,18 +2859,9 @@ namespace Server.Mobiles
 
 							if (!m_sellingpriceadjusted)
 							{
-								//this.Say("adjusting prices");
-								if (this.Karma > 0 ) //good vendor
-									money = AdjustPrices( money, true);
-								else if (this.Karma < 0 )
-									money = AdjustPrices( money, false);
-								else if (this.Karma == 0)
-								{
-									if (seller.Karma >= 0)
-										money = AdjustPrices( money, true);
-									else
-										money = AdjustPrices( money, false);
-								}
+								// Use centralized price manager for sell prices
+								// GetSellPriceFor already applies most modifiers, but we need to apply final pricing with vendor context
+								money = VendorPriceManager.CalculateSellPrice(money, resp.Item, this, seller, barter);
 
 								m_sellingpriceadjusted = true;
 							}

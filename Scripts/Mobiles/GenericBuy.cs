@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Server;
 using Server.Items;
 using Server.Network;
+using Server.Mobiles.Vendors;
 
 namespace Server.Mobiles
 {
@@ -176,7 +177,7 @@ namespace Server.Mobiles
 		private string GetDisplayName( Item item )
 		{
 			// If we have a custom name, use it
-			if ( !String.IsNullOrEmpty( m_Name ) && m_Name != "indefinido" )
+			if ( !String.IsNullOrEmpty( m_Name ) && m_Name != VendorStringConstants.DEFAULT_ITEM_NAME )
 				return m_Name;
 
 			// For ingots, build name from resource type
@@ -187,22 +188,22 @@ namespace Server.Mobiles
 				
 				if ( !String.IsNullOrEmpty( resourceName ) )
 				{
-					// Map resource names to PT-BR
+					// Map resource names to PT-BR using centralized constants
 					switch ( resourceName.ToLower() )
 					{
-						case "iron": return "Ferro Ingots";
-						case "dull copper": return "CR Ingots";
-						case "copper": return "Cobre Ingots";
-						case "shadow iron": return "Ferro Negro Ingots";
-						case "bronze": return "Bronze Ingots";
-						case "gold": return "Dourado Ingots";
-						case "agapite": return "Agapite Ingots";
-						case "verite": return "Verite Ingots";
-						case "valorite": return "Valorite Ingots";
-						case "rosenium": return "Rosenium Ingots";
-						case "titanium": return "Titanium Ingots";
-						case "platinum": return "Platinum Ingots";
-						default: return resourceName + " Ingots";
+						case "iron": return VendorStringConstants.INGOT_NAME_IRON;
+						case "dull copper": return VendorStringConstants.INGOT_NAME_DULL_COPPER;
+						case "copper": return VendorStringConstants.INGOT_NAME_COPPER;
+						case "shadow iron": return VendorStringConstants.INGOT_NAME_SHADOW_IRON;
+						case "bronze": return VendorStringConstants.INGOT_NAME_BRONZE;
+						case "gold": return VendorStringConstants.INGOT_NAME_GOLD;
+						case "agapite": return VendorStringConstants.INGOT_NAME_AGAPITE;
+						case "verite": return VendorStringConstants.INGOT_NAME_VERITE;
+						case "valorite": return VendorStringConstants.INGOT_NAME_VALORITE;
+						case "rosenium": return VendorStringConstants.INGOT_NAME_ROSENIUM;
+						case "titanium": return VendorStringConstants.INGOT_NAME_TITANIUM;
+						case "platinum": return VendorStringConstants.INGOT_NAME_PLATINUM;
+						default: return String.Format(VendorStringConstants.INGOT_NAME_FORMAT, resourceName);
 					}
 				}
 			}
@@ -240,26 +241,9 @@ namespace Server.Mobiles
 		{
 			get
 			{
-				// TODO: checar essa maluquice do caralho
-				/*if ( m_PriceScalar != 0 )
-				{
-					if ( m_Price > 5000000 )
-					{
-						long price = m_Price;
-
-						price *= m_PriceScalar;
-						price += 50;
-						price /= 100;
-
-						if ( price > int.MaxValue )
-							price = int.MaxValue;
-
-						return (int)price;
-					}
-
-					return ( ((m_Price * m_PriceScalar) + 50) / 100 );
-				}*/
-
+				// Use centralized price manager for consistent pricing
+				// Note: BaseVendor will pass itself and buyer context when calling this
+				// For now, we return the base price; BaseVendor will apply final pricing
 				return m_Price;
 			}
 			set{ m_Price = value; }
@@ -368,23 +352,8 @@ namespace Server.Mobiles
 
 		public static int GetRandBuyPriceFor( int itemPrice )
 		{
-			int lowPrice = 75;
-			int highPrice = 125;			
-			
-			int price = 0;
-			for ( int i = 1; i <= 3; i++ )
-			{
-				price += Utility.RandomMinMax( lowPrice, highPrice );
-			}
-
-			price /= 3;
-
-			if ( price < 1 )
-				price = 1; 
-
-			double finalprice = ((double)price/100) * (double)itemPrice;		
-
-			return Convert.ToInt32(finalprice); 
+			// Use centralized price manager for random price calculation
+			return VendorPriceManager.GetRandomBuyPrice(itemPrice);
 		}
 
 		public static int GetRandBuyAmountFor( int itemAmount )

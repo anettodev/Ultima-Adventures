@@ -12,9 +12,16 @@ using System.Text.RegularExpressions;
 
 namespace Server.Mobiles
 {
+	/// <summary>
+	/// Custom vendor system for Midland region.
+	/// Uses speech-based interaction and dynamic inventory-based pricing.
+	/// Does not inherit from BaseVendor - uses custom pricing system.
+	/// </summary>
 	[CorpseName( "an vendor corpse" )]
 	public class MidlandVendor : BaseConvo, IOneTime
 	{
+		#region Fields
+		
 		private DateTime m_NextTalk;
 		public DateTime NextTalk{ get{ return m_NextTalk; } set{ m_NextTalk = value; } }
 
@@ -199,7 +206,11 @@ namespace Server.Mobiles
 		private int sellingamount;
 
 		private int saletick;
-
+		
+		#endregion
+		
+		#region Properties
+		
 		// + OmniAI support +
 		protected override BaseAI ForcedAI
 		{
@@ -209,6 +220,20 @@ namespace Server.Mobiles
 			}
 		}
 		// - OmniAI support -
+		
+		public override bool ClickTitle{ get{ return false; } }
+		public override bool ShowFameTitle{ get{ return false; } }
+		public override bool AlwaysAttackable{ get{ return true; } }
+		public override bool CanRummageCorpses{ get{ return true; } }
+		public override bool ReacquireOnMovement{ get{ return true; } }
+		public override bool DeleteCorpseOnDeath{ get{ return true; } }
+		public virtual bool IsInvulnerable { get { return false; } }
+		public override bool Unprovokable { get { return true; } }
+		public override bool Uncalmable{ get{ return true; } }
+		
+		#endregion
+		
+		#region Constructors
 
 
 		[Constructable]
@@ -231,37 +256,37 @@ namespace Server.Mobiles
 			}
 
 
-			Karma = Utility.RandomMinMax( 13, -45 );
+			Karma = Utility.RandomMinMax( MidlandVendorConstants.KARMA_MIN, MidlandVendorConstants.KARMA_MAX );
 
-			SetStr( 100, 300 );
-			SetDex( 100, 300 );
-			SetInt( 100, 300 );
+			SetStr( MidlandVendorConstants.STAT_MIN, MidlandVendorConstants.STAT_MAX );
+			SetDex( MidlandVendorConstants.STAT_MIN, MidlandVendorConstants.STAT_MAX );
+			SetInt( MidlandVendorConstants.STAT_MIN, MidlandVendorConstants.STAT_MAX );
 
-			SetHits( 100,300 );
-			SetDamage( 15, 70 );
+			SetHits( MidlandVendorConstants.HITS_MIN, MidlandVendorConstants.HITS_MAX );
+			SetDamage( MidlandVendorConstants.DAMAGE_MIN, MidlandVendorConstants.DAMAGE_MAX );
 
-			VirtualArmor = 70;
+			VirtualArmor = MidlandVendorConstants.VIRTUAL_ARMOR;
 
-			SetDamageType( ResistanceType.Physical, 40 );
-			SetDamageType( ResistanceType.Cold, 60 );
-			SetDamageType( ResistanceType.Energy, 60 );
+			SetDamageType( ResistanceType.Physical, MidlandVendorConstants.DAMAGE_PHYSICAL_PERCENT );
+			SetDamageType( ResistanceType.Cold, MidlandVendorConstants.DAMAGE_COLD_PERCENT );
+			SetDamageType( ResistanceType.Energy, MidlandVendorConstants.DAMAGE_ENERGY_PERCENT );
 
-			SetResistance( ResistanceType.Physical, 65, 75 );
-			SetResistance( ResistanceType.Fire, 35, 40 );
-			SetResistance( ResistanceType.Cold, 60, 70 );
-			SetResistance( ResistanceType.Poison, 60, 70 );
-			SetResistance( ResistanceType.Energy, 35, 40 );
+			SetResistance( ResistanceType.Physical, MidlandVendorConstants.RESISTANCE_PHYSICAL_MIN, MidlandVendorConstants.RESISTANCE_PHYSICAL_MAX );
+			SetResistance( ResistanceType.Fire, MidlandVendorConstants.RESISTANCE_FIRE_MIN, MidlandVendorConstants.RESISTANCE_FIRE_MAX );
+			SetResistance( ResistanceType.Cold, MidlandVendorConstants.RESISTANCE_COLD_MIN, MidlandVendorConstants.RESISTANCE_COLD_MAX );
+			SetResistance( ResistanceType.Poison, MidlandVendorConstants.RESISTANCE_POISON_MIN, MidlandVendorConstants.RESISTANCE_POISON_MAX );
+			SetResistance( ResistanceType.Energy, MidlandVendorConstants.RESISTANCE_ENERGY_MIN, MidlandVendorConstants.RESISTANCE_ENERGY_MAX );
 
-			SetSkill( SkillName.EvalInt, 90, 120 );
-			SetSkill( SkillName.Magery, 90, 120 );
-			SetSkill( SkillName.Meditation, 90, 120 );
-			SetSkill( SkillName.Poisoning, 90, 120 );
-			SetSkill( SkillName.MagicResist, 90, 120 );
-			SetSkill( SkillName.Tactics, 90, 120 );
-			SetSkill( SkillName.Wrestling, 90, 120 );
-			SetSkill( SkillName.Macing, 90, 120 );
+			SetSkill( SkillName.EvalInt, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Magery, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Meditation, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Poisoning, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.MagicResist, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Tactics, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Wrestling, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
+			SetSkill( SkillName.Macing, (int)MidlandVendorConstants.SKILL_MIN, (int)MidlandVendorConstants.SKILL_MAX );
 
-			OmniAI.SetRandomSkillSet(this, 70.0, 110.0);
+			OmniAI.SetRandomSkillSet(this, MidlandVendorConstants.OMNIAI_SKILL_MIN, MidlandVendorConstants.OMNIAI_SKILL_MAX);
 
 			buying = false;
 			buyingwhat = "";
@@ -291,25 +316,22 @@ namespace Server.Mobiles
 			CantWalk = true;
 
 		}
-
-		public override bool ClickTitle{ get{ return false; } }
-		public override bool ShowFameTitle{ get{ return false; } }
-		public override bool AlwaysAttackable{ get{ return true; } }
-		public override bool CanRummageCorpses{ get{ return true; } }
-		public override bool ReacquireOnMovement{ get{ return true; } }
-		public override bool DeleteCorpseOnDeath{ get{ return true; } }
-		public virtual bool IsInvulnerable { get { return false; } }
-		public override bool Unprovokable { get { return true; } }
-		public override bool Uncalmable{ get{ return true; } }
-
+		
+		#endregion
+		
+		#region Combat Methods
+		
+		/// <summary>
+		/// Called when vendor performs a melee attack.
+		/// </summary>
 		public override void OnGaveMeleeAttack( Mobile defender )
 		{
 			switch ( Utility.Random( 4 ))  
 			{
-				case 0: Say("Guards!  Guards!"); break;
-				case 1: Say("Vendor Buy Bank Guards!."); break;
-				case 2: Say("Where are you Guards???"); break;
-				case 3: Say("To me!!! Guards!"); break;
+				case 0: Say(MidlandVendorStringConstants.MSG_GUARDS_1); break;
+				case 1: Say(MidlandVendorStringConstants.MSG_GUARDS_2); break;
+				case 2: Say(MidlandVendorStringConstants.MSG_GUARDS_3); break;
+				case 3: Say(MidlandVendorStringConstants.MSG_GUARDS_4); break;
 			};
 		}
 
@@ -324,10 +346,17 @@ namespace Server.Mobiles
 			return true;
 		}
 
-      public override bool HandlesOnSpeech( Mobile from ) 
-      { 
-         return (from != null && from.Player && from.Alive && (int)GetDistanceToSqrt( from ) < 4 && from != ControlMaster); 
-      } 
+		#endregion
+		
+		#region Speech Handling
+		
+		/// <summary>
+		/// Determines if vendor handles speech from the given mobile.
+		/// </summary>
+		public override bool HandlesOnSpeech( Mobile from ) 
+		{ 
+			return (from != null && from.Player && from.Alive && (int)GetDistanceToSqrt( from ) < MidlandVendorConstants.SPEECH_RANGE && from != ControlMaster); 
+		} 
 
 		public override void OnSpeech( SpeechEventArgs e ) 
 		{
@@ -348,51 +377,51 @@ namespace Server.Mobiles
 
 			string mn = GetCurrency();
 
-			if( from.InRange( this, 5 ))
+			if( from.InRange( this, MidlandVendorConstants.INTERACTION_RANGE ))
 			{
 				if (  Insensitive.Contains( speech, "inventory" ) || Insensitive.Contains( speech, "list" ) || Insensitive.Contains( speech, "you have" ) || Insensitive.Contains( speech, "stock" ) || Insensitive.Contains( speech, "for sale" ))
 				{
 					if (this is MidlandBanker)
 					{
-						Say("I'm a banker... We provide accounts and keep your money safe.");
+						Say(MidlandVendorStringConstants.MSG_BANKER_DESCRIPTION);
 						return;
 					}
 				
 					AdjustPrice();
 
-					Say("Of course, Let's see what I have for sale...");
+					Say(MidlandVendorStringConstants.MSG_INVENTORY_HEADER);
 					bool g = false;
 					string nm = GetCurrency();
 
 					if (good1inventory > 0 && good1name != null)
 					{
-						Say(good1inventory.ToString() + " " + good1name + " at " + good1price + " " + nm + "." );
+						Say(string.Format(MidlandVendorStringConstants.MSG_INVENTORY_ITEM_FORMAT, good1inventory.ToString(), good1name, good1price, nm));
 						g = true;
 					}
 					if (good2inventory > 0 && good2name != null)
 					{
-						Say(good2inventory.ToString() + " " + good2name + " at " + good2price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_INVENTORY_ITEM_FORMAT, good2inventory.ToString(), good2name, good2price, nm));
 						g = true;
 					}
 					if (good3inventory > 0 && good3name != null)
 					{
-						Say(good3inventory.ToString() + " " + good3name + " at " + good3price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_INVENTORY_ITEM_FORMAT, good3inventory.ToString(), good3name, good3price, nm));
 						g = true;
 					}
 					if (good4inventory > 0 && good4name != null)
 					{
-						Say(good4inventory.ToString() + " " + good4name + " at " + good4price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_INVENTORY_ITEM_FORMAT, good4inventory.ToString(), good4name, good4price, nm));
 						g = true;
 					}
 
 					if (g)
-						Say("I charge a small 1% fee for my services.");
+						Say(MidlandVendorStringConstants.MSG_SERVICE_FEE);
 
 					if (!g)
 					{
-						Say("I'm sorry M'Lord, my stocks are empty... perhaps you'd like to sell to me?");
-						Say("I deal in " + good1name + " " + good2name + " " + good3name + " " + good4name);
-						Say("You can ask me for my prices");
+						Say(MidlandVendorStringConstants.MSG_EMPTY_STOCK);
+						Say(string.Format(MidlandVendorStringConstants.MSG_DEAL_IN_ITEMS_FORMAT, good1name ?? "", good2name ?? "", good3name ?? "", good4name ?? ""));
+						Say(MidlandVendorStringConstants.MSG_ASK_FOR_PRICES);
 					}
 						
 					return;
@@ -403,29 +432,29 @@ namespace Server.Mobiles
 
 					if (this is MidlandBanker)
 					{
-						Say("Well, the bank does take a small fee, but it is minimal.");
+						Say(MidlandVendorStringConstants.MSG_BANKER_FEE);
 						return;
 					}
 
 					AdjustPrice();
 					string nm = GetCurrency();
 
-					Say("My prices?  Of course...");
+					Say(MidlandVendorStringConstants.MSG_PRICE_HEADER);
 					if (good1name != null && good1name != "")
 					{
-						Say( "I buy " + good1name + " at " + good1price + " " + nm + "." );
+						Say(string.Format(MidlandVendorStringConstants.MSG_BUY_PRICE_FORMAT, good1name, good1price, nm));
 					}
 					if (good2name != null && good2name != "")
 					{
-						Say("I buy " + good2name + " at " + good2price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_BUY_PRICE_FORMAT, good2name, good2price, nm));
 					}
 					if (good3name != null && good3name != "")
 					{
-						Say("I buy " + good3name + " at " + good3price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_BUY_PRICE_FORMAT, good3name, good3price, nm));
 					}
 					if (good4name != null && good4name != "")
 					{
-						Say("I buy " + good4name + " at " + good4price + " " + nm + ".");
+						Say(string.Format(MidlandVendorStringConstants.MSG_BUY_PRICE_FORMAT, good4name, good4price, nm));
 					}
 						
 					return;
@@ -437,7 +466,7 @@ namespace Server.Mobiles
 
 					if (this is MidlandBanker)
 					{
-						Say("You cannot buy a banker!");
+						Say(MidlandVendorStringConstants.MSG_BANKER_CANNOT_BUY);
 						return;
 					}
 
@@ -464,7 +493,7 @@ namespace Server.Mobiles
 
 					if (this is MidlandBanker)
 					{
-						Say("Unless you are selling risk free investments, we are not interested.");
+						Say(MidlandVendorStringConstants.MSG_BANKER_NOT_INTERESTED);
 						return;
 					}
 
@@ -498,10 +527,9 @@ namespace Server.Mobiles
 						int.TryParse(number, out amount);
 					if (amount >= 1)
 					{
-							Console.WriteLine("found amount " + amount);//debug
 							if (buying && !CheckInventory(buyingwhat, amount)) //checks amount of item on hand
 							{
-								Say("I don't have that many " + buyingwhat + " on hand at the moment, Sire.");
+								Say(string.Format(MidlandVendorStringConstants.MSG_INSUFFICIENT_INVENTORY_FORMAT, buyingwhat));
 							}
 							else if (buying)
 								ProcessBuy(buyer, buyingwhat, amount);
@@ -511,15 +539,14 @@ namespace Server.Mobiles
 							}
 					}
 					else if (buying)//amount not received
-							Say("How many " + buyingwhat + " would you like to buy?");
+							Say(string.Format(MidlandVendorStringConstants.MSG_BUY_AMOUNT_REQUEST_FORMAT, buyingwhat));
 					else if (selling)
-							Say("How many " + sellingwhat + " would you like to sell sire?");
+							Say(string.Format(MidlandVendorStringConstants.MSG_SELL_AMOUNT_REQUEST_FORMAT, sellingwhat));
 
 				}
 				else if ((selling && from != seller) || (buying && from != buyer))
 				{
-					Console.WriteLine("different name error");
-					Say("I'm sorry " + from.Name + ", I can only deal with one customer at a time.");
+					Say(string.Format(MidlandVendorStringConstants.MSG_ONE_CUSTOMER_FORMAT, from.Name));
 				}
 
 			} 
@@ -540,14 +567,22 @@ namespace Server.Mobiles
 			if (instock)
 				return true;
 			
-			Say("Sorry Sire, I don't have enough " + what + " to sell you that many.");
+			Say(string.Format(MidlandVendorStringConstants.MSG_NOT_ENOUGH_STOCK_FORMAT, what));
 			return false;
 		}
+		
+		#endregion
+		
+		#region Transaction Processing
 
+		/// <summary>
+		/// Processes a buy transaction - player buys from vendor.
+		/// </summary>
+		/// <param name="buyer">The player buying</param>
+		/// <param name="what">The item name being bought</param>
+		/// <param name="amount">The quantity being bought</param>
 		public void ProcessBuy(Mobile buyer, string what, int amount)
 		{
- 			// processes sale, takes gold, gives items, resets buyer and buyingwhat vars
-
 			AdjustPrice();
 
 			Item ii = null;
@@ -577,7 +612,7 @@ namespace Server.Mobiles
 
 			if (a == null )
 			{
-				buyer.SendMessage("there was a problem with the sale, let an amin know.");
+				buyer.SendMessage(MidlandVendorStringConstants.MSG_SALE_PROBLEM);
 				this.buying = false;
 				this.buyingamount = 0;
 				this.buyingwhat = "";
@@ -586,17 +621,17 @@ namespace Server.Mobiles
 			}
 
 			int price = CalculatePrice(what, amount, false);
-			price = (int)((double)price*1.01); //buying, price is 10% higher
+			price = (int)((double)price * MidlandVendorConstants.BUY_PRICE_MULTIPLIER);
 
 			if (!GetMoney(buyer, price))
 			{
 				AdjustInventory(what, amount, true);
-				Say("Do you have this much in your pack or your account at the local bank?");
+				Say(MidlandVendorStringConstants.MSG_INSUFFICIENT_FUNDS);
 				return;
 			}
 
 			if (amount > 0 && buyer is PlayerMobile)
-				((PlayerMobile)buyer).AdjustReputation(price/50, ((BaseCreature)this).midrace, true);
+				((PlayerMobile)buyer).AdjustReputation(price / MidlandVendorConstants.REPUTATION_DIVISOR, ((BaseCreature)this).midrace, true);
 
 			buyer.Backpack.DropItem(ii);
 			amount -=1;
@@ -612,8 +647,7 @@ namespace Server.Mobiles
 					buyer.Backpack.DropItem((Item)Activator.CreateInstance(a));
 				}
 			}
-			Say("Thank you for your business, Sire.");			
-
+			Say(MidlandVendorStringConstants.MSG_THANK_YOU);			
 
 			this.buying = false;
 			this.buyingamount = 0;
@@ -622,6 +656,12 @@ namespace Server.Mobiles
 			
 		}
 
+		/// <summary>
+		/// Processes a sell transaction - player sells to vendor.
+		/// </summary>
+		/// <param name="buyer">The player selling (parameter name kept for compatibility)</param>
+		/// <param name="what">The item name being sold</param>
+		/// <param name="amount">The quantity being sold</param>
 		public void ProcessSell(Mobile buyer, string what, int amount)
 		{
  			
@@ -671,23 +711,23 @@ namespace Server.Mobiles
 			}
 			if (!check)
 			{
-				Say ("Sire, do you not appear to have " + amount + " " + what + " on you.");
+				Say(string.Format(MidlandVendorStringConstants.MSG_PLAYER_DOESNT_HAVE_FORMAT, amount, what));
 			}
 			else
 			{
 				aamount = amount;
 				int price = CalculatePrice(what, amount, true);
-				price = (int)((double)price*0.99);
+				price = (int)((double)price * MidlandVendorConstants.SELL_PRICE_MULTIPLIER);
 
 				if (!GiveMoney(buyer, price))
 					return;
 					
 				if (price == 0)
-					buyer.SendMessage("The total was 0 gold so no money was given.");
+					buyer.SendMessage(MidlandVendorStringConstants.MSG_ZERO_TOTAL);
 
 
 			if (price > 0 && buyer is PlayerMobile)
-				((PlayerMobile)buyer).AdjustReputation(price/50, ((BaseCreature)this).midrace, true);
+				((PlayerMobile)buyer).AdjustReputation(price / MidlandVendorConstants.REPUTATION_DIVISOR, ((BaseCreature)this).midrace, true);
 				
 				for ( int i = 0; i < listy.Count; ++i )
 				{
@@ -714,7 +754,7 @@ namespace Server.Mobiles
 						}
 					}
 				}
-				Say("Pleasure doing business, Sire!");
+				Say(MidlandVendorStringConstants.MSG_PLEASURE_BUSINESS);
 
 				this.selling = false;
 				this.sellingamount = 0;
@@ -724,168 +764,63 @@ namespace Server.Mobiles
 			}
 
 		}
-
-
+		
+		#endregion
+		
+		#region Money Operations
+		
+		/// <summary>
+		/// Gives money to a player (to backpack or bank account).
+		/// Uses MidlandMoneyHelper for currency operations.
+		/// </summary>
+		/// <param name="from">The player to give money to</param>
+		/// <param name="amount">The amount to give</param>
+		/// <returns>True if money was successfully given</returns>
 		public bool GiveMoney( Mobile from, int amount)
 		{
-
 			if (!AdventuresFunctions.IsInMidland((object)this) || !AdventuresFunctions.IsInMidland((object)from) || !(from is PlayerMobile) || ((PlayerMobile)from).midrace == 0 )
 				return false;
 
 			if (amount < 0 )
-				return false; // something wrong happened here
+				return false;
 
 			PlayerMobile pm = (PlayerMobile)from;
-			Backpack pack = (Backpack)pm.Backpack;
+			
+			if (m_moneytype != this.midrace)
+			{
+				this.Say(MidlandVendorStringConstants.MSG_DONT_SERVE_YOUR_KIND);
+				return false;
+			}
 
-				if (m_moneytype == 1 && this.midrace == 1)
-				{
-					if (amount < 5000)
-						pm.AddToBackpack( new Sovereign( amount ) );
-					else
-						pm.midhumanacc += amount;
-				}
-				else if (m_moneytype == 2 && this.midrace == 2)
-				{
-					if (amount < 5000)
-						pm.AddToBackpack( new Drachma( amount ) );
-					else
-						pm.midgargoyleacc += amount;
-				}
-				else if (m_moneytype == 3 && this.midrace == 3)
-				{
-					if (amount < 5000)
-						pm.AddToBackpack( new Sslit( amount ) );
-					else
-						pm.midlizardacc += amount;
-				}
-				else if (m_moneytype == 4 && this.midrace == 4)
-				{
-					if (amount < 5000)
-						pm.AddToBackpack( new Dubloon( amount ) );
-					else
-						pm.midpirateacc += amount;
-				}
-				else if (m_moneytype == 5 && this.midrace == 5)
-				{
-					if (amount < 5000)
-						pm.AddToBackpack( new Skaal( amount ) );
-					else
-						pm.midorcacc += amount;
-				}
-				else if (m_moneytype != this.midrace)
-				{
-					this.Say("We don't deal with your type here.");
-					return false;
-				}
-
-			return true;
-
+			return MidlandMoneyHelper.GiveMoney(pm, amount, m_moneytype, this.midrace);
 		}
 
+		/// <summary>
+		/// Gets money from a player (from backpack or bank account).
+		/// Uses MidlandMoneyHelper for currency operations.
+		/// </summary>
+		/// <param name="from">The player to get money from</param>
+		/// <param name="amount">The amount to get</param>
+		/// <returns>True if money was successfully retrieved</returns>
 		public bool GetMoney( Mobile from, int amount)
 		{
-
 			if (!AdventuresFunctions.IsInMidland((object)this) || !AdventuresFunctions.IsInMidland((object)from) || !(from is PlayerMobile) || ((PlayerMobile)from).midrace == 0 )
 				return false;
 
 			PlayerMobile pm = (PlayerMobile)from;
-			Backpack pack = (Backpack)pm.Backpack;
+			
+			if (m_moneytype != this.midrace)
+			{
+				this.Say(MidlandVendorStringConstants.MSG_DONT_SERVE_YOUR_KIND);
+				return false;
+			}
 
-				if (m_moneytype == 1 && this.midrace == 1)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Sovereign ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-					}
-					else if (pm.midhumanacc >= amount)
-						pm.midhumanacc -= amount;
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 2 && this.midrace == 2)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Drachma ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-					}
-					else if (pm.midgargoyleacc >= amount)
-						pm.midgargoyleacc -= amount;
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 3 && this.midrace == 3)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Sslit ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-					}
-					else if (pm.midlizardacc >= amount)
-						pm.midlizardacc -= amount;
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 4 && this.midrace == 4)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Dubloon ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-					}
-					else if (pm.midpirateacc >= amount)
-						pm.midpirateacc -= amount;
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 5 && this.midrace == 5)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Skaal ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-					}
-					else if (pm.midorcacc >= amount)
-						pm.midorcacc -= amount;
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype != this.midrace)
-				{
-					this.Say("We don't deal with your type here.");
-					return false;
-				}
-
-			return true;
-
+			return MidlandMoneyHelper.GetMoney(pm, amount, m_moneytype, this.midrace);
 		}
+		
+		#endregion
+		
+		#region Price Calculation
 
 		public int CalculatePrice (string what, int amount, bool increase)
 		{
@@ -909,21 +844,21 @@ namespace Server.Mobiles
 				price = good4price;
 			}			
 
-			if (amount > 20)
+			if (amount > MidlandVendorConstants.BULK_AMOUNT_THRESHOLD)
 			{
 				int a = amount;
 				
 				while ( a != 0 )
 				{
-					if (a>=10)
+					if (a >= MidlandVendorConstants.BULK_CHUNK_SIZE)
 					{
-						total += (10*price);
-						a -= 10;
-						AdjustInventory(what, 10, increase);
+						total += (MidlandVendorConstants.BULK_CHUNK_SIZE * price);
+						a -= MidlandVendorConstants.BULK_CHUNK_SIZE;
+						AdjustInventory(what, MidlandVendorConstants.BULK_CHUNK_SIZE, increase);
 					}
 					else
 					{
-						total += (a*price);
+						total += (a * price);
 						a = 0;
 						AdjustInventory(what, a, increase);						
 					}
@@ -968,118 +903,77 @@ namespace Server.Mobiles
 			AdjustPrice();		
 		}
 
+		/// <summary>
+		/// Adjusts prices based on current inventory levels.
+		/// Uses dynamic pricing formula: price decreases as inventory increases.
+		/// </summary>
 		public void AdjustPrice()
 		{
+			if (good1inventory > 0)
+				good1price = MidlandVendorConstants.MIN_PRICE + ((int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good1adjust) - (int)(((MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good1adjust) / (MidlandVendorConstants.PRICE_INVENTORY_DIVISOR / good1adjust)) * (double)good1inventory));
+			else
+				good1price = (int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good1adjust);
 
-				if (good1inventory >0)
-					good1price = 1 + ( (int)(100*good1adjust) - (int)(((100*good1adjust)/(5000/good1adjust)) * (double)good1inventory) );
-				else
-					good1price = (int)(100*good1adjust);
+			if (good2inventory > 0)
+				good2price = MidlandVendorConstants.MIN_PRICE + ((int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good2adjust) - (int)(((MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good2adjust) / (MidlandVendorConstants.PRICE_INVENTORY_DIVISOR / good2adjust)) * (double)good2inventory));
+			else
+				good2price = (int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good2adjust);
 
-				if (good2inventory >0)
-					good2price = 1 + ( (int)(100*good2adjust) - (int)(((100*good2adjust)/(5000/good2adjust)) * (double)good2inventory) );
-				else
-					good2price = (int)(100*good2adjust);
+			if (good3inventory > 0)
+				good3price = MidlandVendorConstants.MIN_PRICE + ((int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good3adjust) - (int)(((MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good3adjust) / (MidlandVendorConstants.PRICE_INVENTORY_DIVISOR / good3adjust)) * (double)good3inventory));
+			else
+				good3price = (int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good3adjust);
 
-				if (good3inventory >0)
-					good3price = 1 + ( (int)(100*good3adjust) - (int)(((100*good3adjust)/(5000/good3adjust)) * (double)good3inventory) );
-				else
-					good3price = (int)(100*good3adjust);
-
-				if (good4inventory >0)
-					good4price = 1 + ( (int)(100*good4adjust) - (int)(((100*good4adjust)/(5000/good4adjust)) * (double)good4inventory) );
-				else
-					good4price = (int)(100*good4adjust);
-				
+			if (good4inventory > 0)
+				good4price = MidlandVendorConstants.MIN_PRICE + ((int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good4adjust) - (int)(((MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good4adjust) / (MidlandVendorConstants.PRICE_INVENTORY_DIVISOR / good4adjust)) * (double)good4inventory));
+			else
+				good4price = (int)(MidlandVendorConstants.PRICE_BASE_MULTIPLIER * good4adjust);
 		}
 
+		/// <summary>
+		/// Gets the currency name for the vendor's money type.
+		/// </summary>
+		/// <returns>Currency name string</returns>
 		public string GetCurrency()
 		{
-			if (m_moneytype == 1)
-				return "Sovereign";
-			if (m_moneytype == 2)
-				return "Drachma";
-			if (m_moneytype == 3)
-				return "Sslits";
-			if (m_moneytype == 4)
-				return "Dubloons";
-			if (m_moneytype == 5)
-				return "Skaals";
-				
-			return "";
-
+			return MidlandMoneyHelper.GetCurrencyName(m_moneytype);
 		}
+		
+		/// <summary>
+		/// Gets a random greeting message based on vendor race.
+		/// </summary>
+		/// <returns>Random greeting string</returns>
+		private string GetRandomGreeting()
+		{
+			switch ( Utility.Random( 6 ))
+			{
+				case 0: return MidlandVendorStringConstants.MSG_GREETING_1;
+				case 1: return MidlandVendorStringConstants.MSG_GREETING_2;
+				case 2: return MidlandVendorStringConstants.MSG_GREETING_3;
+				case 3: return MidlandVendorStringConstants.MSG_GREETING_4;
+				case 4: return MidlandVendorStringConstants.MSG_GREETING_5;
+				case 5: return MidlandVendorStringConstants.MSG_GREETING_6;
+				default: return MidlandVendorStringConstants.MSG_GREETING_6;
+			}
+		}
+		
+		#endregion
+		
+		#region Event Handlers
 
+		/// <summary>
+		/// Called when a mobile moves near the vendor.
+		/// </summary>
 		public override void OnMovement( Mobile m, Point3D oldLocation )
 		{
 			base.OnMovement(m, oldLocation);
 
 			if( m is PlayerMobile )
 			{
-				if ( DateTime.UtcNow >= m_NextTalk && InRange( m, 5 ) && InLOS( m ) )
+				if ( DateTime.UtcNow >= m_NextTalk && InRange( m, MidlandVendorConstants.MOVEMENT_RANGE ) && InLOS( m ) )
 				{ 
-					if (((BaseCreature)this).midrace == 1)
-					{
-						switch ( Utility.Random( 6 ))
-						{
-							case 0: Say("Only the finest goods here!"); break;
-							case 1: Say("Adventurer, do you have any goods to sell?  Ask me what I buy."); break;
-							case 2: Say("You can buy from me, just ask me what I have."); break;
-							case 3: Say("You look in a spending mood, sir!  Ask me what I have for sale!"); break;
-							case 4: Say("I buy from adventuers, and sell back to other adventurers - what a life!"); break;
-							case 5: Say("Greetings, Sire - How can I assist?"); break;
-						};
-					}
-					else if (((BaseCreature)this).midrace == 2) // gargoyle (needs to be edited)
-					{
-						switch ( Utility.Random( 6 ))
-						{
-							case 0: Say("Only the finest goods here!"); break;
-							case 1: Say("Adventurer, do you have any goods to sell?  Ask me what I buy."); break;
-							case 2: Say("You can buy from me, just ask me what I have."); break;
-							case 3: Say("You look in a spending mood, sir!  Ask me what I have for sale!"); break;
-							case 4: Say("I buy from adventuers, and sell back to other adventurers - what a life!"); break;
-							case 5: Say("Greetings, Sire - How can I assist?"); break;
-						};
-					}
-					else if (((BaseCreature)this).midrace == 3) // Lizards (needs to be edited)
-					{
-						switch ( Utility.Random( 6 ))
-						{
-							case 0: Say("Only the finest goods here!"); break;
-							case 1: Say("Adventurer, do you have any goods to sell?  Ask me what I buy."); break;
-							case 2: Say("You can buy from me, just ask me what I have."); break;
-							case 3: Say("You look in a spending mood, sir!  Ask me what I have for sale!"); break;
-							case 4: Say("I buy from adventuers, and sell back to other adventurers - what a life!"); break;
-							case 5: Say("Greetings, Sire - How can I assist?"); break;
-						};
-					}
-					else if (((BaseCreature)this).midrace == 4) // pirates (needs to be edited)
-					{
-						switch ( Utility.Random( 6 ))
-						{
-							case 0: Say("Only the finest goods here!"); break;
-							case 1: Say("Adventurer, do you have any goods to sell?  Ask me what I buy."); break;
-							case 2: Say("You can buy from me, just ask me what I have."); break;
-							case 3: Say("You look in a spending mood, sir!  Ask me what I have for sale!"); break;
-							case 4: Say("I buy from adventuers, and sell back to other adventurers - what a life!"); break;
-							case 5: Say("Greetings, Sire - How can I assist?"); break;
-						};
-					}
-					else if (((BaseCreature)this).midrace == 5) // orcs (needs to be edited)
-					{
-						switch ( Utility.Random( 6 ))
-						{
-							case 0: Say("Only the finest goods here!"); break;
-							case 1: Say("Adventurer, do you have any goods to sell?  Ask me what I buy."); break;
-							case 2: Say("You can buy from me, just ask me what I have."); break;
-							case 3: Say("You look in a spending mood, sir!  Ask me what I have for sale!"); break;
-							case 4: Say("I buy from adventuers, and sell back to other adventurers - what a life!"); break;
-							case 5: Say("Greetings, Sire - How can I assist?"); break;
-						};
-					}
-
-					m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( 30 ));
+					Say(GetRandomGreeting());
+					m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( MidlandVendorConstants.TALK_DELAY_SECONDS ));
 				}
 			}
 			base.OnMovement(m, oldLocation );
@@ -1117,7 +1011,7 @@ namespace Server.Mobiles
 
 			if (!sale )
 			{
-				Say("Pardon me Sire, I don't trade in that.");
+				Say(MidlandVendorStringConstants.MSG_DONT_TRADE);
 				return false;
 			}
 			else
@@ -1126,12 +1020,12 @@ namespace Server.Mobiles
 
 				if (!GiveMoney(from, money))
 				{
-					Say("I don't think so.");
+					Say(MidlandVendorStringConstants.MSG_DONT_THINK_SO);
 					return false;
 				}
-				Say("Thank you Sire, I bought " + dropped.Amount + " " + what + " for a total of " + money + " " + GetCurrency() + ".");
-				if (money > 5000)
-					Say("This was over 5,000 so I sent the funds to your bank account.");
+				Say(string.Format(MidlandVendorStringConstants.MSG_PURCHASE_CONFIRMATION_FORMAT, dropped.Amount, what, money, GetCurrency()));
+				if (money > MidlandVendorConstants.BANK_DEPOSIT_THRESHOLD)
+					Say(MidlandVendorStringConstants.MSG_BANK_DEPOSIT_NOTIFICATION);
 
 				dropped.Delete();
 				return true;
@@ -1140,11 +1034,15 @@ namespace Server.Mobiles
 			return base.OnDragDrop( from, dropped );
 		}
 
+		/// <summary>
+		/// Called periodically by OneTime system.
+		/// Handles sale timeout and inventory decay.
+		/// </summary>
 		public void OneTimeTick()
         {
 			if (saletick == 0 && (buying || selling))
 			{
-				saletick = 20;
+				saletick = MidlandVendorConstants.SALE_TICK_TIMEOUT;
 			}
 			else if (saletick == 1)
 			{
@@ -1154,7 +1052,7 @@ namespace Server.Mobiles
 					this.sellingamount = 0;
 					this.sellingwhat = "";
 					this.seller = null;
-					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,"*goes back to his business*");
+					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false, MidlandVendorStringConstants.MSG_BACK_TO_BUSINESS);
 				}
 				if (buying)
 				{
@@ -1162,24 +1060,28 @@ namespace Server.Mobiles
 					this.buyingamount = 0;
 					this.buyingwhat = "";
 					this.buyer = null;
-					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,"*goes back to his business*");
+					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false, MidlandVendorStringConstants.MSG_BACK_TO_BUSINESS);
 				}
 			}
 			saletick -=1;
 
-			if (Utility.RandomMinMax(1, 500) == 69)
+			if (Utility.RandomMinMax(MidlandVendorConstants.INVENTORY_DECAY_CHANCE_MIN, MidlandVendorConstants.INVENTORY_DECAY_CHANCE_MAX) == MidlandVendorConstants.INVENTORY_DECAY_TRIGGER)
 			{
-				if (Utility.RandomBool() && good1inventory > 3)
-					good1inventory -= Utility.RandomMinMax(1, 3);
-				if (Utility.RandomBool() && good2inventory > 3)
-					good2inventory -= Utility.RandomMinMax(1, 3);
-					if (Utility.RandomBool() && good3inventory > 3)
-					good3inventory -= Utility.RandomMinMax(1, 3);
-					if (Utility.RandomBool() && good4inventory > 3)
-					good4inventory -= Utility.RandomMinMax(1, 3);
+				if (Utility.RandomBool() && good1inventory > MidlandVendorConstants.INVENTORY_DECAY_MIN_STOCK)
+					good1inventory -= Utility.RandomMinMax(MidlandVendorConstants.INVENTORY_DECAY_MIN, MidlandVendorConstants.INVENTORY_DECAY_MAX);
+				if (Utility.RandomBool() && good2inventory > MidlandVendorConstants.INVENTORY_DECAY_MIN_STOCK)
+					good2inventory -= Utility.RandomMinMax(MidlandVendorConstants.INVENTORY_DECAY_MIN, MidlandVendorConstants.INVENTORY_DECAY_MAX);
+				if (Utility.RandomBool() && good3inventory > MidlandVendorConstants.INVENTORY_DECAY_MIN_STOCK)
+					good3inventory -= Utility.RandomMinMax(MidlandVendorConstants.INVENTORY_DECAY_MIN, MidlandVendorConstants.INVENTORY_DECAY_MAX);
+				if (Utility.RandomBool() && good4inventory > MidlandVendorConstants.INVENTORY_DECAY_MIN_STOCK)
+					good4inventory -= Utility.RandomMinMax(MidlandVendorConstants.INVENTORY_DECAY_MIN, MidlandVendorConstants.INVENTORY_DECAY_MAX);
 			}
 
 		}
+		
+		#endregion
+		
+		#region Helper Methods
 
 		public Type FindType(string what)
 		{
@@ -1321,9 +1223,13 @@ namespace Server.Mobiles
 			//PackGold( money1, money2 ); need to add respective curency for thieves/murderers
 		}
 
+		/// <summary>
+		/// Gets a random shoe hue with a small chance of being neutral.
+		/// </summary>
+		/// <returns>Shoe hue value</returns>
 		public virtual int GetShoeHue()
 		{
-			if ( 0.1 > Utility.RandomDouble() )
+			if ( MidlandVendorConstants.SHOE_HUE_CHANCE > Utility.RandomDouble() )
 				return 0;
 
 			return Utility.RandomNeutralHue();
@@ -1365,16 +1271,16 @@ namespace Server.Mobiles
 				((PlayerMobile)killer).AdjustReputation( this );
 			}
 
-			string bSay = "Help!";
-			if (((BaseCreature)this).midrace == 1)
+			string bSay = MidlandVendorStringConstants.MSG_DEATH_HELP;
+			if (((BaseCreature)this).midrace == MidlandVendorConstants.RACE_HUMAN)
 			{
 				switch ( Utility.Random( 5 ))		   
 				{
-					case 0: bSay = "Guards!"; break;
-					case 1: bSay = "There will be no place for you to hide!"; break;
-					case 2: bSay = "Noooo!"; break;
-					case 3: bSay = "Vile rogue!"; break;
-					case 4: bSay = "Aarrgh!"; break;
+					case 0: bSay = MidlandVendorStringConstants.MSG_DEATH_GUARDS; break;
+					case 1: bSay = MidlandVendorStringConstants.MSG_DEATH_NO_HIDING; break;
+					case 2: bSay = MidlandVendorStringConstants.MSG_DEATH_NO; break;
+					case 3: bSay = MidlandVendorStringConstants.MSG_DEATH_VILE_ROGUE; break;
+					case 4: bSay = MidlandVendorStringConstants.MSG_DEATH_AARRGH; break;
 				};
 			}
 
@@ -1386,6 +1292,10 @@ namespace Server.Mobiles
 			return true;
 		}
 
+		/// <summary>
+		/// Called after vendor spawns.
+		/// Assigns race and dresses the vendor.
+		/// </summary>
 		public override void OnAfterSpawn()
 		{
 			IntelligentAction.AssignMidlandRace( (BaseCreature)this );
@@ -1393,7 +1303,14 @@ namespace Server.Mobiles
 			Dress();
 			base.OnAfterSpawn();	
 		}
+		
+		#endregion
+		
+		#region Serialization
 
+		/// <summary>
+		/// Deserialization constructor.
+		/// </summary>
 		public MidlandVendor( Serial serial ) : base( serial )
 		{
 		}
@@ -1451,5 +1368,7 @@ namespace Server.Mobiles
 
 			AdjustPrice();
 		}
+
+		#endregion
 	}
 } 
