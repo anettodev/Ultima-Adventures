@@ -188,14 +188,14 @@ namespace Server.Items
 				BaseInvisibilityPotion.CheckRevealOnAction( from, "jogou uma poção" );
 			}
 
-			if ( !m_Users.Contains( from ) )
-				m_Users.Add( from );
+		if ( !m_Users.Contains( from ) )
+			m_Users.Add( from );
 
-			from.Target = new ThrowTarget( this );
+		from.Target = new ThrowTarget( this );
 
-			// Set activation cooldown
-			ThrowablePotionDelayHelper.SetActivationCooldown( from );
-		}
+		// Set activation cooldown
+		ThrowablePotionDelayHelper.SetActivationCooldown( from );
+	}
 
 		/// <summary>
 		/// Validates if mobile can throw the potion
@@ -532,13 +532,21 @@ namespace Server.Items
 			// Send flying potion animation
 			Effects.SendMovingEffect( from, to, m_Potion.FlyingPotionItemID, m_Potion.FlyingPotionSpeed, 0, false, false, m_Potion.Hue, 0 );
 
-			// START COUNTDOWN IMMEDIATELY when target is selected (before potion lands)
+			// START COUNTDOWN when target is selected (pulled pin behavior)
+			// Potion will begin countdown and fly to target location
 			m_Potion.StartCountdown( from );
 
 			// Delay reposition (move potion to target after flight time)
-			// Countdown is already running, explosion will happen at target location
-			double flightTime = 1.5; // seconds
+			// Countdown runs during flight, explosion happens at target location
+			double flightTime = 1.0; // seconds
 			Timer.DelayCall( TimeSpan.FromSeconds( flightTime ), new TimerStateCallback( m_Potion.Reposition_OnTick ), new object[] { from, new Point3D( p ), from.Map } );
+		}
+
+		protected override void OnTargetCancel( Mobile from, TargetCancelType cancelType )
+		{
+			// Predictable behavior: Cancel = Safe (pin not pulled)
+			// Player cancelled targeting - nothing happens, potion remains in inventory
+			// No countdown, no explosion - perfectly safe to cancel
 		}
 		}
 

@@ -19,9 +19,11 @@ namespace Server.Engines.Craft
 
 		private const int LabelHue = 0x480; // 0x384
 		private const int RedLabelHue = 0x20;
+		private const int WhiteLabelHue = 0x0; // White hue
 
 		private const int LabelColor = 0x7FFF;
 		private const int RedLabelColor = 0x6400;
+		private const int WhiteLabelColor = 0xFFFFFF; // White color for HTML
 
 		private const int GreyLabelColor = 0x3DEF;
 		private const int LabelYellow = 0xfcd219; // Hex color for HTML
@@ -30,8 +32,9 @@ namespace Server.Engines.Craft
         private const int LabelBlue = 0x7BB; // Blue hue for AddHtmlLocalized/AddLabel
         private const int LabelBlueHex = 0x0077BB; // Blue hex color for HTML
         private const int LabelGreen = 0x7CA; // Green hue for AddHtmlLocalized/AddLabel
-        private const int LabelCyan = 0x00FFFF; // Hex color for HTML
-        private const int LabelCyanHue = 0x5A; // Cyan hue for AddHtmlLocalized/AddLabel
+		private const int LabelCyan = 0x00FFFF; // Hex color for HTML
+		private const int LabelCyanHue = 0x5A; // Cyan hue for AddHtmlLocalized/AddLabel
+		private const int LabelGreenHex = 0x00AA00; // Green hex color for HTML
 
         private int m_OtherCount;
 
@@ -118,7 +121,9 @@ namespace Server.Engines.Craft
 			}
 
 		if( needsRecipe )
-			TextDefinition.AddHtmlText( this, 170, 302 + (m_OtherCount++ * 20), 310, 18, CraftGumpStringConstants.NOTICE_RECIPE_NOT_LEARNED, false, false, RedLabelColor, RedLabelHue );
+			TextDefinition.AddHtmlText( this, 170, 302 + (m_OtherCount++ * 20), 310, 18, CraftGumpStringConstants.NOTICE_RECIPE_NOT_LEARNED, false, false, RedLabelColor, LabelYellow );
+		else if( craftItem.Recipe != null && from is PlayerMobile && ((PlayerMobile)from).HasRecipe( craftItem.Recipe ) )
+			TextDefinition.AddHtmlText( this, 170, 302 + (m_OtherCount++ * 20), 310, 18, CraftGumpStringConstants.NOTICE_RECIPE_LEARNED, false, false, LabelColor, LabelGreenHex );
 
 		}
 

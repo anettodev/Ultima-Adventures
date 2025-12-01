@@ -144,15 +144,46 @@ namespace Server.Items
 				this.DropItem( loreBook );
 			}
 
-			// Always add one alchemy recipe (only for SOS level >= 2)
-			if ( level >= 2 )
+			// Add alchemy recipe based on SOS level
+			Item alchemyRecipe = null;
+			
+			if ( level == 1 )
 			{
-				Item alchemyRecipe = NMSDungeonLoot.RandomAlchemyRecipe();
-				if ( alchemyRecipe != null )
-				{
-					this.DropItem( alchemyRecipe );
-				}
+				// SOS level 1: Random recipe from Category 0 (Basic) OR Category 3 (Cosmetic)
+				int category = Utility.RandomBool() ? 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_BASIC : 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_COSMETIC;
+				alchemyRecipe = NMSDungeonLoot.RandomAlchemyRecipeByCategory( category );
 			}
+			else if ( level == 2 )
+			{
+				// SOS level 2: 50% chance Category 0 (Basic), 50% chance Category 1 (Advanced)
+				int category = Utility.RandomBool() ? 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_BASIC : 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED;
+				alchemyRecipe = NMSDungeonLoot.RandomAlchemyRecipeByCategory( category );
+			}
+			else if ( level == 3 )
+			{
+				// SOS level 3: Random recipe from Category 1 (Advanced)
+				alchemyRecipe = NMSDungeonLoot.RandomAlchemyRecipeByCategory( 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED );
+			}
+			else if ( level >= 4 )
+			{
+				// SOS level 4+: 50% chance Category 1 (Advanced), 50% chance Category 2 (Special)
+				int category = Utility.RandomBool() ? 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED : 
+					Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_SPECIAL;
+				alchemyRecipe = NMSDungeonLoot.RandomAlchemyRecipeByCategory( category );
+			}
+			
+			if ( alchemyRecipe != null )
+			{
+				this.DropItem( alchemyRecipe );
+			}
+
+			
 
 			// 50% chance for DDRelic
 			if ( Utility.Random( 100 ) < 50 )
@@ -173,9 +204,21 @@ namespace Server.Items
 					this.DropItem( potionKeg );
 				}
 			}
+			else 
+			{
+				// 50% chance to drop Alchemy Recipe Book
+				if ( Utility.Random( 100 ) < 50 )
+				{
+					Item alchemyBook = new AlchemyRecipeBook();
+					if ( alchemyBook != null )
+					{
+						this.DropItem( alchemyBook );
+					}
+				}
+			}
 
-			// Always add one special NMS item (only for SOS level >= 4)
-			if ( level >= 4 )
+			// 50% chance to add one special NMS item (only for SOS level >= 4)
+			if ( level >= 4 && Utility.Random( 100 ) < 50 )
 			{
 				Item specialNMSItem = NMSDungeonLoot.RandomSpecialNMSItem();
 				if ( specialNMSItem != null )

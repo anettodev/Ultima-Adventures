@@ -40,11 +40,11 @@ namespace Server.Items
 		/// <summary>
 		/// Initializes a new instance of PoisonPotion
 		/// </summary>
-		[Constructable]
-		public PoisonPotion() : base( PotionEffect.Poison )
-		{
-			Name = PoisonPotionItemStringConstants.NAME_POISON_POTION;
-		}
+	[Constructable]
+	public PoisonPotion() : base( PotionEffect.Poison )
+	{
+		Name = "Poção de Alquimia";
+	}
 
 		/// <summary>
 		/// Deserialization constructor

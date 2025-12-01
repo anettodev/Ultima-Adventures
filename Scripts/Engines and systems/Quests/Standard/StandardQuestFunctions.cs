@@ -308,6 +308,20 @@ namespace Server.Misc
 							m.SendMessage( "This person was so pleased with your effort, he added in a special gift for you." );
 						}
 
+					// 50% chance to drop a Category 1 or 2 alchemy recipe (Advanced or Special)
+					if ( Utility.Random( 100 ) < 50 )
+					{
+						int category = Utility.RandomBool() ? 
+							Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED : 
+							Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_SPECIAL;
+						Server.Engines.Craft.AlchemyRecipeInfo recipe = Server.Engines.Craft.AlchemyRecipeData.GetRandomRecipeByCategory( category );
+						if ( recipe != null )
+						{
+							Server.Items.AlchemyRecipeScroll scroll = new Server.Items.AlchemyRecipeScroll( recipe.RecipeID );
+							m.AddToBackpack( scroll );
+						}
+					}
+
 					Titles.AwardFame( m, ((int)(nPCFee/100)), true );
 					if ( ((PlayerMobile)m).KarmaLocked == true ){ Titles.AwardKarma( m, -((int)(nPCFee/100)), true ); }
 					else { Titles.AwardKarma( m, ((int)(nPCFee/100)), true ); }

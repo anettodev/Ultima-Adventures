@@ -5,15 +5,16 @@ namespace Server.Items
 {
 	public class GreaterAgilityPotion : BaseAgilityPotion
 	{
-		public override int MinDexterity{ get{ return 7; } }
+		public override int MinDexterity{ get{ return 6; } }
 		public override int MaxDexterity{ get{ return 8; } }
 		public override TimeSpan Duration{ get{ return TimeSpan.FromSeconds( 90 ); } } // 90 seconds max
 
-		[Constructable]
-		public GreaterAgilityPotion() : base( PotionEffect.AgilityGreater )
-		{
-			ItemID = 0x256A;
-		}
+	[Constructable]
+	public GreaterAgilityPotion() : base( PotionEffect.AgilityGreater )
+	{
+		Name = "Poção de Alquimia";
+		ItemID = 0x256A;
+	}
 
 		public GreaterAgilityPotion( Serial serial ) : base( serial )
 		{

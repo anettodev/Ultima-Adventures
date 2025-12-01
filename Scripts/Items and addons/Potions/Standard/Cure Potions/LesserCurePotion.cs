@@ -37,11 +37,12 @@ namespace Server.Items
 		/// <summary>
 		/// Creates a new Lesser Cure Potion
 		/// </summary>
-		[Constructable]
-		public LesserCurePotion() : base( PotionEffect.CureLesser )
-		{
-			ItemID = 0x233B;
-		}
+	[Constructable]
+	public LesserCurePotion() : base( PotionEffect.CureLesser )
+	{
+		Name = "Poção de Alquimia";
+		ItemID = 0x233B;
+	}
 
 		/// <summary>
 		/// Deserialization constructor

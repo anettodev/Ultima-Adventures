@@ -253,6 +253,20 @@ namespace Server.Items
 				ContainerFunctions.FillTheContainerByWorld( FillMeUpLevel, this, sWorld, from );
 				ContainerFunctions.FillTheContainer( ContainerLevel, this, from );
 
+				// 50% chance to drop a Category 0 or 3 alchemy recipe (Basic or Cosmetic)
+				if ( Utility.Random( 100 ) < 50 )
+				{
+					int category = Utility.RandomBool() ? 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_BASIC : 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_COSMETIC;
+					Server.Engines.Craft.AlchemyRecipeInfo recipe = Server.Engines.Craft.AlchemyRecipeData.GetRandomRecipeByCategory( category );
+					if ( recipe != null )
+					{
+						Server.Items.AlchemyRecipeScroll scroll = new Server.Items.AlchemyRecipeScroll( recipe.RecipeID );
+						this.DropItem( scroll );
+					}
+				}
+
 				if (Utility.RandomDouble() > 0.66)
 					LoggingFunctions.LogLoot( from, this.Name, "box" );
 				StandardQuestFunctions.CheckTarget( from, null, this );

@@ -7,11 +7,12 @@ namespace Server.Items
 	{
 		public override double Refresh{ get{ return 1.0; } }
 
-		[Constructable]
-		public TotalRefreshPotion() : base( PotionEffect.RefreshTotal )
-		{
-			ItemID = 0x25FF;
-		}
+	[Constructable]
+	public TotalRefreshPotion() : base( PotionEffect.RefreshTotal )
+	{
+		Name = "Poção de Alquimia";
+		ItemID = 0x25FF;
+	}
 
 		public TotalRefreshPotion( Serial serial ) : base( serial )
 		{

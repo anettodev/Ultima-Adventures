@@ -9,10 +9,11 @@ namespace Server.Items
 		public override int MaxDexterity{ get{ return 5; } }
 		public override TimeSpan Duration{ get{ return TimeSpan.FromSeconds( 60 ); } } // 60 seconds
 
-		[Constructable]
-		public AgilityPotion() : base( PotionEffect.Agility )
-		{
-		}
+	[Constructable]
+	public AgilityPotion() : base( PotionEffect.Agility )
+	{
+		Name = "Poção de Alquimia";
+	}
 
 		public AgilityPotion( Serial serial ) : base( serial )
 		{

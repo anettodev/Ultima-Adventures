@@ -9,10 +9,11 @@ namespace Server.Items
 		public override int MaxHeal { get{ return 17; } }
 		public override double Delay { get{ return 7.0; } }
 
-		[Constructable]
-		public HealPotion() : base( PotionEffect.Heal )
-		{
-		}
+	[Constructable]
+	public HealPotion() : base( PotionEffect.Heal )
+	{
+		Name = "Poção de Alquimia";
+	}
 
 		public HealPotion( Serial serial ) : base( serial )
 		{

@@ -64,10 +64,11 @@ namespace Server.Items
 		/// <summary>
 		/// Creates a new Night Sight Potion
 		/// </summary>
-		[Constructable]
-		public NightSightPotion() : base( 0xF06, PotionEffect.Nightsight )
-		{
-		}
+	[Constructable]
+	public NightSightPotion() : base( 0xF06, PotionEffect.Nightsight )
+	{
+		Name = "Poção de Alquimia";
+	}
 
 		/// <summary>
 		/// Deserialization constructor

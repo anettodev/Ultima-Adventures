@@ -1348,7 +1348,7 @@ namespace Server.Items
 		public BookOfPoisons( )
 		{
 			Weight = 1.0;
-			Hue = 0x4F8;
+			Hue = 1281;
 			ItemID = 0x2253;
 
 			BookRegion = null;	BookMap = null;		BookWorld = null;	BookItem = null;	BookTrue = 1;	BookPower = 0;

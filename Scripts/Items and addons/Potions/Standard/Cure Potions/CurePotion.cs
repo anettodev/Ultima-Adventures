@@ -40,10 +40,11 @@ namespace Server.Items
 		/// <summary>
 		/// Creates a new Cure Potion
 		/// </summary>
-		[Constructable]
-		public CurePotion() : base( PotionEffect.Cure )
-		{
-		}
+	[Constructable]
+	public CurePotion() : base( PotionEffect.Cure )
+	{
+		Name = "Poção de Alquimia";
+	}
 
 		/// <summary>
 		/// Deserialization constructor

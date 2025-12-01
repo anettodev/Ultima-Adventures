@@ -41,11 +41,12 @@ namespace Server.Items
 		/// <summary>
 		/// Creates a new Greater Cure Potion
 		/// </summary>
-		[Constructable]
-		public GreaterCurePotion() : base( PotionEffect.CureGreater )
-		{
-			ItemID = 0x24EA;
-		}
+	[Constructable]
+	public GreaterCurePotion() : base( PotionEffect.CureGreater )
+	{
+		Name = "Poção de Alquimia";
+		ItemID = 0x24EA;
+	}
 
 		/// <summary>
 		/// Deserialization constructor

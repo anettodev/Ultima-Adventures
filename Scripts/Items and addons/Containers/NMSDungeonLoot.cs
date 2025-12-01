@@ -964,7 +964,30 @@ namespace Server.Items
 
 		#endregion
 
-		#region Random Alchemy Recipe Method
+		#region Random Alchemy Recipe Methods
+
+		/// <summary>
+		/// Returns a random alchemy recipe scroll from a specific category
+		/// </summary>
+		/// <param name="category">Category index (0=Basic, 1=Advanced, 2=Special, 3=Cosmetic)</param>
+		/// <returns>A random AlchemyRecipeScroll from the specified category, or null if category is empty</returns>
+		public static Item RandomAlchemyRecipeByCategory( int category )
+		{
+			// Get all recipes in the specified category
+			System.Collections.Generic.List<Server.Engines.Craft.AlchemyRecipeInfo> recipes = 
+				Server.Engines.Craft.AlchemyRecipeData.GetRecipesByCategory( category );
+			
+			if ( recipes == null || recipes.Count == 0 )
+			{
+				return null;
+			}
+			
+			// Get a random recipe from the category
+			Server.Engines.Craft.AlchemyRecipeInfo randomRecipe = recipes[Utility.Random( recipes.Count )];
+			
+			// Create and return AlchemyRecipeScroll with the recipe ID
+			return new AlchemyRecipeScroll( randomRecipe.RecipeID );
+		}
 
 		/// <summary>
 		/// Returns a random alchemy recipe scroll with appropriate rarity weighting
@@ -972,7 +995,7 @@ namespace Server.Items
 		/// Rare: TotalRefreshPotion, DeadlyPoisonPotion, LethalPoisonPotion (1x weighted)
 		/// Normal: All other potions (4x weighted)
 		/// </summary>
-		/// <returns>A random RecipeScroll for an alchemy recipe</returns>
+		/// <returns>A random AlchemyRecipeScroll for an alchemy recipe</returns>
 		public static Item RandomAlchemyRecipe()
 		{
 			// Get a random potion type from the weighted array
@@ -1001,36 +1024,16 @@ namespace Server.Items
 				return null;
 			}
 
-			// If craft item doesn't have a recipe, create one on-the-fly
+			// All alchemy recipes should already be assigned (recipe IDs 500-534)
+			// If craft item doesn't have a recipe, return null (shouldn't happen)
 			if ( craftItem.Recipe == null )
 			{
-				// Generate a unique recipe ID (use a high number to avoid conflicts)
-				int recipeID = 100000 + (int)potionType.GetHashCode();
-				
-				// Ensure recipe ID is positive and doesn't conflict
-				if ( recipeID < 0 )
-				{
-					recipeID = Math.Abs( recipeID );
-				}
-				
-				// Check if recipe ID already exists, if so, find next available
-				while ( Server.Engines.Craft.Recipe.Recipes.ContainsKey( recipeID ) )
-				{
-					recipeID++;
-				}
-				
-				// Create recipe for this craft item
-				craftItem.AddRecipe( recipeID, alchemySystem );
+				return null;
 			}
 			
-			if ( craftItem.Recipe != null )
-			{
-				// Found or created recipe, create RecipeScroll
-				return new RecipeScroll( craftItem.Recipe );
-			}
-
-			// If still no recipe, return null
-			return null;
+			// Get the recipe ID and create AlchemyRecipeScroll
+			int recipeID = craftItem.Recipe.ID;
+			return new AlchemyRecipeScroll( recipeID );
 		}
 
 		#endregion

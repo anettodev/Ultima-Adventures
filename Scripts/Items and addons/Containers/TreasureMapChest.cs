@@ -153,6 +153,48 @@ namespace Server.Items
 				//BaseContainer.DropItemFix( relic, owner, ItemID, GumpID );
 				giveRelics = giveRelics - 1;
 			}
+
+			// = ALCHEMY RECIPE SCROLLS based on chest level
+			if ( Utility.Random( 100 ) < 50 )
+			{
+				Server.Engines.Craft.AlchemyRecipeInfo recipe = null;
+				
+				if ( level >= 4 && level <= 7 )
+				{
+					// Chest level 4-7: Category 0 or 3 (Basic or Cosmetic)
+					int category = Utility.RandomBool() ? 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_BASIC : 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_COSMETIC;
+					recipe = Server.Engines.Craft.AlchemyRecipeData.GetRandomRecipeByCategory( category );
+				}
+				else if ( level >= 8 && level <= 9 )
+				{
+					// Chest level 8-9: Category 1 (Advanced)
+					recipe = Server.Engines.Craft.AlchemyRecipeData.GetRandomRecipeByCategory( 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED );
+				}
+				else if ( level >= 10 )
+				{
+					// Chest level 10: Category 1 or 2 (Advanced or Special)
+					int category = Utility.RandomBool() ? 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_ADVANCED : 
+						Server.Engines.Craft.AlchemyRecipeConstants.CATEGORY_SPECIAL;
+					recipe = Server.Engines.Craft.AlchemyRecipeData.GetRandomRecipeByCategory( category );
+				}
+
+				if ( recipe != null )
+				{
+					Server.Items.AlchemyRecipeScroll scroll = new Server.Items.AlchemyRecipeScroll( recipe.RecipeID );
+					DropItem( scroll );
+				}
+			}
+
+			// = ALCHEMY RECIPE BOOK (50% chance for chest level 8+)
+			if ( level >= 8 && Utility.Random( 100 ) < 50 )
+			{
+				Server.Items.AlchemyRecipeBook book = new Server.Items.AlchemyRecipeBook();
+				DropItem( book );
+			}
 		}
 	
 		public override bool CheckLocked( Mobile from )

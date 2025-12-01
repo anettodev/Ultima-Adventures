@@ -98,6 +98,9 @@ namespace Server.Engines.Craft
 	/// <summary>Message: "You have not learned this recipe." (cliloc 1073620)</summary>
 	public const string NOTICE_RECIPE_NOT_LEARNED = "Você não aprendeu esta receita.";
 
+	/// <summary>Message: "You know this recipe."</summary>
+	public const string NOTICE_RECIPE_LEARNED = "Você conhece esta receita.";
+
 	/// <summary>Message: "You must be near an anvil" (cliloc 1044266)</summary>
 	public const string NOTICE_MUST_BE_NEAR_ANVIL = "Você deve estar perto de uma bigorna.";
 

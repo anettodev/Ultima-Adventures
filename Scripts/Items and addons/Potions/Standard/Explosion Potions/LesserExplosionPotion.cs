@@ -8,11 +8,12 @@ namespace Server.Items
 		public override int MinDamage { get { return 15; } }
 		public override int MaxDamage { get { return 25; } }
 
-		[Constructable]
-		public LesserExplosionPotion() : base( PotionEffect.ExplosionLesser )
-		{
-			ItemID = 0x2407;
-		}
+	[Constructable]
+	public LesserExplosionPotion() : base( PotionEffect.ExplosionLesser )
+	{
+		Name = "Poção de Alquimia"; // Generic alchemy potion name
+		ItemID = 0x2407;
+	}
 
 		public LesserExplosionPotion( Serial serial ) : base( serial )
 		{
