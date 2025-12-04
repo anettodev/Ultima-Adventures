@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Server.Items;
 using Server.Mobiles;
 using Server.Misc;
 
@@ -295,6 +296,33 @@ namespace Server.Mobiles.Vendors.ShopDefinitions
 		}
 
 		/// <summary>
+		/// Adds a buy item with string name, chance check, and random quantity.
+		/// </summary>
+		/// <param name="list">The list to add to</param>
+		/// <param name="name">The item name</param>
+		/// <param name="type">The item type</param>
+		/// <param name="price">The price</param>
+		/// <param name="minQty">Minimum quantity</param>
+		/// <param name="maxQty">Maximum quantity</param>
+		/// <param name="itemID">The item ID</param>
+		/// <param name="hue">The hue (default 0)</param>
+		public static void AddBuyItemWithNameWithChanceRandom(
+			List<GenericBuyInfo> list,
+			string name,
+			Type type,
+			int price,
+			int minQty,
+			int maxQty,
+			int itemID,
+			int hue = StoreSalesListConstants.HUE_DEFAULT)
+		{
+			if (MyServerSettings.SellChance())
+			{
+				list.Add(new GenericBuyInfo(name, type, price, Utility.Random(minQty, maxQty), itemID, hue));
+			}
+		}
+
+		/// <summary>
 		/// Adds a buy item with arguments.
 		/// </summary>
 		/// <param name="list">The list to add to</param>
@@ -428,6 +456,28 @@ namespace Server.Mobiles.Vendors.ShopDefinitions
 			{
 				sellInfo.Add(type, Utility.Random(minPrice, maxPrice));
 			}
+		}
+
+		/// <summary>
+		/// Adds a beverage buy item with random quantity.
+		/// </summary>
+		/// <param name="list">The list to add to</param>
+		/// <param name="type">The item type</param>
+		/// <param name="beverageType">The beverage type</param>
+		/// <param name="price">The price</param>
+		/// <param name="minQty">Minimum quantity</param>
+		/// <param name="maxQty">Maximum quantity</param>
+		/// <param name="itemID">The item ID</param>
+		public static void AddBeverageBuyItem(
+			List<GenericBuyInfo> list,
+			Type type,
+			BeverageType beverageType,
+			int price,
+			int minQty,
+			int maxQty,
+			int itemID)
+		{
+			list.Add(new GenericBuyInfo(type, price, Utility.Random(minQty, maxQty), itemID, StoreSalesListConstants.HUE_DEFAULT, new object[] { beverageType }));
 		}
 
 		#endregion

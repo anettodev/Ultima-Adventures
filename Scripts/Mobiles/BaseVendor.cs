@@ -29,22 +29,22 @@ namespace Server.Mobiles
         private static bool m_Talked;
         string[] VendorSay = new string[] 
 		{ 
-			"Sauda��es",
-            "Ol� voc�",
+			"Saudações",
+            "Olá você",
             "Eu tenho coisas boas aqui.",
             "Venha olhe!",
             "Compre aqui!",
 			"Opa! Em que posso te ajudar?",
-			"I might have that thing you were looking for...",
+			"Talvez eu tenha o que você procura...",
 			"Opa!",
-			"Os melhores pre�os aqui!",
+			"Os melhores preços aqui!",
 			"sim?",
-			"R�pido, Estou ocupado!",
-			"Meu estoque est� cheio!",
-			"Bemvindo a minha loja",
+			"Rápido, Estou ocupado!",
+			"Meu estoque está cheio!",
+			"Bem-vindo(a) a minha loja",
 			"*Hmm?*",
-			"O tempo est� bom para compras",
-			"Bela vestimenta. Est� vendendo?"
+			"O tempo está bom para compras",
+			"Bela vestimenta. Está vendendo?"
 		};
 
         public override void OnMovement(Mobile m, Point3D oldLocation)
@@ -973,13 +973,13 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( from ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu n�o fa�o neg�cios com voc�!");
+				this.Say("Eu não faço negócios com você!");
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say("Me desculpe mas eu n�o estou negociando nada, milorde.");
+				this.Say("Me desculpe mas eu não estou negociando nada, milorde.");
 				return;
 			}	
 
@@ -1180,13 +1180,13 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( from ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say( "Eu n�o fa�o neg�cios com voc�!" );
+				this.Say( "Eu não faço negócios com você!" );
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say( "Me desculpe mas eu n�o estou negociando nada, milorde." );
+				this.Say( "Me desculpe mas eu não estou negociando nada, milorde." );
 				return;
 			}				
 
@@ -1253,7 +1253,7 @@ namespace Server.Mobiles
 				}
 				else
 				{
-                    string sSay = "N�o acredito que voc� tenha algo do meu interesse.";
+                    string sSay = "NÃƒÆ’Ã‚Â£o acredito que vocÃƒÆ’Ã‚Âª tenha algo do meu interesse.";
                     this.PublicOverheadMessage(MessageType.Regular, 1153, false, sSay);
 				}
 			}
@@ -1263,13 +1263,13 @@ namespace Server.Mobiles
 		{
 			if ( from.Blessed )
 			{
-				string sSay = "Eu n�o posso negociar com voc� enquanto voc� estiver neste estado.";
+				string sSay = "Eu não posso negociar com você enquanto você estiver neste estado.";
 				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
 				return false;
 			}
 			else if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
 			{
-				string sSay = "N�o acredito que possa aceitar isto de voc�.";
+				string sSay = "Não acredito que possa aceitar isto de você.";
 				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
 				return false;
 			}
@@ -2503,7 +2503,7 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( buyer ) )
 			{
 				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu n�o fa�o neg�cios com voc�!");
+				this.Say("Eu não faço negócios com você!");
 				return false;
 			}
 
@@ -2732,7 +2732,7 @@ namespace Server.Mobiles
 			if ( !CheckVendorAccess( seller ) )
 			{
                 //Say( 501522 ); // I shall not treat with scum like thee!
-                string sSay = "Eu n�o fa�o neg�cios com voc�!";
+                string sSay = "Eu não faço negócios com você!";
                 this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, seller.NetState);
 
                 //this.Say( "I have no business with you." );
@@ -3163,10 +3163,10 @@ namespace Server
 		//max amount in stock
 		int MaxAmount { get; }
 
-		//Attempt to restock with item, (return true if restock sucessful)
+		//Attempt to Restock with item, (return true if Restock sucessful)
 		bool Restock( Item item, int amount );
 
-		//called when its time for the whole shop to restock
+		//called when its time for the whole shop to Restock
 		void OnRestock();
 	}
 }

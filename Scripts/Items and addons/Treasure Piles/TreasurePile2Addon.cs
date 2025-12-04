@@ -4,6 +4,12 @@ using Server.Items;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// DEPRECATED: This addon has been consolidated into the generic TreasurePileAddon system.
+	/// Use: new TreasurePileAddon(TreasurePileAddonConstants.TreasurePileVariation.Extended02)
+	/// This file is maintained for backward compatibility but should not be used for new content.
+	/// </summary>
+	[Obsolete("Use TreasurePileAddon with TreasurePileVariation.Extended02 instead")]
 	public class TreasurePile2Addon : BaseAddon
 	{
         private static int[,] m_AddOnSimpleComponents = new int[,] {
@@ -71,13 +77,16 @@ namespace Server.Items
 		{
 			ItemID = 0x0E41;
 			Weight = 50.0;
-			Name = "Chest of Decorative Treasure";
+			Hue = 2989;
+			Name = string.Format(TreasurePileAddonStringConstants.DEED_NAME_FORMAT, 7); // Extended02 - #7
 		}
 
         public override void AddNameProperties(ObjectPropertyList list)
 		{
             base.AddNameProperties(list);
-            list.Add( 1049644, "Double Click To Dump In Your Home");
+			list.Add(1070722, string.Format("<BASEFONT COLOR=#8be4fc>{0}", TreasurePileAddonStringConstants.TYPE_EXTENDED)); // [Estendido]
+            list.Add(1070722, string.Format("<BASEFONT COLOR=#8be4fc>[{0}]", "Para adicionar, clique 2x no baú. Use um machado para remover."));
+
         }
 
 		public TreasurePile2AddonDeed( Serial serial ) : base( serial )

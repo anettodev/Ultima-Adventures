@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
+using Server;
 using Server.Engines.Apiculture;
 using Server.Items;
 using Server.Misc;
@@ -9,6 +10,8 @@ using Server.Multis;
 using Server.Guilds;
 using Server.Engines.Mahjong;
 using Server.Gumps;
+using Server.Mobiles;
+using Server.Mobiles.Vendors;
 using Server.Mobiles.Vendors.ShopDefinitions;
 
 namespace Server.Mobiles
@@ -218,89 +221,147 @@ namespace Server.Mobiles
 		#endregion
 	}	
 	
+	/// <summary>
+	/// Shop info for Elf Rares vendor.
+	/// Sells rare decorative items, furniture, and artifacts for elven-themed homes.
+	/// </summary>
 	public class SBElfRares: SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBElfRares class.
+		/// </summary>
 		public SBElfRares()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Futon ), Utility.Random( 50000,150000 ), 1, 0x295C, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ArtifactVase ), Utility.Random( 50000,150000 ), 1, 0x0B48, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ArtifactLargeVase ), Utility.Random( 50000,150000 ), 1, 0x0B47, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenBookcaseDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenBedDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenArmoireDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( StandingBrokenChairDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenVanityDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenFallenChairDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenCoveredChairDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BrokenChestOfDrawersDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TapestryOfSosaria ), Utility.Random( 50000,150000 ), 1, 0x234E, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( RoseOfTrinsic ), Utility.Random( 50000,150000 ), 1, 0x234C, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HearthOfHomeFireDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( VanityDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BlueDecorativeRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BlueFancyRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BluePlainRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BoilingCauldronDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( CinnamonFancyRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( CurtainsDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( FountainDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( GoldenDecorativeRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingAxesDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingSwordsDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HouseLadderDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( LargeFishingNetDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( PinkFancyRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( RedPlainRugDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ScarecrowDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( SmallFishingNetDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TableWithBlueClothDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TableWithOrangeClothDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TableWithPurpleClothDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TableWithRedClothDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( UnmadeBedDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( WallBannerDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TreeStumpDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecorativeShieldDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( MiningCartDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( PottedCactusDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( StoneAnkhDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BannerDeed ), Utility.Random( 50000,150000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Tub ), Utility.Random( 50000,150000 ), 1, 0xe83, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( WaterBarrel ), Utility.Random( 50000,150000 ), 1, 0xe77, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ClosedBarrel ), Utility.Random( 50000,150000 ), 1, 0x0FAE, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Bucket ), Utility.Random( 50000,150000 ), 1, 0x14e0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoTray ), Utility.Random( 50000,150000 ), 1, 0x992, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoTray2 ), Utility.Random( 50000,150000 ), 1, 0x991, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoBottlesOfLiquor ), Utility.Random( 50000,150000 ), 1, 0x99E, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Checkers ), Utility.Random( 50000,150000 ), 1, 0xE1A, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Chessmen3 ), Utility.Random( 50000,150000 ), 1, 0xE14, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Chessmen2 ), Utility.Random( 50000,150000 ), 1, 0xE12, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Chessmen ), Utility.Random( 50000,150000 ), 1, 0xE13, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( Checkers2 ), Utility.Random( 50000,150000 ), 1, 0xE1B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoHay2 ), Utility.Random( 50000,150000 ), 1, 0xF34, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoBridle2 ), Utility.Random( 50000,150000 ), 1, 0x1375, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DecoBridle ), Utility.Random( 50000,150000 ), 1, 0x1374, 0 ) ); }
+				// Furniture and decorative items (all very rare with random prices)
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Futon), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_FUTON);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ArtifactVase), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_ARTIFACT_VASE);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ArtifactLargeVase), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_ARTIFACT_LARGE_VASE);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenBookcaseDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_BOOKCASE_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenBedDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_BED_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenArmoireDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_ARMOIRE_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(StandingBrokenChairDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_STANDING_BROKEN_CHAIR_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenVanityDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_VANITY_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenFallenChairDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_FALLEN_CHAIR_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenCoveredChairDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_COVERED_CHAIR_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BrokenChestOfDrawersDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BROKEN_CHEST_OF_DRAWERS_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TapestryOfSosaria), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TAPESTRY_OF_SOSARIA);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(RoseOfTrinsic), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_ROSE_OF_TRINSIC);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HearthOfHomeFireDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_HEARTH_OF_HOME_FIRE_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(VanityDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_VANITY_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BlueDecorativeRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BLUE_DECORATIVE_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BlueFancyRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BLUE_FANCY_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BluePlainRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BLUE_PLAIN_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BoilingCauldronDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BOILING_CAULDRON_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(CinnamonFancyRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CINNAMON_FANCY_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(CurtainsDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CURTAINS_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(FountainDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_FOUNTAIN_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(GoldenDecorativeRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_GOLDEN_DECORATIVE_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HangingAxesDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_HANGING_AXES_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HangingSwordsDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_HANGING_SWORDS_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HouseLadderDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_HOUSE_LADDER_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(LargeFishingNetDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_LARGE_FISHING_NET_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(PinkFancyRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_PINK_FANCY_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(RedPlainRugDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_RED_PLAIN_RUG_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ScarecrowDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_SCARECROW_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(SmallFishingNetDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_SMALL_FISHING_NET_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TableWithBlueClothDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TABLE_WITH_BLUE_CLOTH_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TableWithOrangeClothDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TABLE_WITH_ORANGE_CLOTH_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TableWithPurpleClothDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TABLE_WITH_PURPLE_CLOTH_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TableWithRedClothDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TABLE_WITH_RED_CLOTH_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(UnmadeBedDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_UNMADE_BED_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(WallBannerDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_WALL_BANNER_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TreeStumpDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TREE_STUMP_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecorativeShieldDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECORATIVE_SHIELD_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(MiningCartDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_MINING_CART_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(PottedCactusDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_POTTED_CACTUS_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(StoneAnkhDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_STONE_ANKH_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BannerDeed), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BANNER_DEED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Tub), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_TUB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(WaterBarrel), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_WATER_BARREL);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ClosedBarrel), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CLOSED_BARREL);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Bucket), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_BUCKET);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoTray), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_TRAY);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoTray2), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_TRAY2);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoBottlesOfLiquor), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_BOTTLES_OF_LIQUOR);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Checkers), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CHECKERS);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Chessmen3), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CHESSMEN3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Chessmen2), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CHESSMEN2);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Chessmen), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CHESSMEN);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(Checkers2), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_CHECKERS2);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoHay2), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_HAY2);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoBridle2), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_BRIDLE2);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(DecoBridle), StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_ELF_RARE_ITEM_MAX, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.QTY_ELF_RARE_ITEM, StoreSalesListConstants.ITEMID_DECO_BRIDLE);
+
+				// Treasure pile deeds (decorative items with fixed pricing)
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile02AddonDeed), 240, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Minimal03 - 9 components (smallest) - 200 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile01AddonDeed), 270, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Compact01 - 10 components - 225 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile03AddonDeed), 300, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Standard05 - 11 components - 250 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile04AddonDeed), 360, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Medium06 - 13 components - 300 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile05AddonDeed), 420, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Balanced07 - 15 components - 350 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePileAddonDeed), 750, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Original - 26 components - 625 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile2AddonDeed), 780, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Extended02 - 27 components - 650 + 20%
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile3AddonDeed), 960, StoreSalesListConstants.QTY_UNLIMITED, 0x0E41); // Large04 - 33 components (largest) - 800 + 20%
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
+				// Elf rare items are not purchased back by vendors
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBChainmailArmor: SBInfo
@@ -1732,134 +1793,282 @@ namespace Server.Mobiles
 		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Mixologist vendor.
+	/// Buys various elixirs and mixtures for skill training and effects.
+	/// </summary>
 	public class SBMixologist : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMixologist class.
+		/// </summary>
 		public SBMixologist()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
+				// Mixologist only buys items, does not sell them
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				Add( typeof( ElixirAlchemy ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirAnatomy ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirAnimalLore ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirAnimalTaming ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirArchery ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirArmsLore ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirBegging ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirBlacksmith ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirCamping ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirCarpentry ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirCartography ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirCooking ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirDetectHidden ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirDiscordance ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirEvalInt ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirFencing ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirFishing ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirFletching ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirFocus ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirForensics ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirHealing ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirHerding ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirHiding ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirInscribe ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirItemID ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirLockpicking ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirLumberjacking ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirMacing ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirMagicResist ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirMeditation ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirMining ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirMusicianship ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirParry ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirPeacemaking ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirPoisoning ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirProvocation ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirRemoveTrap ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirSnooping ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirSpiritSpeak ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirStealing ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirStealth ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirSwords ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirTactics ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirTailoring ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirTasteID ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirTinkering ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirTracking ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirVeterinary ), Utility.Random( 14, 35 ) );
-				Add( typeof( ElixirWrestling ), Utility.Random( 14, 35 ) );
-				Add( typeof( MixtureSlime ), Utility.Random( 14, 35 ) );
-				Add( typeof( MixtureIceSlime ), Utility.Random( 14, 35 ) );
-				Add( typeof( MixtureFireSlime ), Utility.Random( 14, 35 ) );
-				Add( typeof( MixtureDiseasedSlime ), Utility.Random( 14, 35 ) );
-				Add( typeof( MixtureRadiatedSlime ), Utility.Random( 14, 35 ) );
-				Add( typeof( LiquidFire ), Utility.Random( 14, 35 ) );
-				Add( typeof( LiquidGoo ), Utility.Random( 14, 35 ) );
-				Add( typeof( LiquidIce ), Utility.Random( 14, 35 ) );
-				Add( typeof( LiquidRot ), Utility.Random( 14, 35 ) );
-				Add( typeof( LiquidPain ), Utility.Random( 14, 35 ) );
+				// Skill elixirs (random prices)
+				Add(typeof(ElixirAlchemy), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirAnatomy), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirAnimalLore), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirAnimalTaming), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirArchery), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirArmsLore), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirBegging), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirBlacksmith), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirCamping), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirCarpentry), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirCartography), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirCooking), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirDetectHidden), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirDiscordance), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirEvalInt), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirFencing), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirFishing), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirFletching), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirFocus), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirForensics), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirHealing), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirHerding), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirHiding), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirInscribe), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirItemID), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirLockpicking), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirLumberjacking), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirMacing), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirMagicResist), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirMeditation), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirMining), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirMusicianship), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirParry), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirPeacemaking), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirPoisoning), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirProvocation), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirRemoveTrap), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirSnooping), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirSpiritSpeak), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirStealing), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirStealth), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirSwords), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirTactics), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirTailoring), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirTasteID), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirTinkering), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirTracking), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirVeterinary), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(ElixirWrestling), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+
+				// Mixtures (random prices)
+				Add(typeof(MixtureSlime), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(MixtureIceSlime), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(MixtureFireSlime), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(MixtureDiseasedSlime), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(MixtureRadiatedSlime), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+
+				// Liquids (random prices)
+				Add(typeof(LiquidFire), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(LiquidGoo), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(LiquidIce), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(LiquidRot), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
+				Add(typeof(LiquidPain), Utility.Random(StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MIN, StoreSalesListConstants.SELL_PRICE_ELIXIR_MIXTURE_MAX));
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Animal Trainer vendor.
+	/// Sells various animals for taming and pet training supplies.
+	/// </summary>
 	public class SBAnimalTrainer : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBAnimalTrainer class.
+		/// </summary>
 		public SBAnimalTrainer()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Cat ), 132, 10, 201, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Dog ), 170, 10, 217, 0 ) ); }
-				if ( 1 > 0 ){Add( new AnimalBuyInfo( 1, typeof( Rabbit ), 106, 10, 205, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Eagle ), 402, 10, 5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( BrownBear ), 855, 10, 167, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( GrizzlyBearRiding ), 1767, 10, 212, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Panther ), 1271, 10, 214, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( TimberWolf ), 768, 10, 225, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Rat ), 107, 10, 238, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HitchingPost ), 20000, Utility.Random( 1,3 ), 0x14E7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TamingBODBook ), 10000, Utility.Random( 1,3 ), 0x2259, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( PetDyeTub ), 1250000, Utility.Random( 1,3 ), 0x0012, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( PetTrainer ), 2500, 4, 0x166E, 0 ) ); }
+				// Animals (with chance, except Rabbit which is always available)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Cat), StoreSalesListConstants.PRICE_CAT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Dog), StoreSalesListConstants.PRICE_DOG, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Rabbit (always available)
+				Add(new AnimalBuyInfo(1, typeof(Rabbit), StoreSalesListConstants.PRICE_RABBIT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RABBIT, StoreSalesListConstants.HUE_DEFAULT));
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Eagle), StoreSalesListConstants.PRICE_EAGLE, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_EAGLE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(BrownBear), StoreSalesListConstants.PRICE_BROWN_BEAR, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_BROWN_BEAR, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(GrizzlyBearRiding), StoreSalesListConstants.PRICE_GRIZZLY_BEAR_RIDING, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_GRIZZLY_BEAR_RIDING, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Panther), StoreSalesListConstants.PRICE_PANTHER, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_PANTHER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(TimberWolf), StoreSalesListConstants.PRICE_TIMBER_WOLF, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_TIMBER_WOLF, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Rat), StoreSalesListConstants.PRICE_RAT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RAT, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Equipment and supplies (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HitchingPost), StoreSalesListConstants.PRICE_HITCHING_POST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_HITCHING_POST);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(TamingBODBook), StoreSalesListConstants.PRICE_TAMING_BOD_BOOK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_TAMING_BOD_BOOK);
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(PetDyeTub), StoreSalesListConstants.PRICE_PET_DYE_TUB, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX), StoreSalesListConstants.ITEMID_PET_DYE_TUB, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(PetTrainer), StoreSalesListConstants.PRICE_PET_TRAINER, StoreSalesListConstants.QTY_PET_TRAINER, StoreSalesListConstants.ITEMID_PET_TRAINER, StoreSalesListConstants.HUE_DEFAULT));
+				}
 			}
 		}
 
+		#endregion
 
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HitchingPost ), 2500 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienEgg ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DragonEgg ), Utility.Random( 500,1000 ) ); } 
+				// Equipment
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HitchingPost), StoreSalesListConstants.SELL_PRICE_HITCHING_POST);
+
+				// Eggs (random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(AlienEgg), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MIN, StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DragonEgg), Utility.Random(StoreSalesListConstants.SELL_PRICE_DRAGON_EGG_MIN, StoreSalesListConstants.SELL_PRICE_DRAGON_EGG_MAX));
+				}
 			}
 		}
+
+		#endregion
 	}
 	public class SBHumanAnimalTrainer : SBInfo
 	{
@@ -2301,12 +2510,12 @@ namespace Server.Mobiles
 	/// Shop info for Baker vendor.
 	/// Sells baked goods, bread, pastries, and baking ingredients.
 	/// </summary>
-	public class SBBaker : SBInfo
-	{
+	public class SBBaker : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -2315,9 +2524,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBBaker class.
 		/// </summary>
-		public SBBaker()
-		{
-		}
+		public SBBaker() 
+		{ 
+		} 
 
 		#endregion
 
@@ -2326,12 +2535,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -2340,13 +2549,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
-			{
+			public InternalBuyInfo() 
+			{ 
 				// Bread (always available)
 				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BreadLoaf), 60, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_BREAD_PIE);
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(BreadLoaf), 50, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x103C);
@@ -2374,13 +2583,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Baked goods
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BreadLoaf), 15);
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FrenchBread), 5);
@@ -2454,24 +2663,28 @@ namespace Server.Mobiles
 			public InternalBuyInfo()
 			{
 				// Contracts
-				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1041243", typeof(ContractOfEmployment), 1252, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED);
-				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1062332", typeof(VendorRentalContract), 1252, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED, 0x672);
-				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1047016", typeof(CommodityDeed), 5, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED, 0x47);
+				//StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1041243", typeof(ContractOfEmployment), 1252, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED);
+				//StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1062332", typeof(VendorRentalContract), 1252, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED, 0x672);
+				//StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1047016", typeof(CommodityDeed), 5, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_DEED, 0x47);
 
 				// Interest bags
-				StoreSalesListHelper.AddBuyItemWithName(this, "Interest Bag (Good)", typeof(InterestBag), 1500, StoreSalesListConstants.QTY_SINGLE, 0xE76, 0xABE);
-				StoreSalesListHelper.AddBuyItemWithName(this, "Interest Bag (Evil)", typeof(EvilInterestBag), 1500, StoreSalesListConstants.QTY_SINGLE, 0xE76, 0xABE);
+				//StoreSalesListHelper.AddBuyItemWithName(this, "Interest Bag (Good)", typeof(InterestBag), 1500, StoreSalesListConstants.QTY_SINGLE, 0xE76, 0xABE);
+				//StoreSalesListHelper.AddBuyItemWithName(this, "Interest Bag (Evil)", typeof(EvilInterestBag), 1500, StoreSalesListConstants.QTY_SINGLE, 0xE76, 0xABE);
 
 				// Safes and vaults
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MetalVault), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x4FE3);
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MetalSafe), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x436);
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(IronSafe), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x5329);
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Safe), 500000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x436);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(MetalVault), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x4FE3);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(MetalSafe), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x436);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(IronSafe), 15000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x5329);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(Safe), 500000, StoreSalesListConstants.QTY_VERY_RARE_MIN, StoreSalesListConstants.QTY_VERY_RARE_MAX, 0x436);
 
 				// Currency deeds
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(DDCopper), 1, 70000, 200000, 0xEF0);
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(DDSilver), 2, 70000, 200000, 0xEF0);
-				StoreSalesListHelper.AddBuyItemRandom(this, typeof(SilverDeed), 2000, 200, 500, StoreSalesListConstants.ITEMID_DEED);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(DDCopper), 1, 70000, 200000, 0xEF0);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(DDSilver), 2, 70000, 200000, 0xEF0);
+				//StoreSalesListHelper.AddBuyItemRandom(this, typeof(SilverDeed), 2000, 200, 500, StoreSalesListConstants.ITEMID_DEED);
+
+				// Treasure pile deeds (decorative items with fixed pricing)
+				StoreSalesListHelper.AddBuyItem(this, typeof(TreasurePile02AddonDeed), StoreSalesListConstants.PRICE_TREASURE_PILE_02_ADDON_DEED, StoreSalesListConstants.QTY_FIXED_10, StoreSalesListConstants.ITEMID_TREASURE_PILE_ADDON_DEED); // Minimal03 - 9 components (smallest) - 200 + 20%
+				
 			}
 		}
 
@@ -2490,20 +2703,20 @@ namespace Server.Mobiles
 			public InternalSellInfo()
 			{
 				// Treasure pile deeds
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile05AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile04AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile3AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile03AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile2AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile02AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePile01AddonDeed), 200, 600);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(TreasurePileAddonDeed), 200, 600);
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile02AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_02_ADDON_DEED); // Minimal03 - 9 components (smallest)
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile01AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_01_ADDON_DEED); // Compact01 - 10 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile03AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_03_ADDON_DEED); // Standard05 - 11 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile04AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_04_ADDON_DEED); // Medium06 - 13 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile05AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_05_ADDON_DEED); // Balanced07 - 15 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePileAddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_ADDON_DEED); // Original - 26 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile2AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_2_ADDON_DEED); // Extended02 - 27 components
+				StoreSalesListHelper.AddSellItem(this, typeof(TreasurePile3AddonDeed), StoreSalesListConstants.SELL_PRICE_TREASURE_PILE_3_ADDON_DEED); // Large04 - 33 components (largest)
 
 				// Safes and vaults
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(MetalVault), 1000, 2000);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(MetalSafe), 1000, 2000);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(IronSafe), 1000, 2000);
-				StoreSalesListHelper.AddSellItemRandom(this, typeof(Safe), 100000, 200000);
+				//StoreSalesListHelper.AddSellItemRandom(this, typeof(MetalVault), 1000, 2000);
+				//StoreSalesListHelper.AddSellItemRandom(this, typeof(MetalSafe), 1000, 2000);
+				//StoreSalesListHelper.AddSellItemRandom(this, typeof(IronSafe), 1000, 2000);
+				//StoreSalesListHelper.AddSellItemRandom(this, typeof(Safe), 100000, 200000);
 			}
 		}
 
@@ -2518,8 +2731,8 @@ namespace Server.Mobiles
 	{
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -2528,9 +2741,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBBard class.
 		/// </summary>
-		public SBBard()
-		{
-		}
+		public SBBard() 
+		{ 
+		} 
 
 		#endregion
 
@@ -2539,12 +2752,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -2553,12 +2766,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
+			public InternalBuyInfo() 
 			{
 				// Musical instruments
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Drums), 210, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x0E9C);
@@ -2585,12 +2798,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
+			public InternalSellInfo() 
 			{
 				// Musical instruments
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JarsOfWaxInstrument), 80);
@@ -2628,104 +2841,218 @@ namespace Server.Mobiles
 		#endregion
 	} 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Barkeeper vendor.
+	/// Sells beverages, food, games, and contracts.
+	/// </summary>
 	public class SBBarkeeper : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBBarkeeper class.
+		/// </summary>
 		public SBBarkeeper()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Ale, 70, Utility.Random( 1,100 ), 0x99F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Wine, 70, Utility.Random( 1,100 ), 0x9C7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Liquor, 70, Utility.Random( 1,100 ), 0x99B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Jug ), BeverageType.Cider, 130, Utility.Random( 1,100 ), 0x9C8, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Milk, 180, Utility.Random( 1,100 ), 0x9F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Ale, 110, Utility.Random( 1,100 ), 0x1F95, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Cider, 110, Utility.Random( 1,100 ), 0x1F97, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Liquor, 110, Utility.Random( 1,100 ), 0x1F99, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Wine, 110, Utility.Random( 1,100 ), 0x1F9B, 0 ) ); }
-				if ( 1 > 0 ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Water, 90, Utility.Random( 1,100 ), 0x1F9D, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( BreadLoaf ), 60, Utility.Random( 1,100 ), 0x103B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CheeseWheel ), 410, Utility.Random( 1,100 ), 0x97E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CookedBird ), 170, Utility.Random( 1,100 ), 0x9B7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LambLeg ), 80, Utility.Random( 1,100 ), 0x160A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCarrots ), 30, Utility.Random( 1,100 ), 0x15F9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x15FC, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( EmptyPewterBowl ), 5, Utility.Random( 1,100 ), 0x15FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FE, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FF, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x1600, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfFoodPotatos ), 30, Utility.Random( 1,100 ), 0x1601, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfStew ), 30, Utility.Random( 1,100 ), 0x1604, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfTomatoSoup ), 30, Utility.Random( 1,100 ), 0x1606, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ApplePie ), 100, Utility.Random( 1,100 ), 0x1041, 0 ) ); } //OSI just has Pie, not Apple/Fruit/Meat
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( tarotpoker ), 115, Utility.Random( 1,100 ), 0x12AB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1016450", typeof( Chessboard ), 211, Utility.Random( 1,100 ), 0xFA6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1016449", typeof( CheckerBoard ), 211, Utility.Random( 1,100 ), 0xFA6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Engines.Mahjong.MahjongGame ), 6000, Utility.Random( 1,100 ), 0xFAA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Backgammon ), 200, Utility.Random( 1,100 ), 0xE1C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Dices ), 20, Utility.Random( 1,100 ), 0xFA7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Waterskin ), 50, Utility.Random( 1,100 ), 0xA21, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanFighterItem ), 5000, Utility.Random( 1,100 ), 0x1419, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanArcherItem ), 6000, Utility.Random( 1,100 ), 0xF50, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanWizardItem ), 7000, Utility.Random( 1,100 ), 0xE30, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1041243", typeof( ContractOfEmployment ), 1252, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( "a barkeep contract", typeof( BarkeepContract ), 1252, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( Multis.BaseHouse.NewVendorSystem )
-					if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1062332", typeof( VendorRentalContract ), 1252, Utility.Random( 1,100 ), 0x14F0, 0x672 ) ); }
+				// Beverages (BeverageBuyInfo - must use direct calls)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Ale, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_ALE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Wine, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_WINE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Liquor, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_LIQUOR, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Jug), BeverageType.Cider, StoreSalesListConstants.PRICE_JUG_CIDER, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_JUG_CIDER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Milk, StoreSalesListConstants.PRICE_PITCHER_MILK, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_MILK, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Ale, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_ALE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Cider, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_CIDER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Liquor, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_LIQUOR, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Wine, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_WINE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				// Water (always available)
+				Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Water, StoreSalesListConstants.PRICE_PITCHER_WATER, Utility.Random(StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX), StoreSalesListConstants.ITEMID_PITCHER_WATER, StoreSalesListConstants.HUE_DEFAULT));
+
+				// Food (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BreadLoaf), StoreSalesListConstants.PRICE_BREAD_LOAF_WAITER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_BREAD_PIE);
+
+				// Food (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CheeseWheel), StoreSalesListConstants.PRICE_CHEESE_WHEEL, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_CHEESE_WHEEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CookedBird), StoreSalesListConstants.PRICE_COOKED_BIRD, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_COOKED_BIRD);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LambLeg), StoreSalesListConstants.PRICE_LAMB_LEG, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_LAMB_LEG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCarrots), StoreSalesListConstants.PRICE_WOODEN_BOWL_CARROTS, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CARROTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCorn), StoreSalesListConstants.PRICE_WOODEN_BOWL_CORN, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfLettuce), StoreSalesListConstants.PRICE_WOODEN_BOWL_LETTUCE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfPeas), StoreSalesListConstants.PRICE_WOODEN_BOWL_PEAS, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_PEAS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(EmptyPewterBowl), StoreSalesListConstants.PRICE_EMPTY_PEWTER_BOWL, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_EMPTY_PEWTER_BOWL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfCorn), StoreSalesListConstants.PRICE_PEWTER_BOWL_CORN, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_PEWTER_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfLettuce), StoreSalesListConstants.PRICE_PEWTER_BOWL_LETTUCE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_PEWTER_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfPeas), StoreSalesListConstants.PRICE_PEWTER_BOWL_PEAS, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_PEWTER_BOWL_PEAS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfFoodPotatos), StoreSalesListConstants.PRICE_PEWTER_BOWL_POTATOS, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_PEWTER_BOWL_POTATOS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfStew), StoreSalesListConstants.PRICE_WOODEN_BOWL_STEW, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_STEW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfTomatoSoup), StoreSalesListConstants.PRICE_WOODEN_BOWL_TOMATO_SOUP, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WOODEN_BOWL_TOMATO_SOUP);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ApplePie), StoreSalesListConstants.PRICE_APPLE_PIE_BARKEEPER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_APPLE_PIE);
+
+				// Games
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(tarotpoker), StoreSalesListConstants.PRICE_TAROT_POKER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_TAROT_POKER);
+				if (MyServerSettings.SellChance())
+				{
+					StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1016450", typeof(Chessboard), StoreSalesListConstants.PRICE_CHESSBOARD, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_CHESSBOARD);
+				}
+				if (MyServerSettings.SellChance())
+				{
+					StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1016449", typeof(CheckerBoard), StoreSalesListConstants.PRICE_CHECKER_BOARD, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_CHECKER_BOARD);
+				}
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Engines.Mahjong.MahjongGame), StoreSalesListConstants.PRICE_MAHJONG_GAME, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_MAHJONG_GAME);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Backgammon), StoreSalesListConstants.PRICE_BACKGAMMON, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_BACKGAMMON);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Dices), StoreSalesListConstants.PRICE_DICES, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_DICES);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Waterskin), StoreSalesListConstants.PRICE_WATERSKIN, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_WATERSKIN);
+
+				// Henchman items
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanFighterItem), StoreSalesListConstants.PRICE_HENCHMAN_FIGHTER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_HENCHMAN_FIGHTER, StoreSalesListConstants.HUE_HENCHMAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanArcherItem), StoreSalesListConstants.PRICE_HENCHMAN_ARCHER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_HENCHMAN_ARCHER, StoreSalesListConstants.HUE_HENCHMAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanWizardItem), StoreSalesListConstants.PRICE_HENCHMAN_WIZARD, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_HENCHMAN_WIZARD, StoreSalesListConstants.HUE_HENCHMAN);
+
+				// Contracts
+				if (MyServerSettings.SellChance())
+				{
+					StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1041243", typeof(ContractOfEmployment), StoreSalesListConstants.PRICE_CONTRACT_EMPLOYMENT, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_CONTRACT_EMPLOYMENT);
+				}
+				// Barkeep contract (always available)
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "a barkeep contract", typeof(BarkeepContract), StoreSalesListConstants.PRICE_BARKEEP_CONTRACT, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_BARKEEP_CONTRACT);
+				if (Multis.BaseHouse.NewVendorSystem)
+				{
+					if (MyServerSettings.SellChance())
+					{
+						StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1062332", typeof(VendorRentalContract), StoreSalesListConstants.PRICE_VENDOR_RENTAL_CONTRACT, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_VENDOR_RENTAL_CONTRACT, StoreSalesListConstants.HUE_VENDOR_RENTAL_CONTRACT);
+					}
+				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfCarrots ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfCorn ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfLettuce ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfPeas ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( EmptyPewterBowl ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfCorn ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfLettuce ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfPeas ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfFoodPotatos ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfStew ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfTomatoSoup ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BeverageBottle ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Jug ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pitcher ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GlassMug ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BreadLoaf ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CheeseWheel ), 50 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ribs ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Peach ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pear ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Grapes ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Apple ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Banana ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Candle ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Chessboard ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CheckerBoard ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( tarotpoker ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MahjongGame ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Backgammon ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Dices ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ContractOfEmployment ), 626 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Waterskin ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RomulanAle ), Utility.Random( 200,1000 ) ); } 
+				// Bowls
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfCarrots), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_CARROTS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfCorn), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_CORN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfLettuce), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_LETTUCE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfPeas), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_PEAS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(EmptyPewterBowl), StoreSalesListConstants.SELL_PRICE_EMPTY_PEWTER_BOWL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfCorn), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_CORN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfLettuce), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_LETTUCE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfPeas), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_PEAS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfFoodPotatos), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_POTATOS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfStew), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_STEW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfTomatoSoup), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_TOMATO_SOUP);
+
+				// Beverages
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BeverageBottle), StoreSalesListConstants.SELL_PRICE_BEVERAGE_BOTTLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Jug), StoreSalesListConstants.SELL_PRICE_JUG);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pitcher), StoreSalesListConstants.SELL_PRICE_PITCHER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GlassMug), StoreSalesListConstants.SELL_PRICE_GLASS_MUG);
+
+				// Food
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BreadLoaf), StoreSalesListConstants.SELL_PRICE_BREAD_LOAF);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CheeseWheel), StoreSalesListConstants.SELL_PRICE_CHEESE_WHEEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ribs), StoreSalesListConstants.SELL_PRICE_RIBS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Peach), StoreSalesListConstants.SELL_PRICE_PEACH);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pear), StoreSalesListConstants.SELL_PRICE_PEAR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Grapes), StoreSalesListConstants.SELL_PRICE_GRAPES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Apple), StoreSalesListConstants.SELL_PRICE_APPLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Banana), StoreSalesListConstants.SELL_PRICE_BANANA);
+
+				// Misc
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Candle), StoreSalesListConstants.SELL_PRICE_CANDLE);
+
+				// Games
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Chessboard), StoreSalesListConstants.SELL_PRICE_CHESSBOARD);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CheckerBoard), StoreSalesListConstants.SELL_PRICE_CHECKER_BOARD);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(tarotpoker), StoreSalesListConstants.SELL_PRICE_TAROT_POKER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MahjongGame), StoreSalesListConstants.SELL_PRICE_MAHJONG_GAME);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Backgammon), StoreSalesListConstants.SELL_PRICE_BACKGAMMON);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Dices), StoreSalesListConstants.SELL_PRICE_DICES);
+
+				// Contracts and misc
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ContractOfEmployment), StoreSalesListConstants.SELL_PRICE_CONTRACT_EMPLOYMENT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Waterskin), StoreSalesListConstants.SELL_PRICE_WATERSKIN);
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RomulanAle), Utility.Random(StoreSalesListConstants.SELL_PRICE_ROMULAN_ALE_MIN, StoreSalesListConstants.SELL_PRICE_ROMULAN_ALE_MAX));
+				}
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>
@@ -2845,12 +3172,12 @@ namespace Server.Mobiles
 	/// Shop info for Blacksmith vendor.
 	/// Sells smithing tools, ingots, and related items.
 	/// </summary>
-	public class SBBlacksmith : SBInfo
-	{
+	public class SBBlacksmith : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -2859,9 +3186,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBBlacksmith class.
 		/// </summary>
-		public SBBlacksmith()
-		{
-		}
+		public SBBlacksmith() 
+		{ 
+		} 
 
 		#endregion
 
@@ -2870,12 +3197,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -2884,13 +3211,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
-			{
+			public InternalBuyInfo() 
+			{ 	
 				// Basic materials
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(IronIngot), 5, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x1BF2);
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Tongs), 13, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0xFBB);
@@ -2908,12 +3235,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
+			public InternalSellInfo() 
 			{
 				// Gem ingots
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TopazIngot), 120);
@@ -3026,12 +3353,12 @@ namespace Server.Mobiles
 	/// Shop info for Butcher vendor.
 	/// Sells raw meat, processed meat products, and butchering tools.
 	/// </summary>
-	public class SBButcher : SBInfo
-	{
+	public class SBButcher : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -3040,9 +3367,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBButcher class.
 		/// </summary>
-		public SBButcher()
-		{
-		}
+		public SBButcher() 
+		{ 
+		} 
 
 		#endregion
 
@@ -3051,12 +3378,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -3065,12 +3392,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
+			public InternalBuyInfo() 
 			{
 				// Processed meat products
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bacon), 70, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x979);
@@ -3097,13 +3424,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Raw meat
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RawRibs), 6);
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RawLambLeg), 6);
@@ -3126,274 +3453,11 @@ namespace Server.Mobiles
 	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBCarpenter: SBInfo
-	{
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
-
-		public SBCarpenter()
-		{
-		}
-
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
-
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
-			public InternalBuyInfo()
-			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Hatchet ), 25, Utility.Random( 1,100 ), 0xF44, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LumberAxe ), 27, Utility.Random( 1,100 ), 0xF43, 0x96D ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Nails ), 3, Utility.Random( 1,100 ), 0x102E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Axle ), 2, Utility.Random( 1,100 ), 0x105B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Board ), 3, Utility.Random( 1,100 ), 0x1BD7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DrawKnife ), 10, Utility.Random( 1,100 ), 0x10E4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Froe ), 10, Utility.Random( 1,100 ), 0x10E5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Scorp ), 10, Utility.Random( 1,100 ), 0x10E7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Inshave ), 10, Utility.Random( 1,100 ), 0x10E6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DovetailSaw ), 12, Utility.Random( 1,100 ), 0x1028, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Saw ), 100, Utility.Random( 1,100 ), 0x1034, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Hammer ), 17, Utility.Random( 1,100 ), 0x102A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MouldingPlane ), 11, Utility.Random( 1,100 ), 0x102C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SmoothingPlane ), 10, Utility.Random( 1,100 ), 0x1032, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( JointingPlane ), 11, Utility.Random( 1,100 ), 0x1030, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( WoodworkingTools ), 10, Utility.Random( 10,30 ), 0x4F52, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SawMillEastAddonDeed ), 500, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SawMillSouthAddonDeed ), 500, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( AdventurerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F9B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( AlchemyCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F91, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ArmsCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F9E, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BakerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F92, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BeekeeperCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F95, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BlacksmithCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( BowyerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F97, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ButcherCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F89, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( CarpenterCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8A, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( FletcherCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F88, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HealerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F98, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HugeCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F86, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( JewelerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( LibrarianCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F96, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( MusicianCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F94, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NecromancerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F9A, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ProvisionerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8E, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( SailorCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F9C, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( StableCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F87, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( SupplyCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F9D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TailorCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TavernCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F99, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TinkerCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F90, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TreasureCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F93, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( WizardryCrate ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x4F8C, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C43, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C45, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C47, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C89, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x38B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x38D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CC9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireH ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CCB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireI ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CCD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmoireJ ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D26, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmorShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BF1, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmorShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C31, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmorShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C63, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmorShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CAD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewArmorShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CEF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C3B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C65, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C67, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CBF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CC1, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CF1, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBakerShelfG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CF3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBlacksmithShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C41, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBlacksmithShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C4B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBlacksmithShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C6B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBlacksmithShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CC5, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBlacksmithShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CF7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C15, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C2B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C2D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C33, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C5F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C61, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C79, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfH ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CA5, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfI ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CA7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfJ ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CAF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfK ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CEB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfL ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CED, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBookShelfM ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D05, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBowyerShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C29, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBowyerShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C5D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBowyerShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CA3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewBowyerShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CE9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewCarpenterShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C6F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewCarpenterShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CD7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewCarpenterShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CFB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C51, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C53, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C75, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C77, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CDD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CDF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CFF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewClothShelfH ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D01, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDarkBookShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BF9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDarkBookShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BFB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDarkShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BFD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C7F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C81, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C83, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C85, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C87, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CB5, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CB7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersH ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CB9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersI ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CBB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersJ ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CBD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersK ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D0B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersL ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D20, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersM ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D22, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrawersN ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D24, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrinkShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C27, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrinkShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C5B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrinkShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CA1, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrinkShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CE7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewDrinkShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C1B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewHelmShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BFF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewHunterShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C4D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewKitchenShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C19, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewKitchenShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C39, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewOldBookShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x19FF, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewPotionShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3BF3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewRuinedBookShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0xC14, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C35, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C3D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C69, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C7B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CB1, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CC3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfG ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CF5, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShelfH ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D07, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShoeShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C37, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShoeShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C7D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShoeShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CB3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewShoeShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D09, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSorcererShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C4F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSorcererShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C73, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSorcererShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CDB, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSorcererShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CFD, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSupplyShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C57, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSupplyShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C9D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewSupplyShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CE3, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTailorShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C3F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTailorShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C6D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTailorShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CC7, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTailorShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CF9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTannerShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C23, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTannerShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C49, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTavernShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C25, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTavernShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C59, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTavernShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C9F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTavernShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CE5, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTinkerShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C71, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTinkerShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CD9, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTinkerShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3D03, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewTortureShelf ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C2F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfA ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C17, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfB ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C1D, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfC ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C21, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfD ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C55, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfE ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3C9B, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NewWizardShelfF ), Utility.Random( 200,400 ), Utility.Random( 1,5 ), 0x3CE1, 0 ) ); }
-			}
-		}
-
-		public class InternalSellInfo : GenericSellInfo
-		{
-			public InternalSellInfo()
-			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Hatchet ), 13 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LumberAxe ), 14 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBox ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SmallCrate ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MediumCrate ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LargeCrate ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenChest ), 100 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LargeTable ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Nightstand ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( YewWoodTable ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Throne ), 24 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenThrone ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Stool ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FootStool ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FancyWoodenChairCushion ), 12 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenChairCushion ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenChair ), 8 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BambooChair ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBench ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Saw ), 9 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Scorp ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SmoothingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DrawKnife ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Froe ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Hammer ), 14 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Inshave ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodworkingTools ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( JointingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MouldingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DovetailSaw ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Axle ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Club ), 13 ); } 
-				
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenPlateArms ), 90 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenPlateChest ), 119 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenPlateGloves ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenPlateGorget ), 50 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenPlateLegs ), 106 ); } 
-				
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Log ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AshLog ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CherryLog ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( EbonyLog ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoldenOakLog ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HickoryLog ), 4 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( MahoganyLog ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DriftwoodLog ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( OakLog ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PineLog ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GhostLog ), 5 ); } */
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RosewoodLog ), 6 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( WalnutLog ), 6 ); } */
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ElvenLog ), 12 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( PetrifiedLog ), 7 ); } */
-
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Board ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AshBoard ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CherryBoard ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( EbonyBoard ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GoldenOakBoard ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HickoryBoard ), 5 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( MahoganyBoard ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DriftwoodBoard ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( OakBoard ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PineBoard ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GhostBoard ), 6 ); } */
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RosewoodBoard ), 7 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( WalnutBoard ), 7 ); } */
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ElvenBoard ), 14 ); } 
-				/*if ( MyServerSettings.BuyChance() ){Add( typeof( PetrifiedBoard ), 8 ); } */
-			}
-		}
-	}
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>
-	/// Shop info for Cobbler vendor.
-	/// Sells footwear including shoes, boots, sandals, and leather variants.
+	/// Shop info for Carpenter vendor.
+	/// Sells carpentry tools, materials, furniture, and rare decorative items.
 	/// </summary>
-	public class SBCobbler : SBInfo
+	public class SBCarpenter : SBInfo
 	{
 		#region Fields
 
@@ -3405,9 +3469,9 @@ namespace Server.Mobiles
 		#region Constructors
 
 		/// <summary>
-		/// Initializes a new instance of the SBCobbler class.
+		/// Initializes a new instance of the SBCarpenter class.
 		/// </summary>
-		public SBCobbler()
+		public SBCarpenter()
 		{
 		}
 
@@ -3416,12 +3480,12 @@ namespace Server.Mobiles
 		#region Properties
 
 		/// <summary>
-		/// Gets the sell information for this vendor.
+		/// Gets the sell information.
 		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
 
 		/// <summary>
-		/// Gets the buy information for this vendor.
+		/// Gets the buy information.
 		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
@@ -3439,6 +3503,323 @@ namespace Server.Mobiles
 			/// </summary>
 			public InternalBuyInfo()
 			{
+				// Basic tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Hatchet), StoreSalesListConstants.PRICE_HATCHET, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_HATCHET);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LumberAxe), StoreSalesListConstants.PRICE_LUMBER_AXE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_LUMBER_AXE, StoreSalesListConstants.HUE_LUMBER_AXE);
+
+				// Basic materials (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Nails), StoreSalesListConstants.PRICE_NAILS, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_NAILS);
+
+				// Tools and materials (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Axle), StoreSalesListConstants.PRICE_AXLE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_AXLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Board), StoreSalesListConstants.PRICE_BOARD, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_BOARD);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DrawKnife), StoreSalesListConstants.PRICE_DRAW_KNIFE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_DRAW_KNIFE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Froe), StoreSalesListConstants.PRICE_FROE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_FROE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Scorp), StoreSalesListConstants.PRICE_SCORP, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_SCORP);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Inshave), StoreSalesListConstants.PRICE_INSHAVE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_INSHAVE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DovetailSaw), StoreSalesListConstants.PRICE_DOVETAIL_SAW, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_DOVETAIL_SAW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Saw), StoreSalesListConstants.PRICE_SAW, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_SAW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Hammer), StoreSalesListConstants.PRICE_HAMMER, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_HAMMER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MouldingPlane), StoreSalesListConstants.PRICE_MOULDING_PLANE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_MOULDING_PLANE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SmoothingPlane), StoreSalesListConstants.PRICE_SMOOTHING_PLANE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_SMOOTHING_PLANE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(JointingPlane), StoreSalesListConstants.PRICE_JOINTING_PLANE, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_JOINTING_PLANE);
+
+				// WoodworkingTools (always available, different quantity range)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(WoodworkingTools), StoreSalesListConstants.PRICE_WOODWORKING_TOOLS, StoreSalesListConstants.QTY_WOODWORKING_TOOLS_MIN, StoreSalesListConstants.QTY_WOODWORKING_TOOLS_MAX, StoreSalesListConstants.ITEMID_WOODWORKING_TOOLS);
+
+				// Addon deeds (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SawMillEastAddonDeed), StoreSalesListConstants.PRICE_SAWMILL_ADDON_DEED, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_SAWMILL_ADDON_DEED);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SawMillSouthAddonDeed), StoreSalesListConstants.PRICE_SAWMILL_SOUTH_ADDON_DEED, StoreSalesListConstants.QTY_BARKEEPER_MIN, StoreSalesListConstants.QTY_BARKEEPER_MAX, StoreSalesListConstants.ITEMID_SAWMILL_ADDON_DEED);
+
+				// Rare crates and decorative items (very rare chance, random price and quantity)
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(AdventurerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F9B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(AlchemyCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F91);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ArmsCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F9E);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BakerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F92);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BeekeeperCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F95);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BlacksmithCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(BowyerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F97);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ButcherCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F89);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(CarpenterCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8A);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(FletcherCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F88);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HealerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F98);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(HugeCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F86);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(JewelerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(LibrarianCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F96);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(MusicianCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F94);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NecromancerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F9A);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(ProvisionerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8E);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(SailorCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F9C);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(StableCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F87);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(SupplyCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F9D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TailorCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TavernCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F99);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TinkerCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F90);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(TreasureCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F93);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(WizardryCrate), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x4F8C);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C43);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C45);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C47);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C89);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x38B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x38D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CC9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireH), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CCB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireI), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CCD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmoireJ), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D26);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmorShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BF1);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmorShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C31);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmorShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C63);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmorShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CAD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewArmorShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CEF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C3B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C65);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C67);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CBF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CC1);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CF1);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBakerShelfG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CF3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBlacksmithShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C41);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBlacksmithShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C4B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBlacksmithShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C6B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBlacksmithShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CC5);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBlacksmithShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CF7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C15);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C2B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C2D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C33);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C5F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C61);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C79);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfH), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CA5);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfI), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CA7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfJ), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CAF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfK), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CEB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfL), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CED);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBookShelfM), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D05);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBowyerShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C29);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBowyerShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C5D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBowyerShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CA3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewBowyerShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CE9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewCarpenterShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C6F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewCarpenterShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CD7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewCarpenterShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CFB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C51);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C53);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C75);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C77);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CDD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CDF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CFF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewClothShelfH), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D01);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDarkBookShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BF9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDarkBookShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BFB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDarkShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BFD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C7F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C81);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C83);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C85);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C87);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CB5);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CB7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersH), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CB9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersI), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CBB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersJ), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CBD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersK), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D0B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersL), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D20);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersM), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D22);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrawersN), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D24);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrinkShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C27);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrinkShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C5B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrinkShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CA1);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrinkShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CE7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewDrinkShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C1B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewHelmShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BFF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewHunterShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C4D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewKitchenShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C19);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewKitchenShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C39);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewOldBookShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x19FF);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewPotionShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3BF3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewRuinedBookShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0xC14);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C35);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C3D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C69);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C7B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CB1);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CC3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfG), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CF5);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShelfH), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D07);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShoeShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C37);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShoeShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C7D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShoeShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CB3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewShoeShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D09);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSorcererShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C4F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSorcererShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C73);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSorcererShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CDB);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSorcererShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CFD);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSupplyShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C57);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSupplyShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C9D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewSupplyShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CE3);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTailorShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C3F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTailorShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C6D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTailorShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CC7);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTailorShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CF9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTannerShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C23);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTannerShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C49);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTavernShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C25);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTavernShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C59);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTavernShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C9F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTavernShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CE5);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTinkerShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C71);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTinkerShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CD9);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTinkerShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3D03);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewTortureShelf), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C2F);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfA), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C17);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfB), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C1D);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfC), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C21);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfD), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C55);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfE), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3C9B);
+				StoreSalesListHelper.AddVeryRareItemRandom(this, typeof(NewWizardShelfF), StoreSalesListConstants.PRICE_RARE_ITEM_MIN, StoreSalesListConstants.PRICE_RARE_ITEM_MAX, StoreSalesListConstants.QTY_RARE_ITEM_MIN, StoreSalesListConstants.QTY_RARE_ITEM_MAX, 0x3CE1);
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// Tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Hatchet), StoreSalesListConstants.SELL_PRICE_HATCHET);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LumberAxe), StoreSalesListConstants.SELL_PRICE_LUMBER_AXE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Saw), StoreSalesListConstants.SELL_PRICE_SAW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Scorp), StoreSalesListConstants.SELL_PRICE_SCORP);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SmoothingPlane), StoreSalesListConstants.SELL_PRICE_SMOOTHING_PLANE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DrawKnife), StoreSalesListConstants.SELL_PRICE_DRAW_KNIFE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Froe), StoreSalesListConstants.SELL_PRICE_FROE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Hammer), StoreSalesListConstants.SELL_PRICE_HAMMER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Inshave), StoreSalesListConstants.SELL_PRICE_INSHAVE);
+
+				// Containers and furniture
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBox), StoreSalesListConstants.SELL_PRICE_WOODEN_BOX);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SmallCrate), StoreSalesListConstants.SELL_PRICE_SMALL_CRATE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MediumCrate), StoreSalesListConstants.SELL_PRICE_MEDIUM_CRATE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LargeCrate), StoreSalesListConstants.SELL_PRICE_LARGE_CRATE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenChest), StoreSalesListConstants.SELL_PRICE_WOODEN_CHEST);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LargeTable), StoreSalesListConstants.SELL_PRICE_LARGE_TABLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Nightstand), StoreSalesListConstants.SELL_PRICE_NIGHTSTAND);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(YewWoodTable), StoreSalesListConstants.SELL_PRICE_YEW_WOOD_TABLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Throne), StoreSalesListConstants.SELL_PRICE_THRONE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenThrone), StoreSalesListConstants.SELL_PRICE_WOODEN_THRONE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Stool), StoreSalesListConstants.SELL_PRICE_STOOL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FootStool), StoreSalesListConstants.SELL_PRICE_FOOT_STOOL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FancyWoodenChairCushion), StoreSalesListConstants.SELL_PRICE_FANCY_WOODEN_CHAIR_CUSHION);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenChairCushion), StoreSalesListConstants.SELL_PRICE_WOODEN_CHAIR_CUSHION);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenChair), StoreSalesListConstants.SELL_PRICE_WOODEN_CHAIR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BambooChair), StoreSalesListConstants.SELL_PRICE_BAMBOO_CHAIR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBench), StoreSalesListConstants.SELL_PRICE_WOODEN_BENCH);
+
+				// Additional tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodworkingTools), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JointingPlane), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MouldingPlane), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DovetailSaw), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Axle), 1);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Club), 13);
+
+				// Wooden plate armor
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenPlateArms), 90);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenPlateChest), 119);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenPlateGloves), 70);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenPlateGorget), 50);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenPlateLegs), 106);
+
+				// Logs
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Log), 1);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(AshLog), 2);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CherryLog), 2);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(EbonyLog), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GoldenOakLog), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HickoryLog), 4);
+				// Commented out logs: MahoganyLog, DriftwoodLog, OakLog, PineLog, GhostLog, WalnutLog
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RosewoodLog), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ElvenLog), 12);
+				// Commented out: PetrifiedLog
+
+				// Materials
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Board), 2);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(AshBoard), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CherryBoard), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(EbonyBoard), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GoldenOakBoard), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HickoryBoard), 5);
+				// Commented out boards: MahoganyBoard, DriftwoodBoard, OakBoard, PineBoard, GhostBoard, WalnutBoard, PetrifiedBoard
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RosewoodBoard), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ElvenBoard), 14);
+			}
+		}
+
+		#endregion
+	}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Cobbler vendor.
+	/// Sells footwear including shoes, boots, sandals, and leather variants.
+	/// </summary>
+	public class SBCobbler : SBInfo 
+	{ 
+		#region Fields
+
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBCobbler class.
+		/// </summary>
+		public SBCobbler() 
+		{ 
+		} 
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo() 
+			{ 	
 				// Standard footwear (always available)
 				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Shoes), 8, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x170f, Utility.RandomNeutralHue());
 
@@ -3462,13 +3843,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Standard footwear
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MagicBoots), 70);
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Shoes), 4);
@@ -3497,12 +3878,12 @@ namespace Server.Mobiles
 	/// Shop info for Cook vendor.
 	/// Sells food items, cooking ingredients, and cooking tools.
 	/// </summary>
-	public class SBCook : SBInfo
-	{
+	public class SBCook : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -3511,9 +3892,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBCook class.
 		/// </summary>
-		public SBCook()
-		{
-		}
+		public SBCook() 
+		{ 
+		} 
 
 		#endregion
 
@@ -3522,12 +3903,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion 
 
@@ -3536,13 +3917,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
-			{
+			public InternalBuyInfo() 
+			{ 
 				// Bread (always available)
 				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BreadLoaf), 50, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, StoreSalesListConstants.ITEMID_BREAD_PIE);
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(BreadLoaf), 50, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x103C);
@@ -3596,13 +3977,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Food items
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CheeseWheel), 60);
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CookedBird), 40);
@@ -3657,12 +4038,12 @@ namespace Server.Mobiles
 	/// Shop info for Farmer vendor.
 	/// Sells vegetables, fruits, crops, patch deeds, and farming-related items.
 	/// </summary>
-	public class SBFarmer : SBInfo
-	{
+	public class SBFarmer : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -3671,9 +4052,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBFarmer class.
 		/// </summary>
-		public SBFarmer()
-		{
-		}
+		public SBFarmer() 
+		{ 
+		} 
 
 		#endregion
 
@@ -3682,12 +4063,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -3696,13 +4077,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
-			{
+			public InternalBuyInfo() 
+			{ 
 				// Vegetables
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Cabbage), 5, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0xC7B);
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Cantaloupe), 6, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0xC79);
@@ -3774,13 +4155,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Dairy and eggs
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pitcher), 1);
 				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Eggs), 1);
@@ -3819,12 +4200,12 @@ namespace Server.Mobiles
 	/// Shop info for Fisherman vendor.
 	/// Sells fish, fishing equipment, and related items.
 	/// </summary>
-	public class SBFisherman : SBInfo
-	{
+	public class SBFisherman : SBInfo 
+	{ 
 		#region Fields
 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
-		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
 		#endregion
 
@@ -3833,9 +4214,9 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Initializes a new instance of the SBFisherman class.
 		/// </summary>
-		public SBFisherman()
-		{
-		}
+		public SBFisherman() 
+		{ 
+		} 
 
 		#endregion
 
@@ -3844,12 +4225,12 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets the sell information for this vendor.
 		/// </summary>
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
 
 		/// <summary>
 		/// Gets the buy information for this vendor.
 		/// </summary>
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
 		#endregion
 
@@ -3858,13 +4239,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for buy item definitions.
 		/// </summary>
-		public class InternalBuyInfo : List<GenericBuyInfo>
-		{
+		public class InternalBuyInfo : List<GenericBuyInfo> 
+		{ 
 			/// <summary>
 			/// Initializes the buy item list.
 			/// </summary>
-			public InternalBuyInfo()
-			{
+			public InternalBuyInfo() 
+			{ 
 				// Fish and fish steaks
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RawFishSteak), 10, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x97A);
 				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Fish), 30, StoreSalesListConstants.QTY_RANDOM_MIN, StoreSalesListConstants.QTY_RANDOM_MAX, 0x9CC);
@@ -3889,13 +4270,13 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Internal class for sell item definitions.
 		/// </summary>
-		public class InternalSellInfo : GenericSellInfo
-		{
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
 			/// <summary>
 			/// Initializes the sell item list.
 			/// </summary>
-			public InternalSellInfo()
-			{
+			public InternalSellInfo() 
+			{ 
 				// Fish (rare)
 				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(RawFishSteak), 5);
 				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(Fish), 5);
@@ -4112,120 +4493,289 @@ namespace Server.Mobiles
 		} 
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Glassblower vendor.
+	/// Sells glass containers, glassblowing books, and glassblowing tools.
+	/// </summary>
 	public class SBGlassblower : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBGlassblower class.
+		/// </summary>
 		public SBGlassblower()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bottle ), 5, Utility.Random( 1,100 ), 0xF0E, 0 ) ); } 
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Jar ), 5, Utility.Random( 1,100 ), 0x10B4, 0 ) ); } 
-				if ( 1 > 0 ){Add( new GenericBuyInfo( "Crafting Glass With Glassblowing", typeof( GlassblowingBook ), 20637, Utility.Random( 1,100 ), 0xFF4, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( "Finding Glass-Quality Sand", typeof( SandMiningBook ), 20637, Utility.Random( 1,100 ), 0xFF4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1044608", typeof( Blowpipe ), 21, Utility.Random( 1,100 ), 0xE8A, 0x3B9 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Monocle ), 24, Utility.Random( 1,25 ), 0x2C84, 0 ) ); } 
+				// Containers (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bottle), StoreSalesListConstants.PRICE_BOTTLE_GLASSBLOWER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BOTTLE);
+
+				// Containers and books (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Jar), StoreSalesListConstants.PRICE_JAR_GLASSBLOWER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_JAR);
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "Crafting Glass With Glassblowing", typeof(GlassblowingBook), StoreSalesListConstants.PRICE_GLASSBLOWING_BOOK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BOOK);
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "Finding Glass-Quality Sand", typeof(SandMiningBook), StoreSalesListConstants.PRICE_SAND_MINING_BOOK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BOOK);
+
+				// Tools (chance-based)
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo("1044608", typeof(Blowpipe), StoreSalesListConstants.PRICE_BLOWPIPE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BLOWPIPE, StoreSalesListConstants.HUE_BLOWPIPE)); }
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Monocle), StoreSalesListConstants.PRICE_MONOCLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_LARGE_MAX, StoreSalesListConstants.ITEMID_MONOCLE);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bottle ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Jar ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GlassblowingBook ), 5000 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SandMiningBook ), 5000 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Blowpipe ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Monocle ), 12 ); } 
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bottle), StoreSalesListConstants.SELL_PRICE_BOTTLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Jar), StoreSalesListConstants.SELL_PRICE_JAR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GlassblowingBook), StoreSalesListConstants.SELL_PRICE_GLASSBLOWING_BOOK);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SandMiningBook), StoreSalesListConstants.SELL_PRICE_SAND_MINING_BOOK);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Blowpipe), StoreSalesListConstants.SELL_PRICE_BLOWPIPE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Monocle), StoreSalesListConstants.SELL_PRICE_MONOCLE);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for HairStylist vendor.
+	/// Sells hair dyes, special dyes, and disguise kits.
+	/// </summary>
 	public class SBHairStylist : SBInfo 
 	{ 
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
 		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBHairStylist class.
+		/// </summary>
 		public SBHairStylist() 
 		{ 
 		} 
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo> 
 		{ 
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo() 
 			{ 
-				Add( new GenericBuyInfo( "special beard dye", typeof( SpecialBeardDye ), 1500, Utility.Random( 1,100 ), 0xE26, 0 ) );
-				Add( new GenericBuyInfo( "special hair dye", typeof( SpecialHairDye ), 1500, Utility.Random( 1,100 ), 0xE26, 0 ) );
-				Add( new GenericBuyInfo( "1041060", typeof( HairDye ), 1000, Utility.Random( 1,100 ), 0xEFF, 0 ) );
-				Add( new GenericBuyInfo( "hair dye bottle", typeof( HairDyeBottle ), 1000, Utility.Random( 1,100 ), 0xE0F, 0 ) );
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DisguiseKit ), 700, Utility.Random( 1,5 ), 0xE05, 0 ) ); }
-			} 
-		} 
+				// Special dyes (always available)
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "special beard dye", typeof(SpecialBeardDye), StoreSalesListConstants.PRICE_SPECIAL_BEARD_DYE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SPECIAL_DYE);
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "special hair dye", typeof(SpecialHairDye), StoreSalesListConstants.PRICE_SPECIAL_HAIR_DYE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SPECIAL_DYE);
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "1041060", typeof(HairDye), StoreSalesListConstants.PRICE_HAIR_DYE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HAIR_DYE);
+				StoreSalesListHelper.AddBuyItemWithNameRandom(this, "hair dye bottle", typeof(HairDyeBottle), StoreSalesListConstants.PRICE_HAIR_DYE_BOTTLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HAIR_DYE_BOTTLE);
 
+				// Disguise kit (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DisguiseKit), StoreSalesListConstants.PRICE_DISGUISE_KIT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_DISGUISE_KIT);
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo 
 		{ 
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo() 
 			{ 
-				Add( typeof( HairDye ), 50 );
-				Add( typeof( SpecialBeardDye ), 250 );
-				Add( typeof( SpecialHairDye ), 250 );
-				Add( typeof( HairDyeBottle ), 300 );
-			} 
-		} 
+				// Dyes (always available)
+				Add(typeof(HairDye), StoreSalesListConstants.SELL_PRICE_HAIR_DYE);
+				Add(typeof(SpecialBeardDye), StoreSalesListConstants.SELL_PRICE_SPECIAL_BEARD_DYE);
+				Add(typeof(SpecialHairDye), StoreSalesListConstants.SELL_PRICE_SPECIAL_HAIR_DYE);
+				Add(typeof(HairDyeBottle), StoreSalesListConstants.SELL_PRICE_HAIR_DYE_BOTTLE);
+			}
+		}
+
+		#endregion
 	} 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Healer vendor.
+	/// Sells bandages, healing potions, reagents, and medical tools.
+	/// </summary>
 	public class SBHealer : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBHealer class.
+		/// </summary>
 		public SBHealer()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Bandage ), 3, Utility.Random( 100,250 ), 0xE21, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LesserHealPotion ), 100, Utility.Random( 1,100 ), 0x25FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Ginseng ), 3, Utility.Random( 1,100 ), 0xF85, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Garlic ), 3, Utility.Random( 1,100 ), 0xF84, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RefreshPotion ), 100, Utility.Random( 1,100 ), 0xF0B, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( GraveShovel ), 12, Utility.Random( 1,100 ), 0xF39, 0x966 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( SurgeonsKnife ), 14, Utility.Random( 1,100 ), 0xEC4, 0x1B0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( HealingDragonJar ), 2500, Utility.Random( 1,5 ), 0xF39, 0x966 ) ); }
+				// Basic medical supplies (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Bandage), StoreSalesListConstants.PRICE_BANDAGE, StoreSalesListConstants.QTY_BANDAGE_MIN, StoreSalesListConstants.QTY_BANDAGE_MAX, StoreSalesListConstants.ITEMID_BANDAGE);
+
+				// Potions and reagents (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LesserHealPotion), StoreSalesListConstants.PRICE_LESSER_HEAL_POTION, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LESSER_HEAL_POTION);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Ginseng), StoreSalesListConstants.PRICE_GINSENG, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GINSENG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Garlic), StoreSalesListConstants.PRICE_GARLIC, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GARLIC);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RefreshPotion), StoreSalesListConstants.PRICE_REFRESH_POTION, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_REFRESH_POTION);
+
+				// Rare medical tools (rare chance)
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(GraveShovel), StoreSalesListConstants.PRICE_GRAVE_SHOVEL, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_GRAVE_SHOVEL, StoreSalesListConstants.HUE_GRAVE_SHOVEL));
+				}
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(SurgeonsKnife), StoreSalesListConstants.PRICE_SURGEONS_KNIFE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_SURGEONS_KNIFE, StoreSalesListConstants.HUE_SURGEONS_KNIFE));
+				}
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(HealingDragonJar), StoreSalesListConstants.PRICE_HEALING_DRAGON_JAR, Utility.Random(StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX), StoreSalesListConstants.ITEMID_HEALING_DRAGON_JAR, StoreSalesListConstants.HUE_HEALING_DRAGON_JAR));
+				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LesserHealPotion ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RefreshPotion ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Garlic ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ginseng ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SurgeonsKnife ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FirstAidKit ), Utility.Random( 100,250 ) ); } 
+				// Potions and reagents
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LesserHealPotion), StoreSalesListConstants.SELL_PRICE_LESSER_HEAL_POTION);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RefreshPotion), StoreSalesListConstants.SELL_PRICE_REFRESH_POTION);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Garlic), StoreSalesListConstants.SELL_PRICE_GARLIC);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ginseng), StoreSalesListConstants.SELL_PRICE_GINSENG);
+
+				// Medical tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SurgeonsKnife), StoreSalesListConstants.SELL_PRICE_SURGEONS_KNIFE);
+
+				// First aid kit (random price)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(FirstAidKit), Utility.Random(StoreSalesListConstants.SELL_PRICE_FIRST_AID_KIT_MIN, StoreSalesListConstants.SELL_PRICE_FIRST_AID_KIT_MAX));
+				}
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBDruid : SBInfo
@@ -4355,220 +4905,458 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBHerbalist : SBInfo 
-	{ 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
-		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
-
-		public SBHerbalist() 
-		{ 
-		} 
-
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
-
-		public class InternalBuyInfo : List<GenericBuyInfo> 
-		{ 
-			public InternalBuyInfo() 
-			{ 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Ginseng ), 3, Utility.Random( 1,100 ), 0xF85, 0 ) ); } 
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Garlic ), 3, Utility.Random( 1,100 ), 0xF84, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MandrakeRoot ), 3, Utility.Random( 1,100 ), 0xF86, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Nightshade ), 3, Utility.Random( 1,100 ), 0xF88, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bloodmoss ), 5, Utility.Random( 1,100 ), 0xF7B, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MortarPestle ), 8, Utility.Random( 1,100 ), 0x4CE9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Jar ), 5, Utility.Random( 1,100 ), 0x10B4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( GardenTool ), 12, Utility.Random( 1,100 ), 0xDFD, 0x84F ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HerbalistCauldron ), 247, 1, 0x2676, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 1,100 ), 0x1E27, 0x979 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( CBookDruidicHerbalism ), 50, Utility.Random( 1,100 ), 0x2D50, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantA ), Utility.Random( 5000,10000 ), 1, 0x113F, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantB ), Utility.Random( 5000,10000 ), 1, 0x1151, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( HangingPlantC ), Utility.Random( 5000,10000 ), 1, 0x1164, 0 ) ); }
-			} 
-		} 
-
-		public class InternalSellInfo : GenericSellInfo 
-		{ 
-			public InternalSellInfo() 
-			{ 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bloodmoss ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MandrakeRoot ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Garlic ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ginseng ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Nightshade ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Jar ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MortarPestle ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GardenTool ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HerbalistCauldron ), 123 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MixingSpoon ), 17 ); } 
-				Add( typeof( PlantHerbalism_Flower ), Utility.Random( 2, 6 ) );
-				Add( typeof( PlantHerbalism_Leaf ), Utility.Random( 2, 6 ) );
-				Add( typeof( PlantHerbalism_Mushroom ), Utility.Random( 2, 6 ) );
-				Add( typeof( PlantHerbalism_Lilly ), Utility.Random( 2, 6 ) );
-				Add( typeof( PlantHerbalism_Cactus ), Utility.Random( 2, 6 ) );
-				Add( typeof( HomePlants_Flower ), Utility.Random( 100, 300 ) );
-				Add( typeof( HomePlants_Leaf ), Utility.Random( 100, 300 ) );
-				Add( typeof( HomePlants_Mushroom ), Utility.Random( 100, 300 ) );
-				Add( typeof( HomePlants_Cactus ), Utility.Random( 100, 300 ) );
-				Add( typeof( HomePlants_Lilly ), Utility.Random( 100, 300 ) );
-				Add( typeof( HomePlants_Grass ), Utility.Random( 100, 300 ) );
-				Add( typeof( SpecialSeaweed ), Utility.Random( 15, 35 ) );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HangingPlantA ), Utility.Random( 10, 100 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HangingPlantB ), Utility.Random( 10, 100 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HangingPlantC ), Utility.Random( 10, 100 ) ); }  
-				Add( typeof( AlchemyTub ), Utility.Random( 200, 500 ) );
-			} 
-		} 
-	} 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBHolyMage : SBInfo
+	/// <summary>
+	/// Shop info for Herbalist vendor.
+	/// Sells reagents, herbalism tools, cauldrons, and plants for alchemy and herbalism.
+	/// </summary>
+	public class SBHerbalist : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
-		public SBHolyMage()
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBHerbalist class.
+		/// </summary>
+		public SBHerbalist()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Spellbook ), 18, Utility.Random( 1,100 ), 0xEFA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ScribesPen ), 8, Utility.Random( 1,100 ), 0x2051, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BlankScroll ), 5, Utility.Random( 1,100 ), 0x0E34, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1041072", typeof( MagicWizardsHat ), 11, Utility.Random( 1,100 ), 0x1718, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WitchHat ), 11, Utility.Random( 1,100 ), 0x2FC3, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RecallRune ), 100, Utility.Random( 1,100 ), 0x1f14, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BlackPearl ), 5, Utility.Random( 1,100 ), 0x266F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bloodmoss ), 5, Utility.Random( 1,100 ), 0xF7B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Garlic ), 3, Utility.Random( 1,100 ), 0xF84, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Ginseng ), 3, Utility.Random( 1,100 ), 0xF85, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MandrakeRoot ), 3, Utility.Random( 1,100 ), 0xF86, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Nightshade ), 3, Utility.Random( 1,100 ), 0xF88, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SpidersSilk ), 3, Utility.Random( 1,100 ), 0xF8D, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SulfurousAsh ), 3, Utility.Random( 1,100 ), 0xF8C, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( reagents_magic_jar1 ), 2000, Utility.Random( 1,100 ), 0x1007, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
+				// Reagents (with chance, except Garlic which is always available)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Ginseng), StoreSalesListConstants.PRICE_GINSENG_HERBALIST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GINSENG_HERBALIST);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Garlic), StoreSalesListConstants.PRICE_GARLIC_HERBALIST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GARLIC_HERBALIST);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MandrakeRoot), StoreSalesListConstants.PRICE_MANDRAKE_ROOT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MANDRAKE_ROOT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Nightshade), StoreSalesListConstants.PRICE_NIGHTSHADE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_NIGHTSHADE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bloodmoss), StoreSalesListConstants.PRICE_BLOODMOSS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BLOODMOSS);
 
+				// Tools and equipment (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MortarPestle), StoreSalesListConstants.PRICE_MORTAR_PESTLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MORTAR_PESTLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Jar), StoreSalesListConstants.PRICE_JAR, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_JAR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(GardenTool), StoreSalesListConstants.PRICE_GARDEN_TOOL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GARDEN_TOOL, StoreSalesListConstants.HUE_GARDEN_TOOL);
+				StoreSalesListHelper.AddBuyItemWithChance(this, typeof(HerbalistCauldron), StoreSalesListConstants.PRICE_HERBALIST_CAULDRON, 1, StoreSalesListConstants.ITEMID_HERBALIST_CAULDRON);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MixingSpoon), StoreSalesListConstants.PRICE_MIXING_SPOON, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MIXING_SPOON, StoreSalesListConstants.HUE_MIXING_SPOON);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(AlchemyTub), StoreSalesListConstants.PRICE_ALCHEMY_TUB, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_ALCHEMY_TUB);
 
-				Type[] types = Loot.RegularScrollTypes;
-
-				for ( int i = 0; i < types.Length && i < 8; ++i )
+				// Books (rare chance)
+				if (MyServerSettings.SellRareChance())
 				{
-					int itemID = 0x1F2E + i;
+					Add(new GenericBuyInfo(typeof(CBookDruidicHerbalism), StoreSalesListConstants.PRICE_CBOOK_DRUIDIC_HERBALISM, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_CBOOK_DRUIDIC_HERBALISM, StoreSalesListConstants.HUE_DEFAULT));
+				}
 
-					if ( i == 6 )
-						itemID = 0x1F2D;
-					else if ( i > 6 )
-						--itemID;
-
-					if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( types[i], 12 + ((i / 8) * 10), Utility.Random( 1,100 ), itemID, 0 ) ); }
+				// Hanging plants (very rare chance, random prices)
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(HangingPlantA), Utility.Random(StoreSalesListConstants.PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.PRICE_HANGING_PLANT_MAX), 1, StoreSalesListConstants.ITEMID_HANGING_PLANT_A, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(HangingPlantB), Utility.Random(StoreSalesListConstants.PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.PRICE_HANGING_PLANT_MAX), 1, StoreSalesListConstants.ITEMID_HANGING_PLANT_B, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(HangingPlantC), Utility.Random(StoreSalesListConstants.PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.PRICE_HANGING_PLANT_MAX), 1, StoreSalesListConstants.ITEMID_HANGING_PLANT_C, StoreSalesListConstants.HUE_DEFAULT));
 				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MagicTalisman ), Utility.Random( 50,100 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlackPearl ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bloodmoss ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MandrakeRoot ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Garlic ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ginseng ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Nightshade ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpidersSilk ), 2 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( SulfurousAsh ), 1 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RecallRune ), 8 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Spellbook ), 9 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlankScroll ), 3 ); } 
-				if ( MyServerSettings.BuyCommonChance() ){Add( typeof( MysticalPearl ), 250 ); } 
+				// Reagents
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bloodmoss), StoreSalesListConstants.SELL_PRICE_BLOODMOSS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MandrakeRoot), StoreSalesListConstants.SELL_PRICE_MANDRAKE_ROOT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Garlic), StoreSalesListConstants.SELL_PRICE_GARLIC_HERBALIST);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ginseng), StoreSalesListConstants.SELL_PRICE_GINSENG_HERBALIST);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Nightshade), StoreSalesListConstants.SELL_PRICE_NIGHTSHADE);
 
-				Type[] types = Loot.RegularScrollTypes;
+				// Tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Jar), StoreSalesListConstants.SELL_PRICE_JAR_HERBALIST);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MortarPestle), StoreSalesListConstants.SELL_PRICE_MORTAR_PESTLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GardenTool), StoreSalesListConstants.SELL_PRICE_GARDEN_TOOL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HerbalistCauldron), StoreSalesListConstants.SELL_PRICE_HERBALIST_CAULDRON);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MixingSpoon), StoreSalesListConstants.SELL_PRICE_MIXING_SPOON);
 
-				for ( int i = 0; i < types.Length; ++i )
-					if ( MyServerSettings.BuyChance() ){Add( types[i], ((i / 8) + 2) * 5 ); } 
+				// Plants and herbs (random prices)
+				Add(typeof(PlantHerbalism_Flower), Utility.Random(StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MIN, StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MAX));
+				Add(typeof(PlantHerbalism_Leaf), Utility.Random(StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MIN, StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MAX));
+				Add(typeof(PlantHerbalism_Mushroom), Utility.Random(StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MIN, StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MAX));
+				Add(typeof(PlantHerbalism_Lilly), Utility.Random(StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MIN, StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MAX));
+				Add(typeof(PlantHerbalism_Cactus), Utility.Random(StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MIN, StoreSalesListConstants.SELL_PRICE_PLANT_HERBALISM_MAX));
 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ClumsyMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CreateFoodMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FeebleMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( HealMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicArrowMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( NightSightMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ReactiveArmorMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WeaknessMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( AgilityMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CunningMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CureMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( HarmMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicTrapMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicUntrapMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ProtectionMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( StrengthMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( BlessMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireballMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicLockMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicUnlockMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PoisonMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( TelekinesisMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( TeleportMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WallofStoneMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ArchCureMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ArchProtectionMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CurseMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireFieldMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( GreaterHealMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( LightningMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ManaDrainMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( RecallMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( BladeSpiritsMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( DispelFieldMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( IncognitoMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicReflectionMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MindBlastMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ParalyzeMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PoisonFieldMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( SummonCreatureMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( DispelMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyBoltMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ExplosionMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( InvisibilityMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MarkMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MassCurseMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ParalyzeFieldMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( RevealMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ChainLightningMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyFieldMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FlameStrikeMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( GateTravelMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ManaVampireMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MassDispelMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MeteorSwarmMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PolymorphMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( AirElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EarthElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EarthquakeMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyVortexMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ResurrectionMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( SummonDaemonMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WaterElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MySpellbook ), Utility.Random( 250,1000 ) ); } 
-				Add( typeof( TomeOfWands ), Utility.Random( 100,400 ) );
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStaff ), 20 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStick ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( MageEye ), 1 ); } 
+				// Home plants (random prices)
+				Add(typeof(HomePlants_Flower), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+				Add(typeof(HomePlants_Leaf), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+				Add(typeof(HomePlants_Mushroom), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+				Add(typeof(HomePlants_Cactus), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+				Add(typeof(HomePlants_Lilly), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+				Add(typeof(HomePlants_Grass), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MIN, StoreSalesListConstants.SELL_PRICE_HOME_PLANTS_MAX));
+
+				// Special seaweed (random price)
+				Add(typeof(SpecialSeaweed), Utility.Random(StoreSalesListConstants.SELL_PRICE_SPECIAL_SEAWEED_MIN, StoreSalesListConstants.SELL_PRICE_SPECIAL_SEAWEED_MAX));
+
+				// Hanging plants (with chance, random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(HangingPlantA), Utility.Random(StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(HangingPlantB), Utility.Random(StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(HangingPlantC), Utility.Random(StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MIN, StoreSalesListConstants.SELL_PRICE_HANGING_PLANT_MAX));
+				}
+
+				// Alchemy tub (random price)
+				Add(typeof(AlchemyTub), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_MIN, StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_MAX));
 			}
 		}
+
+		#endregion
+	} 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Holy Mage vendor.
+	/// Sells spellbooks, reagents, scrolls, magic staves, and arcane supplies.
+	/// </summary>
+	public class SBHolyMage : SBInfo
+	{
+		#region Fields
+
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBHolyMage class.
+		/// </summary>
+		public SBHolyMage()
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo>
+		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo()
+			{
+				// Basic magical supplies (always available or with chance)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Spellbook), StoreSalesListConstants.PRICE_SPELLBOOK_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SPELLBOOK_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ScribesPen), StoreSalesListConstants.PRICE_SCRIBES_PEN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SCRIBES_PEN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(BlankScroll), StoreSalesListConstants.PRICE_BLANK_SCROLL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BLANK_SCROLL);
+
+				// Hats (with random dyed hues)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("1041072", typeof(MagicWizardsHat), StoreSalesListConstants.PRICE_MAGIC_WIZARDS_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_MAGIC_WIZARDS_HAT, Utility.RandomDyedHue()));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(WitchHat), StoreSalesListConstants.PRICE_WITCH_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_WITCH_HAT, Utility.RandomDyedHue()));
+				}
+
+				// Magical tools and runes
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RecallRune), StoreSalesListConstants.PRICE_RECALL_RUNE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RECALL_RUNE);
+
+				// Reagents (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(BlackPearl), StoreSalesListConstants.PRICE_BLACK_PEARL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BLACK_PEARL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bloodmoss), StoreSalesListConstants.PRICE_BLOODMOSS_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BLOODMOSS_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Garlic), StoreSalesListConstants.PRICE_GARLIC_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GARLIC_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Ginseng), StoreSalesListConstants.PRICE_GINSENG_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GINSENG_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MandrakeRoot), StoreSalesListConstants.PRICE_MANDRAKE_ROOT_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MANDRAKE_ROOT_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Nightshade), StoreSalesListConstants.PRICE_NIGHTSHADE_HOLY_MAGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_NIGHTSHADE_HOLY_MAGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SpidersSilk), StoreSalesListConstants.PRICE_SPIDERS_SILK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SPIDERS_SILK);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SulfurousAsh), StoreSalesListConstants.PRICE_SULFUROUS_ASH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SULFUROUS_ASH);
+
+				// Rare magical items
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(reagents_magic_jar1), StoreSalesListConstants.PRICE_REAGENTS_MAGIC_JAR1, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_REAGENTS_MAGIC_JAR1, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Magical staves and tools
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStaff), StoreSalesListConstants.PRICE_WIZARD_STAFF, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STAFF, StoreSalesListConstants.HUE_WIZARD_STAFF);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStick), StoreSalesListConstants.PRICE_WIZARD_STICK, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STICK, StoreSalesListConstants.HUE_WIZARD_STICK);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MageEye), StoreSalesListConstants.PRICE_MAGE_EYE, StoreSalesListConstants.QTY_MEDIUM_MIN, StoreSalesListConstants.QTY_MEDIUM_MAX, StoreSalesListConstants.ITEMID_MAGE_EYE, StoreSalesListConstants.HUE_MAGE_EYE);
+
+				// Regular scrolls (dynamic pricing and item IDs)
+				AddRegularScrolls();
+			}
+
+			/// <summary>
+			/// Adds regular magic scrolls to the buy list with dynamic pricing.
+			/// </summary>
+			private void AddRegularScrolls()
+			{
+				Type[] types = Loot.RegularScrollTypes;
+
+				for (int i = 0; i < types.Length && i < 8; ++i)
+				{
+					int itemID = StoreSalesListConstants.ITEMID_SCROLL_BASE + i;
+
+					if (i == 6)
+						itemID = 0x1F2D;
+					else if (i > 6)
+						--itemID;
+
+					int price = StoreSalesListConstants.PRICE_SCROLL_BASE + ((i / 8) * StoreSalesListConstants.PRICE_SCROLL_INCREMENT);
+
+					if (MyServerSettings.SellChance())
+					{
+						Add(new GenericBuyInfo(types[i], price, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), itemID, StoreSalesListConstants.HUE_DEFAULT));
+					}
+				}
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// Magical items
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MagicTalisman), Utility.Random(StoreSalesListConstants.SELL_PRICE_MAGIC_TALISMAN_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_TALISMAN_MAX));
+				}
+
+				// Reagents
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BlackPearl), StoreSalesListConstants.SELL_PRICE_BLACK_PEARL_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bloodmoss), StoreSalesListConstants.SELL_PRICE_BLOODMOSS_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MandrakeRoot), StoreSalesListConstants.SELL_PRICE_MANDRAKE_ROOT_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Garlic), StoreSalesListConstants.SELL_PRICE_GARLIC_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ginseng), StoreSalesListConstants.SELL_PRICE_GINSENG_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Nightshade), StoreSalesListConstants.SELL_PRICE_NIGHTSHADE_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SpidersSilk), StoreSalesListConstants.SELL_PRICE_SPIDERS_SILK);
+
+				if (MyServerSettings.BuyRareChance())
+				{
+					Add(typeof(SulfurousAsh), StoreSalesListConstants.SELL_PRICE_SULFUROUS_ASH);
+				}
+
+				// Magical tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RecallRune), StoreSalesListConstants.SELL_PRICE_RECALL_RUNE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Spellbook), StoreSalesListConstants.SELL_PRICE_SPELLBOOK_HOLY_MAGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BlankScroll), StoreSalesListConstants.SELL_PRICE_BLANK_SCROLL);
+
+				if (MyServerSettings.BuyCommonChance())
+				{
+					Add(typeof(MysticalPearl), StoreSalesListConstants.SELL_PRICE_MYSTICAL_PEARL);
+				}
+
+				// Regular scrolls (dynamic pricing)
+				AddRegularScrolls();
+
+				// Magic staves by spell circle
+				AddMagicStaves();
+
+				// Special magical items
+				if (MyServerSettings.BuyRareChance())
+				{
+					Add(typeof(MySpellbook), Utility.Random(StoreSalesListConstants.SELL_PRICE_MY_SPELLBOOK_MIN, StoreSalesListConstants.SELL_PRICE_MY_SPELLBOOK_MAX));
+				}
+
+				Add(typeof(TomeOfWands), Utility.Random(StoreSalesListConstants.SELL_PRICE_TOME_OF_WANDS_MIN, StoreSalesListConstants.SELL_PRICE_TOME_OF_WANDS_MAX));
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WizardStaff), StoreSalesListConstants.SELL_PRICE_WIZARD_STAFF);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WizardStick), StoreSalesListConstants.SELL_PRICE_WIZARD_STICK);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MageEye), StoreSalesListConstants.SELL_PRICE_MAGE_EYE);
+			}
+
+			/// <summary>
+			/// Adds regular magic scrolls to the sell list with dynamic pricing.
+			/// </summary>
+			private void AddRegularScrolls()
+			{
+				Type[] types = Loot.RegularScrollTypes;
+
+				for (int i = 0; i < types.Length; ++i)
+				{
+					if (MyServerSettings.BuyChance())
+					{
+						int price = (i / 8 + StoreSalesListConstants.SELL_PRICE_SCROLL_BASE) * StoreSalesListConstants.SELL_PRICE_SCROLL_MULTIPLIER;
+						Add(types[i], price);
+					}
+				}
+			}
+
+			/// <summary>
+			/// Adds magic staves to the sell list organized by spell circle.
+			/// </summary>
+			private void AddMagicStaves()
+			{
+				// 1st Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ClumsyMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(CreateFoodMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(FeebleMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(HealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicArrowMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(NightSightMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(ReactiveArmorMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(WeaknessMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+
+				// 2nd Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(AgilityMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(CunningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(CureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(HarmMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicTrapMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicUntrapMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(ProtectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(StrengthMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+
+				// 3rd Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(BlessMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(FireballMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicLockMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicUnlockMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(PoisonMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(TelekinesisMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(TeleportMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(WallofStoneMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+
+				// 4th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ArchCureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ArchProtectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(CurseMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FireFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(GreaterHealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(LightningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ManaDrainMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(RecallMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+
+				// 5th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(BladeSpiritsMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(DispelFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(IncognitoMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicReflectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MindBlastMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ParalyzeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(PoisonFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(SummonCreatureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+
+				// 6th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(DispelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyBoltMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ExplosionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(InvisibilityMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MarkMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MassCurseMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ParalyzeFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(RevealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+
+				// 7th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ChainLightningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FlameStrikeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(GateTravelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ManaVampireMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MassDispelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MeteorSwarmMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(PolymorphMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+
+				// 8th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(AirElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EarthElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EarthquakeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyVortexMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FireElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ResurrectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(SummonDaemonMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(WaterElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+			}
+
+			/// <summary>
+			/// Helper method to add a magic staff with rare chance and random pricing.
+			/// </summary>
+			private void AddMagicStaffWithRareChance(Type staffType, int minPrice, int maxPrice)
+			{
+				if (MyServerSettings.BuyRareChance())
+				{
+					Add(staffType, Utility.Random(minPrice, maxPrice));
+				}
+			}
+		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBRuneCasting: SBInfo
@@ -4721,139 +5509,362 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for House Deed vendor.
+	/// Currently empty - no items sold or bought.
+	/// </summary>
 	public class SBHouseDeed: SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBHouseDeed class.
+		/// </summary>
 		public SBHouseDeed()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// Currently empty - no items for sale.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// Currently empty - no items for sale.
+			/// </summary>
 			public InternalBuyInfo()
 			{
+				// Currently no items for sale
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// Currently empty - no items purchased.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// Currently empty - no items purchased.
+			/// </summary>
 			public InternalSellInfo()
 			{
+				// Currently no items purchased
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Inn Keeper vendor.
+	/// Sells beverages, food, games, contracts, and various inn/household items.
+	/// </summary>
 	public class SBInnKeeper : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBInnKeeper class.
+		/// </summary>
 		public SBInnKeeper()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Ale, 70, Utility.Random( 1,100 ), 0x99F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Wine, 70, Utility.Random( 1,100 ), 0x9C7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Liquor, 70, Utility.Random( 1,100 ), 0x99B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Jug ), BeverageType.Cider, 130, Utility.Random( 1,100 ), 0x9C8, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Milk, 150, Utility.Random( 1,100 ), 0x9F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Ale, 110, Utility.Random( 1,100 ), 0x1F95, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Cider, 110, Utility.Random( 1,100 ), 0x1F97, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Liquor, 110, Utility.Random( 1,100 ), 0x1F99, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Wine, 110, Utility.Random( 1,100 ), 0x1F9B, 0 ) ); }
-				if ( 1 > 0 ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Water, 90, Utility.Random( 1,100 ), 0x1F9D, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( BreadLoaf ), 60, Utility.Random( 1,100 ), 0x103B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CheeseWheel ), 410, Utility.Random( 1,100 ), 0x97E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CookedBird ), 120, Utility.Random( 1,100 ), 0x9B7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LambLeg ), 90, Utility.Random( 1,100 ), 0x160A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ChickenLeg ), 90, Utility.Random( 1,100 ), 0x1608, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Ribs ), 90, Utility.Random( 1,100 ), 0x9F2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCarrots ), 30, Utility.Random( 1,100 ), 0x15F9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x15FC, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( EmptyPewterBowl ), 5, Utility.Random( 1,100 ), 0x15FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FE, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FF, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x1600, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfFoodPotatos ), 30, Utility.Random( 1,100 ), 0x1601, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfStew ), 30, Utility.Random( 1,100 ), 0x1604, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfTomatoSoup ), 30, Utility.Random( 1,100 ), 0x1606, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ApplePie ), 270, Utility.Random( 1,100 ), 0x1041, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Peach ), 30, Utility.Random( 1,100 ), 0x9D2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Pear ), 30, Utility.Random( 1,100 ), 0x994, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Grapes ), 30, Utility.Random( 1,100 ), 0x9D1, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Apple ), 30, Utility.Random( 1,100 ), 0x9D0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Banana ), 20, Utility.Random( 1,100 ), 0x171F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Torch ), 7, Utility.Random( 1,100 ), 0xF6B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Candle ), 6, Utility.Random( 1,100 ), 0xA28, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Backpack ), 100, Utility.Random( 1,100 ), 0x53D5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( tarotpoker ), 5, Utility.Random( 1,100 ), 0x12AB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1016450", typeof( Chessboard ), 2, Utility.Random( 1,100 ), 0xFA6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1016449", typeof( CheckerBoard ), 2, Utility.Random( 1,100 ), 0xFA6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Backgammon ), 2, Utility.Random( 1,100 ), 0xE1C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Dices ), 2, Utility.Random( 1,100 ), 0xFA7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Engines.Mahjong.MahjongGame ), 6, Utility.Random( 1,100 ), 0xFAA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanFighterItem ), 5000, Utility.Random( 1,100 ), 0x1419, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanArcherItem ), 6000, Utility.Random( 1,100 ), 0xF50, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HenchmanWizardItem ), 7000, Utility.Random( 1,100 ), 0xE30, 0xB96 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1041243", typeof( ContractOfEmployment ), 1252, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "a barkeep contract", typeof( BarkeepContract ), 1252, Utility.Random( 1,100 ), 0x14F0, 0 ) ); }
-				if ( Multis.BaseHouse.NewVendorSystem )
-					if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1062332", typeof( VendorRentalContract ), 1252, Utility.Random( 1,100 ), 0x14F0, 0x672 ) ); }
+				AddBeverages();
+				AddFood();
+				AddBowlFood();
+				AddFruit();
+				AddHouseholdItems();
+				AddGames();
+				AddContracts();
+			}
+
+			/// <summary>
+			/// Adds beverage items to the buy list.
+			/// </summary>
+			private void AddBeverages()
+			{
+				// Beverage bottles
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Ale, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE_ALE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_ALE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Wine, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE_WINE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_WINE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Liquor, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE_LIQUOR, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_LIQUOR, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Jugs and pitchers
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Jug), BeverageType.Cider, StoreSalesListConstants.PRICE_JUG_CIDER, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_JUG_CIDER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Milk, StoreSalesListConstants.PRICE_PITCHER_MILK, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_MILK, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Ale, StoreSalesListConstants.PRICE_PITCHER_ALE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_ALE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Cider, StoreSalesListConstants.PRICE_PITCHER_CIDER, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_CIDER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Liquor, StoreSalesListConstants.PRICE_PITCHER_LIQUOR, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_LIQUOR, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Wine, StoreSalesListConstants.PRICE_PITCHER_WINE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_WINE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Water (always available)
+				StoreSalesListHelper.AddBeverageBuyItem(this, typeof(Pitcher), BeverageType.Water, StoreSalesListConstants.PRICE_PITCHER_WATER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PITCHER_WATER);
+			}
+
+			/// <summary>
+			/// Adds food items to the buy list.
+			/// </summary>
+			private void AddFood()
+			{
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BreadLoaf), StoreSalesListConstants.PRICE_BREAD_LOAF, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BREAD_LOAF);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CheeseWheel), StoreSalesListConstants.PRICE_CHEESE_WHEEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CHEESE_WHEEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CookedBird), StoreSalesListConstants.PRICE_COOKED_BIRD, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_COOKED_BIRD);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LambLeg), StoreSalesListConstants.PRICE_LAMB_LEG, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LAMB_LEG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ChickenLeg), StoreSalesListConstants.PRICE_CHICKEN_LEG, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CHICKEN_LEG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Ribs), StoreSalesListConstants.PRICE_RIBS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RIBS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ApplePie), StoreSalesListConstants.PRICE_APPLE_PIE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_APPLE_PIE);
+			}
+
+			/// <summary>
+			/// Adds bowl food items to the buy list.
+			/// </summary>
+			private void AddBowlFood()
+			{
+				// Wooden bowls
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCarrots), StoreSalesListConstants.PRICE_WOODEN_BOWL_CARROTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CARROTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCorn), StoreSalesListConstants.PRICE_WOODEN_BOWL_CORN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfLettuce), StoreSalesListConstants.PRICE_WOODEN_BOWL_LETTUCE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfPeas), StoreSalesListConstants.PRICE_WOODEN_BOWL_PEAS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_PEAS);
+
+				// Pewter bowls
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(EmptyPewterBowl), StoreSalesListConstants.PRICE_EMPTY_PEWTER_BOWL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_EMPTY_PEWTER_BOWL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfCorn), StoreSalesListConstants.PRICE_PEWTER_BOWL_CORN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfLettuce), StoreSalesListConstants.PRICE_PEWTER_BOWL_LETTUCE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfPeas), StoreSalesListConstants.PRICE_PEWTER_BOWL_PEAS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_PEAS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfFoodPotatos), StoreSalesListConstants.PRICE_PEWTER_BOWL_POTATOS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_POTATOS);
+
+				// Soups
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfStew), StoreSalesListConstants.PRICE_WOODEN_BOWL_STEW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_STEW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfTomatoSoup), StoreSalesListConstants.PRICE_WOODEN_BOWL_TOMATO_SOUP, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_TOMATO_SOUP);
+			}
+
+			/// <summary>
+			/// Adds fruit items to the buy list.
+			/// </summary>
+			private void AddFruit()
+			{
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Peach), StoreSalesListConstants.PRICE_PEACH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEACH);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Pear), StoreSalesListConstants.PRICE_PEAR, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEAR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Grapes), StoreSalesListConstants.PRICE_GRAPES, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GRAPES);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Apple), StoreSalesListConstants.PRICE_APPLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_APPLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Banana), StoreSalesListConstants.PRICE_BANANA, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BANANA);
+			}
+
+			/// <summary>
+			/// Adds household items to the buy list.
+			/// </summary>
+			private void AddHouseholdItems()
+			{
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Torch), StoreSalesListConstants.PRICE_TORCH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_TORCH);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Candle), StoreSalesListConstants.PRICE_CANDLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CANDLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Backpack), StoreSalesListConstants.PRICE_BACKPACK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BACKPACK);
+			}
+
+			/// <summary>
+			/// Adds game items to the buy list.
+			/// </summary>
+			private void AddGames()
+			{
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(tarotpoker), StoreSalesListConstants.PRICE_TAROT_POKER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_TAROT_POKER);
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("1016450", typeof(Chessboard), StoreSalesListConstants.PRICE_CHESSBOARD, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_CHESSBOARD, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("1016449", typeof(CheckerBoard), StoreSalesListConstants.PRICE_CHECKER_BOARD, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_CHESSBOARD, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Backgammon), StoreSalesListConstants.PRICE_BACKGAMMON, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BACKGAMMON);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Dices), StoreSalesListConstants.PRICE_DICES, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_DICES);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Engines.Mahjong.MahjongGame), StoreSalesListConstants.PRICE_MAHJONG_GAME, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MAHJONG_GAME);
+			}
+
+			/// <summary>
+			/// Adds contract and henchman items to the buy list.
+			/// </summary>
+			private void AddContracts()
+			{
+				// Henchmen
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanFighterItem), StoreSalesListConstants.PRICE_HENCHMAN_FIGHTER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HENCHMAN_FIGHTER, StoreSalesListConstants.HUE_HENCHMAN_FIGHTER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanArcherItem), StoreSalesListConstants.PRICE_HENCHMAN_ARCHER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HENCHMAN_ARCHER, StoreSalesListConstants.HUE_HENCHMAN_ARCHER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HenchmanWizardItem), StoreSalesListConstants.PRICE_HENCHMAN_WIZARD, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HENCHMAN_WIZARD, StoreSalesListConstants.HUE_HENCHMAN_WIZARD);
+
+				// Contracts
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("1041243", typeof(ContractOfEmployment), StoreSalesListConstants.PRICE_CONTRACT_OF_EMPLOYMENT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_CONTRACT_OF_EMPLOYMENT, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("a barkeep contract", typeof(BarkeepContract), StoreSalesListConstants.PRICE_BARKEEP_CONTRACT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BARKEEP_CONTRACT, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Vendor rental contract (conditional on NewVendorSystem)
+				if (Multis.BaseHouse.NewVendorSystem && MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo("1062332", typeof(VendorRentalContract), StoreSalesListConstants.PRICE_VENDOR_RENTAL_CONTRACT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_VENDOR_RENTAL_CONTRACT, StoreSalesListConstants.HUE_VENDOR_RENTAL_CONTRACT));
+				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BeverageBottle ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Jug ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pitcher ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GlassMug ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BreadLoaf ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CheeseWheel ), 100 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ribs ), 15 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Peach ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pear ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Grapes ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Apple ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Banana ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Torch ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Candle ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( tarotpoker ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MahjongGame ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Chessboard ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CheckerBoard ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Backgammon ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Dices ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ContractOfEmployment ), 626 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfCarrots ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfCorn ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfLettuce ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfPeas ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( EmptyPewterBowl ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfCorn ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfLettuce ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfPeas ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PewterBowlOfFoodPotatos ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfStew ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBowlOfTomatoSoup ), 5 ); } 
+				// Beverages
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BeverageBottle), StoreSalesListConstants.SELL_PRICE_BEVERAGE_BOTTLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Jug), StoreSalesListConstants.SELL_PRICE_JUG);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pitcher), StoreSalesListConstants.SELL_PRICE_PITCHER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GlassMug), StoreSalesListConstants.SELL_PRICE_GLASS_MUG);
+
+				// Food
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BreadLoaf), StoreSalesListConstants.SELL_PRICE_BREAD_LOAF);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CheeseWheel), StoreSalesListConstants.SELL_PRICE_CHEESE_WHEEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ribs), StoreSalesListConstants.SELL_PRICE_RIBS);
+
+				// Fruit
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Peach), StoreSalesListConstants.SELL_PRICE_PEACH);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pear), StoreSalesListConstants.SELL_PRICE_PEAR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Grapes), StoreSalesListConstants.SELL_PRICE_GRAPES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Apple), StoreSalesListConstants.SELL_PRICE_APPLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Banana), StoreSalesListConstants.SELL_PRICE_BANANA);
+
+				// Household items
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Torch), StoreSalesListConstants.SELL_PRICE_TORCH);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Candle), StoreSalesListConstants.SELL_PRICE_CANDLE);
+
+				// Games
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(tarotpoker), StoreSalesListConstants.SELL_PRICE_TAROT_POKER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MahjongGame), StoreSalesListConstants.SELL_PRICE_MAHJONG_GAME);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Chessboard), StoreSalesListConstants.SELL_PRICE_CHESSBOARD);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CheckerBoard), StoreSalesListConstants.SELL_PRICE_CHECKER_BOARD);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Backgammon), StoreSalesListConstants.SELL_PRICE_BACKGAMMON);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Dices), StoreSalesListConstants.SELL_PRICE_DICES);
+
+				// Contracts
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ContractOfEmployment), StoreSalesListConstants.SELL_PRICE_CONTRACT_OF_EMPLOYMENT);
+
+				// Bowl food
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfCarrots), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_CARROTS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfCorn), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_CORN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfLettuce), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_LETTUCE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfPeas), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_PEAS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(EmptyPewterBowl), StoreSalesListConstants.SELL_PRICE_EMPTY_PEWTER_BOWL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfCorn), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_CORN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfLettuce), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_LETTUCE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfPeas), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_PEAS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PewterBowlOfFoodPotatos), StoreSalesListConstants.SELL_PRICE_PEWTER_BOWL_POTATOS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfStew), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_STEW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBowlOfTomatoSoup), StoreSalesListConstants.SELL_PRICE_WOODEN_BOWL_TOMATO_SOUP);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBJewel: SBInfo
@@ -5120,56 +6131,107 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBLeatherWorker: SBInfo 
-	{ 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
-		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
+	/// <summary>
+	/// Shop info for LeatherWorker vendor.
+	/// Sells hides, leather, waterskins, and special rare skins.
+	/// </summary>
+	public class SBLeatherWorker : SBInfo
+	{
+		#region Fields
 
-		public SBLeatherWorker() 
-		{ 
-		} 
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
+		#endregion
 
-		public class InternalBuyInfo : List<GenericBuyInfo> 
-		{ 
-			public InternalBuyInfo() 
-			{ 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Hides ), 4, Utility.Random( 1,100 ), 0x1078, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Leather ), 4, Utility.Random( 1,100 ), 0x1081, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Waterskin ), 5, Utility.Random( 1,100 ), 0xA21, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DemonSkin ), 1235, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "demon skin", "", 0 ) ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( DragonSkin ), 1235, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "dragon skin", "", 0 ) ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( NightmareSkin ), 1228, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "nightmare skin", "", 0 ) ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( SerpentSkin ), 1214, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "serpent skin", "", 0 ) ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( TrollSkin ), 1221, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "troll skin", "", 0 ) ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( UnicornSkin ), 1228, Utility.Random( 1,10 ), 0x1081, Server.Misc.MaterialInfo.GetMaterialColor( "unicorn skin", "", 0 ) ) ); }
-			} 
-		} 
+		#region Constructors
 
-		public class InternalSellInfo : GenericSellInfo 
-		{ 
-			public InternalSellInfo() 
+		/// <summary>
+		/// Initializes a new instance of the SBLeatherWorker class.
+		/// </summary>
+		public SBLeatherWorker()
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo>
+		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ThighBoots ), 28 ); } 
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicBoots ), 25 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicBelt ), 100 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicSash ), 100 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( ThrowingGloves ), 10 ); } 
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( PugilistGlove ), 10 ); } 
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( PugilistGloves ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( UnicornSkin ), 30 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DemonSkin ), 40 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DragonSkin ), 50 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NightmareSkin ), 30 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SerpentSkin ), 10 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TrollSkin ), 20 ); }  
+				// Basic materials (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Hides), StoreSalesListConstants.PRICE_HIDES_LEATHERWORKER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HIDES);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Leather), StoreSalesListConstants.PRICE_LEATHER_LEATHERWORKER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEATHER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Waterskin), StoreSalesListConstants.PRICE_WATERSKIN_LEATHERWORKER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WATERSKIN);
 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Hides ), 2 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedHides ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HornedHides ), 3 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedHides ), 4 ); }  
+				// Very rare special skins (chance-based, with MaterialInfo.GetMaterialColor)
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(DemonSkin), StoreSalesListConstants.PRICE_DEMON_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("demon skin", "", 0))); }
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(DragonSkin), StoreSalesListConstants.PRICE_DRAGON_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("dragon skin", "", 0))); }
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(NightmareSkin), StoreSalesListConstants.PRICE_NIGHTMARE_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("nightmare skin", "", 0))); }
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(SerpentSkin), StoreSalesListConstants.PRICE_SERPENT_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("serpent skin", "", 0))); }
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(TrollSkin), StoreSalesListConstants.PRICE_TROLL_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("troll skin", "", 0))); }
+				if (MyServerSettings.SellVeryRareChance()) { Add(new GenericBuyInfo(typeof(UnicornSkin), StoreSalesListConstants.PRICE_UNICORN_SKIN, Utility.Random(StoreSalesListConstants.QTY_VERY_RARE_SKIN_MIN, StoreSalesListConstants.QTY_VERY_RARE_SKIN_MAX), StoreSalesListConstants.ITEMID_LEATHER, Server.Misc.MaterialInfo.GetMaterialColor("unicorn skin", "", 0))); }
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// Equipment (chance-based)
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ThighBoots), StoreSalesListConstants.SELL_PRICE_THIGH_BOOTS);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicBoots), StoreSalesListConstants.SELL_PRICE_MAGIC_BOOTS);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicBelt), StoreSalesListConstants.SELL_PRICE_MAGIC_BELT);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicSash), StoreSalesListConstants.SELL_PRICE_MAGIC_SASH);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(ThrowingGloves), StoreSalesListConstants.SELL_PRICE_THROWING_GLOVES);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(PugilistGlove), StoreSalesListConstants.SELL_PRICE_PUGILIST_GLOVE);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(PugilistGloves), StoreSalesListConstants.SELL_PRICE_PUGILIST_GLOVES);
+
+				// Special skins (chance-based)
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(UnicornSkin), StoreSalesListConstants.SELL_PRICE_UNICORN_SKIN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DemonSkin), StoreSalesListConstants.SELL_PRICE_DEMON_SKIN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DragonSkin), StoreSalesListConstants.SELL_PRICE_DRAGON_SKIN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(NightmareSkin), StoreSalesListConstants.SELL_PRICE_NIGHTMARE_SKIN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SerpentSkin), StoreSalesListConstants.SELL_PRICE_SERPENT_SKIN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TrollSkin), StoreSalesListConstants.SELL_PRICE_TROLL_SKIN);
+
+				// Hides and leather (chance-based)
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Hides), StoreSalesListConstants.SELL_PRICE_HIDES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SpinedHides), StoreSalesListConstants.SELL_PRICE_SPINED_HIDES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HornedHides), StoreSalesListConstants.SELL_PRICE_HORNED_HIDES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BarbedHides), StoreSalesListConstants.SELL_PRICE_BARBED_HIDES);
 				// TODO: Future implementation - Special hide types disabled
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticHides ), 4 ); }  
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicHides ), 5 ); }  
@@ -5179,13 +6241,13 @@ namespace Server.Mobiles
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurHides ), 7 ); }  
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienHides ), 7 ); }  
 
-			if ( MyServerSettings.BuyChance() ){Add( typeof( Leather ), 3 ); }  
-			// TODO: Future implementation - Special leather types disabled from NPC sales
-			//if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
-			//if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
-			//if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
-			// TODO: Future implementation - Special leather types disabled
-			//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Leather), StoreSalesListConstants.SELL_PRICE_LEATHER);
+				// TODO: Future implementation - Special leather types disabled from NPC sales
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( SpinedLeather ), 4 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( HornedLeather ), 4 ); }  
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( BarbedLeather ), 5 ); }  
+				// TODO: Future implementation - Special leather types disabled
+				//if ( MyServerSettings.BuyChance() ){Add( typeof( NecroticLeather ), 5 ); }
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( VolcanicLeather ), 6 ); }  
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( FrozenLeather ), 6 ); }  
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( DraconicLeather ), 7 ); }  
@@ -5193,157 +6255,357 @@ namespace Server.Mobiles
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( DinosaurLeather ), 8 ); }  
 				//if ( MyServerSettings.BuyChance() ){Add( typeof( AlienLeather ), 8 ); }  
 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Waterskin ), 2 ); } 
-			} 
-		} 
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Waterskin), StoreSalesListConstants.SELL_PRICE_WATERSKIN);
+			}
+		}
+
+		#endregion
 	} 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Mapmaker vendor.
+	/// Sells maps, mapmaking tools, and scrolls.
+	/// </summary>
 	public class SBMapmaker : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMapmaker class.
+		/// </summary>
 		public SBMapmaker()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BlankMap ), 5, Utility.Random( 1,100 ), 0x14EC, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( MapmakersPen ), 8, Utility.Random( 1,100 ), 0x2052, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( BlankScroll ), 12, Utility.Random( 50,200 ), 0xEF3, 0 ) ); }
-				if ( MyServerSettings.SellCommonChance() ){Add( new GenericBuyInfo( typeof( MasterSkeletonsKey ), Utility.Random( 750,1000 ), 25, 0x410B, 0 ) ); }
+				// Maps and tools (chance-based and always available)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(BlankMap), StoreSalesListConstants.PRICE_BLANK_MAP, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BLANK_MAP);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MapmakersPen), StoreSalesListConstants.PRICE_MAPMAKERS_PEN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MAPMAKERS_PEN);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BlankScroll), StoreSalesListConstants.PRICE_BLANK_SCROLL_MAPMAKER, StoreSalesListConstants.QTY_BLANK_SCROLL_MAPMAKER_MIN, StoreSalesListConstants.QTY_BLANK_SCROLL_MAPMAKER_MAX, StoreSalesListConstants.ITEMID_BLANK_SCROLL_MAPMAKER);
+
+				// Rare key (common chance)
+				if (MyServerSettings.SellCommonChance()) { Add(new GenericBuyInfo(typeof(MasterSkeletonsKey), Utility.Random(StoreSalesListConstants.PRICE_MASTER_SKELETONS_KEY_MIN, StoreSalesListConstants.PRICE_MASTER_SKELETONS_KEY_MAX), StoreSalesListConstants.QTY_MASTER_SKELETONS_KEY, StoreSalesListConstants.ITEMID_MASTER_SKELETONS_KEY, 0)); }
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlankScroll ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MapmakersPen ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlankMap ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CityMap ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LocalMap ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMap ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PresetMapEntry ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapLodor ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapSosaria ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapBottle ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapSerpent ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapUmber ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapAmbrosia ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapIslesOfDread ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapSavage ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WorldMapUnderworld ), Utility.Random( 20,300 ) ); } 
-				Add( typeof( AlternateRealityMap ), Utility.Random( 500,1000 ) );
+				// Basic maps and tools (chance-based, fixed prices)
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BlankScroll), StoreSalesListConstants.SELL_PRICE_BLANK_SCROLL_MAPMAKER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MapmakersPen), StoreSalesListConstants.SELL_PRICE_MAPMAKERS_PEN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BlankMap), StoreSalesListConstants.SELL_PRICE_BLANK_MAP);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CityMap), StoreSalesListConstants.SELL_PRICE_CITY_MAP);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LocalMap), StoreSalesListConstants.SELL_PRICE_LOCAL_MAP);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WorldMap), StoreSalesListConstants.SELL_PRICE_WORLD_MAP);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PresetMapEntry), StoreSalesListConstants.SELL_PRICE_PRESET_MAP_ENTRY);
+
+				// World maps (chance-based, random prices)
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapLodor), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_LODOR_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_LODOR_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapSosaria), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SOSARIA_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SOSARIA_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapBottle), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_BOTTLE_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_BOTTLE_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapSerpent), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SERPENT_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SERPENT_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapUmber), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_UMBER_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_UMBER_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapAmbrosia), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_AMBROSIA_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_AMBROSIA_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapIslesOfDread), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_ISLES_OF_DREAD_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_ISLES_OF_DREAD_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapSavage), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SAVAGE_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_SAVAGE_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(WorldMapUnderworld), Utility.Random(StoreSalesListConstants.SELL_PRICE_WORLD_MAP_UNDERWORLD_MIN, StoreSalesListConstants.SELL_PRICE_WORLD_MAP_UNDERWORLD_MAX)); }
+
+				// Alternate reality map (always available, random price)
+				Add(typeof(AlternateRealityMap), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALTERNATE_REALITY_MAP_MIN, StoreSalesListConstants.SELL_PRICE_ALTERNATE_REALITY_MAP_MAX));
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Miller vendor.
+	/// Sells flour and wheat products.
+	/// </summary>
 	public class SBMiller : SBInfo 
 	{ 
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
 		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMiller class.
+		/// </summary>
 		public SBMiller() 
 		{ 
 		} 
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo> 
 		{ 
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo() 
 			{ 
-				Add( new GenericBuyInfo( typeof( SackFlour ), 6, Utility.Random( 1,100 ), 0x1039, 0 ) );
-				Add( new GenericBuyInfo( typeof( WheatSheaf ), 6, Utility.Random( 1,100 ), 0xF36, 0 ) );
+				// Miller products (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(SackFlour), StoreSalesListConstants.PRICE_SACK_FLOUR, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SACK_FLOUR);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(WheatSheaf), StoreSalesListConstants.PRICE_WHEAT_SHEAF, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WHEAT_SHEAF);
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo 
+		{ 
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo() 
+			{ 
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SackFlour), StoreSalesListConstants.SELL_PRICE_SACK_FLOUR);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WheatSheaf), StoreSalesListConstants.SELL_PRICE_WHEAT_SHEAF);
 			} 
 		} 
 
-		public class InternalSellInfo : GenericSellInfo 
-		{ 
-			public InternalSellInfo() 
-			{ 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SackFlour ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WheatSheaf ), 2 ); } 
-			} 
-		} 
+		#endregion
 	} 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBMiner: SBInfo
+	/// <summary>
+	/// Shop info for Miner vendor.
+	/// Sells mining tools and equipment.
+	/// </summary>
+	public class SBMiner : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMiner class.
+		/// </summary>
 		public SBMiner()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bag ), 6, Utility.Random( 1,100 ), 0xE76, 0xABE ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Candle ), 6, Utility.Random( 1,100 ), 0xA28, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Torch ), 8, Utility.Random( 1,100 ), 0xF6B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Lantern ), 2, Utility.Random( 1,100 ), 0xA25, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Pickaxe ), 25, Utility.Random( 1,100 ), 0xE86, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Shovel ), 12, Utility.Random( 1,100 ), 0xF39, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( OreShovel ), 10, Utility.Random( 1,100 ), 0xF39, 0x96D ) ); }
+				// Equipment (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bag), StoreSalesListConstants.PRICE_BAG_MINER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BAG, StoreSalesListConstants.HUE_BAG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Candle), StoreSalesListConstants.PRICE_CANDLE_MINER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CANDLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Torch), StoreSalesListConstants.PRICE_TORCH_MINER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_TORCH);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Lantern), StoreSalesListConstants.PRICE_LANTERN_MINER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LANTERN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Pickaxe), StoreSalesListConstants.PRICE_PICKAXE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PICKAXE);
+
+				// Tools (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Shovel), StoreSalesListConstants.PRICE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SHOVEL);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(OreShovel), StoreSalesListConstants.PRICE_ORE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_ORE_SHOVEL, StoreSalesListConstants.HUE_ORE_SHOVEL);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pickaxe ), 12 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Shovel ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( OreShovel ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Lantern ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Torch ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bag ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Candle ), 3 ); } 
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pickaxe), StoreSalesListConstants.SELL_PRICE_PICKAXE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Shovel), StoreSalesListConstants.SELL_PRICE_SHOVEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(OreShovel), StoreSalesListConstants.SELL_PRICE_ORE_SHOVEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Lantern), StoreSalesListConstants.SELL_PRICE_LANTERN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Torch), StoreSalesListConstants.SELL_PRICE_TORCH);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bag), StoreSalesListConstants.SELL_PRICE_BAG);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Candle), StoreSalesListConstants.SELL_PRICE_CANDLE);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Monk vendor.
+	/// Sells monk robes and equipment.
+	/// </summary>
 	public class SBMonk : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMonk class.
+		/// </summary>
 		public SBMonk()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				Add( new GenericBuyInfo( typeof( MonkRobe ), 136, Utility.Random( 1,100 ), 0x204E, 0x21E ) );
+				// Monk equipment (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MonkRobe), StoreSalesListConstants.PRICE_MONK_ROBE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MONK_ROBE, StoreSalesListConstants.HUE_MONK_ROBE);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
+				// No items to buy from players
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBPlayerBarkeeper : SBInfo
@@ -5709,106 +6971,261 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Rancher vendor.
+	/// Sells pack animals.
+	/// </summary>
 	public class SBRancher : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBRancher class.
+		/// </summary>
 		public SBRancher()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( PackHorse ), 631, Utility.Random( 1,100 ), 291, 0 ) );
+				// Pack animals (always available)
+				Add(new AnimalBuyInfo(1, typeof(PackHorse), StoreSalesListConstants.PRICE_PACK_HORSE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PACK_HORSE, 0));
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
+				// No items to buy from players
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Ranger vendor.
+	/// Sells animals, ranged weapons, ammunition, ranger armor, tents, and trap kits.
+	/// </summary>
 	public class SBRanger : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBRanger class.
+		/// </summary>
 		public SBRanger()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( Cat ), 138, Utility.Random( 1,100 ), 201, 0 ) ); }
-				if ( 1 > 0 ){Add( new AnimalBuyInfo( 1, typeof( Dog ), 181, Utility.Random( 1,100 ), 217, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( PackLlama ), 491, Utility.Random( 1,100 ), 292, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( PackHorse ), 606, Utility.Random( 1,100 ), 291, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackMule ), 10000, 1, 291, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bandage ), 2, Utility.Random( 10,60 ), 0xE21, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Crossbow ), 55, Utility.Random( 1,100 ), 0xF50, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HeavyCrossbow ), 55, Utility.Random( 1,100 ), 0x13FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RepeatingCrossbow ), 46, Utility.Random( 1,100 ), 0x26C3, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CompositeBow ), 45, Utility.Random( 1,100 ), 0x26C2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bolt ), 2, Utility.Random( 30, 60 ), 0x1BFB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bow ), 40, Utility.Random( 1,100 ), 0x13B2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Arrow ), 2, Utility.Random( 30, 60 ), 0xF3F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Feather ), 2, Utility.Random( 30, 60 ), 0x4CCD, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Shaft ), 3, Utility.Random( 30, 60 ), 0x1BD4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ArcherQuiver ), 32, Utility.Random( 1,5 ), 0x2B02, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RangerArms ), 87, Utility.Random( 1,100 ), 0x13DC, 0x59C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RangerChest ), 128, Utility.Random( 1,100 ), 0x13DB, 0x59C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RangerGloves ), 79, Utility.Random( 1,100 ), 0x13D5, 0x59C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RangerGorget ), 73, Utility.Random( 1,100 ), 0x13D6, 0x59C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RangerLegs ), 103, Utility.Random( 1,100 ), 0x13DA, 0x59C ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SmallTent ), 200, Utility.Random( 1,5 ), 0x1914, Utility.RandomList( 0x96D, 0x96E, 0x96F, 0x970, 0x971, 0x972, 0x973, 0x974, 0x975, 0x976, 0x977, 0x978, 0x979, 0x97A, 0x97B, 0x97C, 0x97D, 0x97E ) ) ); }
-				if ( MyServerSettings.SellCommonChance() ){Add( new GenericBuyInfo( typeof( CampersTent ), 500, Utility.Random( 1,5 ), 0x0A59, Utility.RandomList( 0x96D, 0x96E, 0x96F, 0x970, 0x971, 0x972, 0x973, 0x974, 0x975, 0x976, 0x977, 0x978, 0x979, 0x97A, 0x97B, 0x97C, 0x97D, 0x97E ) ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( MyTentEastAddonDeed ), 1000, 1, 0xA58, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( MyTentSouthAddonDeed ), 1000, 1, 0xA59, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TrapKit ), 420, Utility.Random( 1,5 ), 0x1EBB, 0 ) ); }
+				// Animals (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Cat), StoreSalesListConstants.PRICE_CAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Dog (always available)
+				Add(new AnimalBuyInfo(1, typeof(Dog), StoreSalesListConstants.PRICE_DOG, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(PackLlama), StoreSalesListConstants.PRICE_PACK_LLAMA, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PACK_LLAMA, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				if (MyServerSettings.SellChance())
+				{
+					Add(new AnimalBuyInfo(1, typeof(PackHorse), StoreSalesListConstants.PRICE_PACK_HORSE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PACK_HORSE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// PackMule (very rare chance)
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new AnimalBuyInfo(5, typeof(PackMule), StoreSalesListConstants.PRICE_PACK_MULE, 1, StoreSalesListConstants.ITEMID_PACK_MULE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Medical supplies (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bandage), StoreSalesListConstants.PRICE_BANDAGE, StoreSalesListConstants.QTY_BANDAGE_MIN, StoreSalesListConstants.QTY_BANDAGE_MAX, StoreSalesListConstants.ITEMID_BANDAGE);
+
+				// Ranged weapons (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Crossbow), StoreSalesListConstants.PRICE_CROSSBOW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CROSSBOW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HeavyCrossbow), StoreSalesListConstants.PRICE_HEAVY_CROSSBOW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HEAVY_CROSSBOW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RepeatingCrossbow), StoreSalesListConstants.PRICE_REPEATING_CROSSBOW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_REPEATING_CROSSBOW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CompositeBow), StoreSalesListConstants.PRICE_COMPOSITE_BOW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_COMPOSITE_BOW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bow), StoreSalesListConstants.PRICE_BOW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BOW);
+
+				// Ammunition (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bolt), StoreSalesListConstants.PRICE_BOLT, StoreSalesListConstants.QTY_AMMUNITION_MIN, StoreSalesListConstants.QTY_AMMUNITION_MAX, StoreSalesListConstants.ITEMID_BOLT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Arrow), StoreSalesListConstants.PRICE_ARROW, StoreSalesListConstants.QTY_AMMUNITION_MIN, StoreSalesListConstants.QTY_AMMUNITION_MAX, StoreSalesListConstants.ITEMID_ARROW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Feather), StoreSalesListConstants.PRICE_FEATHER, StoreSalesListConstants.QTY_AMMUNITION_MIN, StoreSalesListConstants.QTY_AMMUNITION_MAX, StoreSalesListConstants.ITEMID_FEATHER);
+
+				// Shaft (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Shaft), StoreSalesListConstants.PRICE_SHAFT, StoreSalesListConstants.QTY_AMMUNITION_MIN, StoreSalesListConstants.QTY_AMMUNITION_MAX, StoreSalesListConstants.ITEMID_SHAFT);
+
+				// Quivers (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ArcherQuiver), StoreSalesListConstants.PRICE_ARCHER_QUIVER, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_ARCHER_QUIVER);
+
+				// Ranger armor (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RangerArms), StoreSalesListConstants.PRICE_RANGER_ARMS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RANGER_ARMS, StoreSalesListConstants.HUE_RANGER_ARMOR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RangerChest), StoreSalesListConstants.PRICE_RANGER_CHEST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RANGER_CHEST, StoreSalesListConstants.HUE_RANGER_ARMOR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RangerGloves), StoreSalesListConstants.PRICE_RANGER_GLOVES, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RANGER_GLOVES, StoreSalesListConstants.HUE_RANGER_ARMOR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RangerGorget), StoreSalesListConstants.PRICE_RANGER_GORGET, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RANGER_GORGET, StoreSalesListConstants.HUE_RANGER_ARMOR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RangerLegs), StoreSalesListConstants.PRICE_RANGER_LEGS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_RANGER_LEGS, StoreSalesListConstants.HUE_RANGER_ARMOR);
+
+				// Tents (with chance, random hue)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(SmallTent), StoreSalesListConstants.PRICE_SMALL_TENT, Utility.Random(StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX), StoreSalesListConstants.ITEMID_SMALL_TENT, Utility.RandomList(0x96D, 0x96E, 0x96F, 0x970, 0x971, 0x972, 0x973, 0x974, 0x975, 0x976, 0x977, 0x978, 0x979, 0x97A, 0x97B, 0x97C, 0x97D, 0x97E)));
+				}
+
+				if (MyServerSettings.SellCommonChance())
+				{
+					Add(new GenericBuyInfo(typeof(CampersTent), StoreSalesListConstants.PRICE_CAMPERS_TENT, Utility.Random(StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX), StoreSalesListConstants.ITEMID_CAMPERS_TENT, Utility.RandomList(0x96D, 0x96E, 0x96F, 0x970, 0x971, 0x972, 0x973, 0x974, 0x975, 0x976, 0x977, 0x978, 0x979, 0x97A, 0x97B, 0x97C, 0x97D, 0x97E)));
+				}
+
+				// Tent addon deeds (rare chance, random dyed hue)
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(MyTentEastAddonDeed), StoreSalesListConstants.PRICE_MY_TENT_EAST_ADDON_DEED, 1, StoreSalesListConstants.ITEMID_MY_TENT_EAST_ADDON_DEED, Utility.RandomDyedHue()));
+				}
+
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(MyTentSouthAddonDeed), StoreSalesListConstants.PRICE_MY_TENT_SOUTH_ADDON_DEED, 1, StoreSalesListConstants.ITEMID_MY_TENT_SOUTH_ADDON_DEED, Utility.RandomDyedHue()));
+				}
+
+				// Trap kits (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(TrapKit), StoreSalesListConstants.PRICE_TRAP_KIT, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_TRAP_KIT);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MyTentEastAddonDeed ), 200 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MyTentSouthAddonDeed ), 200 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SmallTent ), 50 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CampersTent ), 100 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Crossbow ), 27 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HeavyCrossbow ), 28 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RepeatingCrossbow ), 23 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CompositeBow ), 22 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bolt ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Arrow ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bow ), 20 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Feather ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Shaft ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Arrow ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ArcherQuiver ), 16 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RangerArms ), 43 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RangerChest ), 64 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RangerGloves ), 40 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RangerLegs ), 51 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RangerGorget ), 36 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TrapKit ), 210 ); } 
+				// Tents and addon deeds
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MyTentEastAddonDeed), StoreSalesListConstants.SELL_PRICE_MY_TENT_EAST_ADDON_DEED);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MyTentSouthAddonDeed), StoreSalesListConstants.SELL_PRICE_MY_TENT_SOUTH_ADDON_DEED);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SmallTent), StoreSalesListConstants.SELL_PRICE_SMALL_TENT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CampersTent), StoreSalesListConstants.SELL_PRICE_CAMPERS_TENT);
+
+				// Ranged weapons
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Crossbow), StoreSalesListConstants.SELL_PRICE_CROSSBOW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HeavyCrossbow), StoreSalesListConstants.SELL_PRICE_HEAVY_CROSSBOW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RepeatingCrossbow), StoreSalesListConstants.SELL_PRICE_REPEATING_CROSSBOW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CompositeBow), StoreSalesListConstants.SELL_PRICE_COMPOSITE_BOW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bow), StoreSalesListConstants.SELL_PRICE_BOW);
+
+				// Ammunition
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bolt), StoreSalesListConstants.SELL_PRICE_BOLT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Arrow), StoreSalesListConstants.SELL_PRICE_ARROW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Feather), StoreSalesListConstants.SELL_PRICE_FEATHER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Shaft), StoreSalesListConstants.SELL_PRICE_SHAFT);
+
+				// Quivers
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ArcherQuiver), StoreSalesListConstants.SELL_PRICE_ARCHER_QUIVER);
+
+				// Ranger armor
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RangerArms), StoreSalesListConstants.SELL_PRICE_RANGER_ARMS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RangerChest), StoreSalesListConstants.SELL_PRICE_RANGER_CHEST);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RangerGloves), StoreSalesListConstants.SELL_PRICE_RANGER_GLOVES);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RangerLegs), StoreSalesListConstants.SELL_PRICE_RANGER_LEGS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RangerGorget), StoreSalesListConstants.SELL_PRICE_RANGER_GORGET);
+
+				// Trap kits
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TrapKit), StoreSalesListConstants.SELL_PRICE_TRAP_KIT);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBRealEstateBroker : SBInfo
@@ -5870,57 +7287,130 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Scribe vendor.
+	/// Sells writing supplies, books, magical tomes, and related scholarly items.
+	/// </summary>
 	public class SBScribe: SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBScribe class.
+		/// </summary>
 		public SBScribe()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ScribesPen ), 16, Utility.Random( 1,100 ), 0x2051, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BlankScroll ), 5, Utility.Random( 1,100 ), 0x0E34, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Monocle ), 24, Utility.Random( 1,25 ), 0x2C84, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BrownBook ), 100, Utility.Random( 1,100 ), 0xFEF, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TanBook ), 100, Utility.Random( 1,100 ), 0xFF0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BlueBook ), 100, Utility.Random( 1,100 ), 0xFF2, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( "1041267", typeof( Runebook ), 3500, Utility.Random( 1,3 ), 0x0F3D, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Mailbox ), 158, Utility.Random( 1,5 ), 0x4142, 0 ) ); }
+				// Writing supplies (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(ScribesPen), StoreSalesListConstants.PRICE_SCRIBES_PEN, Utility.Random(StoreSalesListConstants.QTY_BOOKS_MIN, StoreSalesListConstants.QTY_BOOKS_MAX), StoreSalesListConstants.ITEMID_SCRIBES_PEN, StoreSalesListConstants.HUE_DEFAULT));
+					Add(new GenericBuyInfo(typeof(BlankScroll), StoreSalesListConstants.PRICE_BLANK_SCROLL_SCRIBE, Utility.Random(StoreSalesListConstants.QTY_BOOKS_MIN, StoreSalesListConstants.QTY_BOOKS_MAX), StoreSalesListConstants.ITEMID_BLANK_SCROLL_SCRIBE, StoreSalesListConstants.HUE_DEFAULT));
+					Add(new GenericBuyInfo(typeof(Monocle), StoreSalesListConstants.PRICE_MONOCLE, Utility.Random(StoreSalesListConstants.QTY_MONOCLE_MIN, StoreSalesListConstants.QTY_MONOCLE_MAX), StoreSalesListConstants.ITEMID_MONOCLE, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Books (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(BrownBook), StoreSalesListConstants.PRICE_BROWN_BOOK, Utility.Random(StoreSalesListConstants.QTY_BOOKS_MIN, StoreSalesListConstants.QTY_BOOKS_MAX), StoreSalesListConstants.ITEMID_BROWN_BOOK, StoreSalesListConstants.HUE_DEFAULT));
+					Add(new GenericBuyInfo(typeof(TanBook), StoreSalesListConstants.PRICE_TAN_BOOK, Utility.Random(StoreSalesListConstants.QTY_BOOKS_MIN, StoreSalesListConstants.QTY_BOOKS_MAX), StoreSalesListConstants.ITEMID_TAN_BOOK, StoreSalesListConstants.HUE_DEFAULT));
+					Add(new GenericBuyInfo(typeof(BlueBook), StoreSalesListConstants.PRICE_BLUE_BOOK, Utility.Random(StoreSalesListConstants.QTY_BOOKS_MIN, StoreSalesListConstants.QTY_BOOKS_MAX), StoreSalesListConstants.ITEMID_BLUE_BOOK, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Rare items (with rare chance)
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo("1041267", typeof(Runebook), StoreSalesListConstants.PRICE_RUNEBOOK, Utility.Random(StoreSalesListConstants.QTY_RUNEBOOK_MIN, StoreSalesListConstants.QTY_RUNEBOOK_MAX), StoreSalesListConstants.ITEMID_RUNEBOOK, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Mailbox (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(Mailbox), StoreSalesListConstants.PRICE_MAILBOX, Utility.Random(StoreSalesListConstants.QTY_MAILBOX_MIN, StoreSalesListConstants.QTY_MAILBOX_MAX), StoreSalesListConstants.ITEMID_MAILBOX, StoreSalesListConstants.HUE_DEFAULT));
+				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ScribesPen ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Monocle ), 12 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BrownBook ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TanBook ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlueBook ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BlankScroll ), 3 ); } 
-				Add( typeof( JokeBook ), Utility.Random( 750,1500 ) );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DynamicBook ), Utility.Random( 10,150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DataPad ), Utility.Random( 5, 150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecromancerSpellbook ), 55 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BookOfBushido ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BookOfNinjitsu ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MysticSpellbook ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DeathKnightSpellbook ), Utility.Random( 100,300 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Runebook ), Utility.Random( 100,350 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BookOfChivalry ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BookOfChivalry ), 70 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HolyManSpellbook ), Utility.Random( 50,200 ) ); } 
+				// Writing supplies
+				if (MyServerSettings.BuyChance()) { Add(typeof(ScribesPen), StoreSalesListConstants.SELL_PRICE_SCRIBES_PEN); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(Monocle), StoreSalesListConstants.SELL_PRICE_MONOCLE); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BrownBook), StoreSalesListConstants.SELL_PRICE_BROWN_BOOK); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(TanBook), StoreSalesListConstants.SELL_PRICE_TAN_BOOK); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BlueBook), StoreSalesListConstants.SELL_PRICE_BLUE_BOOK); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BlankScroll), StoreSalesListConstants.SELL_PRICE_BLANK_SCROLL_SCRIBE_SELL); }
+
+				// Books and magical tomes
+				Add(typeof(JokeBook), Utility.Random(StoreSalesListConstants.SELL_PRICE_JOKE_BOOK_MIN, StoreSalesListConstants.SELL_PRICE_JOKE_BOOK_MAX));
+				if (MyServerSettings.BuyChance()) { Add(typeof(DynamicBook), Utility.Random(StoreSalesListConstants.SELL_PRICE_DYNAMIC_BOOK_MIN, StoreSalesListConstants.SELL_PRICE_DYNAMIC_BOOK_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(DataPad), Utility.Random(StoreSalesListConstants.SELL_PRICE_DATA_PAD_MIN, StoreSalesListConstants.SELL_PRICE_DATA_PAD_MAX)); }
+
+				// Spellbooks
+				if (MyServerSettings.BuyChance()) { Add(typeof(NecromancerSpellbook), StoreSalesListConstants.SELL_PRICE_NECROMANCER_SPELLBOOK_SCRIBE); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BookOfBushido), StoreSalesListConstants.SELL_PRICE_BOOK_OF_BUSHIDO); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BookOfNinjitsu), StoreSalesListConstants.SELL_PRICE_BOOK_OF_NINJITSU); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(MysticSpellbook), StoreSalesListConstants.SELL_PRICE_MYSTIC_SPELLBOOK); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(DeathKnightSpellbook), Utility.Random(StoreSalesListConstants.SELL_PRICE_DEATH_KNIGHT_SPELLBOOK_SCRIBE_MIN, StoreSalesListConstants.SELL_PRICE_DEATH_KNIGHT_SPELLBOOK_SCRIBE_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(Runebook), Utility.Random(StoreSalesListConstants.SELL_PRICE_RUNEBOOK_SCRIBE_MIN, StoreSalesListConstants.SELL_PRICE_RUNEBOOK_SCRIBE_MAX)); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BookOfChivalry), StoreSalesListConstants.SELL_PRICE_BOOK_OF_CHIVALRY); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(BookOfChivalry), StoreSalesListConstants.SELL_PRICE_BOOK_OF_CHIVALRY); }
+				if (MyServerSettings.BuyChance()) { Add(typeof(HolyManSpellbook), Utility.Random(StoreSalesListConstants.SELL_PRICE_HOLY_MAN_SPELLBOOK_SCRIBE_MIN, StoreSalesListConstants.SELL_PRICE_HOLY_MAN_SPELLBOOK_SCRIBE_MAX)); }
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class NMS_SBMuseumGuide : SBInfo
@@ -6426,214 +7916,227 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public class SBTailor: SBInfo
+	/// <summary>
+	/// Shop info for Tailor vendor.
+	/// Sells tailoring tools, clothing, hats, and accessories.
+	/// </summary>
+	public class SBTailor : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBTailor class.
+		/// </summary>
 		public SBTailor()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				//Always
-                Add(new GenericBuyInfo(typeof(Scissors), 11, Utility.Random(5, 15), 0xF9F, 0));
-                Add(new GenericBuyInfo(typeof(SewingKit), 8, Utility.Random(5, 15), 0x4C81, 0));
-                Add(new GenericBuyInfo(typeof(Dyes), 5, Utility.Random(5, 30), 0xFA9, 0));
-                Add(new GenericBuyInfo(typeof(DyeTub), 8, Utility.Random(3, 15), 0xFAB, 0));
-                Add(new GenericBuyInfo(typeof(CottonSpoolOfThread), 18, Utility.Random(15, 35), 0x543A/*0xFA0*/, 0));
+				// Tailoring tools (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Scissors), StoreSalesListConstants.PRICE_SCISSORS, 5, 15, StoreSalesListConstants.ITEMID_SCISSORS);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(SewingKit), StoreSalesListConstants.PRICE_SEWING_KIT, 5, 15, StoreSalesListConstants.ITEMID_SEWING_KIT);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Dyes), StoreSalesListConstants.PRICE_DYES, 5, 30, StoreSalesListConstants.ITEMID_DYES);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(DyeTub), StoreSalesListConstants.PRICE_DYE_TUB, 3, 15, StoreSalesListConstants.ITEMID_DYE_TUB);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(CottonSpoolOfThread), StoreSalesListConstants.PRICE_COTTON_SPOOL_THREAD, 15, 35, StoreSalesListConstants.ITEMID_COTTON_SPOOL_THREAD);
 
-                /*Add(new GenericBuyInfo(typeof(LightYarn), 36, Utility.Random(5, 20), 0xE1E, 0));
-                Add(new GenericBuyInfo(typeof(DarkYarn), 36, Utility.Random(5, 20), 0xE1D, 0));*/
+				// Basic headwear (always available, with random dyed hues)
+				Add(new GenericBuyInfo(typeof(Bandana), StoreSalesListConstants.PRICE_BANDANA, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_BANDANA, Utility.RandomDyedHue()));
+				Add(new GenericBuyInfo(typeof(SkullCap), StoreSalesListConstants.PRICE_SKULL_CAP, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_SKULL_CAP, Utility.RandomDyedHue()));
+				Add(new GenericBuyInfo(typeof(Cap), StoreSalesListConstants.PRICE_CAP, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_CAP, Utility.RandomDyedHue()));
 
-                Add(new GenericBuyInfo(typeof(Bandana), 6, Utility.Random(1, 15), 0x1540, Utility.RandomDyedHue()));
-                Add(new GenericBuyInfo(typeof(SkullCap), 7, Utility.Random(1, 15), 0x1544, Utility.RandomDyedHue()));
-                Add(new GenericBuyInfo(typeof(Cap), 10, Utility.Random(1, 15), 0x1715, Utility.RandomDyedHue()));
-
-
-                /*if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DyeTub ), 8, Utility.Random( 1,15 ), 0xFAB, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Dyes ), 8, Utility.Random( 1,15 ), 0xFA9, 0 ) ); } */
-                if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FlaxSpoolOfThread), 18, Utility.Random(2, 15), 0xFA0, 0)); }
-                if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Shirt ), 12, Utility.Random( 1,15 ), 0x1517, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ShortPants ), 7, Utility.Random( 1,15 ), 0x152E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FancyShirt ), 21, Utility.Random( 1,15 ), 0x1EFD, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalCoat ), 21, Utility.Random( 1,15 ), 0x307, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalShirt ), 21, Utility.Random( 1,15 ), 0x30B, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RusticShirt ), 21, Utility.Random( 1,15 ), 0x30D, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SquireShirt ), 21, Utility.Random( 1,15 ), 0x311, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FormalCoat ), 21, Utility.Random( 1,15 ), 0x403, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardShirt ), 21, Utility.Random( 1,15 ), 0x407, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BeggarVest ), 12, Utility.Random( 1,15 ), 0x308, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalVest ), 12, Utility.Random( 1,15 ), 0x30C, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RusticVest ), 12, Utility.Random( 1,15 ), 0x30E, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SailorPants ), 7, Utility.Random( 1,15 ), 0x309, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PiratePants ), 10, Utility.Random( 1,15 ), 0x404, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalSkirt ), 11, Utility.Random( 1,15 ), 0x30A, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Skirt ), 12, Utility.Random( 1,15 ), 0x1516, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalLongSkirt ), 12, Utility.Random( 1,15 ), 0x408, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LongPants ), 10, Utility.Random( 1,15 ), 0x1539, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FancyDress ), 26, Utility.Random( 1,15 ), 0x1EFF, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PlainDress ), 13, Utility.Random( 1,15 ), 0x1F01, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Kilt ), 11, Utility.Random( 1,15 ), 0x1537, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HalfApron ), 10, Utility.Random( 1,15 ), 0x153b, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LoinCloth ), 10, Utility.Random( 1,15 ), 0x2B68, 637 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalLoinCloth ), 10, Utility.Random( 1,15 ), 0x55DB, 637 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Robe ), 18, Utility.Random( 1,15 ), 0x1F03, Utility.RandomDyedHue() ) ); }
-                /*if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( JokerRobe ), 40, Utility.Random( 1,5 ), 0x2B6B, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AssassinRobe ), 40, Utility.Random( 1,5 ), 0x2B69, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FancyRobe ), 40, Utility.Random( 1,5 ), 0x2B6A, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( GildedRobe ), 40, Utility.Random( 1,5 ), 0x2B6C, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( OrnateRobe ), 40, Utility.Random( 1,5 ), 0x2B6E, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MagistrateRobe ), 40, Utility.Random( 1,5 ), 0x2B70, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RoyalRobe ), 40, Utility.Random( 1,5 ), 0x2B73, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SorcererRobe ), 40, Utility.Random( 1,5 ), 0x3175, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AssassinShroud ), 40, Utility.Random( 1,5 ), 0x2FB9, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( NecromancerRobe ), 40, Utility.Random( 1,5 ), 0x2FBA, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SpiderRobe ), 40, Utility.Random( 1,5 ), 0x2FC6, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( VagabondRobe ), 40, Utility.Random( 1,5 ), 0x567D, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PirateCoat ), 40, Utility.Random( 1,5 ), 0x567E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ExquisiteRobe ), 40, Utility.Random( 1,5 ), 0x283, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ProphetRobe ), 40, Utility.Random( 1,5 ), 0x284, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ElegantRobe ), 40, Utility.Random( 1,5 ), 0x285, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FormalRobe ), 40, Utility.Random( 1,5 ), 0x286, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ArchmageRobe ), 40, Utility.Random( 1,5 ), 0x287, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PriestRobe ), 40, Utility.Random( 1,5 ), 0x288, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CultistRobe ), 40, Utility.Random( 1,5 ), 0x289, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( GildedDarkRobe ), 40, Utility.Random( 1,5 ), 0x28A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( GildedLightRobe ), 40, Utility.Random( 1,5 ), 0x301, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SageRobe ), 40, Utility.Random( 1,5 ), 0x302, Utility.RandomDyedHue() ) ); }*/
-                if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Cloak ), 8, Utility.Random( 1,15 ), 0x1515, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Doublet ), 13, Utility.Random( 1,15 ), 0x1F7B, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Tunic ), 18, Utility.Random( 1,15 ), 0x1FA1, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( JesterSuit ), 26, Utility.Random( 1,15 ), 0x1F9F, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( JesterHat ), 12, Utility.Random( 1,15 ), 0x171C, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FloppyHat ), 7, Utility.Random( 1,15 ), 0x1713, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WideBrimHat ), 8, Utility.Random( 1,15 ), 0x1714, Utility.RandomDyedHue() ) ); }
-
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TallStrawHat ), 8, Utility.Random( 1,15 ), 0x1716, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( StrawHat ), 7, Utility.Random( 1,15 ), 0x1717, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardsHat ), 11, Utility.Random( 1,15 ), 0x1718, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WitchHat ), 11, Utility.Random( 1,15 ), 0x2FC3, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LeatherCap ), 10, Utility.Random( 1,15 ), 0x1DB9, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FeatheredHat ), 10, Utility.Random( 1,15 ), 0x171A, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TricorneHat ), 8, Utility.Random( 1,15 ), 0x171B, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PirateHat ), 8, Utility.Random( 1,15 ), 0x2FBC, Utility.RandomDyedHue() ) ); }
-
-				/*if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ClothHood ), 12, Utility.Random( 1,15 ), 0x2B71, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ClothCowl ), 12, Utility.Random( 1,15 ), 0x3176, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardHood ), 12, Utility.Random( 1,15 ), 0x310, Utility.RandomDyedHue() ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FancyHood ), 12, Utility.Random( 1,15 ), 0x4D09, Utility.RandomDyedHue() ) ); }*/
-                /*if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BoltOfCloth ), 100, Utility.Random( 1,15 ), 0xf95, Utility.RandomDyedHue() ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Cloth ), 2, Utility.Random( 1,15 ), 0x1766, Utility.RandomDyedHue() ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( UncutCloth ), 2, Utility.Random( 1,15 ), 0x1767, Utility.RandomDyedHue() ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Cotton ), 102, Utility.Random( 1,15 ), 0xDF9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Wool ), 62, Utility.Random( 1,15 ), 0xDF8, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Flax ), 102, Utility.Random( 1,15 ), 0x1A9C, 0 ) ); }*/
-
-                /*if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FemaleMannequinDeed ), Utility.Random( 5000,15000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MaleMannequinDeed ), Utility.Random( 5000,15000 ), 1, 0x14F0, 0 ) ); }*/
+				// Thread and clothing (chance-based, with random dyed hues where applicable)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(FlaxSpoolOfThread), StoreSalesListConstants.PRICE_FLAX_SPOOL_THREAD, 2, 15, StoreSalesListConstants.ITEMID_FLAX_SPOOL_THREAD);
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Shirt), StoreSalesListConstants.PRICE_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_SHIRT, Utility.RandomDyedHue())); }
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ShortPants), StoreSalesListConstants.PRICE_SHORT_PANTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15, StoreSalesListConstants.ITEMID_SHORT_PANTS);
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FancyShirt), StoreSalesListConstants.PRICE_FANCY_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_FANCY_SHIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalCoat), StoreSalesListConstants.PRICE_ROYAL_COAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_COAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalShirt), StoreSalesListConstants.PRICE_ROYAL_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_SHIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RusticShirt), StoreSalesListConstants.PRICE_RUSTIC_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_RUSTIC_SHIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(SquireShirt), StoreSalesListConstants.PRICE_SQUIRE_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_SQUIRE_SHIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FormalCoat), StoreSalesListConstants.PRICE_FORMAL_COAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_FORMAL_COAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(WizardShirt), StoreSalesListConstants.PRICE_WIZARD_SHIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_WIZARD_SHIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(BeggarVest), StoreSalesListConstants.PRICE_BEGGAR_VEST, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_BEGGAR_VEST, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalVest), StoreSalesListConstants.PRICE_ROYAL_VEST, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_VEST, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RusticVest), StoreSalesListConstants.PRICE_RUSTIC_VEST, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_RUSTIC_VEST, Utility.RandomDyedHue())); }
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SailorPants), StoreSalesListConstants.PRICE_SAILOR_PANTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15, StoreSalesListConstants.ITEMID_SAILOR_PANTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PiratePants), StoreSalesListConstants.PRICE_PIRATE_PANTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15, StoreSalesListConstants.ITEMID_PIRATE_PANTS);
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalSkirt), StoreSalesListConstants.PRICE_ROYAL_SKIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_SKIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Skirt), StoreSalesListConstants.PRICE_SKIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_SKIRT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalLongSkirt), StoreSalesListConstants.PRICE_ROYAL_LONG_SKIRT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_LONG_SKIRT, Utility.RandomDyedHue())); }
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LongPants), StoreSalesListConstants.PRICE_LONG_PANTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15, StoreSalesListConstants.ITEMID_LONG_PANTS);
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FancyDress), StoreSalesListConstants.PRICE_FANCY_DRESS, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_FANCY_DRESS, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(PlainDress), StoreSalesListConstants.PRICE_PLAIN_DRESS, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_PLAIN_DRESS, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Kilt), StoreSalesListConstants.PRICE_KILT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_KILT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(HalfApron), StoreSalesListConstants.PRICE_HALF_APRON, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_HALF_APRON, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(LoinCloth), StoreSalesListConstants.PRICE_LOIN_CLOTH, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_LOIN_CLOTH, StoreSalesListConstants.HUE_LOIN_CLOTH)); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(RoyalLoinCloth), StoreSalesListConstants.PRICE_ROYAL_LOIN_CLOTH, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROYAL_LOIN_CLOTH, StoreSalesListConstants.HUE_LOIN_CLOTH)); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Robe), StoreSalesListConstants.PRICE_ROBE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_ROBE, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Cloak), StoreSalesListConstants.PRICE_CLOAK, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_CLOAK, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Doublet), StoreSalesListConstants.PRICE_DOUBLET, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_DOUBLET, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(Tunic), StoreSalesListConstants.PRICE_TUNIC, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_TUNIC, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(JesterSuit), StoreSalesListConstants.PRICE_JESTER_SUIT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_JESTER_SUIT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(JesterHat), StoreSalesListConstants.PRICE_JESTER_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_JESTER_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FloppyHat), StoreSalesListConstants.PRICE_FLOPPY_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_FLOPPY_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(WideBrimHat), StoreSalesListConstants.PRICE_WIDE_BRIM_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_WIDE_BRIM_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(TallStrawHat), StoreSalesListConstants.PRICE_TALL_STRAW_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_TALL_STRAW_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(StrawHat), StoreSalesListConstants.PRICE_STRAW_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_STRAW_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(WizardsHat), StoreSalesListConstants.PRICE_WIZARDS_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_WIZARDS_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(WitchHat), StoreSalesListConstants.PRICE_WITCH_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_WITCH_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(LeatherCap), StoreSalesListConstants.PRICE_LEATHER_CAP, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_LEATHER_CAP, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(FeatheredHat), StoreSalesListConstants.PRICE_FEATHERED_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_FEATHERED_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(TricorneHat), StoreSalesListConstants.PRICE_TRICORNE_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_TRICORNE_HAT, Utility.RandomDyedHue())); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(PirateHat), StoreSalesListConstants.PRICE_PIRATE_HAT, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 15), StoreSalesListConstants.ITEMID_PIRATE_HAT, Utility.RandomDyedHue())); }
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( JokerRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AssassinRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FancyRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GildedRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( OrnateRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MagistrateRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SorcererRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AssassinShroud ), 29 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( NecromancerRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpiderRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( VagabondRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PirateCoat ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ExquisiteRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ProphetRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ElegantRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FormalRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ArchmageRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PriestRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CultistRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GildedDarkRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GildedLightRobe ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SageRobe ), 19 ); } 
+				// Special robes
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JokerRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(AssassinRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FancyRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GildedRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(OrnateRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MagistrateRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SorcererRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(AssassinShroud), 29);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(NecromancerRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SpiderRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(VagabondRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PirateCoat), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ExquisiteRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ProphetRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ElegantRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FormalRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ArchmageRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PriestRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(CultistRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GildedDarkRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(GildedLightRobe), 19);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SageRobe), 19);
 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Scissors ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SewingKit ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Dyes ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DyeTub ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BoltOfCloth ), 35 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FancyShirt ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Shirt ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ShortPants ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LongPants ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Cloak ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FancyDress ), 12 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Robe ), 9 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PlainDress ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Skirt ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalCoat ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalShirt ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RusticShirt ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SquireShirt ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FormalCoat ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WizardShirt ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BeggarVest ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalVest ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RusticVest ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SailorPants ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PiratePants ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalSkirt ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Skirt ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RoyalLongSkirt ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Kilt ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Doublet ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Tunic ), 9 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( JesterSuit ), 13 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FullApron ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HalfApron ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LoinCloth ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( JesterHat ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FloppyHat ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WideBrimHat ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Cap ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullCap ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ClothCowl ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WizardHood ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ClothHood ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FancyHood ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bandana ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TallStrawHat ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StrawHat ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WizardsHat ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WitchHat ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bonnet ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FeatheredHat ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TricorneHat ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PirateHat ), 4 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpoolOfThread ), 9 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Flax ), 51 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Cotton ), 51 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Wool ), 31 ); } 
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicRobe ), 30 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicHat ), 20 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicCloak ), 30 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicBelt ), 20 ); }  
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MagicSash ), 20 ); }  
-				Add( typeof( MagicScissors ), Utility.Random( 300,400 ) );
+				// Tools and materials
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Scissors), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SewingKit), 1);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Dyes), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DyeTub), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BoltOfCloth), 35);
+
+				// Clothing
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FancyShirt), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Shirt), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ShortPants), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LongPants), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Cloak), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FancyDress), 12);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Robe), 9);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PlainDress), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Skirt), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalCoat), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalShirt), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RusticShirt), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SquireShirt), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FormalCoat), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WizardShirt), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BeggarVest), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalVest), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RusticVest), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SailorPants), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PiratePants), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalSkirt), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RoyalLongSkirt), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Kilt), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Doublet), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Tunic), 9);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JesterSuit), 13);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FullApron), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HalfApron), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LoinCloth), 5);
+
+				// Hats
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JesterHat), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FloppyHat), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WideBrimHat), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Cap), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SkullCap), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ClothCowl), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WizardHood), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ClothHood), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FancyHood), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bandana), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TallStrawHat), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(StrawHat), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WizardsHat), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WitchHat), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bonnet), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FeatheredHat), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TricorneHat), 4);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PirateHat), 4);
+
+				// Materials
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SpoolOfThread), 9);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Flax), 51);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Cotton), 51);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Wool), 31);
+
+				// Rare magic items
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicRobe), 30);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicHat), 20);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicCloak), 30);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicBelt), 20);
+				StoreSalesListHelper.AddSellItemWithRareChance(this, typeof(MagicSash), 20);
+				StoreSalesListHelper.AddSellItemRandom(this, typeof(MagicScissors), 300, 400);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBJester: SBInfo
@@ -6687,53 +8190,109 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Tanner vendor.
+	/// Sells leather armor, bags, pouches, and tanning tools.
+	/// </summary>
 	public class SBTanner : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBTanner class.
+		/// </summary>
 		public SBTanner()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FemaleStuddedChest ), 62, Utility.Random( 1,100 ), 0x1C02, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FemalePlateChest ), 207, Utility.Random( 1,100 ), 0x1C04, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( FemaleLeatherChest ), 36, Utility.Random( 1,100 ), 0x1C06, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LeatherShorts ), 28, Utility.Random( 1,100 ), 0x1C00, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LeatherSkirt ), 25, Utility.Random( 1,100 ), 0x1C08, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LeatherBustierArms ), 30, Utility.Random( 1,100 ), 0x1C0B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( StuddedBustierArms ), 50, Utility.Random( 1,100 ), 0x1C0C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Bag ), 6, Utility.Random( 1,100 ), 0xE76, 0xABE ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Pouch ), 6, Utility.Random( 1,100 ), 0xE79, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Backpack ), 100, Utility.Random( 1,100 ), 0x53D5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SkinningKnife ), 100, Utility.Random( 1,100 ), 0xEC4, 0 ) ); }
+				// Leather armor (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(FemaleStuddedChest), StoreSalesListConstants.PRICE_FEMALE_STUDDED_CHEST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_FEMALE_STUDDED_CHEST);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(FemalePlateChest), StoreSalesListConstants.PRICE_FEMALE_PLATE_CHEST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_FEMALE_PLATE_CHEST);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(FemaleLeatherChest), StoreSalesListConstants.PRICE_FEMALE_LEATHER_CHEST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_FEMALE_LEATHER_CHEST);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LeatherShorts), StoreSalesListConstants.PRICE_LEATHER_SHORTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEATHER_SHORTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LeatherSkirt), StoreSalesListConstants.PRICE_LEATHER_SKIRT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEATHER_SKIRT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LeatherBustierArms), StoreSalesListConstants.PRICE_LEATHER_BUSTIER_ARMS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEATHER_BUSTIER_ARMS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(StuddedBustierArms), StoreSalesListConstants.PRICE_STUDDED_BUSTIER_ARMS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_STUDDED_BUSTIER_ARMS);
+
+				// Bags and containers (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Bag), StoreSalesListConstants.PRICE_BAG, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BAG, StoreSalesListConstants.HUE_BAG);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Pouch), StoreSalesListConstants.PRICE_POUCH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_POUCH);
+
+				// Backpack (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Backpack), StoreSalesListConstants.PRICE_BACKPACK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BACKPACK_TANNER);
+
+				// Tools (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SkinningKnife), StoreSalesListConstants.PRICE_SKINNING_KNIFE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SKINNING_KNIFE);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Bag ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pouch ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Backpack ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkinningKnife ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FemaleStuddedChest ), 31 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StuddedBustierArms ), 23 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FemalePlateChest), 103 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FemaleLeatherChest ), 18 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LeatherBustierArms ), 12 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LeatherShorts ), 14 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LeatherSkirt ), 12 ); } 
+				// Containers
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Bag), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pouch), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Backpack), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SkinningKnife), 7);
+
+				// Leather armor
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FemaleStuddedChest), 31);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(StuddedBustierArms), 23);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FemalePlateChest), 103);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(FemaleLeatherChest), 18);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LeatherBustierArms), 12);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LeatherShorts), 14);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LeatherSkirt), 12);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBTavernKeeper : SBInfo
@@ -6840,230 +8399,552 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Thief vendor.
+	/// Sells thieving tools, lockpicks, keys, disguise kits, and related items.
+	/// </summary>
 	public class SBThief : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBThief class.
+		/// </summary>
 		public SBThief()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Backpack ), 100, Utility.Random( 1,100 ), 0x53D5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Pouch ), 6, Utility.Random( 1,100 ), 0xE79, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Torch ), 8, Utility.Random( 1,100 ), 0xF6B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Lantern ), 2, Utility.Random( 1,100 ), 0xA25, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( LearnStealingBook ), 5, Utility.Random( 1,100 ), 0x4C5C, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( LearnTraps ), 5, Utility.Random( 1,100 ), 0xFF2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Lockpick ), 15, Utility.Random( 1,100 ), 0x14FC, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SkeletonsKey ), Utility.Random( 100,500 ), 25, 0x410A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBox ), 14, Utility.Random( 1,100 ), 0x9AA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Key ), 2, Utility.Random( 1,100 ), 0x100E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1041060", typeof( HairDye ), 100, Utility.Random( 1,100 ), 0xEFF, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "hair dye bottle", typeof( HairDyeBottle ), 1000, Utility.Random( 1,100 ), 0xE0F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DisguiseKit ), 700, Utility.Random( 1,5 ), 0xE05, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PackGrenade ), 100, Utility.Random( 1,100 ), 0x25FD, 0 ) ); }
-				Add( new GenericBuyInfo( typeof( CorruptedMoonStone ), 5000, 5, 0xF8B, 0 ) );
+				// Containers (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Backpack), StoreSalesListConstants.PRICE_BACKPACK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BACKPACK);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Pouch), StoreSalesListConstants.PRICE_POUCH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_POUCH);
+
+				// Light sources (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Torch), StoreSalesListConstants.PRICE_TORCH, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_TORCH);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Lantern), StoreSalesListConstants.PRICE_LANTERN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LANTERN);
+
+				// Training books (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(LearnStealingBook), StoreSalesListConstants.PRICE_LEARN_STEALING_BOOK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEARN_STEALING_BOOK);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(LearnTraps), StoreSalesListConstants.PRICE_LEARN_TRAPS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LEARN_TRAPS);
+
+				// Lockpicking tools (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Lockpick), StoreSalesListConstants.PRICE_LOCKPICK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LOCKPICK);
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(SkeletonsKey), Utility.Random(StoreSalesListConstants.PRICE_SKELETONS_KEY_MIN, StoreSalesListConstants.PRICE_SKELETONS_KEY_MAX), StoreSalesListConstants.QTY_SKELETONS_KEY, StoreSalesListConstants.ITEMID_SKELETONS_KEY, 0));
+				}
+
+				// Containers and keys (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBox), StoreSalesListConstants.PRICE_WOODEN_BOX, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOX);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Key), StoreSalesListConstants.PRICE_KEY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_KEY);
+
+				// Disguise items (chance-based)
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo("1041060", typeof(HairDye), StoreSalesListConstants.PRICE_HAIR_DYE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_HAIR_DYE, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo("hair dye bottle", typeof(HairDyeBottle), StoreSalesListConstants.PRICE_HAIR_DYE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_HAIR_DYE_BOTTLE, 0)); }
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DisguiseKit), StoreSalesListConstants.PRICE_DISGUISE_KIT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_DISGUISE_KIT);
+
+				// Special items (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PackGrenade), StoreSalesListConstants.PRICE_PACK_GRENADE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PACK_GRENADE);
+
+				// Rare item (always available)
+				StoreSalesListHelper.AddBuyItem(this, typeof(CorruptedMoonStone), StoreSalesListConstants.PRICE_CORRUPTED_MOON_STONE, StoreSalesListConstants.QTY_CORRUPTED_MOON_STONE, StoreSalesListConstants.ITEMID_CORRUPTED_MOON_STONE);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Backpack ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pouch ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Torch ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Lantern ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Lockpick ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenBox ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HairDye ), 50 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( HairDyeBottle ), 300 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkeletonsKey ), 10 ); } 
+				// Containers
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Backpack), 7);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pouch), 3);
+
+				// Light sources
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Torch), 3);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Lantern), 1);
+
+				// Tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Lockpick), 6);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodenBox), 7);
+
+				// Disguise items
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HairDye), 50);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HairDyeBottle), 300);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SkeletonsKey), 10);
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Tinker vendor.
+	/// Sells tools, mechanical parts, keys, lockpicks, harvesters, barrels, and various tinkering supplies.
+	/// </summary>
 	public class SBTinker: SBInfo 
 	{ 
-		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
-		private IShopSellInfo m_SellInfo = new InternalSellInfo(); 
+		#region Fields
 
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo(); 
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBTinker class.
+		/// </summary>
 		public SBTinker() 
 		{ 
-		} 
+		}
 
-		public override IShopSellInfo SellInfo { get { return m_SellInfo; } } 
-		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } } 
+		#endregion
 
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion 
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo> 
 		{ 
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo() 
 			{
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Clock ), 22, Utility.Random( 1,100 ), 0x104B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Nails ), 3, Utility.Random( 1,100 ), 0x102E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ClockParts ), 3, Utility.Random( 1,100 ), 0x104F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AxleGears ), 3, Utility.Random( 1,100 ), 0x1051, 0 ) ); } 
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Gears ), 2, Utility.Random( 1,100 ), 0x1053, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Hinge ), 2, Utility.Random( 1,100 ), 0x1055, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Sextant ), 13, Utility.Random( 1,100 ), 0x1057, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SextantParts ), 5, Utility.Random( 1,100 ), 0x1059, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Axle ), 2, Utility.Random( 1,100 ), 0x105B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Springs ), 3, Utility.Random( 1,100 ), 0x105D, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1024111", typeof( Key ), 8, Utility.Random( 1,100 ), 0x100F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1024112", typeof( Key ), 8, Utility.Random( 1,100 ), 0x1010, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( "1024115", typeof( Key ), 8, Utility.Random( 1,100 ), 0x1013, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( KeyRing ), 8, Utility.Random( 1,100 ), 0x1010, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Lockpick ), 12, Utility.Random( 1,100 ), 0x14FC, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SkeletonsKey ), Utility.Random( 200,750 ), 10, 0x410A, 0 ) ); }
-				Add( new GenericBuyInfo( typeof( TinkersTools ), 750, Utility.Random( 1,10 ), 0x1EBC, 0 ) ); 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Board ), 3, Utility.Random( 1,100 ), 0x1BD7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( IronIngot ), 5, Utility.Random( 1,100 ), 0x1BF2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SewingKit ), 3, Utility.Random( 1,100 ), 0x4C81, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DrawKnife ), 10, Utility.Random( 1,100 ), 0x10E4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Froe ), 10, Utility.Random( 1,100 ), 0x10E5, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Scorp ), 10, Utility.Random( 1,100 ), 0x10E7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Inshave ), 10, Utility.Random( 1,100 ), 0x10E6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ButcherKnife ), 13, Utility.Random( 1,100 ), 0x13F6, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Scissors ), 11, Utility.Random( 1,100 ), 0xF9F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Tongs ), 13, Utility.Random( 1,100 ), 0xFBB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DovetailSaw ), 12, Utility.Random( 1,100 ), 0x1028, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Saw ), 100, Utility.Random( 1,100 ), 0x1034, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Hammer ), 17, Utility.Random( 1,100 ), 0x102A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SmithHammer ), 23, Utility.Random( 1,100 ), 0x0FB4, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Shovel ), 12, Utility.Random( 1,100 ), 0xF39, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( OreShovel ), 10, Utility.Random( 1,100 ), 0xF39, 0x96D ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MouldingPlane ), 11, Utility.Random( 1,100 ), 0x102C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( JointingPlane ), 10, Utility.Random( 1,100 ), 0x1030, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( SmoothingPlane ), 11, Utility.Random( 1,100 ), 0x1032, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( WoodworkingTools ), 10, Utility.Random( 10,30 ), 0x4F52, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Pickaxe ), 25, Utility.Random( 1,100 ), 0xE86, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ThrowingWeapon ), 2, Utility.Random( 20, 120 ), 0x52B2, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WallTorch ), 50, Utility.Random( 5,20 ), 0xA07, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new GenericBuyInfo( typeof( ColoredWallTorch ), 100, Utility.Random( 5,20 ), 0x3D89, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( light_dragon_brazier ), 750, Utility.Random( 1,100 ), 0x194E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( TrapKit ), 420, Utility.Random( 1,5 ), 0x1EBB, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( PianoAddonDeed ), Utility.Random( 100000,200000 ), 1, 0x14F0, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PoorMiningHarvester ), 15000, Utility.Random( 1,2 ), 0x5484, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( StandardMiningHarvester ), 75000, Utility.Random( 1,2 ), 0x5484, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( GoodMiningHarvester ), 225000, Utility.Random( 1,2 ), 0x5484, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PoorLumberHarvester ), 15000, Utility.Random( 1,2 ), 0x5486, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( StandardLumberHarvester ), 75000, Utility.Random( 1,2 ), 0x5486, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PoorHideHarvester ), 15000, Utility.Random( 1,2 ), 0x5487, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( StandardHideHarvester ), 75000, Utility.Random( 1,2 ), 0x5487, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( HarvesterRepairKit ), 7500, Utility.Random( 1,2 ), 0x4C2C, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CiderBarrel ), 20000, Utility.Random( 1,4 ), 0x3DB9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AleBarrel ), 20000, Utility.Random( 1,4 ), 0x3DB9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LiquorBarrel ), 20000, Utility.Random( 1,4 ), 0x3DB9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CheesePress ), 20000, Utility.Random( 1,4 ), 0x3DB9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( DeviceKit), 1000, Utility.Random( 1,2 ), 0x4F86, 0 ) ); }
-                if (MyServerSettings.SellChance()) { Add(new GenericBuyInfo(typeof(GogglesofScience), 1000, Utility.Random(1, 2), 0x3172, 0)); }
+				// Clocks and mechanical parts (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Clock), StoreSalesListConstants.PRICE_CLOCK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CLOCK);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Nails), StoreSalesListConstants.PRICE_NAILS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_NAILS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ClockParts), StoreSalesListConstants.PRICE_CLOCK_PARTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CLOCK_PARTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(AxleGears), StoreSalesListConstants.PRICE_AXLE_GEARS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_AXLE_GEARS);
 
-            } 
-		} 
+				// Gears (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Gears), StoreSalesListConstants.PRICE_GEARS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GEARS);
 
+				// More mechanical parts (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Hinge), StoreSalesListConstants.PRICE_HINGE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HINGE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Sextant), StoreSalesListConstants.PRICE_SEXTANT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SEXTANT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SextantParts), StoreSalesListConstants.PRICE_SEXTANT_PARTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SEXTANT_PARTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Axle), StoreSalesListConstants.PRICE_AXLE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_AXLE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Springs), StoreSalesListConstants.PRICE_SPRINGS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SPRINGS);
+
+				// Keys (with chance, multiple variants)
+				StoreSalesListHelper.AddBuyItemWithNameWithChanceRandom(this, "1024111", typeof(Key), StoreSalesListConstants.PRICE_KEY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_KEY_1);
+				StoreSalesListHelper.AddBuyItemWithNameWithChanceRandom(this, "1024112", typeof(Key), StoreSalesListConstants.PRICE_KEY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_KEY_2);
+				StoreSalesListHelper.AddBuyItemWithNameWithChanceRandom(this, "1024115", typeof(Key), StoreSalesListConstants.PRICE_KEY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_KEY_3);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(KeyRing), StoreSalesListConstants.PRICE_KEY_RING, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_KEY_RING);
+
+				// Lockpicking tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Lockpick), StoreSalesListConstants.PRICE_LOCKPICK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LOCKPICK);
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(SkeletonsKey), Utility.Random(StoreSalesListConstants.PRICE_SKELETONS_KEY_MIN, StoreSalesListConstants.PRICE_SKELETONS_KEY_MAX), StoreSalesListConstants.QTY_SKELETONS_KEY, StoreSalesListConstants.ITEMID_SKELETONS_KEY, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// TinkersTools (always available)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(TinkersTools), StoreSalesListConstants.PRICE_TINKERS_TOOLS, StoreSalesListConstants.QTY_TINKERS_TOOLS_MIN, StoreSalesListConstants.QTY_TINKERS_TOOLS_MAX, StoreSalesListConstants.ITEMID_TINKERS_TOOLS); 
+				// Materials and tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Board), StoreSalesListConstants.PRICE_BOARD, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BOARD);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(IronIngot), StoreSalesListConstants.PRICE_IRON_INGOT, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_IRON_INGOT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SewingKit), StoreSalesListConstants.PRICE_SEWING_KIT_TINKER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SEWING_KIT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DrawKnife), StoreSalesListConstants.PRICE_DRAW_KNIFE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_DRAW_KNIFE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Froe), StoreSalesListConstants.PRICE_FROE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_FROE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Scorp), StoreSalesListConstants.PRICE_SCORP, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SCORP);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Inshave), StoreSalesListConstants.PRICE_INSHAVE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_INSHAVE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ButcherKnife), StoreSalesListConstants.PRICE_BUTCHER_KNIFE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BUTCHER_KNIFE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Scissors), StoreSalesListConstants.PRICE_SCISSORS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SCISSORS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Tongs), StoreSalesListConstants.PRICE_TONGS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_TONGS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DovetailSaw), StoreSalesListConstants.PRICE_DOVETAIL_SAW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_DOVETAIL_SAW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Saw), StoreSalesListConstants.PRICE_SAW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SAW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Hammer), StoreSalesListConstants.PRICE_HAMMER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_HAMMER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SmithHammer), StoreSalesListConstants.PRICE_SMITH_HAMMER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SMITH_HAMMER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Shovel), StoreSalesListConstants.PRICE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SHOVEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(OreShovel), StoreSalesListConstants.PRICE_ORE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_ORE_SHOVEL, StoreSalesListConstants.HUE_ORE_SHOVEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MouldingPlane), StoreSalesListConstants.PRICE_MOULDING_PLANE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MOULDING_PLANE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(JointingPlane), StoreSalesListConstants.PRICE_JOINTING_PLANE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_JOINTING_PLANE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SmoothingPlane), StoreSalesListConstants.PRICE_SMOOTHING_PLANE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SMOOTHING_PLANE);
+
+				// WoodworkingTools (always available, different quantity range)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(WoodworkingTools), StoreSalesListConstants.PRICE_WOODWORKING_TOOLS, StoreSalesListConstants.QTY_WOODWORKING_TOOLS_MIN, StoreSalesListConstants.QTY_WOODWORKING_TOOLS_MAX, StoreSalesListConstants.ITEMID_WOODWORKING_TOOLS);
+
+				// More tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Pickaxe), StoreSalesListConstants.PRICE_PICKAXE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PICKAXE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ThrowingWeapon), StoreSalesListConstants.PRICE_THROWING_WEAPON, StoreSalesListConstants.QTY_THROWING_WEAPON_MIN, StoreSalesListConstants.QTY_THROWING_WEAPON_MAX, StoreSalesListConstants.ITEMID_THROWING_WEAPON);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WallTorch), StoreSalesListConstants.PRICE_WALL_TORCH, StoreSalesListConstants.QTY_WALL_TORCH_MIN, StoreSalesListConstants.QTY_WALL_TORCH_MAX, StoreSalesListConstants.ITEMID_WALL_TORCH);
+
+				// ColoredWallTorch (very rare chance)
+				if (MyServerSettings.SellVeryRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(ColoredWallTorch), StoreSalesListConstants.PRICE_COLORED_WALL_TORCH, Utility.Random(StoreSalesListConstants.QTY_WALL_TORCH_MIN, StoreSalesListConstants.QTY_WALL_TORCH_MAX), StoreSalesListConstants.ITEMID_COLORED_WALL_TORCH, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(light_dragon_brazier), StoreSalesListConstants.PRICE_LIGHT_DRAGON_BRAZIER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LIGHT_DRAGON_BRAZIER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(TrapKit), StoreSalesListConstants.PRICE_TRAP_KIT, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_TRAP_KIT);
+				// PianoAddonDeed (rare chance, random price)
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(PianoAddonDeed), Utility.Random(StoreSalesListConstants.PRICE_PIANO_ADDON_DEED_MIN, StoreSalesListConstants.PRICE_PIANO_ADDON_DEED_MAX), 1, StoreSalesListConstants.ITEMID_PIANO_ADDON_DEED, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Harvesters (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PoorMiningHarvester), StoreSalesListConstants.PRICE_POOR_MINING_HARVESTER, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_MINING_HARVESTER);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(StandardMiningHarvester), StoreSalesListConstants.PRICE_STANDARD_MINING_HARVESTER, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_MINING_HARVESTER);
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(GoodMiningHarvester), StoreSalesListConstants.PRICE_GOOD_MINING_HARVESTER, Utility.Random(StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX), StoreSalesListConstants.ITEMID_MINING_HARVESTER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PoorLumberHarvester), StoreSalesListConstants.PRICE_POOR_LUMBER_HARVESTER, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_LUMBER_HARVESTER);
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(StandardLumberHarvester), StoreSalesListConstants.PRICE_STANDARD_LUMBER_HARVESTER, Utility.Random(StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX), StoreSalesListConstants.ITEMID_LUMBER_HARVESTER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PoorHideHarvester), StoreSalesListConstants.PRICE_POOR_HIDE_HARVESTER, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_HIDE_HARVESTER);
+				if (MyServerSettings.SellRareChance())
+				{
+					Add(new GenericBuyInfo(typeof(StandardHideHarvester), StoreSalesListConstants.PRICE_STANDARD_HIDE_HARVESTER, Utility.Random(StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX), StoreSalesListConstants.ITEMID_HIDE_HARVESTER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HarvesterRepairKit), StoreSalesListConstants.PRICE_HARVESTER_REPAIR_KIT, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_HARVESTER_REPAIR_KIT);
+
+				// Barrels and presses (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CiderBarrel), StoreSalesListConstants.PRICE_CIDER_BARREL, StoreSalesListConstants.QTY_BARREL_MIN, StoreSalesListConstants.QTY_BARREL_MAX, StoreSalesListConstants.ITEMID_BARREL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(AleBarrel), StoreSalesListConstants.PRICE_ALE_BARREL, StoreSalesListConstants.QTY_BARREL_MIN, StoreSalesListConstants.QTY_BARREL_MAX, StoreSalesListConstants.ITEMID_BARREL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LiquorBarrel), StoreSalesListConstants.PRICE_LIQUOR_BARREL, StoreSalesListConstants.QTY_BARREL_MIN, StoreSalesListConstants.QTY_BARREL_MAX, StoreSalesListConstants.ITEMID_BARREL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CheesePress), StoreSalesListConstants.PRICE_CHEESE_PRESS, StoreSalesListConstants.QTY_BARREL_MIN, StoreSalesListConstants.QTY_BARREL_MAX, StoreSalesListConstants.ITEMID_BARREL);
+
+				// DeviceKit and GogglesofScience (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(DeviceKit), StoreSalesListConstants.PRICE_DEVICE_KIT, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_DEVICE_KIT);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(GogglesofScience), StoreSalesListConstants.PRICE_GOGGLES_OF_SCIENCE, StoreSalesListConstants.QTY_DEVICE_KIT_MIN, StoreSalesListConstants.QTY_DEVICE_KIT_MAX, StoreSalesListConstants.ITEMID_GOGGLES_OF_SCIENCE);
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo 
 		{ 
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo() 
 			{
-				if ( MyServerSettings.BuyCommonChance() ){Add( typeof( LootChest ), 600 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Shovel ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( OreShovel ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SewingKit ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Scissors ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Tongs ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Key ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DovetailSaw ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MouldingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Nails ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( JointingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SmoothingPlane ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Saw ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Clock ), 11 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ClockParts ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AxleGears ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Gears ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Hinge ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Sextant ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SextantParts ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Axle ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Springs ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DrawKnife ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Froe ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Inshave ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodworkingTools ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Scorp ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Lockpick ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkeletonsKey ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TinkerTools ), 5 ); }
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Board ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Log ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Pickaxe ), 16 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Hammer ), 3 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SmithHammer ), 11 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ButcherKnife ), 6 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( CrystalScales ), Utility.Random( 250,500 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( GolemManual ), Utility.Random( 500,750 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PowerCrystal ), 100 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ArcaneGem ), 10 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ClockworkAssembly ), 100 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( BottleOil ), 5 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ThrowingWeapon ), 1 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( TrapKit ), 210 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkA ), Utility.Random( 5, 10 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkB ), Utility.Random( 10, 20 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkC ), Utility.Random( 15, 30 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkD ), Utility.Random( 20, 40 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkE ), Utility.Random( 25, 50 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkF ), Utility.Random( 30, 60 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkG ), Utility.Random( 35, 70 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkH ), Utility.Random( 40, 80 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkI ), Utility.Random( 45, 90 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkJ ), Utility.Random( 50, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkK ), Utility.Random( 55, 110 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkL ), Utility.Random( 60, 120 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkM ), Utility.Random( 65, 130 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkN ), Utility.Random( 70, 140 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkO ), Utility.Random( 75, 150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkP ), Utility.Random( 80, 160 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkQ ), Utility.Random( 85, 170 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkR ), Utility.Random( 90, 180 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkS ), Utility.Random( 95, 190 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkT ), Utility.Random( 100, 200 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkU ), Utility.Random( 105, 210 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkV ), Utility.Random( 110, 220 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkW ), Utility.Random( 115, 230 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkX ), Utility.Random( 120, 240 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkY ), Utility.Random( 125, 250 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SpaceJunkZ ), Utility.Random( 130, 260 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LandmineSetup ), Utility.Random( 100, 300 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PlasmaGrenade ), Utility.Random( 28, 38 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( ThermalDetonator ), Utility.Random( 28, 38 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PuzzleCube ), Utility.Random( 45, 90 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PlasmaTorch ), Utility.Random( 45, 90 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DuctTape ), Utility.Random( 45, 90 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotBatteries ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotSheetMetal ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotOil ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotGears ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotEngineParts ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotCircuitBoard ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotBolt ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotTransistor ), Utility.Random( 5, 100 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RobotSchematics ), Utility.Random( 500,750 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DataPad ), Utility.Random( 5, 150 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MaterialLiquifier ), Utility.Random( 100, 300 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Chainsaw ), Utility.Random( 130, 260 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( PortableSmelter ), Utility.Random( 130, 260 ) ); } 
-			} 
-		} 
+				// Containers
+				if (MyServerSettings.BuyCommonChance())
+				{
+					Add(typeof(LootChest), 600);
+				}
+
+				// Tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Shovel), StoreSalesListConstants.SELL_PRICE_SHOVEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(OreShovel), StoreSalesListConstants.SELL_PRICE_ORE_SHOVEL);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SewingKit), StoreSalesListConstants.SELL_PRICE_SEWING_KIT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Scissors), StoreSalesListConstants.SELL_PRICE_SCISSORS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Tongs), StoreSalesListConstants.SELL_PRICE_TONGS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Key), StoreSalesListConstants.SELL_PRICE_KEY);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DovetailSaw), StoreSalesListConstants.SELL_PRICE_DOVETAIL_SAW);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(MouldingPlane), StoreSalesListConstants.SELL_PRICE_MOULDING_PLANE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Nails), StoreSalesListConstants.SELL_PRICE_NAILS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(JointingPlane), StoreSalesListConstants.SELL_PRICE_JOINTING_PLANE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SmoothingPlane), StoreSalesListConstants.SELL_PRICE_SMOOTHING_PLANE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Saw), StoreSalesListConstants.SELL_PRICE_SAW);
+
+				// Clock and mechanical parts
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Clock), StoreSalesListConstants.SELL_PRICE_CLOCK);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ClockParts), StoreSalesListConstants.SELL_PRICE_CLOCK_PARTS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(AxleGears), StoreSalesListConstants.SELL_PRICE_AXLE_GEARS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Gears), StoreSalesListConstants.SELL_PRICE_GEARS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Hinge), StoreSalesListConstants.SELL_PRICE_HINGE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Sextant), StoreSalesListConstants.SELL_PRICE_SEXTANT);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SextantParts), StoreSalesListConstants.SELL_PRICE_SEXTANT_PARTS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Axle), StoreSalesListConstants.SELL_PRICE_AXLE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Springs), StoreSalesListConstants.SELL_PRICE_SPRINGS);
+
+				// Woodworking tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(DrawKnife), StoreSalesListConstants.SELL_PRICE_DRAW_KNIFE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Froe), StoreSalesListConstants.SELL_PRICE_FROE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Inshave), StoreSalesListConstants.SELL_PRICE_INSHAVE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(WoodworkingTools), StoreSalesListConstants.SELL_PRICE_WOODWORKING_TOOLS);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Scorp), StoreSalesListConstants.SELL_PRICE_SCORP);
+
+				// Lockpicking tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Lockpick), StoreSalesListConstants.SELL_PRICE_LOCKPICK);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SkeletonsKey), StoreSalesListConstants.SELL_PRICE_SKELETONS_KEY);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TinkerTools), StoreSalesListConstants.SELL_PRICE_TINKER_TOOLS);
+
+				// Materials
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Board), StoreSalesListConstants.SELL_PRICE_BOARD);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Log), StoreSalesListConstants.SELL_PRICE_LOG);
+
+				// More tools
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Pickaxe), StoreSalesListConstants.SELL_PRICE_PICKAXE);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Hammer), StoreSalesListConstants.SELL_PRICE_HAMMER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(SmithHammer), StoreSalesListConstants.SELL_PRICE_SMITH_HAMMER);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ButcherKnife), StoreSalesListConstants.SELL_PRICE_BUTCHER_KNIFE); 
+				// Special items (with chance, random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(CrystalScales), Utility.Random(250, 500));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(GolemManual), Utility.Random(500, 750));
+				}
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(PowerCrystal), 100);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ArcaneGem), 10);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ClockworkAssembly), 100);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(BottleOil), 5);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(ThrowingWeapon), StoreSalesListConstants.SELL_PRICE_THROWING_WEAPON);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(TrapKit), StoreSalesListConstants.SELL_PRICE_TRAP_KIT);
+
+				// Space junk items (with chance, random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkA), Utility.Random(5, 10));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkB), Utility.Random(10, 20));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkC), Utility.Random(15, 30));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkD), Utility.Random(20, 40));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkE), Utility.Random(25, 50));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkF), Utility.Random(30, 60));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkG), Utility.Random(35, 70));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkH), Utility.Random(40, 80));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkI), Utility.Random(45, 90));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkJ), Utility.Random(50, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkK), Utility.Random(55, 110));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkL), Utility.Random(60, 120));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkM), Utility.Random(65, 130));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkN), Utility.Random(70, 140));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkO), Utility.Random(75, 150));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkP), Utility.Random(80, 160));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkQ), Utility.Random(85, 170));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkR), Utility.Random(90, 180));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkS), Utility.Random(95, 190));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkT), Utility.Random(100, 200));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkU), Utility.Random(105, 210));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkV), Utility.Random(110, 220));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkW), Utility.Random(115, 230));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkX), Utility.Random(120, 240));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkY), Utility.Random(125, 250));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SpaceJunkZ), Utility.Random(130, 260));
+				}
+
+				// Robot and advanced items (with chance, random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(LandmineSetup), Utility.Random(100, 300));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(PlasmaGrenade), Utility.Random(28, 38));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(ThermalDetonator), Utility.Random(28, 38));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(PuzzleCube), Utility.Random(45, 90));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(PlasmaTorch), Utility.Random(45, 90));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DuctTape), Utility.Random(45, 90));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotBatteries), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotSheetMetal), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotOil), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotGears), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotEngineParts), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotCircuitBoard), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotBolt), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotTransistor), Utility.Random(5, 100));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(RobotSchematics), Utility.Random(500, 750));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DataPad), Utility.Random(5, 150));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MaterialLiquifier), Utility.Random(100, 300));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(Chainsaw), Utility.Random(130, 260));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(PortableSmelter), Utility.Random(130, 260));
+				}
+			}
+		}
+
+		#endregion
 	} 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -7218,99 +9099,222 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Veterinarian vendor.
+	/// Sells medical supplies, potions, and hitching posts for animal care.
+	/// </summary>
 	public class SBVeterinarian : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBVeterinarian class.
+		/// </summary>
 		public SBVeterinarian()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( Bandage ), 2, Utility.Random( 10,150 ), 0xE21, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LesserHealPotion ), 100, Utility.Random( 1,100 ), 0x25FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Ginseng ), 3, Utility.Random( 1,100 ), 0xF85, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( Garlic ), 3, Utility.Random( 1,100 ), 0xF84, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( RefreshPotion ), 100, Utility.Random( 1,100 ), 0xF0B, 0 ) ); }
-				if ( MyServerSettings.SellCommonChance() ){Add( new GenericBuyInfo( typeof( HitchingPost ), 10000, Utility.Random( 1,3 ), 0x14E7, 0 ) ); }
+				// Medical supplies (always available or with chance)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(Bandage), StoreSalesListConstants.PRICE_BANDAGE_VETERINARIAN, StoreSalesListConstants.QTY_BANDAGE_VETERINARIAN_MIN, StoreSalesListConstants.QTY_BANDAGE_VETERINARIAN_MAX, StoreSalesListConstants.ITEMID_BANDAGE_VETERINARIAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LesserHealPotion), StoreSalesListConstants.PRICE_LESSER_HEAL_POTION_VETERINARIAN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LESSER_HEAL_POTION_VETERINARIAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Ginseng), StoreSalesListConstants.PRICE_GINSENG_VETERINARIAN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GINSENG_VETERINARIAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Garlic), StoreSalesListConstants.PRICE_GARLIC_VETERINARIAN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GARLIC_VETERINARIAN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(RefreshPotion), StoreSalesListConstants.PRICE_REFRESH_POTION_VETERINARIAN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_REFRESH_POTION_VETERINARIAN);
+
+				// Animal care equipment (common chance)
+				if (MyServerSettings.SellCommonChance())
+				{
+					Add(new GenericBuyInfo(typeof(HitchingPost), StoreSalesListConstants.PRICE_HITCHING_POST, Utility.Random(StoreSalesListConstants.QTY_HITCHING_POST_MIN, StoreSalesListConstants.QTY_HITCHING_POST_MAX), StoreSalesListConstants.ITEMID_HITCHING_POST, StoreSalesListConstants.HUE_DEFAULT));
+				}
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				if ( MyServerSettings.BuyChance() ){Add( typeof( LesserHealPotion ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( RefreshPotion ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Garlic ), 2 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( Ginseng ), 2 ); } 
-				if ( MyServerSettings.BuyCommonChance() ){Add( typeof( HitchingPost ), 2500 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( AlienEgg ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DragonEgg ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( FirstAidKit ), Utility.Random( 100,250 ) ); } 
+				// Medical supplies
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(LesserHealPotion), StoreSalesListConstants.SELL_PRICE_LESSER_HEAL_POTION_VETERINARIAN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(RefreshPotion), StoreSalesListConstants.SELL_PRICE_REFRESH_POTION_VETERINARIAN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Garlic), StoreSalesListConstants.SELL_PRICE_GARLIC_VETERINARIAN);
+				StoreSalesListHelper.AddSellItemWithChance(this, typeof(Ginseng), StoreSalesListConstants.SELL_PRICE_GINSENG_VETERINARIAN);
+
+				// Animal care equipment
+				if (MyServerSettings.BuyCommonChance())
+				{
+					Add(typeof(HitchingPost), StoreSalesListConstants.SELL_PRICE_HITCHING_POST);
+				}
+
+				// Animal-related items (random prices)
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(AlienEgg), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MIN, StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DragonEgg), Utility.Random(StoreSalesListConstants.SELL_PRICE_DRAGON_EGG_MIN, StoreSalesListConstants.SELL_PRICE_DRAGON_EGG_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(FirstAidKit), Utility.Random(StoreSalesListConstants.SELL_PRICE_FIRST_AID_KIT_VETERINARIAN_MIN, StoreSalesListConstants.SELL_PRICE_FIRST_AID_KIT_VETERINARIAN_MAX));
+				}
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Waiter vendor.
+	/// Sells beverages, food, and meal items.
+	/// </summary>
 	public class SBWaiter : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBWaiter class.
+		/// </summary>
 		public SBWaiter()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Ale, 70, Utility.Random( 1,100 ), 0x99F, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Wine, 70, Utility.Random( 1,100 ), 0x9C7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( BeverageBottle ), BeverageType.Liquor, 70, Utility.Random( 1,100 ), 0x99B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Jug ), BeverageType.Cider, 130, Utility.Random( 1,100 ), 0x9C8, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Milk, 180, Utility.Random( 1,100 ), 0x9F0, 0 ) ); }
-				if ( 1 > 0 ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Ale, 110, Utility.Random( 1,100 ), 0x1F95, 0 ) ); }
-				Add( new GenericBuyInfo( typeof( Pitcher ), 3, Utility.Random( 50,100 ), 0x1F97, 0 ) );
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Cider, 110, Utility.Random( 1,100 ), 0x1F97, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Liquor, 110, Utility.Random( 1,100 ), 0x1F99, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Wine, 110, Utility.Random( 1,100 ), 0x1F9B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new BeverageBuyInfo( typeof( Pitcher ), BeverageType.Water, 90, Utility.Random( 1,100 ), 0x1F9D, 0 ) ); }
-				if ( 1 > 0 ){Add( new GenericBuyInfo( typeof( BreadLoaf ), 60, Utility.Random( 1,100 ), 0x103B, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CheeseWheel ), 410, Utility.Random( 1,100 ), 0x97E, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( CookedBird ), 170, Utility.Random( 1,100 ), 0x9B7, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( LambLeg ), 80, Utility.Random( 1,100 ), 0x160A, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCarrots ), 30, Utility.Random( 1,100 ), 0x15F9, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FA, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FB, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x15FC, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( EmptyPewterBowl ), 5, Utility.Random( 1,100 ), 0x15FD, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfCorn ), 30, Utility.Random( 1,100 ), 0x15FE, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfLettuce ), 30, Utility.Random( 1,100 ), 0x15FF, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfPeas ), 30, Utility.Random( 1,100 ), 0x1600, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PewterBowlOfFoodPotatos ), 30, Utility.Random( 1,100 ), 0x1601, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfStew ), 30, Utility.Random( 1,100 ), 0x1604, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WoodenBowlOfTomatoSoup ), 30, Utility.Random( 1,100 ), 0x1606, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( ApplePie ), 70, Utility.Random( 1,100 ), 0x1041, 0 ) ); } //OSI just has Pie, not Apple/Fruit/Meat
+				// Beverages (chance-based)
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Ale, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_ALE, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Wine, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_WINE, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(BeverageBottle), BeverageType.Liquor, StoreSalesListConstants.PRICE_BEVERAGE_BOTTLE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_BEVERAGE_BOTTLE_LIQUOR, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Jug), BeverageType.Cider, StoreSalesListConstants.PRICE_JUG_CIDER, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_JUG_CIDER, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Milk, StoreSalesListConstants.PRICE_PITCHER_MILK, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_MILK, 0)); }
+
+				// Pitchers (always available and chance-based)
+				Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Ale, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_ALE, 0));
+				Add(new GenericBuyInfo(typeof(Pitcher), StoreSalesListConstants.PRICE_PITCHER_EMPTY, Utility.Random(StoreSalesListConstants.QTY_PITCHER_EMPTY_MIN, StoreSalesListConstants.QTY_PITCHER_EMPTY_MAX), StoreSalesListConstants.ITEMID_PITCHER_CIDER, 0));
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Cider, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_CIDER, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Liquor, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_LIQUOR, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Wine, StoreSalesListConstants.PRICE_PITCHER_BEVERAGE, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_WINE, 0)); }
+				if (MyServerSettings.SellChance()) { Add(new BeverageBuyInfo(typeof(Pitcher), BeverageType.Water, StoreSalesListConstants.PRICE_PITCHER_WATER, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100), StoreSalesListConstants.ITEMID_PITCHER_WATER, 0)); }
+
+				// Food (always available and chance-based)
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(BreadLoaf), StoreSalesListConstants.PRICE_BREAD_LOAF_WAITER, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_BREAD_PIE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CheeseWheel), StoreSalesListConstants.PRICE_CHEESE_WHEEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CHEESE_WHEEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CookedBird), StoreSalesListConstants.PRICE_COOKED_BIRD, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_COOKED_BIRD);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(LambLeg), StoreSalesListConstants.PRICE_LAMB_LEG, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_LAMB_LEG);
+
+				// Bowls and meals (chance-based)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCarrots), StoreSalesListConstants.PRICE_WOODEN_BOWL_CARROTS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CARROTS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfCorn), StoreSalesListConstants.PRICE_WOODEN_BOWL_CORN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfLettuce), StoreSalesListConstants.PRICE_WOODEN_BOWL_LETTUCE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfPeas), StoreSalesListConstants.PRICE_WOODEN_BOWL_PEAS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_PEAS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(EmptyPewterBowl), StoreSalesListConstants.PRICE_EMPTY_PEWTER_BOWL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_EMPTY_PEWTER_BOWL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfCorn), StoreSalesListConstants.PRICE_PEWTER_BOWL_CORN, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_CORN);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfLettuce), StoreSalesListConstants.PRICE_PEWTER_BOWL_LETTUCE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_LETTUCE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfPeas), StoreSalesListConstants.PRICE_PEWTER_BOWL_PEAS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_PEAS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(PewterBowlOfFoodPotatos), StoreSalesListConstants.PRICE_PEWTER_BOWL_POTATOS, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_PEWTER_BOWL_POTATOS);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfStew), StoreSalesListConstants.PRICE_WOODEN_BOWL_STEW, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_STEW);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WoodenBowlOfTomatoSoup), StoreSalesListConstants.PRICE_WOODEN_BOWL_TOMATO_SOUP, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_WOODEN_BOWL_TOMATO_SOUP);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(ApplePie), StoreSalesListConstants.PRICE_APPLE_PIE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_APPLE_PIE);
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
+				// No items to buy from players
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBWeaponSmith: SBInfo 
@@ -7405,295 +9409,730 @@ namespace Server.Mobiles
 		} 
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Necro Mage vendor.
+	/// Sells necrotic reagents, alchemy tools, necrotic scrolls, and dark magic supplies.
+	/// </summary>
 	public class SBNecroMage : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBNecroMage class.
+		/// </summary>
 		public SBNecroMage()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				Add( new GenericBuyInfo( typeof( BatWing ), 3, 20, 0xF78, 0 ) );
-				Add( new GenericBuyInfo( typeof( DaemonBlood ), 6, 20, 0xF7D, 0 ) );
-				Add( new GenericBuyInfo( typeof( PigIron ), 5, 20, 0xF8A, 0 ) );
-				Add( new GenericBuyInfo( typeof( NoxCrystal ), 6, 20, 0xF8E, 0 ) );
-				Add( new GenericBuyInfo( typeof( GraveDust ), 3, 20, 0xF8F, 0 ) );
-				Add( new GenericBuyInfo( typeof( BloodOathScroll ), 25, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( CorpseSkinScroll ), 28, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( CurseWeaponScroll ), 12, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( PolishBoneBrush ), 12, 10, 0x1371, 0 ) );
-				Add( new GenericBuyInfo( typeof( GraveShovel ), 12, Utility.Random( 1,100 ), 0xF39, 0x966 ) );
-				Add( new GenericBuyInfo( typeof( SurgeonsKnife ), 14, Utility.Random( 1,100 ), 0xEC4, 0x1B0 ) );
-				Add( new GenericBuyInfo( typeof( Jar ), 5, Utility.Random( 1,100 ), 0x10B4, 0 ) );
-				Add( new GenericBuyInfo( typeof( MixingCauldron ), 247, 1, 0x269C, 0 ) );
-				Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 1,100 ), 0x1E27, 0x979 ) );
-				Add( new GenericBuyInfo( typeof( CBookNecroticAlchemy ), 50, Utility.Random( 1,100 ), 0x2253, 0x4AA ) );
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
-				Add( new GenericBuyInfo( typeof( CorruptedMoonStone ), 5000, 5, 0xF8B, 0 ) );
+				AddReagents();
+				AddTools();
+				AddSpecialItems();
+			}
+
+			/// <summary>
+			/// Adds necrotic reagents to the buy list.
+			/// </summary>
+			private void AddReagents()
+			{
+				Add(new GenericBuyInfo(typeof(BatWing), StoreSalesListConstants.PRICE_BAT_WING_NECRO, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_BAT_WING, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(DaemonBlood), StoreSalesListConstants.PRICE_DAEMON_BLOOD, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_DAEMON_BLOOD, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(PigIron), StoreSalesListConstants.PRICE_PIG_IRON, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_PIG_IRON, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(NoxCrystal), StoreSalesListConstants.PRICE_NOX_CRYSTAL, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_NOX_CRYSTAL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(GraveDust), StoreSalesListConstants.PRICE_GRAVE_DUST, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_GRAVE_DUST, StoreSalesListConstants.HUE_DEFAULT));
+			}
+
+			/// <summary>
+			/// Adds tools and scrolls to the buy list.
+			/// </summary>
+			private void AddTools()
+			{
+				// Scrolls
+				Add(new GenericBuyInfo(typeof(BloodOathScroll), StoreSalesListConstants.PRICE_BLOOD_OATH_SCROLL, 5, StoreSalesListConstants.ITEMID_BLOOD_OATH_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(CorpseSkinScroll), StoreSalesListConstants.PRICE_CORPSE_SKIN_SCROLL, 5, StoreSalesListConstants.ITEMID_CORPSE_SKIN_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(CurseWeaponScroll), StoreSalesListConstants.PRICE_CURSE_WEAPON_SCROLL, 5, StoreSalesListConstants.ITEMID_CURSE_WEAPON_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+
+				// Tools
+				Add(new GenericBuyInfo(typeof(PolishBoneBrush), StoreSalesListConstants.PRICE_POLISH_BONE_BRUSH, 10, StoreSalesListConstants.ITEMID_POLISH_BONE_BRUSH, StoreSalesListConstants.HUE_DEFAULT));
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(GraveShovel), StoreSalesListConstants.PRICE_GRAVE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GRAVE_SHOVEL, StoreSalesListConstants.HUE_GRAVE_SHOVEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SurgeonsKnife), StoreSalesListConstants.PRICE_SURGEONS_KNIFE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SURGEONS_KNIFE, StoreSalesListConstants.HUE_SURGEONS_KNIFE);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Jar), StoreSalesListConstants.PRICE_JAR, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_JAR);
+				Add(new GenericBuyInfo(typeof(MixingCauldron), StoreSalesListConstants.PRICE_MIXING_CAULDRON, 1, StoreSalesListConstants.ITEMID_MIXING_CAULDRON, StoreSalesListConstants.HUE_DEFAULT));
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MixingSpoon), StoreSalesListConstants.PRICE_MIXING_SPOON_NECRO, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MIXING_SPOON_NECRO, StoreSalesListConstants.HUE_MIXING_SPOON_NECRO);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CBookNecroticAlchemy), StoreSalesListConstants.PRICE_CBOOK_NECROTIC_ALCHEMY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CBOOK_NECROTIC_ALCHEMY, StoreSalesListConstants.HUE_CBOOK_NECROTIC_ALCHEMY);
+			}
+
+			/// <summary>
+			/// Adds special and magical items to the buy list.
+			/// </summary>
+			private void AddSpecialItems()
+			{
+				// Alchemy tub (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(AlchemyTub), StoreSalesListConstants.PRICE_ALCHEMY_TUB, Utility.Random(StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX), StoreSalesListConstants.ITEMID_ALCHEMY_TUB, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Magical staves and tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStaff), StoreSalesListConstants.PRICE_WIZARD_STAFF, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STAFF, StoreSalesListConstants.HUE_WIZARD_STAFF);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStick), StoreSalesListConstants.PRICE_WIZARD_STICK, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STICK, StoreSalesListConstants.HUE_WIZARD_STICK);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MageEye), StoreSalesListConstants.PRICE_MAGE_EYE, StoreSalesListConstants.QTY_MEDIUM_MIN, StoreSalesListConstants.QTY_MEDIUM_MAX, StoreSalesListConstants.ITEMID_MAGE_EYE, StoreSalesListConstants.HUE_MAGE_EYE);
+
+				// Special items (always available)
+				Add(new GenericBuyInfo(typeof(CorruptedMoonStone), StoreSalesListConstants.PRICE_CORRUPTED_MOON_STONE, StoreSalesListConstants.QTY_CORRUPTED_MOON_STONE, StoreSalesListConstants.ITEMID_CORRUPTED_MOON_STONE, StoreSalesListConstants.HUE_DEFAULT));
 			}
 		}
 
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				Add( typeof( BatWing ), 1 );
-				Add( typeof( DaemonBlood ), 3 );
-				Add( typeof( PigIron ), 2 );
-				Add( typeof( NoxCrystal ), 3 );
-				Add( typeof( GraveDust ), 1 );
-				Add( typeof( ExorcismScroll ), 1 );
-				Add( typeof( AnimateDeadScroll ), 26 );
-				Add( typeof( BloodOathScroll ), 26 );
-				Add( typeof( CorpseSkinScroll ), 26 );
-				Add( typeof( CurseWeaponScroll ), 26 );
-				Add( typeof( EvilOmenScroll ), 26 );
-				Add( typeof( PainSpikeScroll ), 26 );
-				Add( typeof( SummonFamiliarScroll ), 26 );
-				Add( typeof( HorrificBeastScroll ), 27 );
-				Add( typeof( MindRotScroll ), 39 );
-				Add( typeof( PoisonStrikeScroll ), 39 );
-				Add( typeof( WraithFormScroll ), 51 );
-				Add( typeof( LichFormScroll ), 64 );
-				Add( typeof( StrangleScroll ), 64 );
-				Add( typeof( WitherScroll ), 64 );
-				Add( typeof( VampiricEmbraceScroll ), 101 );
-				Add( typeof( VengefulSpiritScroll ), 114 );
-				Add( typeof( PolishBoneBrush ), 6 );
-				Add( typeof( PolishedSkull ), 3 );
-				Add( typeof( PolishedBone ), 3 );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MixingCauldron ), 123 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MixingSpoon ), 17 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SurgeonsKnife ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullMinotaur ), Utility.Random( 50,150 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullWyrm ), Utility.Random( 200,400 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullGreatDragon ), Utility.Random( 300,600 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullDragon ), Utility.Random( 100,300 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullDemon ), Utility.Random( 100,300 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullGiant ), Utility.Random( 100,300 ) ); }  
-				Add( typeof( CorpseSailor ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( CorpseChest ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( BuriedBody ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( BoneContainer ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( LeftLeg ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RightLeg ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( TastyHeart ), Utility.RandomMinMax( 10, 20 ) );
-				Add( typeof( BodyPart ), Utility.RandomMinMax( 30, 90 ) );
-				Add( typeof( Head ), Utility.RandomMinMax( 10, 20 ) );
-				Add( typeof( LeftArm ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RightArm ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Torso ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Bone ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RibCage ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( BonePile ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Bones ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( GraveChest ), Utility.RandomMinMax( 100, 500 ) );
-				Add( typeof( AlchemyTub ), Utility.Random( 200, 500 ) );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenCoffin ), 25 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenCasket ), 25 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StoneCoffin ), 45 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StoneCasket ), 45 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DracolichSkull ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStaff ), 20 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStick ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( MageEye ), 1 ); } 
+				AddReagents();
+				AddScrolls();
+				AddTools();
+				AddBodyParts();
+				AddContainers();
+			}
+
+			/// <summary>
+			/// Adds necrotic reagents to the sell list.
+			/// </summary>
+			private void AddReagents()
+			{
+				Add(typeof(BatWing), StoreSalesListConstants.SELL_PRICE_BAT_WING);
+				Add(typeof(DaemonBlood), StoreSalesListConstants.SELL_PRICE_DAEMON_BLOOD);
+				Add(typeof(PigIron), StoreSalesListConstants.SELL_PRICE_PIG_IRON);
+				Add(typeof(NoxCrystal), StoreSalesListConstants.SELL_PRICE_NOX_CRYSTAL);
+				Add(typeof(GraveDust), StoreSalesListConstants.SELL_PRICE_GRAVE_DUST);
+			}
+
+			/// <summary>
+			/// Adds necrotic scrolls to the sell list.
+			/// </summary>
+			private void AddScrolls()
+			{
+				Add(typeof(ExorcismScroll), StoreSalesListConstants.SELL_PRICE_EXORCISM_SCROLL);
+				Add(typeof(AnimateDeadScroll), StoreSalesListConstants.SELL_PRICE_ANIMATE_DEAD_SCROLL);
+				Add(typeof(BloodOathScroll), StoreSalesListConstants.SELL_PRICE_BLOOD_OATH_SCROLL);
+				Add(typeof(CorpseSkinScroll), StoreSalesListConstants.SELL_PRICE_CORPSE_SKIN_SCROLL);
+				Add(typeof(CurseWeaponScroll), StoreSalesListConstants.SELL_PRICE_CURSE_WEAPON_SCROLL);
+				Add(typeof(EvilOmenScroll), StoreSalesListConstants.SELL_PRICE_EVIL_OMEN_SCROLL);
+				Add(typeof(PainSpikeScroll), StoreSalesListConstants.SELL_PRICE_PAIN_SPIKE_SCROLL);
+				Add(typeof(SummonFamiliarScroll), StoreSalesListConstants.SELL_PRICE_SUMMON_FAMILIAR_SCROLL);
+				Add(typeof(HorrificBeastScroll), StoreSalesListConstants.SELL_PRICE_HORRIFIC_BEAST_SCROLL);
+				Add(typeof(MindRotScroll), StoreSalesListConstants.SELL_PRICE_MIND_ROT_SCROLL);
+				Add(typeof(PoisonStrikeScroll), StoreSalesListConstants.SELL_PRICE_POISON_STRIKE_SCROLL);
+				Add(typeof(WraithFormScroll), StoreSalesListConstants.SELL_PRICE_WRAITH_FORM_SCROLL);
+				Add(typeof(LichFormScroll), StoreSalesListConstants.SELL_PRICE_LICH_FORM_SCROLL);
+				Add(typeof(StrangleScroll), StoreSalesListConstants.SELL_PRICE_STRANGLE_SCROLL);
+				Add(typeof(WitherScroll), StoreSalesListConstants.SELL_PRICE_WITHER_SCROLL);
+				Add(typeof(VampiricEmbraceScroll), StoreSalesListConstants.SELL_PRICE_VAMPIRIC_EMBRACE_SCROLL);
+				Add(typeof(VengefulSpiritScroll), StoreSalesListConstants.SELL_PRICE_VENGEFUL_SPIRIT_SCROLL);
+			}
+
+			/// <summary>
+			/// Adds tools and special items to the sell list.
+			/// </summary>
+			private void AddTools()
+			{
+				Add(typeof(PolishBoneBrush), StoreSalesListConstants.SELL_PRICE_POLISH_BONE_BRUSH);
+				Add(typeof(PolishedSkull), StoreSalesListConstants.SELL_PRICE_POLISHED_SKULL);
+				Add(typeof(PolishedBone), StoreSalesListConstants.SELL_PRICE_POLISHED_BONE);
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MixingCauldron), StoreSalesListConstants.SELL_PRICE_MIXING_CAULDRON_NECRO);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MixingSpoon), StoreSalesListConstants.SELL_PRICE_MIXING_SPOON_NECRO);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SurgeonsKnife), StoreSalesListConstants.SELL_PRICE_SURGEONS_KNIFE_NECRO);
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WoodenCoffin), StoreSalesListConstants.SELL_PRICE_WOODEN_COFFIN);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WoodenCasket), StoreSalesListConstants.SELL_PRICE_WOODEN_CASKET);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(StoneCoffin), StoreSalesListConstants.SELL_PRICE_STONE_COFFIN);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(StoneCasket), StoreSalesListConstants.SELL_PRICE_STONE_CASKET);
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DracolichSkull), Utility.Random(StoreSalesListConstants.SELL_PRICE_DRACOLICH_SKULL_MIN, StoreSalesListConstants.SELL_PRICE_DRACOLICH_SKULL_MAX));
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WizardStaff), StoreSalesListConstants.SELL_PRICE_WIZARD_STAFF_NECRO);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WizardStick), StoreSalesListConstants.SELL_PRICE_WIZARD_STICK_NECRO);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MageEye), StoreSalesListConstants.SELL_PRICE_MAGE_EYE_NECRO);
+				}
+			}
+
+			/// <summary>
+			/// Adds body parts and skulls to the sell list.
+			/// </summary>
+			private void AddBodyParts()
+			{
+				// Corpses and bodies
+				Add(typeof(CorpseSailor), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_CORPSE_SAILOR_MIN, StoreSalesListConstants.SELL_PRICE_CORPSE_SAILOR_MAX));
+				Add(typeof(CorpseChest), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_CORPSE_CHEST_MIN, StoreSalesListConstants.SELL_PRICE_CORPSE_CHEST_MAX));
+				Add(typeof(BuriedBody), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BURIED_BODY_MIN, StoreSalesListConstants.SELL_PRICE_BURIED_BODY_MAX));
+				Add(typeof(BoneContainer), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_CONTAINER_MIN, StoreSalesListConstants.SELL_PRICE_BONE_CONTAINER_MAX));
+
+				// Body parts
+				Add(typeof(LeftLeg), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_LEFT_LEG_MIN, StoreSalesListConstants.SELL_PRICE_LEFT_LEG_MAX));
+				Add(typeof(RightLeg), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIGHT_LEG_MIN, StoreSalesListConstants.SELL_PRICE_RIGHT_LEG_MAX));
+				Add(typeof(TastyHeart), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_TASTY_HEART_MIN, StoreSalesListConstants.SELL_PRICE_TASTY_HEART_MAX));
+				Add(typeof(BodyPart), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BODY_PART_MIN, StoreSalesListConstants.SELL_PRICE_BODY_PART_MAX));
+				Add(typeof(Head), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_HEAD_MIN, StoreSalesListConstants.SELL_PRICE_HEAD_MAX));
+				Add(typeof(LeftArm), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_LEFT_ARM_MIN, StoreSalesListConstants.SELL_PRICE_LEFT_ARM_MAX));
+				Add(typeof(RightArm), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIGHT_ARM_MIN, StoreSalesListConstants.SELL_PRICE_RIGHT_ARM_MAX));
+				Add(typeof(Torso), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_TORSO_MIN, StoreSalesListConstants.SELL_PRICE_TORSO_MAX));
+				Add(typeof(Bone), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_MIN, StoreSalesListConstants.SELL_PRICE_BONE_MAX));
+				Add(typeof(RibCage), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIB_CAGE_MIN, StoreSalesListConstants.SELL_PRICE_RIB_CAGE_MAX));
+				Add(typeof(BonePile), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_PILE_MIN, StoreSalesListConstants.SELL_PRICE_BONE_PILE_MAX));
+				Add(typeof(Bones), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONES_MIN, StoreSalesListConstants.SELL_PRICE_BONES_MAX));
+
+				// Monster skulls
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullMinotaur), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_MINOTAUR_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_MINOTAUR_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullWyrm), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_WYRM_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_WYRM_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullGreatDragon), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_GREAT_DRAGON_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_GREAT_DRAGON_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullDragon), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_DRAGON_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_DRAGON_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullDemon), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_DEMON_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_DEMON_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullGiant), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_GIANT_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_GIANT_MAX));
+				}
+			}
+
+			/// <summary>
+			/// Adds containers and special items to the sell list.
+			/// </summary>
+			private void AddContainers()
+			{
+				Add(typeof(GraveChest), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_GRAVE_CHEST_MIN, StoreSalesListConstants.SELL_PRICE_GRAVE_CHEST_MAX));
+				Add(typeof(AlchemyTub), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_NECRO_MIN, StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_NECRO_MAX));
 			}
 		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Necromancer vendor.
+	/// Sells advanced necromantic supplies, spellbooks, mounts, and dark artifacts.
+	/// </summary>
 	public class SBNecromancer : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBNecromancer class.
+		/// </summary>
 		public SBNecromancer()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
 
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
 			public InternalBuyInfo()
 			{
-				Add( new GenericBuyInfo( typeof( NecromancerSpellbook ), 115, 1, 0x2253, 0 ) );
-				Add( new GenericBuyInfo( typeof( NecroSkinPotion ), 1000, 1, 0x1006, 0 ) );
-				Add( new GenericBuyInfo( typeof( BookofDead ), 25000, 1,  0x1C11, 2500 ) );
-				Add( new GenericBuyInfo( typeof( DarkHeart ), 500, 5, 0xF91, 0x386 ) );
-				Add( new GenericBuyInfo( typeof( BatWing ), 3, 20, 0xF78, 0 ) );
-				Add( new GenericBuyInfo( typeof( DaemonBlood ), 6, 20, 0xF7D, 0 ) );
-				Add( new GenericBuyInfo( typeof( PigIron ), 5, 20, 0xF8A, 0 ) );
-				Add( new GenericBuyInfo( typeof( NoxCrystal ), 6, 20, 0xF8E, 0 ) );
-				Add( new GenericBuyInfo( typeof( GraveDust ), 3, 20, 0xF8F, 0 ) );
-				Add( new GenericBuyInfo( typeof( BloodOathScroll ), 25, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( CorpseSkinScroll ), 28, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( CurseWeaponScroll ), 12, 5, 0x2263, 0 ) );
-				Add( new GenericBuyInfo( typeof( PolishBoneBrush ), 12, 10, 0x1371, 0 ) );
-				Add( new GenericBuyInfo( typeof( GraveShovel ), 12, Utility.Random( 1,100 ), 0xF39, 0x966 ) );
-				Add( new GenericBuyInfo( typeof( SurgeonsKnife ), 14, Utility.Random( 1,100 ), 0xEC4, 0x1B0 ) );
-				Add( new GenericBuyInfo( typeof( MixingCauldron ), 247, 1, 0x269C, 0 ) );
-				Add( new GenericBuyInfo( typeof( MixingSpoon ), 34, Utility.Random( 1,100 ), 0x1E27, 0x979 ) );
-				Add( new GenericBuyInfo( typeof( Jar ), 5, Utility.Random( 1,100 ), 0x10B4, 0 ) );
-				Add( new GenericBuyInfo( typeof( CBookNecroticAlchemy ), 50, Utility.Random( 1,100 ), 0x2253, 0x4AA ) );
-				Add( new GenericBuyInfo( "undead horse", typeof( NecroHorse ), 500000, 5, 0x2617, 0xB97 ) );
-				Add( new GenericBuyInfo( "daemon servant", typeof( DaemonMount ), 350000, 5, 11669, 0x4AA ) );
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( AlchemyTub ), 2400, Utility.Random( 1,5 ), 0x126A, 0 ) ); } 
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStaff ), 40, Utility.Random( 1,5 ), 0x0908, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( WizardStick ), 38, Utility.Random( 1,5 ), 0xDF2, 0xB3A ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( MageEye ), 2, Utility.Random( 10,150 ), 0xF19, 0xB78 ) ); }
-				Add( new GenericBuyInfo( typeof( CorruptedMoonStone ), 5000, 5, 0xF8B, 0 ) );
-				Add( new GenericBuyInfo( typeof( BagOfNecroReagents ), 500, 10, 0xE76, 0 ) );
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( BoneGrinder ), 25000, Utility.Random( 1,4 ), 0x3DB9, 0 ) ); }
+				AddSpellbooks();
+				AddPotions();
+				AddReagents();
+				AddTools();
+				AddMounts();
+				AddSpecialItems();
+			}
+
+			/// <summary>
+			/// Adds spellbooks to the buy list.
+			/// </summary>
+			private void AddSpellbooks()
+			{
+				Add(new GenericBuyInfo(typeof(NecromancerSpellbook), StoreSalesListConstants.PRICE_NECROMANCER_SPELLBOOK, 1, StoreSalesListConstants.ITEMID_NECROMANCER_SPELLBOOK, StoreSalesListConstants.HUE_DEFAULT));
+			}
+
+			/// <summary>
+			/// Adds potions to the buy list.
+			/// </summary>
+			private void AddPotions()
+			{
+				Add(new GenericBuyInfo(typeof(NecroSkinPotion), StoreSalesListConstants.PRICE_NECRO_SKIN_POTION, 1, StoreSalesListConstants.ITEMID_NECRO_SKIN_POTION, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(BookofDead), StoreSalesListConstants.PRICE_BOOK_OF_DEAD, 1, StoreSalesListConstants.ITEMID_BOOK_OF_DEAD, StoreSalesListConstants.HUE_BOOK_OF_DEAD));
+				Add(new GenericBuyInfo(typeof(DarkHeart), StoreSalesListConstants.PRICE_DARK_HEART, 5, StoreSalesListConstants.ITEMID_DARK_HEART, StoreSalesListConstants.HUE_DARK_HEART));
+			}
+
+			/// <summary>
+			/// Adds necrotic reagents to the buy list.
+			/// </summary>
+			private void AddReagents()
+			{
+				Add(new GenericBuyInfo(typeof(BatWing), StoreSalesListConstants.PRICE_BAT_WING_NECRO, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_BAT_WING, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(DaemonBlood), StoreSalesListConstants.PRICE_DAEMON_BLOOD, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_DAEMON_BLOOD, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(PigIron), StoreSalesListConstants.PRICE_PIG_IRON, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_PIG_IRON, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(NoxCrystal), StoreSalesListConstants.PRICE_NOX_CRYSTAL, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_NOX_CRYSTAL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(GraveDust), StoreSalesListConstants.PRICE_GRAVE_DUST, StoreSalesListConstants.QTY_REAGENTS_NECRO_MIN, StoreSalesListConstants.ITEMID_GRAVE_DUST, StoreSalesListConstants.HUE_DEFAULT));
+			}
+
+			/// <summary>
+			/// Adds tools and scrolls to the buy list.
+			/// </summary>
+			private void AddTools()
+			{
+				// Scrolls
+				Add(new GenericBuyInfo(typeof(BloodOathScroll), StoreSalesListConstants.PRICE_BLOOD_OATH_SCROLL, 5, StoreSalesListConstants.ITEMID_BLOOD_OATH_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(CorpseSkinScroll), StoreSalesListConstants.PRICE_CORPSE_SKIN_SCROLL, 5, StoreSalesListConstants.ITEMID_CORPSE_SKIN_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(CurseWeaponScroll), StoreSalesListConstants.PRICE_CURSE_WEAPON_SCROLL, 5, StoreSalesListConstants.ITEMID_CURSE_WEAPON_SCROLL, StoreSalesListConstants.HUE_DEFAULT));
+
+				// Tools
+				Add(new GenericBuyInfo(typeof(PolishBoneBrush), StoreSalesListConstants.PRICE_POLISH_BONE_BRUSH, 10, StoreSalesListConstants.ITEMID_POLISH_BONE_BRUSH, StoreSalesListConstants.HUE_DEFAULT));
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(GraveShovel), StoreSalesListConstants.PRICE_GRAVE_SHOVEL, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_GRAVE_SHOVEL, StoreSalesListConstants.HUE_GRAVE_SHOVEL);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(SurgeonsKnife), StoreSalesListConstants.PRICE_SURGEONS_KNIFE, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_SURGEONS_KNIFE, StoreSalesListConstants.HUE_SURGEONS_KNIFE);
+				Add(new GenericBuyInfo(typeof(MixingCauldron), StoreSalesListConstants.PRICE_MIXING_CAULDRON, 1, StoreSalesListConstants.ITEMID_MIXING_CAULDRON, StoreSalesListConstants.HUE_DEFAULT));
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(MixingSpoon), StoreSalesListConstants.PRICE_MIXING_SPOON_NECRO, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_MIXING_SPOON_NECRO, StoreSalesListConstants.HUE_MIXING_SPOON_NECRO);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(Jar), StoreSalesListConstants.PRICE_JAR, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_JAR);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(CBookNecroticAlchemy), StoreSalesListConstants.PRICE_CBOOK_NECROTIC_ALCHEMY, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, 100, StoreSalesListConstants.ITEMID_CBOOK_NECROTIC_ALCHEMY, StoreSalesListConstants.HUE_CBOOK_NECROTIC_ALCHEMY);
+			}
+
+			/// <summary>
+			/// Adds mounts to the buy list.
+			/// </summary>
+			private void AddMounts()
+			{
+				Add(new GenericBuyInfo("undead horse", typeof(NecroHorse), StoreSalesListConstants.PRICE_NECRO_HORSE, 5, StoreSalesListConstants.ITEMID_NECRO_HORSE, StoreSalesListConstants.HUE_NECRO_HORSE));
+				Add(new GenericBuyInfo("daemon servant", typeof(DaemonMount), StoreSalesListConstants.PRICE_DAEMON_MOUNT, 5, StoreSalesListConstants.ITEMID_DAEMON_MOUNT, StoreSalesListConstants.HUE_DAEMON_MOUNT));
+			}
+
+			/// <summary>
+			/// Adds special and magical items to the buy list.
+			/// </summary>
+			private void AddSpecialItems()
+			{
+				// Alchemy tub (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(AlchemyTub), StoreSalesListConstants.PRICE_ALCHEMY_TUB, Utility.Random(StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX), StoreSalesListConstants.ITEMID_ALCHEMY_TUB, StoreSalesListConstants.HUE_DEFAULT));
+				}
+
+				// Magical staves and tools (with chance)
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStaff), StoreSalesListConstants.PRICE_WIZARD_STAFF, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STAFF, StoreSalesListConstants.HUE_WIZARD_STAFF);
+				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(WizardStick), StoreSalesListConstants.PRICE_WIZARD_STICK, StoreSalesListConstants.QTY_TENT_MIN, StoreSalesListConstants.QTY_TENT_MAX, StoreSalesListConstants.ITEMID_WIZARD_STICK, StoreSalesListConstants.HUE_WIZARD_STICK);
+				StoreSalesListHelper.AddBuyItemRandom(this, typeof(MageEye), StoreSalesListConstants.PRICE_MAGE_EYE, StoreSalesListConstants.QTY_MEDIUM_MIN, StoreSalesListConstants.QTY_MEDIUM_MAX, StoreSalesListConstants.ITEMID_MAGE_EYE, StoreSalesListConstants.HUE_MAGE_EYE);
+
+				// Special items (always available)
+				Add(new GenericBuyInfo(typeof(CorruptedMoonStone), StoreSalesListConstants.PRICE_CORRUPTED_MOON_STONE, StoreSalesListConstants.QTY_CORRUPTED_MOON_STONE, StoreSalesListConstants.ITEMID_CORRUPTED_MOON_STONE, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(BagOfNecroReagents), StoreSalesListConstants.PRICE_BAG_OF_NECRO_REAGENTS, StoreSalesListConstants.QTY_BAG_OF_NECRO_REAGENTS, StoreSalesListConstants.ITEMID_BAG_OF_NECRO_REAGENTS, StoreSalesListConstants.HUE_DEFAULT));
+
+				// Bone grinder (with chance)
+				if (MyServerSettings.SellChance())
+				{
+					Add(new GenericBuyInfo(typeof(BoneGrinder), StoreSalesListConstants.PRICE_BONE_GRINDER, Utility.Random(StoreSalesListConstants.QTY_BONE_GRINDER_MIN, StoreSalesListConstants.QTY_BONE_GRINDER_MAX), StoreSalesListConstants.ITEMID_BONE_GRINDER, StoreSalesListConstants.HUE_DEFAULT));
+				}
+			}
+		}
+
+		#endregion
 
 				
 			}
 		}
 
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
 		public class InternalSellInfo : GenericSellInfo
 		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
 			public InternalSellInfo()
 			{
-				Add( typeof( BatWing ), 1 );
-				Add( typeof( DaemonBlood ), 3 );
-				Add( typeof( PigIron ), 2 );
-				Add( typeof( NoxCrystal ), 3 );
-				Add( typeof( GraveDust ), 1 );
-				Add( typeof( ExorcismScroll ), 1 );
-				Add( typeof( AnimateDeadScroll ), 26 );
-				Add( typeof( BloodOathScroll ), 26 );
-				Add( typeof( CorpseSkinScroll ), 26 );
-				Add( typeof( CurseWeaponScroll ), 26 );
-				Add( typeof( EvilOmenScroll ), 26 );
-				Add( typeof( PainSpikeScroll ), 26 );
-				Add( typeof( SummonFamiliarScroll ), 26 );
-				Add( typeof( HorrificBeastScroll ), 27 );
-				Add( typeof( MindRotScroll ), 39 );
-				Add( typeof( PoisonStrikeScroll ), 39 );
-				Add( typeof( WraithFormScroll ), 51 );
-				Add( typeof( LichFormScroll ), 64 );
-				Add( typeof( StrangleScroll ), 64 );
-				Add( typeof( WitherScroll ), 64 );
-				Add( typeof( VampiricEmbraceScroll ), 101 );
-				Add( typeof( VengefulSpiritScroll ), 114 );
-				Add( typeof( PolishBoneBrush ), 6 );
-				Add( typeof( PolishedSkull ), 3 );
-				Add( typeof( PolishedBone ), 3 );
-				Add( typeof( NecromancerSpellbook ), 55 );
-				Add( typeof( DeathKnightSpellbook ), Utility.Random( 100,300 ) );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullDragon ), Utility.Random( 100,300 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullDemon ), Utility.Random( 100,300 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SkullGiant ), Utility.Random( 100,300 ) ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MixingCauldron ), 123 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( MixingSpoon ), 17 ); }  
-				if ( MyServerSettings.BuyChance() ){Add( typeof( SurgeonsKnife ), 7 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( BoneContainer ), 250 ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ClumsyMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CreateFoodMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FeebleMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( HealMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicArrowMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( NightSightMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ReactiveArmorMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WeaknessMagicStaff ), Utility.Random( 10,20 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( AgilityMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CunningMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CureMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( HarmMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicTrapMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicUntrapMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ProtectionMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( StrengthMagicStaff ), Utility.Random( 20,40 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( BlessMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireballMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicLockMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicUnlockMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PoisonMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( TelekinesisMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( TeleportMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WallofStoneMagicStaff ), Utility.Random( 30,60 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ArchCureMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ArchProtectionMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( CurseMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireFieldMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( GreaterHealMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( LightningMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ManaDrainMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( RecallMagicStaff ), Utility.Random( 40,80 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( BladeSpiritsMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( DispelFieldMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( IncognitoMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MagicReflectionMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MindBlastMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ParalyzeMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PoisonFieldMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( SummonCreatureMagicStaff ), Utility.Random( 50,100 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( DispelMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyBoltMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ExplosionMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( InvisibilityMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MarkMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MassCurseMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ParalyzeFieldMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( RevealMagicStaff ), Utility.Random( 60,120 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ChainLightningMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyFieldMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FlameStrikeMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( GateTravelMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ManaVampireMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MassDispelMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( MeteorSwarmMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( PolymorphMagicStaff ), Utility.Random( 70,140 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( AirElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EarthElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EarthquakeMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( EnergyVortexMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( FireElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( ResurrectionMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( SummonDaemonMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){ Add( typeof( WaterElementalMagicStaff ), Utility.Random( 80,160 ) ); } 
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( MyNecromancerSpellbook ), Utility.Random( 250,1000 ) ); } 
-				Add( typeof( CorpseSailor ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( CorpseChest ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( BodyPart ), Utility.RandomMinMax( 30, 90 ) );
-				Add( typeof( BuriedBody ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( BoneContainer ), Utility.RandomMinMax( 50, 300 ) );
-				Add( typeof( LeftLeg ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RightLeg ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( TastyHeart ), Utility.RandomMinMax( 10, 20 ) );
-				Add( typeof( Head ), Utility.RandomMinMax( 10, 20 ) );
-				Add( typeof( LeftArm ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RightArm ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Torso ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Bone ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( RibCage ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( BonePile ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( Bones ), Utility.RandomMinMax( 5, 10 ) );
-				Add( typeof( GraveChest ), Utility.RandomMinMax( 1000, 5000 ) );
-				Add( typeof( AlchemyTub ), Utility.Random( 200, 500 ) );
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenCoffin ), 205 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( WoodenCasket ), 250 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StoneCoffin ), 450 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( StoneCasket ), 450 ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DemonPrison ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){Add( typeof( DracolichSkull ), Utility.Random( 500,1000 ) ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStaff ), 20 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( WizardStick ), 19 ); } 
-				if ( MyServerSettings.BuyChance() ){ Add( typeof( MageEye ), 1 ); } 
+				AddReagents();
+				AddScrolls();
+				AddSpellbooks();
+				AddTools();
+				AddBodyParts();
+				AddContainers();
+				AddMagicStaves();
+			}
+
+			/// <summary>
+			/// Adds necrotic reagents to the sell list.
+			/// </summary>
+			private void AddReagents()
+			{
+				Add(typeof(BatWing), StoreSalesListConstants.SELL_PRICE_BAT_WING);
+				Add(typeof(DaemonBlood), StoreSalesListConstants.SELL_PRICE_DAEMON_BLOOD);
+				Add(typeof(PigIron), StoreSalesListConstants.SELL_PRICE_PIG_IRON);
+				Add(typeof(NoxCrystal), StoreSalesListConstants.SELL_PRICE_NOX_CRYSTAL);
+				Add(typeof(GraveDust), StoreSalesListConstants.SELL_PRICE_GRAVE_DUST);
+			}
+
+			/// <summary>
+			/// Adds necrotic scrolls to the sell list.
+			/// </summary>
+			private void AddScrolls()
+			{
+				Add(typeof(ExorcismScroll), StoreSalesListConstants.SELL_PRICE_EXORCISM_SCROLL);
+				Add(typeof(AnimateDeadScroll), StoreSalesListConstants.SELL_PRICE_ANIMATE_DEAD_SCROLL);
+				Add(typeof(BloodOathScroll), StoreSalesListConstants.SELL_PRICE_BLOOD_OATH_SCROLL);
+				Add(typeof(CorpseSkinScroll), StoreSalesListConstants.SELL_PRICE_CORPSE_SKIN_SCROLL);
+				Add(typeof(CurseWeaponScroll), StoreSalesListConstants.SELL_PRICE_CURSE_WEAPON_SCROLL);
+				Add(typeof(EvilOmenScroll), StoreSalesListConstants.SELL_PRICE_EVIL_OMEN_SCROLL);
+				Add(typeof(PainSpikeScroll), StoreSalesListConstants.SELL_PRICE_PAIN_SPIKE_SCROLL);
+				Add(typeof(SummonFamiliarScroll), StoreSalesListConstants.SELL_PRICE_SUMMON_FAMILIAR_SCROLL);
+				Add(typeof(HorrificBeastScroll), StoreSalesListConstants.SELL_PRICE_HORRIFIC_BEAST_SCROLL);
+				Add(typeof(MindRotScroll), StoreSalesListConstants.SELL_PRICE_MIND_ROT_SCROLL);
+				Add(typeof(PoisonStrikeScroll), StoreSalesListConstants.SELL_PRICE_POISON_STRIKE_SCROLL);
+				Add(typeof(WraithFormScroll), StoreSalesListConstants.SELL_PRICE_WRAITH_FORM_SCROLL);
+				Add(typeof(LichFormScroll), StoreSalesListConstants.SELL_PRICE_LICH_FORM_SCROLL);
+				Add(typeof(StrangleScroll), StoreSalesListConstants.SELL_PRICE_STRANGLE_SCROLL);
+				Add(typeof(WitherScroll), StoreSalesListConstants.SELL_PRICE_WITHER_SCROLL);
+				Add(typeof(VampiricEmbraceScroll), StoreSalesListConstants.SELL_PRICE_VAMPIRIC_EMBRACE_SCROLL);
+				Add(typeof(VengefulSpiritScroll), StoreSalesListConstants.SELL_PRICE_VENGEFUL_SPIRIT_SCROLL);
+			}
+
+			/// <summary>
+			/// Adds spellbooks to the sell list.
+			/// </summary>
+			private void AddSpellbooks()
+			{
+				Add(typeof(NecromancerSpellbook), StoreSalesListConstants.SELL_PRICE_NECROMANCER_SPELLBOOK);
+				Add(typeof(DeathKnightSpellbook), Utility.Random(StoreSalesListConstants.SELL_PRICE_DEATH_KNIGHT_SPELLBOOK_MIN, StoreSalesListConstants.SELL_PRICE_DEATH_KNIGHT_SPELLBOOK_MAX));
+			}
+
+			/// <summary>
+			/// Adds tools and special items to the sell list.
+			/// </summary>
+			private void AddTools()
+			{
+				Add(typeof(PolishBoneBrush), StoreSalesListConstants.SELL_PRICE_POLISH_BONE_BRUSH);
+				Add(typeof(PolishedSkull), StoreSalesListConstants.SELL_PRICE_POLISHED_SKULL);
+				Add(typeof(PolishedBone), StoreSalesListConstants.SELL_PRICE_POLISHED_BONE);
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(BoneContainer), StoreSalesListConstants.SELL_PRICE_BONE_CONTAINER_NECRO);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MixingCauldron), StoreSalesListConstants.SELL_PRICE_MIXING_CAULDRON_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MixingSpoon), StoreSalesListConstants.SELL_PRICE_MIXING_SPOON_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SurgeonsKnife), StoreSalesListConstants.SELL_PRICE_SURGEONS_KNIFE_NECROMANCER);
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WoodenCoffin), StoreSalesListConstants.SELL_PRICE_WOODEN_COFFIN_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WoodenCasket), StoreSalesListConstants.SELL_PRICE_WOODEN_CASKET_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(StoneCoffin), StoreSalesListConstants.SELL_PRICE_STONE_COFFIN_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(StoneCasket), StoreSalesListConstants.SELL_PRICE_STONE_CASKET_NECROMANCER);
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DemonPrison), Utility.Random(StoreSalesListConstants.SELL_PRICE_DEMON_PRISON_MIN, StoreSalesListConstants.SELL_PRICE_DEMON_PRISON_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(DracolichSkull), Utility.Random(StoreSalesListConstants.SELL_PRICE_DRACOLICH_SKULL_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_DRACOLICH_SKULL_NECROMANCER_MAX));
+				}
+
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WizardStaff), StoreSalesListConstants.SELL_PRICE_WIZARD_STAFF_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(WizardStick), StoreSalesListConstants.SELL_PRICE_WIZARD_STICK_NECROMANCER);
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(MageEye), StoreSalesListConstants.SELL_PRICE_MAGE_EYE_NECROMANCER);
+				}
+
+				if (MyServerSettings.BuyRareChance())
+				{
+					Add(typeof(MyNecromancerSpellbook), Utility.Random(StoreSalesListConstants.SELL_PRICE_MY_NECROMANCER_SPELLBOOK_MIN, StoreSalesListConstants.SELL_PRICE_MY_NECROMANCER_SPELLBOOK_MAX));
+				}
+			}
+
+			/// <summary>
+			/// Adds body parts and skulls to the sell list.
+			/// </summary>
+			private void AddBodyParts()
+			{
+				// Corpses and bodies
+				Add(typeof(CorpseSailor), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_CORPSE_SAILOR_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_CORPSE_SAILOR_NECROMANCER_MAX));
+				Add(typeof(CorpseChest), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_CORPSE_CHEST_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_CORPSE_CHEST_NECROMANCER_MAX));
+				Add(typeof(BodyPart), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BODY_PART_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BODY_PART_NECROMANCER_MAX));
+				Add(typeof(BuriedBody), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BURIED_BODY_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BURIED_BODY_NECROMANCER_MAX));
+				Add(typeof(BoneContainer), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_CONTAINER_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BONE_CONTAINER_NECROMANCER_MAX));
+
+				// Body parts
+				Add(typeof(LeftLeg), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_LEFT_LEG_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_LEFT_LEG_NECROMANCER_MAX));
+				Add(typeof(RightLeg), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIGHT_LEG_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_RIGHT_LEG_NECROMANCER_MAX));
+				Add(typeof(TastyHeart), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_TASTY_HEART_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_TASTY_HEART_NECROMANCER_MAX));
+				Add(typeof(Head), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_HEAD_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_HEAD_NECROMANCER_MAX));
+				Add(typeof(LeftArm), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_LEFT_ARM_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_LEFT_ARM_NECROMANCER_MAX));
+				Add(typeof(RightArm), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIGHT_ARM_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_RIGHT_ARM_NECROMANCER_MAX));
+				Add(typeof(Torso), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_TORSO_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_TORSO_NECROMANCER_MAX));
+				Add(typeof(Bone), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BONE_NECROMANCER_MAX));
+				Add(typeof(RibCage), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_RIB_CAGE_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_RIB_CAGE_NECROMANCER_MAX));
+				Add(typeof(BonePile), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONE_PILE_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BONE_PILE_NECROMANCER_MAX));
+				Add(typeof(Bones), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_BONES_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_BONES_NECROMANCER_MAX));
+
+				// Monster skulls
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullDragon), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_DRAGON_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_DRAGON_NECROMANCER_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullDemon), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_DEMON_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_DEMON_NECROMANCER_MAX));
+				}
+				if (MyServerSettings.BuyChance())
+				{
+					Add(typeof(SkullGiant), Utility.Random(StoreSalesListConstants.SELL_PRICE_SKULL_GIANT_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_SKULL_GIANT_NECROMANCER_MAX));
+				}
+			}
+
+			/// <summary>
+			/// Adds containers and special items to the sell list.
+			/// </summary>
+			private void AddContainers()
+			{
+				Add(typeof(GraveChest), Utility.RandomMinMax(StoreSalesListConstants.SELL_PRICE_GRAVE_CHEST_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_GRAVE_CHEST_NECROMANCER_MAX));
+				Add(typeof(AlchemyTub), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_NECROMANCER_MIN, StoreSalesListConstants.SELL_PRICE_ALCHEMY_TUB_NECROMANCER_MAX));
+			}
+
+			/// <summary>
+			/// Adds magic staves to the sell list organized by spell circle.
+			/// </summary>
+			private void AddMagicStaves()
+			{
+				// 1st Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ClumsyMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(CreateFoodMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(FeebleMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(HealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicArrowMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(NightSightMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(ReactiveArmorMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+				AddMagicStaffWithRareChance(typeof(WeaknessMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_1ST_MAX);
+
+				// 2nd Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(AgilityMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(CunningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(CureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(HarmMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicTrapMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicUntrapMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(ProtectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+				AddMagicStaffWithRareChance(typeof(StrengthMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_2ND_MAX);
+
+				// 3rd Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(BlessMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(FireballMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicLockMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicUnlockMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(PoisonMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(TelekinesisMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(TeleportMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+				AddMagicStaffWithRareChance(typeof(WallofStoneMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_3RD_MAX);
+
+				// 4th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ArchCureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ArchProtectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(CurseMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FireFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(GreaterHealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(LightningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ManaDrainMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+				AddMagicStaffWithRareChance(typeof(RecallMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_4TH_MAX);
+
+				// 5th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(BladeSpiritsMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(DispelFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(IncognitoMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MagicReflectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MindBlastMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ParalyzeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(PoisonFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+				AddMagicStaffWithRareChance(typeof(SummonCreatureMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_5TH_MAX);
+
+				// 6th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(DispelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyBoltMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ExplosionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(InvisibilityMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MarkMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MassCurseMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ParalyzeFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+				AddMagicStaffWithRareChance(typeof(RevealMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_6TH_MAX);
+
+				// 7th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(ChainLightningMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyFieldMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FlameStrikeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(GateTravelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ManaVampireMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MassDispelMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(MeteorSwarmMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+				AddMagicStaffWithRareChance(typeof(PolymorphMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_7TH_MAX);
+
+				// 8th Circle Magic Staves
+				AddMagicStaffWithRareChance(typeof(AirElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EarthElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EarthquakeMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(EnergyVortexMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(FireElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(ResurrectionMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(SummonDaemonMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+				AddMagicStaffWithRareChance(typeof(WaterElementalMagicStaff), StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MIN, StoreSalesListConstants.SELL_PRICE_MAGIC_STAFF_8TH_MAX);
+			}
+
+			/// <summary>
+			/// Helper method to add a magic staff with rare chance and random pricing.
+			/// </summary>
+			private void AddMagicStaffWithRareChance(Type staffType, int minPrice, int maxPrice)
+			{
+				if (MyServerSettings.BuyRareChance())
+				{
+					Add(staffType, Utility.Random(minPrice, maxPrice));
+				}
 			}
 		}
-	}
+
+		#endregion
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBWitches : SBInfo
 	{
@@ -7916,17 +10355,49 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Mage vendor.
+	/// Sells spellbooks, reagents, magical hats, scrolls, and arcane supplies.
+	/// </summary>
+	/// <summary>
+	/// Shop info for Mage vendor.
+	/// Sells spellbooks, reagents, magical hats, scrolls, and arcane supplies.
+	/// </summary>
 	public class SBMage : SBInfo
 	{
+		#region Fields
+
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
 		private IShopSellInfo m_SellInfo = new InternalSellInfo();
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBMage class.
+		/// </summary>
 		public SBMage()
 		{
 		}
 
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
 		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
 		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
 
 		public class InternalBuyInfo : List<GenericBuyInfo>
 		{
@@ -7987,6 +10458,8 @@ namespace Server.Mobiles
 				}
 			}
 		}
+
+		#endregion
 
 		public class InternalSellInfo : GenericSellInfo
 		{
@@ -9485,6 +11958,10 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Mage Guild vendor.
+	/// Sells spellbooks, reagents, scrolls, magical hats, tools, and arcane supplies for guild members.
+	/// </summary>
 	public class SBMageGuild : SBInfo
 	{
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
@@ -10203,6 +12680,10 @@ namespace Server.Mobiles
 		}
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Shop info for Necro Guild vendor.
+	/// Sells necrotic reagents, spellbooks, scrolls, tools, body parts, and dark artifacts for guild members.
+	/// </summary>
 	public class SBNecroGuild : SBInfo
 	{
 		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
@@ -11050,4 +13531,3 @@ namespace Server.Mobiles
 			}
 		}
 	}
-}

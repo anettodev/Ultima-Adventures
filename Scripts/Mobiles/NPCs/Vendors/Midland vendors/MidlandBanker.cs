@@ -11,215 +11,259 @@ using Server.OneTime;
 namespace Server.Mobiles
 {
 
+	/// <summary>
+	/// MidlandBanker NPC that handles race-specific banking operations in the Midland region.
+	/// Each banker serves only players of their matching race, handling currency deposits and withdrawals
+	/// for race-specific currencies: Sovereign, Drachma, Sslit, Dubloon, and Skaal.
+	/// </summary>
 	public class MidlandBanker : MidlandVendor
 	{
-
-
+		#region Fields
 		private int m_moneytype;
+		#endregion
+
+		#region Properties
 		[CommandProperty( AccessLevel.GameMaster )]
         public int moneytype
         {
             get{ return m_moneytype; }
             set{ m_moneytype = value; }
         }
+		#endregion
 
+		#region Constructors
 		[Constructable]
 		public MidlandBanker() : base(  )
 		{
 			Job = JobFragment.banker;
-			Title = "the banker";
-
+			Title = "o Banqueiro";
 		}
+		#endregion
 
+		#region Banking Operations
+		/// <summary>
+		/// Gets the balance for a Midland player in this banker's currency
+		/// </summary>
+		/// <param name="from">The mobile requesting balance information</param>
+		/// <returns>The account balance, or 0 if invalid</returns>
 		public int GetBalance( Mobile from )
 		{
-			int balance = 0;
-
-			if (!AdventuresFunctions.IsInMidland((object)this) || !AdventuresFunctions.IsInMidland((object)from) || !(from is PlayerMobile) || ((PlayerMobile)from).midrace == 0 )
+			if (!CanAccessServices(from))
 				return 0;
 
 			PlayerMobile pm = (PlayerMobile)from;
-			if (pm.midrace == 1 && this.midrace == 1)
-				return pm.midhumanacc;
-			else if (pm.midrace == 2 && this.midrace == 2)
-				return pm.midgargoyleacc;
-			else if (pm.midrace == 3 && this.midrace == 3)
-				return pm.midlizardacc;
-			else if (pm.midrace == 4 && this.midrace == 4)
-				return pm.midpirateacc;
-			else if (pm.midrace == 5 && this.midrace == 5)
-				return pm.midorcacc;
-			else if (pm.midrace != this.midrace)
-				this.Say("We don't serve your kind here.");
 
-			return balance;
+			// Check if player and banker are same race
+			if (pm.midrace != this.midrace)
+			{
+				this.Say(MidlandBankerStringConstants.MSG_WRONG_RACE);
+				return 0;
+			}
+
+			// Return balance from appropriate account
+			return GetRaceBalance(pm, this.midrace);
+		}
+
+		/// <summary>
+		/// Checks if a mobile can access this Midland banker's services
+		/// </summary>
+		/// <param name="from">The mobile to check</param>
+		/// <returns>True if services are accessible, false otherwise</returns>
+		private bool CanAccessServices(Mobile from)
+		{
+			return AdventuresFunctions.IsInMidland((object)this) &&
+				   AdventuresFunctions.IsInMidland((object)from) &&
+				   from is PlayerMobile &&
+				   ((PlayerMobile)from).midrace != 0;
+		}
+
+		/// <summary>
+		/// Gets the balance from the appropriate race account
+		/// </summary>
+		/// <param name="player">The player mobile</param>
+		/// <param name="raceId">The race ID to get balance for</param>
+		/// <returns>The account balance</returns>
+		private int GetRaceBalance(PlayerMobile player, int raceId)
+		{
+			switch (raceId)
+			{
+				case MidlandBankerConstants.CURRENCY_HUMAN: return player.midhumanacc;
+				case MidlandBankerConstants.CURRENCY_GARGOYLE: return player.midgargoyleacc;
+				case MidlandBankerConstants.CURRENCY_LIZARD: return player.midlizardacc;
+				case MidlandBankerConstants.CURRENCY_PIRATE: return player.midpirateacc;
+				case MidlandBankerConstants.CURRENCY_ORC: return player.midorcacc;
+				default: return 0;
+			}
 		}
 
 
+		/// <summary>
+		/// Deposits currency into a Midland player's account
+		/// </summary>
+		/// <param name="from">The mobile making the deposit</param>
+		/// <param name="amount">The amount to deposit</param>
+		/// <returns>True if deposit was successful, false otherwise</returns>
 		public bool Deposit( Mobile from, int amount)
 		{
-
-			if (!AdventuresFunctions.IsInMidland((object)this) || !AdventuresFunctions.IsInMidland((object)from) || !(from is PlayerMobile) || ((PlayerMobile)from).midrace == 0 )
+			if (!CanAccessServices(from))
 				return false;
 
 			PlayerMobile pm = (PlayerMobile)from;
-			Backpack pack = (Backpack)pm.Backpack;
 
-				if (m_moneytype == 1 && this.midrace == 1)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Sovereign ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
+			// Check if currency type matches banker's race
+			if (m_moneytype != this.midrace)
+			{
+				this.Say(MidlandBankerStringConstants.MSG_WRONG_TYPE);
+				return false;
+			}
 
-						pm.midhumanacc += amount;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 2 && this.midrace == 2)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Drachma ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
+			// Find and consume the currency from backpack
+			Type currencyType = GetCurrencyType(this.midrace);
+			if (currencyType == null)
+				return false;
 
-						pm.midgargoyleacc += amount;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 3 && this.midrace == 3)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Sslit ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
+			Item money = pm.Backpack.FindItemByType(currencyType);
+			if (money == null || money.Amount < amount)
+				return false;
 
-						pm.midlizardacc += amount;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 4 && this.midrace == 4)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Dubloon ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
+			// Consume the currency
+			if (money.Amount == amount)
+				money.Delete();
+			else
+				money.Amount -= amount;
 
-						pm.midpirateacc += amount;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype == 5 && this.midrace == 5)
-				{
-					Item money = pm.Backpack.FindItemByType( typeof ( Skaal ) );
-					if (money != null && money.Amount >= amount)
-					{
-						if (money.Amount == amount)
-							money.Delete();
-						else
-							money.Amount -= amount;
-
-						pm.midorcacc += amount;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else if (m_moneytype != this.midrace)
-				{
-					this.Say("We don't deal with your type here.");
-					return false;
-				}
-
+			// Add to appropriate account
+			AddToAccount(pm, this.midrace, amount);
 			return true;
-
 		}
 
+		/// <summary>
+		/// Gets the currency item type for a race
+		/// </summary>
+		/// <param name="raceId">The race ID</param>
+		/// <returns>The currency Type, or null if invalid</returns>
+		private Type GetCurrencyType(int raceId)
+		{
+			switch (raceId)
+			{
+				case MidlandBankerConstants.CURRENCY_HUMAN: return typeof(Sovereign);
+				case MidlandBankerConstants.CURRENCY_GARGOYLE: return typeof(Drachma);
+				case MidlandBankerConstants.CURRENCY_LIZARD: return typeof(Sslit);
+				case MidlandBankerConstants.CURRENCY_PIRATE: return typeof(Dubloon);
+				case MidlandBankerConstants.CURRENCY_ORC: return typeof(Skaal);
+				default: return null;
+			}
+		}
+
+		/// <summary>
+		/// Adds amount to the appropriate race account
+		/// </summary>
+		/// <param name="player">The player mobile</param>
+		/// <param name="raceId">The race ID</param>
+		/// <param name="amount">The amount to add</param>
+		private void AddToAccount(PlayerMobile player, int raceId, int amount)
+		{
+			switch (raceId)
+			{
+				case MidlandBankerConstants.CURRENCY_HUMAN: player.midhumanacc += amount; break;
+				case MidlandBankerConstants.CURRENCY_GARGOYLE: player.midgargoyleacc += amount; break;
+				case MidlandBankerConstants.CURRENCY_LIZARD: player.midlizardacc += amount; break;
+				case MidlandBankerConstants.CURRENCY_PIRATE: player.midpirateacc += amount; break;
+				case MidlandBankerConstants.CURRENCY_ORC: player.midorcacc += amount; break;
+			}
+		}
+
+
+		/// <summary>
+		/// Withdraws currency from a Midland player's account
+		/// </summary>
+		/// <param name="from">The mobile making the withdrawal</param>
+		/// <param name="amount">The amount to withdraw</param>
+		/// <returns>True if withdrawal was successful, false otherwise</returns>
 		public bool Withdraw( Mobile from, int amount )
 		{
-			int balance = GetBalance( from );
+			int balance = GetBalance(from);
 
-			if (balance == 0 || !(from is PlayerMobile)) // not a playermobile or wrong race
+			if (balance == 0 || !(from is PlayerMobile))
 				return false;
 
-			if ( balance < amount )
+			if (balance < amount)
 				return false;
 
 			PlayerMobile pm = (PlayerMobile)from;
-			Backpack pack = (Backpack)pm.Backpack;
 
-			if ( balance > amount )
-			{
-				if (pm.midrace == 1 && this.midrace == 1)
-				{
-					pm.midhumanacc -= amount;
-					pm.AddToBackpack( new Sovereign( amount ) );	
-				}
-				else if (pm.midrace == 2 && this.midrace == 2)
-				{
-					pm.midgargoyleacc -= amount;
-					pm.AddToBackpack( new Drachma( amount ) );
-				}
-				else if (pm.midrace == 3 && this.midrace == 3)
-				{
-					pm.midlizardacc -= amount;
-					pm.AddToBackpack( new Sslit( amount ) );
-				}
-				else if (pm.midrace == 4 && this.midrace == 4)
-				{
-					pm.midpirateacc -= amount;
-					pm.AddToBackpack( new Dubloon( amount ) );
-				}
-				else if (pm.midrace == 5 && this.midrace == 5)
-				{
-					pm.midorcacc -= amount;
-					pm.AddToBackpack( new Skaal( amount ) );
-				}
-				else if (pm.midrace != this.midrace)
-					return false;
+			// Check if player and banker are same race
+			if (pm.midrace != this.midrace)
+				return false;
 
-			}
+			// Deduct from account and give currency
+			DeductFromAccount(pm, this.midrace, amount);
+			pm.AddToBackpack(CreateCurrencyItem(this.midrace, amount));
+
 			return true;
 		}
 
+		/// <summary>
+		/// Deducts amount from the appropriate race account
+		/// </summary>
+		/// <param name="player">The player mobile</param>
+		/// <param name="raceId">The race ID</param>
+		/// <param name="amount">The amount to deduct</param>
+		private void DeductFromAccount(PlayerMobile player, int raceId, int amount)
+		{
+			switch (raceId)
+			{
+				case MidlandBankerConstants.CURRENCY_HUMAN: player.midhumanacc -= amount; break;
+				case MidlandBankerConstants.CURRENCY_GARGOYLE: player.midgargoyleacc -= amount; break;
+				case MidlandBankerConstants.CURRENCY_LIZARD: player.midlizardacc -= amount; break;
+				case MidlandBankerConstants.CURRENCY_PIRATE: player.midpirateacc -= amount; break;
+				case MidlandBankerConstants.CURRENCY_ORC: player.midorcacc -= amount; break;
+			}
+		}
 
+		/// <summary>
+		/// Creates a currency item of the specified type and amount
+		/// </summary>
+		/// <param name="raceId">The race ID (determines currency type)</param>
+		/// <param name="amount">The amount of currency</param>
+		/// <returns>The created currency item</returns>
+		private Item CreateCurrencyItem(int raceId, int amount)
+		{
+			switch (raceId)
+			{
+				case MidlandBankerConstants.CURRENCY_HUMAN: return new Sovereign(amount);
+				case MidlandBankerConstants.CURRENCY_GARGOYLE: return new Drachma(amount);
+				case MidlandBankerConstants.CURRENCY_LIZARD: return new Sslit(amount);
+				case MidlandBankerConstants.CURRENCY_PIRATE: return new Dubloon(amount);
+				case MidlandBankerConstants.CURRENCY_ORC: return new Skaal(amount);
+				default: return null;
+			}
+		}
+		#endregion
 
+		#region Player Interaction
+		/// <summary>
+		/// Determines if this banker should handle speech from the specified mobile.
+		/// Midland bankers respond to banking-related keywords within range.
+		/// </summary>
+		/// <param name="from">The mobile that spoke</param>
+		/// <returns>True if speech should be handled, false otherwise</returns>
 		public override bool HandlesOnSpeech( Mobile from )
 		{
-			if ( from.InRange( this.Location, 12 ) )
+			if ( from.InRange( this.Location, MidlandBankerConstants.GENERAL_SPEECH_RANGE ) )
 				return true;
 
 			return base.HandlesOnSpeech( from );
 		}
 
+		/// <summary>
+		/// Handles speech events for Midland banking operations.
+		/// Processes commands like "withdraw", "balance", "bank", and "check".
+		/// </summary>
+		/// <param name="e">The speech event arguments</param>
 		public override void OnSpeech( SpeechEventArgs e )
 		{
-			if (  Insensitive.Contains( e.Speech, "deposit" ) && e.Mobile.InRange( this.Location, 6 )  )
+			if (  Insensitive.Contains( e.Speech, "deposit" ) && e.Mobile.InRange( this.Location, MidlandBankerConstants.DEPOSIT_SPEECH_RANGE )  )
 			{
 				string[] split = e.Speech.Split( ' ' );
 
@@ -228,16 +272,15 @@ namespace Server.Mobiles
 					int amount;
 
 					if ( !int.TryParse( split[1], out amount ) )
-						this.Say("To deposit, simply tell me you wish to deposit and the amount or give me the gold.  You can trust me.");
+						this.Say(MidlandBankerStringConstants.MSG_DEPOSIT_INFO);
 
-					
 					if ( amount > 0 && Deposit(e.Mobile, amount) )
-						this.Say("You have deposited " + amount.ToString() + " to your account.");
+						this.Say(String.Format(MidlandBankerStringConstants.MSG_DEPOSIT_SUCCESS, amount));
 					else
-						this.Say("You don't appear to have enough to deposit that amount.");
+						this.Say(MidlandBankerStringConstants.MSG_INSUFFICIENT_FUNDS);
 				}
 				else
-					this.Say("To deposit, simply tell me you wish to deposit and the amount or give me the gold.  You can trust me.");
+					this.Say(MidlandBankerStringConstants.MSG_DEPOSIT_INFO);
 					
 			}
 			if ( !e.Handled && e.Mobile.InRange( this.Location, 6 ) )
@@ -263,7 +306,7 @@ namespace Server.Mobiles
 								if ( !int.TryParse( split[1], out amount ) )
 									break;
 
-								if ( (!Core.ML && amount > 5000) || (Core.ML && amount > 60000) )
+								if ( (!Core.ML && amount > MidlandBankerConstants.MAX_WITHDRAWAL_NON_ML) || (Core.ML && amount > MidlandBankerConstants.MAX_WITHDRAWAL_ML) )
 								{
 									this.Say( 500381 ); // Thou canst not withdraw so much at one time!
 								}
@@ -280,7 +323,7 @@ namespace Server.Mobiles
 									}
 									else
 									{
-										this.Say("You've withdrawn " + amount + " from your account.");
+										this.Say(String.Format(MidlandBankerStringConstants.MSG_WITHDRAW_SUCCESS, amount));
 									}
 								}
 							}
@@ -294,9 +337,9 @@ namespace Server.Mobiles
 							int amt = GetBalance(e.Mobile);
 
 							if ( amt > 0 )
-								this.Say( "Your current balance with us is " + amt.ToString() ); 
+								this.Say( String.Format(MidlandBankerStringConstants.MSG_BALANCE_INFO, amt) );
 							else
-								this.Say( "You don't appear to have an account with us." ); 
+								this.Say( MidlandBankerStringConstants.MSG_NO_ACCOUNT ); 
 
 							break;
 						}
@@ -306,9 +349,9 @@ namespace Server.Mobiles
 							if (AdventuresFunctions.IsInMidland((object)this))
 							{
 								if (Utility.RandomBool())
-									this.Say("Aye sir, it is a bank, you can deposit, withdraw or check the balance of your account.");
+									this.Say(MidlandBankerStringConstants.MSG_MIDLAND_BANK_VARIANT1);
 								else
-									this.Say("Yes, you are correct, this is a bank!  Did you want to deposit, withdraw or check the balance of your account?");
+									this.Say(MidlandBankerStringConstants.MSG_MIDLAND_BANK_VARIANT2);
 							}
 
 							break;
@@ -327,11 +370,11 @@ namespace Server.Mobiles
                                 if ( !int.TryParse( split[1], out amount ) )
                                     break;
 
-								if ( amount < 5000 )
+								if ( amount < MidlandBankerConstants.MIN_CHECK_AMOUNT )
 								{
 									this.Say( 1010006 ); // We cannot create checks for such a paltry amount of gold!
 								}
-								else if ( amount > 1000000 )
+								else if ( amount > MidlandBankerConstants.MAX_CHECK_AMOUNT )
 								{
 									this.Say( 1010007 ); // Our policies prevent us from creating checks worth that much!
 								}
@@ -369,6 +412,13 @@ namespace Server.Mobiles
 		}
 
 
+		/// <summary>
+		/// Handles race-specific currency deposits via drag and drop.
+		/// Accepts only currency items that match the banker's race.
+		/// </summary>
+		/// <param name="from">The mobile depositing the currency</param>
+		/// <param name="dropped">The currency item being deposited</param>
+		/// <returns>True if the deposit was accepted, false otherwise</returns>
 		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
 			if (!from.Hidden && from is PlayerMobile)
@@ -406,12 +456,12 @@ namespace Server.Mobiles
 				}
 				else if (this.midrace != pm.midrace)
 				{
-					this.Say("We don't deal your kind here.");
+					this.Say(MidlandBankerStringConstants.MSG_WRONG_KIND);
 					return false;
 				}
-				else 
+				else
 				{
-					this.Say("That thing isn't money.");
+					this.Say(MidlandBankerStringConstants.MSG_NOT_MONEY);
 					return false;
 				}
 			}
@@ -419,24 +469,36 @@ namespace Server.Mobiles
 			return false;
 
 		}
+		#endregion
 
+		#region Serialization
 		public MidlandBanker( Serial serial ) : base( serial )
 		{
 		}
 
+		/// <summary>
+		/// Serializes the Midland banker data for saving.
+		/// Currently uses version 0 with no additional data.
+		/// </summary>
+		/// <param name="writer">The generic writer to serialize to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 			writer.Write( (int) 0 ); // version
 		}
 
+		/// <summary>
+		/// Deserializes the Midland banker data when loading.
+		/// Handles version compatibility for future updates.
+		/// </summary>
+		/// <param name="reader">The generic reader to deserialize from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
 			good1 = typeof(TinkerTools);
-
 		}
+		#endregion
 
 	}
 }
