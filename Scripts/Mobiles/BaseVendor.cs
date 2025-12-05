@@ -29,41 +29,41 @@ namespace Server.Mobiles
         private static bool m_Talked;
         string[] VendorSay = new string[] 
 		{ 
-			"Saudações",
-            "Olá você",
-            "Eu tenho coisas boas aqui.",
-            "Venha olhe!",
-            "Compre aqui!",
-			"Opa! Em que posso te ajudar?",
-			"Talvez eu tenha o que você procura...",
-			"Opa!",
-			"Os melhores preços aqui!",
-			"sim?",
-			"Rápido, Estou ocupado!",
-			"Meu estoque está cheio!",
-			"Bem-vindo(a) a minha loja",
-			"*Hmm?*",
-			"O tempo está bom para compras",
-			"Bela vestimenta. Está vendendo?"
+			BaseVendorStringConstants.GREETING_1,
+            BaseVendorStringConstants.GREETING_2,
+            BaseVendorStringConstants.GREETING_3,
+            BaseVendorStringConstants.GREETING_4,
+            BaseVendorStringConstants.GREETING_5,
+			BaseVendorStringConstants.GREETING_6,
+			BaseVendorStringConstants.GREETING_7,
+			BaseVendorStringConstants.GREETING_8,
+			BaseVendorStringConstants.GREETING_9,
+			BaseVendorStringConstants.GREETING_10,
+			BaseVendorStringConstants.GREETING_11,
+			BaseVendorStringConstants.GREETING_12,
+			BaseVendorStringConstants.GREETING_13,
+			BaseVendorStringConstants.GREETING_14,
+			BaseVendorStringConstants.GREETING_15,
+			BaseVendorStringConstants.GREETING_16
 		};
 
         public override void OnMovement(Mobile m, Point3D oldLocation)
         {
-            if (m_Talked == false && !(Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Doom Gauntlet") && !(Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Doom")  )
+            if (m_Talked == false && !(Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == BaseVendorStringConstants.REGION_DOOM_GAUNTLET) && !(Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == BaseVendorStringConstants.REGION_DOOM)  )
             {
-                if (m.InRange(this, 3) && m is PlayerMobile && !m.Hidden && m.Alive)
+                if (m.InRange(this, BaseVendorConstants.TALK_RANGE) && m is PlayerMobile && !m.Hidden && m.Alive)
                 {
                     m_Talked = true;
 
 					if (this is Carpenter && Map == Map.Trammel)
 					{
 						string sRegion = Worlds.GetMyRegion( Map, Location );
-						if (sRegion == "the City of Britain")
+						if (sRegion == BaseVendorStringConstants.REGION_CITY_OF_BRITAIN)
 						{
 							if (Utility.RandomBool())
-								Say("Help Sire!  Someone keeps stealing my SawMill!");
+								Say(BaseVendorStringConstants.CARPENTER_1);
 							else
-								Say("Welp!  There's a Sawmill thief around!");
+								Say(BaseVendorStringConstants.CARPENTER_2);
 						}
 					}
 					else
@@ -78,7 +78,7 @@ namespace Server.Mobiles
         private class SpamTimer : Timer
         {
             public SpamTimer()
-                : base(TimeSpan.FromMinutes(10))
+                : base(TimeSpan.FromMinutes(BaseVendorConstants.SPAM_TIMER_MINUTES))
             {
                 Priority = TimerPriority.OneMinute;
             }
@@ -95,7 +95,8 @@ namespace Server.Mobiles
         }
 		
         #endregion
-		private const int MaxSell = 1000;
+
+		#region Fields and Properties
 
 		protected abstract List<SBInfo> SBInfos { get; }
 
@@ -108,16 +109,14 @@ namespace Server.Mobiles
 
 		private bool m_sellingpriceadjusted;
 
-        //private bool m_canTeach;
-        //public override bool CanTeach { get { return m_canTeach; } set { m_canTeach = value; } }
-        public override bool CanTeach { get { return true; } }
-        public override bool BardImmune { get { return false; } }
+		public override bool CanTeach { get { return true; } }
+		public override bool BardImmune { get { return false; } }
 
 		public override bool PlayerRangeSensitive { get { return true; } }
 
 		public virtual bool IsActiveVendor { get { return true; } }
-		public virtual bool IsActiveBuyer { get { return IsActiveVendor; } } // response to vendor SELL
-		public virtual bool IsActiveSeller { get { return IsActiveVendor; } } // repsonse to vendor BUY
+		public virtual bool IsActiveBuyer { get { return IsActiveVendor; } }
+		public virtual bool IsActiveSeller { get { return IsActiveVendor; } }
 
 		public virtual NpcGuild NpcGuild { get { return NpcGuild.None; } }
 
@@ -127,12 +126,15 @@ namespace Server.Mobiles
 
 		public override bool ShowFameTitle { get { return false; } }
 
+		#endregion
+
+		#region Bulk Order System
+
 		protected override void GetConvoFragments(ArrayList list)
 		{
 			list.Add( (int)JobFragment.shopkeep );
 			base.GetConvoFragments (list);
 		}
-
 
 		public virtual bool IsValidBulkOrder( Item item )
 		{
@@ -151,12 +153,16 @@ namespace Server.Mobiles
 
 		public virtual TimeSpan GetNextBulkOrder( Mobile from )
 		{
-			return TimeSpan.FromMinutes(10); // was .Zero
+			return TimeSpan.FromMinutes(BaseVendorConstants.BULK_ORDER_DELAY_MINUTES);
 		}
 
 		public virtual void OnSuccessfulBulkOrderReceive( Mobile from )
 		{
 		}
+
+		#endregion
+
+		#region AI and Behavior
 
 		public override void OnThink()
 		{
@@ -166,7 +172,6 @@ namespace Server.Mobiles
 				this.CantWalk = true;
 			else
 				this.CantWalk = false;
-			
 		}
 
 		private bool PlayersInSight()
@@ -174,7 +179,7 @@ namespace Server.Mobiles
 			int players = 0;
 			bool enemies = false;
 
-			foreach ( Mobile player in GetMobilesInRange( 6 ) )
+			foreach ( Mobile player in GetMobilesInRange( BaseVendorConstants.PLAYER_SIGHT_RANGE ) )
 			{
 				if (player != null)
 				{
@@ -205,7 +210,7 @@ namespace Server.Mobiles
 		#region Faction
 		public virtual int GetPriceScalar()
 		{
-			return 100;
+			return BaseVendorConstants.DEFAULT_PRICE_SCALAR;
 		}
 
 		public void UpdateBuyInfo()
@@ -228,7 +233,7 @@ namespace Server.Mobiles
 			private BaseVendor m_Vendor;
 
 			public BulkOrderInfoEntry( Mobile from, BaseVendor vendor )
-				: base( 6152 )
+				: base( BaseVendorConstants.CONTEXT_MENU_BULK_ORDER )
 			{
 				m_From = from;
 				m_Vendor = vendor;
@@ -241,8 +246,8 @@ namespace Server.Mobiles
 					TimeSpan ts = m_Vendor.GetNextBulkOrder( m_From );
 
 					int totalSeconds = (int)ts.TotalSeconds;
-					int totalHours = ( totalSeconds + 3599 ) / 3600;
-					int totalMinutes = ( totalSeconds + 59 ) / 60;
+					int totalHours = ( totalSeconds + BaseVendorConstants.SECONDS_TO_HOURS_OFFSET ) / BaseVendorConstants.SECONDS_PER_HOUR;
+					int totalMinutes = ( totalSeconds + BaseVendorConstants.SECONDS_TO_MINUTES_OFFSET ) / BaseVendorConstants.SECONDS_PER_MINUTE;
 
 					if ( ( ( Core.SE ) ? totalMinutes == 0 : totalHours == 0 ) )
 					{
@@ -271,7 +276,11 @@ namespace Server.Mobiles
 			}
 		}
 
-		public BaseVendor( string title ) : base( AIType.AI_Vendor, FightMode.Closest, 15, 1, 0.1, 0.2 ) // WIZARD
+		#endregion
+
+		#region Constructors
+
+		public BaseVendor( string title ) : base( AIType.AI_Vendor, FightMode.Closest, 15, 1, 0.1, 0.2 )
 		{
 			LoadSBInfo();
 
@@ -283,7 +292,6 @@ namespace Server.Mobiles
 			InitOutfit();
 
 			Container pack;
-			//these packs MUST exist, or the client will crash when the packets are sent
 			pack = new Backpack();
 			pack.Layer = Layer.ShopBuy;
 			pack.Movable = false;
@@ -299,58 +307,49 @@ namespace Server.Mobiles
 			m_LastRestock = DateTime.UtcNow;
 			LoadSBInfo();
 
-				SetStr(50, 200);
-				SetDex(30, 150);
-				SetInt(50, 180);
+				SetStr(BaseVendorConstants.STR_MIN, BaseVendorConstants.STR_MAX);
+				SetDex(BaseVendorConstants.DEX_MIN, BaseVendorConstants.DEX_MAX);
+				SetInt(BaseVendorConstants.INT_MIN, BaseVendorConstants.INT_MAX);
 
-				SetHits(100, 300);
+				SetHits(BaseVendorConstants.HITS_MIN, BaseVendorConstants.HITS_MAX);
 
-				SetDamage(5, 35);
+				SetDamage(BaseVendorConstants.DAMAGE_MIN, BaseVendorConstants.DAMAGE_MAX);
 
-				SetDamageType(ResistanceType.Physical, 100);
+				SetDamageType(ResistanceType.Physical, BaseVendorConstants.DAMAGE_TYPE_PHYSICAL_PERCENT);
 
-				SetResistance(ResistanceType.Physical, 30, 70);
-				SetResistance(ResistanceType.Fire, 30, 70);
-				SetResistance(ResistanceType.Cold, 30, 70);
-				SetResistance(ResistanceType.Poison, 30, 70);
-				SetResistance(ResistanceType.Energy, 30, 70);
+				SetResistance(ResistanceType.Physical, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
+				SetResistance(ResistanceType.Fire, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
+				SetResistance(ResistanceType.Cold, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
+				SetResistance(ResistanceType.Poison, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
+				SetResistance(ResistanceType.Energy, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
 
-				SetSkill(SkillName.Swords, 50.0, 100.0);
-				SetSkill(SkillName.Fencing, 50.0, 100.0);
-				SetSkill(SkillName.Macing, 50.0, 100.0);
-				SetSkill(SkillName.Tactics, 50.0, 100.0);				
-				SetSkill(SkillName.Tactics, 50.0, 100.0);
-				SetSkill(SkillName.MagicResist, 50.0, 100.0);
-				SetSkill(SkillName.Tactics, 50.0, 100.0);
-				SetSkill(SkillName.Parry, 50.0, 100.0);
-				SetSkill(SkillName.Anatomy, 50.0, 100.0);
-				SetSkill(SkillName.Healing, 50.0, 100.0);
-				SetSkill(SkillName.Magery, 50.0, 100.0);
-				SetSkill(SkillName.EvalInt, 50.0, 100.0);
-				SetSkill(SkillName.DetectHidden, 10.0, 100.0);
+				SetSkill(SkillName.Swords, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Fencing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Macing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);				
+				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.MagicResist, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Parry, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Anatomy, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Healing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Magery, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.EvalInt, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.DetectHidden, BaseVendorConstants.DETECT_HIDDEN_MIN, BaseVendorConstants.SKILL_MAX);
 
 				m_pricesadjusted = false;
 				m_sellingpriceadjusted = false;
-
-	   //if (Utility.Random(1, 2) == 2) // 50% chance to have an OmniAI skill set
-		//OmniAI.SetRandomSkillSet(this, 70.0, 110.0);
 		}
 
 		public BaseVendor( Serial serial ): base( serial )
 		{
 		}
-/*
-		// + OmniAI support +
-		protected override BaseAI ForcedAI
-		{
-			get
-			{
-			return new OmniAI(this);
-			}
-		}
-		// - OmniAI support -
-*/
-		public static int BeggingPose( Mobile from ) // LET US SEE IF THEY ARE BEGGING
+
+		#endregion
+
+		#region Static Helper Methods
+
+		public static int BeggingPose( Mobile from )
 		{
 			int beggar = 0;
 			if ( from is PlayerMobile )
@@ -365,28 +364,31 @@ namespace Server.Mobiles
 			return beggar;
 		}
 		
-		public static int BeggingKarma( Mobile from ) // LET US SEE IF THEY ARE BEGGING
+		public static int BeggingKarma( Mobile from )
 		{
 			int charisma = 0;
-			if ( from.Karma > -2459 ){ charisma = 40; }
-			//from.CheckSkill( SkillName.Begging, 0, 100 );
+			if ( from.Karma > BaseVendorConstants.BEGGING_KARMA_THRESHOLD ){ charisma = BaseVendorConstants.BEGGING_CHARISMA_BONUS; }
 			return charisma;
 		}
 
-		public static string BeggingWords() // LET US SEE IF THEY ARE BEGGING
+		public static string BeggingWords()
 		{
-			string sSpeak = "Please give me a good price as I am so poor.";
-			switch( Utility.RandomMinMax( 0, 5 ) )
+			string sSpeak = BaseVendorStringConstants.BEGGING_1;
+			switch( Utility.RandomMinMax( BaseVendorConstants.BEGGING_WORDS_MIN, BaseVendorConstants.BEGGING_WORDS_MAX ) )
 			{
-				case 0: sSpeak = "Please give me a good price as I am so poor."; break;
-				case 1: sSpeak = "I have very little gold so whatever you can give..."; break;
-				case 2: sSpeak = "I have not eaten in days so your gold will surely help."; break;
-				case 3: sSpeak = "Will thou give a poor soul more for these?"; break;
-				case 4: sSpeak = "I have fallen on hard times, will thou be kind?"; break;
-				case 5: sSpeak = "Whatever you can give for these will surely help."; break;
+				case 0: sSpeak = BaseVendorStringConstants.BEGGING_1; break;
+				case 1: sSpeak = BaseVendorStringConstants.BEGGING_2; break;
+				case 2: sSpeak = BaseVendorStringConstants.BEGGING_3; break;
+				case 3: sSpeak = BaseVendorStringConstants.BEGGING_4; break;
+				case 4: sSpeak = BaseVendorStringConstants.BEGGING_5; break;
+				case 5: sSpeak = BaseVendorStringConstants.BEGGING_6; break;
 			}
 			return sSpeak;
 		}
+
+		#endregion
+
+		#region Properties
 
 		public DateTime LastRestock
 		{
@@ -404,7 +406,7 @@ namespace Server.Mobiles
 		{
 			get
 			{
-				return TimeSpan.FromHours( 2 );
+				return TimeSpan.FromHours( BaseVendorConstants.RESTOCK_DELAY_HOURS );
 			}
 		}
 
@@ -412,7 +414,7 @@ namespace Server.Mobiles
 		{
 			get
 			{
-				return TimeSpan.FromHours( 2 );
+				return TimeSpan.FromHours( BaseVendorConstants.RESTOCK_DELAY_HOURS );
 			}
 		}
 
@@ -470,47 +472,47 @@ namespace Server.Mobiles
 
 		public virtual void InitBody()
 		{
-			InitStats( 100, 100, 25 );
+			InitStats( BaseVendorConstants.INIT_STATS_STR, BaseVendorConstants.INIT_STATS_DEX, BaseVendorConstants.INIT_STATS_INT );
 
 			SpeechHue = Server.Misc.RandomThings.GetSpeechHue();
 			Hue = Server.Misc.RandomThings.GetRandomSkinColor();
 
 			if ( IsInvulnerable && !Core.AOS )
-				NameHue = 0x35;
+				NameHue = BaseVendorConstants.INVULNERABLE_NAME_HUE;
 
 			if ( this is Roscoe || this is Garth )
 			{
-				Body = 0x190;
+				Body = BaseVendorConstants.BODY_MALE;
 				Name = NameList.RandomName( "male" );
 			}
 			else if ( this is KungFu )
 			{
 				if ( Female = GetGender() )
 				{
-					Body = 0x191;
+					Body = BaseVendorConstants.BODY_FEMALE;
 					Name = NameList.RandomName( "tokuno female" );
 				}
 				else
 				{
-					Body = 0x190;
+					Body = BaseVendorConstants.BODY_MALE;
 					Name = NameList.RandomName( "tokuno male" );
 				}
 			}
 			else if ( Female = GetGender() )
 			{
-				Body = 0x191;
+				Body = BaseVendorConstants.BODY_FEMALE;
 				Name = NameList.RandomName( "female" );
 			}
 			else
 			{
-				Body = 0x190;
+				Body = BaseVendorConstants.BODY_MALE;
 				Name = NameList.RandomName( "male" );
 			}
 		}
 
 		public virtual int GetRandomHue()
 		{
-			switch ( Utility.Random( 5 ) )
+			switch ( Utility.Random( BaseVendorConstants.RANDOM_HUE_COUNT ) )
 			{
 				default:
 				case 0: return Utility.RandomBlueHue();
@@ -523,7 +525,7 @@ namespace Server.Mobiles
 
 		public virtual int GetShoeHue()
 		{
-			if ( 0.1 > Utility.RandomDouble() )
+			if ( BaseVendorConstants.RANDOM_THRESHOLD > Utility.RandomDouble() )
 				return 0;
 
 			return Utility.RandomNeutralHue();
@@ -536,8 +538,8 @@ namespace Server.Mobiles
 
 		public virtual int RandomBrightHue()
 		{
-			if ( 0.1 > Utility.RandomDouble() )
-				return Utility.RandomList( 0x62, 0x71 );
+			if ( BaseVendorConstants.RANDOM_THRESHOLD > Utility.RandomDouble() )
+				return Utility.RandomList( BaseVendorConstants.BRIGHT_HUE_SPECIAL_1, BaseVendorConstants.BRIGHT_HUE_SPECIAL_2 );
 
 			return Utility.RandomList( 0x03, 0x0D, 0x13, 0x1C, 0x21, 0x30, 0x37, 0x3A, 0x44, 0x59 );
 		}
@@ -558,31 +560,31 @@ namespace Server.Mobiles
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				if ( reg.Name == "Midkemia"  )
+				if ( reg.Name == BaseVendorStringConstants.REGION_MIDKEMIA  )
 				{
 					((BaseCreature)this).midrace = 1;
 				}
-				if ( reg.Name == "Calypso"  )
+				if ( reg.Name == BaseVendorStringConstants.REGION_CALYPSO  )
 				{
 					((BaseCreature)this).midrace = 4;	
 				}	
 				IntelligentAction.MidlandRace(this);			
 			}
 
-			if ( ( reg.Name == "the Dungeon Room" || reg.Name == "the Camping Tent" ) && this is Provisioner )
+			if ( ( reg.Name == BaseVendorStringConstants.REGION_DUNGEON_ROOM || reg.Name == BaseVendorStringConstants.REGION_CAMPING_TENT ) && this is Provisioner )
 			{
-				this.Title = "the merchant";
+				this.Title = BaseVendorStringConstants.TITLE_MERCHANT;
 			}
-			else if ( reg.Name == "the Forgotten Lighthouse" || reg.Name == "Savage Sea Docks" || reg.Name == "Serpent Sail Docks" || reg.Name == "Anchor Rock Docks" || reg.Name == "Kraken Reef Docks" || reg.Name == "the Port" )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_FORGOTTEN_LIGHTHOUSE || reg.Name == BaseVendorStringConstants.REGION_SAVAGE_SEA_DOCKS || reg.Name == BaseVendorStringConstants.REGION_SERPENT_SAIL_DOCKS || reg.Name == BaseVendorStringConstants.REGION_ANCHOR_ROCK_DOCKS || reg.Name == BaseVendorStringConstants.REGION_KRAKEN_REEF_DOCKS || reg.Name == BaseVendorStringConstants.REGION_THE_PORT )
 			{
-				if ( this is Provisioner && reg.Name != "the Port" ){ this.Title = "the dock worker"; if ( Utility.RandomBool() ){ this.Title = "the merchant"; } }
-				else if ( this is Fisherman && reg.Name != "the Port" ){ this.Title = "the sailor"; }
-				else if ( this is Carpenter && reg.Name != "the Port" ){ this.Title = "the cooper"; }
-				else if ( this is Waiter ){ this.Title = "the cabin boy"; if ( this.Female ){ this.Title = "the serving wench"; } }
-				else if ( this is Weaponsmith && reg.Name != "the Port" ){ this.Title = "the master-at-arms"; }
+				if ( this is Provisioner && reg.Name != BaseVendorStringConstants.REGION_THE_PORT ){ this.Title = BaseVendorStringConstants.TITLE_DOCK_WORKER; if ( Utility.RandomBool() ){ this.Title = BaseVendorStringConstants.TITLE_MERCHANT; } }
+				else if ( this is Fisherman && reg.Name != BaseVendorStringConstants.REGION_THE_PORT ){ this.Title = BaseVendorStringConstants.TITLE_SAILOR; }
+				else if ( this is Carpenter && reg.Name != BaseVendorStringConstants.REGION_THE_PORT ){ this.Title = BaseVendorStringConstants.TITLE_COOPER; }
+				else if ( this is Waiter ){ this.Title = BaseVendorStringConstants.TITLE_CABIN_BOY; if ( this.Female ){ this.Title = BaseVendorStringConstants.TITLE_SERVING_WENCH; } }
+				else if ( this is Weaponsmith && reg.Name != BaseVendorStringConstants.REGION_THE_PORT ){ this.Title = BaseVendorStringConstants.TITLE_MASTER_AT_ARMS; }
 				else if ( this is Ranger )
 				{
-					this.Title = "the harpooner";
+					this.Title = BaseVendorStringConstants.TITLE_HARPOONER;
 					if ( this.FindItemOnLayer( Layer.OneHanded ) != null ) { this.FindItemOnLayer( Layer.OneHanded ).Delete(); }
 					if ( this.FindItemOnLayer( Layer.TwoHanded ) != null ) { this.FindItemOnLayer( Layer.TwoHanded ).Delete(); }
 					if ( this.FindItemOnLayer( Layer.Helm ) != null ) { this.FindItemOnLayer( Layer.Helm ).Delete(); }
@@ -590,9 +592,9 @@ namespace Server.Mobiles
 					if ( Utility.RandomBool() ){ this.AddItem( new SkullCap( Utility.RandomDyedHue() ) ); }
 					this.AddItem( new Harpoon() );
 				}
-				else if ( this is Shipwright && reg.Name != "the Port" ){ this.Title = "the boatswain"; }
+				else if ( this is Shipwright && reg.Name != BaseVendorStringConstants.REGION_THE_PORT ){ this.Title = BaseVendorStringConstants.TITLE_BOATSWAIN; }
 
-				if ( !(this is Shipwright && reg.Name == "the Port" ) )
+				if ( !(this is Shipwright && reg.Name == BaseVendorStringConstants.REGION_THE_PORT ) )
 				{
 					if ( !(this is Jester) && !(this is Druid) && !(this is VarietyDealer) )
 					{
@@ -603,51 +605,51 @@ namespace Server.Mobiles
 					}
 				}
 			}
-			else if ( reg.Name == "the Thieves Guild" && this is Provisioner )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_THIEVES_GUILD && this is Provisioner )
 			{
-				this.Title = "the fence";
+				this.Title = BaseVendorStringConstants.TITLE_FENCE;
 			}
-			else if ( reg.Name == "the Ship's Lower Deck" && !(this is Jester) )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_SHIP_LOWER_DECK && !(this is Jester) )
 			{
-				if ( this is Provisioner  ){ this.Title = "the quartermaster"; }
-				else if ( this is Waiter ){ this.Title = "the cabin boy"; if ( this.Female ){ this.Title = "the serving wench"; } }
+				if ( this is Provisioner  ){ this.Title = BaseVendorStringConstants.TITLE_QUARTERMASTER; }
+				else if ( this is Waiter ){ this.Title = BaseVendorStringConstants.TITLE_CABIN_BOY; if ( this.Female ){ this.Title = BaseVendorStringConstants.TITLE_SERVING_WENCH; } }
 				if ( this.FindItemOnLayer( Layer.Helm ) != null ) { this.FindItemOnLayer( Layer.Helm ).Delete(); }
 				if ( Utility.RandomBool() ){ this.AddItem( new SkullCap() ); }
 				else { this.AddItem( new Bandana() ); }
 				MorphingTime.SailorMyClothes( this );
 			}
-			else if ( reg.Name == "the Wizards Guild" && this is Waiter && this.Body == 400 )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_WIZARDS_GUILD && this is Waiter && this.Body == BaseVendorConstants.BODY_WAITER_MALE )
 			{
-				this.Title = "the butler";
+				this.Title = BaseVendorStringConstants.TITLE_BUTLER;
 			}
-			else if ( reg.Name == "the Wizards Guild" && this is Waiter && this.Body == 401 )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_WIZARDS_GUILD && this is Waiter && this.Body == BaseVendorConstants.BODY_WAITER_FEMALE )
 			{
-				this.Title = "the maid";
+				this.Title = BaseVendorStringConstants.TITLE_MAID;
 			}
-			else if ( reg.Name == "The Pit" )
+			else if ( reg.Name == BaseVendorStringConstants.REGION_THE_PIT )
 			{
-				this.Kills = Utility.RandomMinMax(5, 10);
-				this.Karma = -500;
+				this.Kills = Utility.RandomMinMax(BaseVendorConstants.KILLS_PIT_MIN, BaseVendorConstants.KILLS_PIT_MAX);
+				this.Karma = BaseVendorConstants.KARMA_PIT;
 			}		
-			else if ( reg.Name == "the Ruins of Tenebrae")
+			else if ( reg.Name == BaseVendorStringConstants.REGION_RUINS_OF_TENEBRAE)
 			{ 
-				this.Hue = Utility.RandomMinMax( 496, 510 );
+				this.Hue = Utility.RandomMinMax( BaseVendorConstants.HUE_RUINS_MIN, BaseVendorConstants.HUE_RUINS_MAX );
 				if (this.Female)
-					this.Body = 606;
+					this.Body = BaseVendorConstants.BODY_RUINS_FEMALE;
 				else
-					this.Body = 605;
+					this.Body = BaseVendorConstants.BODY_RUINS_MALE;
 				
 				if ( this.FindItemOnLayer( Layer.Shirt ) != null ) { this.FindItemOnLayer( Layer.Shirt ).Delete(); }
 				if ( this.FindItemOnLayer( Layer.InnerTorso ) != null ) { this.FindItemOnLayer( Layer.InnerTorso ).Delete(); }
 			}
-			else if ( reg.Name == "the Temple of Praetoria")
+			else if ( reg.Name == BaseVendorStringConstants.REGION_TEMPLE_OF_PRAETORIA)
 			{ 
-				this.Hue = 1489 ;
+				this.Hue = BaseVendorConstants.HUE_TEMPLE_PRAETORIA ;
 				if (this.Female)
-					this.Body = 606;
+					this.Body = BaseVendorConstants.BODY_RUINS_FEMALE;
 				else
-					this.Body = 605;
-				this.Karma = -1;
+					this.Body = BaseVendorConstants.BODY_RUINS_MALE;
+				this.Karma = BaseVendorConstants.KARMA_TEMPLE;
 				
 				if ( this.FindItemOnLayer( Layer.Shirt ) != null ) { this.FindItemOnLayer( Layer.Shirt ).Delete(); }
 				if ( this.FindItemOnLayer( Layer.InnerTorso ) != null ) { this.FindItemOnLayer( Layer.InnerTorso ).Delete(); }
@@ -655,6 +657,10 @@ namespace Server.Mobiles
 			
 			base.OnAfterSpawn();
 		}
+
+		#endregion
+
+		#region Map and Region Handling
 
 		protected override void OnMapChange( Map oldMap )
 		{
@@ -675,7 +681,7 @@ namespace Server.Mobiles
 
 		public virtual void InitOutfit()
 		{
-			switch ( Utility.Random( 3 ) )
+			switch ( Utility.Random( BaseVendorConstants.RANDOM_SHIRT_COUNT ) )
 			{
 				case 0: AddItem( new FancyShirt( GetRandomHue() ) ); break;
 				case 1: AddItem( new Doublet( GetRandomHue() ) ); break;
@@ -697,7 +703,7 @@ namespace Server.Mobiles
 
 			if ( Female )
 			{
-				switch ( Utility.Random( 6 ) )
+				switch ( Utility.Random( BaseVendorConstants.RANDOM_FEMALE_PANTS_COUNT ) )
 				{
 					case 0: AddItem( new ShortPants( GetRandomHue() ) ); break;
 					case 1:
@@ -712,23 +718,14 @@ namespace Server.Mobiles
 				FacialHairItemID = Utility.RandomList( 0, 8254, 8255, 8256, 8257, 8267, 8268, 8269 );
 				FacialHairHue = hairHue;
 
-				switch ( Utility.Random( 2 ) )
+				switch ( Utility.Random( BaseVendorConstants.RANDOM_MALE_PANTS_COUNT ) )
 				{
 					case 0: AddItem( new LongPants( GetRandomHue() ) ); break;
 					case 1: AddItem( new ShortPants( GetRandomHue() ) ); break;
 				}
 			}
 
-				int money1 = 30;
-				int money2 = 120;
-
-				double w1 = money1 * (MyServerSettings.GetGoldCutRate( this, null ) * .01);
-				double w2 = money2 * (MyServerSettings.GetGoldCutRate( this, null ) * .01);
-
-				money1 = (int)w1;
-				money2 = (int)w2;
-
-			PackGold( money1, money2 );
+				VendorGoldHelper.PackGoldForVendor(this);
 		}
 
 		public virtual void Restock()
@@ -744,18 +741,13 @@ namespace Server.Mobiles
 				int m_Amount = this.Backpack.GetAmount( typeof( Gold ) );
 				cont.ConsumeTotal( typeof( Gold ), m_Amount );
 
-					int money1 = 30;
-					int money2 = 120;
-
-					double w1 = money1 * (MyServerSettings.GetGoldCutRate( this, null ) * .01);
-					double w2 = money2 * (MyServerSettings.GetGoldCutRate( this, null ) * .01);
-
-					money1 = (int)w1;
-					money2 = (int)w2;
-
-				this.PackGold( money1, money2 );
+					VendorGoldHelper.PackGoldForVendor(this);
 			}
 		}
+
+		#endregion
+
+		#region Combat and Death
 
 		public override bool OnBeforeDeath()
 		{
@@ -786,16 +778,16 @@ namespace Server.Mobiles
 			if ( killer is PlayerMobile )
 			{
 				Region reg = Region.Find( this.Location, this.Map );
-				if (reg.Name == "The Pit") // no one gets kills from vendors in the pit
+				if (reg.Name == BaseVendorStringConstants.REGION_THE_PIT) // no one gets kills from vendors in the pit
 				{
 				}
-				else if ( this.Map == Map.Ilshenar && this.X <= 1007 && this.Y <= 1280) // darkmoor
+				else if ( this.Map == Map.Ilshenar && this.X <= BaseVendorConstants.DARKMOOR_X_MAX && this.Y <= BaseVendorConstants.DARKMOOR_Y_MAX) // darkmoor
 				{
 					if (this.Karma < 0 ) // evil killing evil vendors in darkmoor
 					{
 						killer.Criminal = true;
 						killer.Kills = killer.Kills + 1;
-						Titles.AwardKarma( killer, 300, true );
+						Titles.AwardKarma( killer, BaseVendorConstants.KARMA_AWARD_VENDOR_KILL, true );
 						Server.Items.DisguiseTimers.RemoveDisguise( killer );
 					}
 					
@@ -804,7 +796,7 @@ namespace Server.Mobiles
 				{
 					killer.Criminal = true;
 					killer.Kills = killer.Kills + 1;
-					Titles.AwardKarma( killer, -(300), true );
+					Titles.AwardKarma( killer, -(BaseVendorConstants.KARMA_AWARD_VENDOR_KILL), true );
 					Server.Items.DisguiseTimers.RemoveDisguise( killer );
 				}
 
@@ -814,11 +806,15 @@ namespace Server.Mobiles
 			if ( !base.OnBeforeDeath() )
 				return false;
 
-			string bSay = "Help! Guards!";
-			this.PublicOverheadMessage( MessageType.Regular, 0, false, string.Format ( bSay ) ); 
+			string bSay = BaseVendorStringConstants.DEATH_CRY;
+			this.PublicOverheadMessage( MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEATH, false, string.Format ( bSay ) ); 
 
 			return true;
 		}
+
+		#endregion
+
+		#region Enemy Detection
 
 		public override bool IsEnemy( Mobile m )
 		{
@@ -833,18 +829,26 @@ namespace Server.Mobiles
 
 		}
 
+		#endregion
+
+		#region Combat Messages
+
 		public override void OnGaveMeleeAttack( Mobile defender )
 		{
-			switch ( Utility.Random( 4 ))		   
+			switch ( Utility.Random( BaseVendorConstants.RANDOM_COMBAT_MESSAGE_COUNT ))		   
 			{
-				case 0: Say("Leave this place!"); break;
-				case 1: Say("" + defender.Name + ", we have heard of you!"); break;
-				case 2: Say("We have been told to watch for you, " + defender.Name + "!"); break;
-				case 3: Say("Guards, " + defender.Name + " is here!"); break;
+				case 0: Say(BaseVendorStringConstants.COMBAT_1); break;
+				case 1: Say(string.Format(BaseVendorStringConstants.COMBAT_2_FORMAT, defender.Name)); break;
+				case 2: Say(string.Format(BaseVendorStringConstants.COMBAT_3_FORMAT, defender.Name)); break;
+				case 3: Say(string.Format(BaseVendorStringConstants.COMBAT_4_FORMAT, defender.Name)); break;
 			};
 		}
 
-		private static TimeSpan InventoryDecayTime = TimeSpan.FromHours( 2.0 );
+		#endregion
+
+		#region Price Calculation
+
+		private static TimeSpan InventoryDecayTime = TimeSpan.FromHours( BaseVendorConstants.INVENTORY_DECAY_HOURS );
 
 		public int AdjustPrices( int money, bool good)
 		{
@@ -852,53 +856,53 @@ namespace Server.Mobiles
 			int curse = AetherGlobe.VendorCurse;
 
 			if (!good) // bad vendor, invert measurement
-				curse = 100000 - curse;
+				curse = BaseVendorConstants.CURSE_THRESHOLD_MAX - curse;
 
-			double pricemod = 1;
+			double pricemod = BaseVendorConstants.MIN_PRICE_MOD;
 			
-			if (curse < 10000)
+			if (curse < BaseVendorConstants.CURSE_THRESHOLD_1)
 			{
-				pricemod = ( .55 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_1 * (double)money );
 			}	
-			else if (curse < 20000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_2)
 			{
-				pricemod = ( .60 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_2 * (double)money );
 			}	
-			else if (curse < 30000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_3)
 			{
-				pricemod = ( .65 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_3 * (double)money );
 			}	
-			else if (curse < 40000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_4)
 			{
-				pricemod = ( .70 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_4 * (double)money );
 			}		
-			else if (curse < 50000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_5)
 			{
-				pricemod = ( .75 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_5 * (double)money );
 			}	
-			else if (curse < 60000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_6)
 			{
-				pricemod = ( 0.80 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_6 * (double)money );
 			}	
-			else if (curse < 70000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_7)
 			{
-				pricemod = ( 0.85* (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_7 * (double)money );
 			}	
-			else if (curse < 80000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_8)
 			{
-				pricemod = ( 0.90 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_8 * (double)money );
 			}	
-			else if (curse < 90000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_9)
 			{
-				pricemod = ( 0.95 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_9 * (double)money );
 			}	
-			else if (curse < 100000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_MAX)
 			{
-				pricemod = ( 1.00 * (double)money );
+				pricemod = ( BaseVendorConstants.PRICE_MOD_10 * (double)money );
 			}				
 				
-			if ( pricemod < 1 )
-				pricemod = 1;
+			if ( pricemod < BaseVendorConstants.MIN_PRICE_MOD )
+				pricemod = BaseVendorConstants.MIN_PRICE_MOD;
 
 			return Convert.ToInt32(pricemod);
 			
@@ -910,57 +914,60 @@ namespace Server.Mobiles
 			int curse = AetherGlobe.VendorCurse;
 
 			if (!good) // bad vendor, invert
-				curse = 100000 - curse;
+				curse = BaseVendorConstants.CURSE_THRESHOLD_MAX - curse;
 
-			double pricemod = 1;
+			double pricemod = BaseVendorConstants.MIN_PRICE_MOD;
 			
-			if (curse < 10000)
+			if (curse < BaseVendorConstants.CURSE_THRESHOLD_1)
 			{
-				pricemod = ( 1.45 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_1 * (double)amount );
 			}	
-			else if (curse < 20000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_2)
 			{
-				pricemod = ( 1.35 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_2 * (double)amount );
 			}	
-			else if (curse < 30000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_3)
 			{
-				pricemod = ( 1.25 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_3 * (double)amount );
 			}	
-			else if (curse < 40000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_4)
 			{
-				pricemod = ( 1.15 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_4 * (double)amount );
 			}		
-			else if (curse < 50000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_5)
 			{
-				pricemod = ( 1.05 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_5 * (double)amount );
 			}	
-			else if (curse < 60000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_6)
 			{
-				pricemod = ( 0.95 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_6 * (double)amount );
 			}	
-			else if (curse < 70000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_7)
 			{
-				pricemod = ( 0.85 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_7 * (double)amount );
 			}	
-			else if (curse < 80000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_8)
 			{
-				pricemod = ( 0.75 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_8 * (double)amount );
 			}	
-			else if (curse < 90000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_9)
 			{
-				pricemod = ( 0.65 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_9 * (double)amount );
 			}	
-			else if (curse < 100000)
+			else if (curse < BaseVendorConstants.CURSE_THRESHOLD_MAX)
 			{
-				pricemod = ( 0.55 * (double)amount );
+				pricemod = ( BaseVendorConstants.AMOUNT_MOD_10 * (double)amount );
 			}				
 				
-			if ( pricemod < 1 )
-				pricemod = 1;
+			if ( pricemod < BaseVendorConstants.MIN_PRICE_MOD )
+				pricemod = BaseVendorConstants.MIN_PRICE_MOD;
 
 			return Convert.ToInt32(pricemod);
-			
 		}
+
+		#endregion
+
+		#region Vendor Buy/Sell
 
 		public virtual void VendorBuy( Mobile from )
 		{
@@ -972,14 +979,13 @@ namespace Server.Mobiles
 
 			if ( !CheckVendorAccess( from ) )
 			{
-				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu não faço negócios com você!");
+				this.Say(BaseVendorStringConstants.ERROR_NO_BUSINESS);
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say("Me desculpe mas eu não estou negociando nada, milorde.");
+				this.Say(BaseVendorStringConstants.ERROR_MIDLAND_NO_TRADE);
 				return;
 			}	
 
@@ -1006,7 +1012,7 @@ namespace Server.Mobiles
 			{
 				IBuyItemInfo buyItem = (IBuyItemInfo)buyInfo[idx];
 
-				if ( buyItem.Amount <= 0 || list.Count >= 250 )
+				if ( buyItem.Amount <= 0 || list.Count >= BaseVendorConstants.MAX_BUY_LIST_ITEMS )
 					continue;
 
 				// NOTE: Only GBI supported; if you use another implementation of IBuyItemInfo, this will crash
@@ -1034,7 +1040,7 @@ namespace Server.Mobiles
 					m_pricesadjusted = true;
 				}
 
-				list.Add( new BuyItemState( buyItem.Name, cont.Serial, disp == null ? (Serial)0x7FC0FFEE : disp.Serial, buyItem.Price, buyItem.Amount, buyItem.ItemID, buyItem.Hue ) );
+				list.Add( new BuyItemState( buyItem.Name, cont.Serial, disp == null ? (Serial)BaseVendorConstants.NULL_SERIAL : disp.Serial, buyItem.Price, buyItem.Amount, buyItem.ItemID, buyItem.Hue ) );
 				count++;
 
 				if ( opls == null ) {
@@ -1078,7 +1084,7 @@ namespace Server.Mobiles
 					}
 				}
 
-				if ( name != null && list.Count < 250 )
+				if ( name != null && list.Count < BaseVendorConstants.MAX_BUY_LIST_ITEMS )
 				{
 					list.Add( new BuyItemState( name, cont.Serial, item.Serial, price, item.Amount, item.ItemID, item.Hue ) );
 					count++;
@@ -1091,9 +1097,6 @@ namespace Server.Mobiles
 				}
 			}
 
-			//one (not all) of the packets uses a byte to describe number of items in the list.  Osi = dumb.
-			//if ( list.Count > 255 )
-			//	Console.WriteLine( "Vendor Warning: Vendor {0} has more than 255 buy items, may cause client errors!", this );
 
 			if ( list.Count > 0 )
 			{
@@ -1129,6 +1132,10 @@ namespace Server.Mobiles
 				SayTo( from, 500186 ); // Greetings.  Have a look around.
 			}
 		}
+
+		#endregion
+
+		#region Pack Management
 
 		public virtual void SendPacksTo( Mobile from )
 		{
@@ -1179,14 +1186,13 @@ namespace Server.Mobiles
 
 			if ( !CheckVendorAccess( from ) )
 			{
-				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say( "Eu não faço negócios com você!" );
+				this.Say( BaseVendorStringConstants.ERROR_NO_BUSINESS );
 				return;
 			}
 
 			if (AdventuresFunctions.IsInMidland((object)this))
 			{
-				this.Say( "Me desculpe mas eu não estou negociando nada, milorde." );
+				this.Say( BaseVendorStringConstants.ERROR_MIDLAND_NO_TRADE );
 				return;
 			}				
 
@@ -1196,7 +1202,6 @@ namespace Server.Mobiles
 			{
 				IShopSellInfo[] info = GetSellInfo();
 
-				//Hashtable table = new Hashtable();
 				Dictionary<Item, SellItemState> table = new Dictionary<Item, SellItemState>();
 
 				foreach ( IShopSellInfo ssi in info )
@@ -1215,21 +1220,9 @@ namespace Server.Mobiles
 
 						if ( item.IsStandardLoot() && item.Movable && ssi.IsSellable( item ) )
 						{
-							PlayerMobile pm = (PlayerMobile)from;
+							int GuildMember;
+							int barter = VendorBarterHelper.CalculateBarterSkill(this, from, out GuildMember);
 
-							int barter = (int)from.Skills[SkillName.ItemID].Value;
-
-							int GuildMember = 0;
-
-							if ( barter < 100 && this.NpcGuild != NpcGuild.None && this.NpcGuild == pm.NpcGuild ){ barter = 100; GuildMember = 1; } // FOR GUILD MEMBERS
-
-							if ( BeggingPose(from) > 0 && GuildMember == 0 ) // LET US SEE IF THEY ARE BEGGING
-							{
-								Titles.AwardKarma( from, -BeggingKarma( from ), true );
-								barter = (int)from.Skills[SkillName.Begging].Value;
-							}
-
-							//this.Say("getsellprice is "+ssi.GetSellPriceFor( item, barter ));
 							int money = ssi.GetSellPriceFor( item, barter );
 
 							if (!m_sellingpriceadjusted)
@@ -1253,24 +1246,28 @@ namespace Server.Mobiles
 				}
 				else
 				{
-                    string sSay = "NÃƒÆ’Ã‚Â£o acredito que vocÃƒÆ’Ã‚Âª tenha algo do meu interesse.";
-                    this.PublicOverheadMessage(MessageType.Regular, 1153, false, sSay);
+                    string sSay = BaseVendorStringConstants.ERROR_NO_INTEREST;
+                    this.PublicOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay);
 				}
 			}
 		}
+
+		#endregion
+
+		#region Item Drop Handling
 
 		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
 			if ( from.Blessed )
 			{
-				string sSay = "Eu não posso negociar com você enquanto você estiver neste estado.";
-				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
+				string sSay = BaseVendorStringConstants.ERROR_BLESSED;
+				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
 				return false;
 			}
 			else if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
 			{
-				string sSay = "Não acredito que possa aceitar isto de você.";
-				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
+				string sSay = BaseVendorStringConstants.ERROR_ENEMY;
+				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
 				return false;
 			}
 			else if (from is PlayerMobile)
@@ -1334,12 +1331,12 @@ namespace Server.Mobiles
 				else if (this is Waiter && dropped is CorpseItem)
 				{
 					string corpsename = dropped.Name;
-					if (Insensitive.Contains(corpsename, "coffee") || Insensitive.Contains(corpsename, "espresso") || Insensitive.Contains(corpsename, "coffee") || Insensitive.Contains(corpsename, "americano") || Insensitive.Contains(corpsename, "cappucino"))
+					if (Insensitive.Contains(corpsename, BaseVendorStringConstants.ITEM_TYPE_COFFEE) || Insensitive.Contains(corpsename, BaseVendorStringConstants.ITEM_TYPE_ESPRESSO) || Insensitive.Contains(corpsename, BaseVendorStringConstants.ITEM_TYPE_COFFEE) || Insensitive.Contains(corpsename, BaseVendorStringConstants.ITEM_TYPE_AMERICANO) || Insensitive.Contains(corpsename, BaseVendorStringConstants.ITEM_TYPE_CAPPUCINO))
 					{
 						dropped.Delete();
 						Coffee cof = new Coffee();
 						from.Backpack.DropItem(cof);
-						this.Say("Ohhh... sim... isso vai servir!");
+						this.Say(BaseVendorStringConstants.COFFEE_ACCEPTANCE);
 						return true;
 					}	
 				}
@@ -1352,30 +1349,30 @@ namespace Server.Mobiles
 
 					if ( this.NpcGuild != NpcGuild.None && this.NpcGuild == pm.NpcGuild ){ gBonus = gBonus + (int)Math.Round((( 100.00 * RelicValue ) / 100), 0); GuildMember = 1; } // FOR GUILD MEMBERS
 
-					if ( BeggingPose(from) > 0 && GuildMember == 0 ) // LET US SEE IF THEY ARE BEGGING
-					{
-						Titles.AwardKarma( from, -BeggingKarma( from ), true );
-						from.Say( BeggingWords() );
-						gBonus = (int)Math.Round((( from.Skills[SkillName.Begging].Value * RelicValue ) / 100), 0);
-					}
+			if ( BeggingPose(from) > 0 && GuildMember == 0 )
+			{
+				Titles.AwardKarma( from, -BeggingKarma( from ), true );
+				from.Say( BeggingWords() );
+				gBonus = (int)Math.Round((( from.Skills[SkillName.Begging].Value * RelicValue ) / 100), 0);
+			}
 					gBonus = gBonus + RelicValue;
-					from.SendSound( 0x3D );
+					from.SendSound( BaseVendorConstants.SOUND_RELIC );
 					from.AddToBackpack ( new Gold( gBonus ) );
 					string sMessage = "";
-					switch ( Utility.RandomMinMax( 0, 9 ) )
+					switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_REWARD_MESSAGE_COUNT - 1 ) )
 					{
-						case 0:	sMessage = "I have been looking for something like this. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 1:	sMessage = "I have heard of this item before. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 2:	sMessage = "I never thought I would see one of these. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 3:	sMessage = "I have never seen one of these. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 4:	sMessage = "What a rare item. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 5:	sMessage = "This is quite rare. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 6:	sMessage = "This will go nicely in my collection. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 7:	sMessage = "I have only heard tales about such items. Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 8:	sMessage = "How did you come across this? Here is " + gBonus.ToString() + " gold for you.";		break;
-						case 9:	sMessage = "Where did you find this? Here is " + gBonus.ToString() + " gold for you.";		break;
+						case 0:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_1_FORMAT, gBonus.ToString());		break;
+						case 1:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_2_FORMAT, gBonus.ToString());		break;
+						case 2:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_3_FORMAT, gBonus.ToString());		break;
+						case 3:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_4_FORMAT, gBonus.ToString());		break;
+						case 4:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_5_FORMAT, gBonus.ToString());		break;
+						case 5:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_6_FORMAT, gBonus.ToString());		break;
+						case 6:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_7_FORMAT, gBonus.ToString());		break;
+						case 7:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_8_FORMAT, gBonus.ToString());		break;
+						case 8:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_9_FORMAT, gBonus.ToString());		break;
+						case 9:	sMessage = string.Format(BaseVendorStringConstants.RELIC_REWARD_10_FORMAT, gBonus.ToString());		break;
 					}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 					dropped.Delete();
 					return true;
 				}
@@ -1404,12 +1401,12 @@ namespace Server.Mobiles
 					dropped.Delete();
 					carpet.Hue = dropped.Hue;
 					from.AddToBackpack( carpet );
-					SayTo(from, "I altered your magic carpet.");
-					Effects.PlaySound(from.Location, from.Map, 0x248);
+					SayTo(from, BaseVendorStringConstants.CARPET_ALTERED);
+					Effects.PlaySound(from.Location, from.Map, BaseVendorConstants.SOUND_CARPET);
 				}
 				else if ( dropped is Gold && this is Mapmaker )
 				{
-					if ( dropped.Amount == 1000 )
+					if ( dropped.Amount == BaseVendorConstants.MAP_COST )
 					{
 						if ( from.Map == Map.Trammel && from.X>5124 && from.Y>3041 && from.X<6147 && from.Y<4092 )
 							from.AddToBackpack ( new WorldMapAmbrosia() );
@@ -1428,83 +1425,38 @@ namespace Server.Mobiles
 						else
 							from.AddToBackpack ( new WorldMapSosaria() );
 
-						string sMessage = "Thank you. Here is your world map.";
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+						string sMessage = BaseVendorStringConstants.MAP_PURCHASE;
+						this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 						dropped.Delete();
 						return true;
 					}
 					return false;
 				}
-				// GATED RESOURCES: Steel and Brass alloy crafting disabled (metals not yet available)
-				/*else if ( dropped is DugUpCoal && this is Blacksmith && Server.Misc.Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Savaged Empire" )
-				{
-					string sMessage = "";
-
-					if ( !(Server.Items.DugUpCoal.CheckForDugUpCoal( from, dropped.Amount, false ) ) )
-					{
-						sMessage = "You don't have enought iron ore for me to make steel from this.";
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-					}
-					else
-					{
-						sMessage = "Let's turn this into bars of steel you can use.";
-						Server.Items.DugUpCoal.CheckForDugUpCoal( from, dropped.Amount, true );
-						from.AddToBackpack ( new SteelIngot( dropped.Amount ) );
-						dropped.Delete();
-						from.PlaySound( 0x208 );
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-						return true;
-					}
-
-					return false;
-				}
-				else if ( dropped is DugUpZinc && this is Blacksmith && Server.Misc.Worlds.GetMyWorld( from.Map, from.Location, from.X, from.Y ) == "the Island of Umber Veil" )
-				{
-					string sMessage = "";
-
-					if ( !(Server.Items.DugUpZinc.CheckForDugUpZinc( from, dropped.Amount, false ) ) )
-					{
-						sMessage = "You don't have enought iron ore for me to make brass from this.";
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-					}
-					else
-					{
-						sMessage = "Let's turn this into bars of brass you can use.";
-						Server.Items.DugUpZinc.CheckForDugUpZinc( from, dropped.Amount, true );
-						from.AddToBackpack ( new BrassIngot( dropped.Amount ) );
-						dropped.Delete();
-						from.PlaySound( 0x208 );
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
-						return true;
-					}
-
-					return false;
-				}*/
 				else if (	( dropped is DDCopper || dropped is DDSilver ) && 
 							( this is Minter || this is Banker )	)
 				{
-					int nRate = 5;
-					string sCoin = "silver";
-					if ( dropped is DDCopper ){ nRate = 10; sCoin = "copper";}
+					int nRate = BaseVendorConstants.EXCHANGE_RATE_SILVER;
+					string sCoin = BaseVendorStringConstants.CURRENCY_TYPE_SILVER;
+					if ( dropped is DDCopper ){ nRate = BaseVendorConstants.EXCHANGE_RATE_COPPER; sCoin = BaseVendorStringConstants.CURRENCY_TYPE_COPPER;}
 
 					int nCoins = dropped.Amount;
 					int nGold = (int)Math.Floor((decimal)(dropped.Amount / nRate));
 					int nChange = dropped.Amount - ( nGold * nRate );
 
-					string sMessage = "Sorry, you do not have enough here to exchange for even a single gold coin.";
+					string sMessage = BaseVendorStringConstants.CURRENCY_ERROR_NOT_ENOUGH;
 
 					if ( ( nGold > 0 ) && ( nChange > 0 ) )
 					{
-						sMessage = "Here is " + nGold.ToString() + " gold for you, and " + nChange.ToString() + " " + sCoin + " back in change.";
+						sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_WITH_CHANGE_FORMAT, nGold.ToString(), nChange.ToString(), sCoin);
 						from.AddToBackpack ( new Gold( nGold ) );
 					}
 					else if ( nGold > 0 )
 					{
-						sMessage = "Here is " + nGold.ToString() + " gold for you.";
+						sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 						from.AddToBackpack ( new Gold( nGold ) );
 					}
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					if ( ( nChange > 0 ) && ( dropped is DDCopper ) ){ from.AddToBackpack ( new DDCopper( nChange ) ); }
 					else if ( ( nChange > 0 ) && ( dropped is DDSilver ) ){ from.AddToBackpack ( new DDSilver( nChange ) ); }
@@ -1514,48 +1466,48 @@ namespace Server.Mobiles
 				}
 				else if ( ( dropped is DDXormite ) && ( this is Minter || this is Banker ) )
 				{
-					int nGold = dropped.Amount * 3;
+					int nGold = dropped.Amount * BaseVendorConstants.CURRENCY_MULT_XORMITE;
 
-					string sMessage = "Here is " + nGold.ToString() + " gold for you.";
+					string sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 					from.AddToBackpack ( new Gold( nGold ) );
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					dropped.Delete();
 					return true;
 				}
 				else if ( ( dropped is Crystals ) && ( this is Minter || this is Banker ) )
 				{
-					int nGold = dropped.Amount * 5;
+					int nGold = dropped.Amount * BaseVendorConstants.CURRENCY_MULT_CRYSTALS;
 
-					string sMessage = "Here is " + nGold.ToString() + " gold for you.";
+					string sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 					from.AddToBackpack ( new Gold( nGold ) );
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					dropped.Delete();
 					return true;
 				}
 				else if ( ( dropped is DDJewels ) && ( this is Minter || this is Banker ) )
 				{
-					int nGold = dropped.Amount * 2;
+					int nGold = dropped.Amount * BaseVendorConstants.CURRENCY_MULT_JEWELS;
 
-					string sMessage = "Here is " + nGold.ToString() + " gold for you.";
+					string sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 					from.AddToBackpack ( new Gold( nGold ) );
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					dropped.Delete();
 					return true;
 				}
 				else if ( ( dropped is DDGemstones ) && ( this is Minter || this is Banker ) )
 				{
-					int nGold = dropped.Amount * 2;
+					int nGold = dropped.Amount * BaseVendorConstants.CURRENCY_MULT_GEMSTONES;
 
-					string sMessage = "Here is " + nGold.ToString() + " gold for you.";
+					string sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 					from.AddToBackpack ( new Gold( nGold ) );
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					dropped.Delete();
 					return true;
@@ -1564,10 +1516,10 @@ namespace Server.Mobiles
 				{
 					int nGold = dropped.Amount;
 
-					string sMessage = "Here is " + nGold.ToString() + " gold for you.";
+					string sMessage = string.Format(BaseVendorStringConstants.CURRENCY_EXCHANGE_FORMAT, nGold.ToString());
 					from.AddToBackpack ( new Gold( nGold ) );
 
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
 					dropped.Delete();
 					return true;
@@ -1576,9 +1528,9 @@ namespace Server.Mobiles
 				{
 					int GuildMember = 0;
 
-					int iForensics = (int)from.Skills[SkillName.Forensics].Value / 3;
-					int iAnatomy = (int)from.Skills[SkillName.Anatomy].Value / 3;
-					int nBottle = Utility.RandomMinMax( 2, 10 ) + Utility.RandomMinMax( 0, iForensics ) + Utility.RandomMinMax( 0, iAnatomy );
+					int iForensics = (int)from.Skills[SkillName.Forensics].Value / BaseVendorConstants.SKILL_DIVISOR;
+					int iAnatomy = (int)from.Skills[SkillName.Anatomy].Value / BaseVendorConstants.SKILL_DIVISOR;
+					int nBottle = Utility.RandomMinMax( BaseVendorConstants.BOTTLE_MIN, BaseVendorConstants.BOTTLE_MAX ) + Utility.RandomMinMax( 0, iForensics ) + Utility.RandomMinMax( 0, iAnatomy );
 
 					int gBonus = (int)Math.Round((( from.Skills[SkillName.ItemID].Value * nBottle ) / 100), 0);
 
@@ -1593,20 +1545,20 @@ namespace Server.Mobiles
 					gBonus = (gBonus + nBottle) * dropped.Amount;
 					from.AddToBackpack ( new Gold( gBonus ) );
 					string sMessage = "";
-					switch ( Utility.RandomMinMax( 0, 9 ) )
+					switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_REWARD_MESSAGE_COUNT - 1 ) )
 					{
-						case 0:	sMessage = "Hmmmm...I needed some of this. Here is " + gBonus.ToString() + " gold for you.";						break;
-						case 1:	sMessage = "I'll take that. Here is " + gBonus.ToString() + " gold for you.";										break;
-						case 2:	sMessage = "I assume this is fresh? Here is " + gBonus.ToString() + " gold for you.";								break;
-						case 3:	sMessage = "You are better than some of the undertakers I know. Here is " + gBonus.ToString() + " gold for you.";	break;
-						case 4:	sMessage = "This is a good bottle you found here. Here is " + gBonus.ToString() + " gold for you.";					break;
-						case 5:	sMessage = "Keep this up and my lab will be stocked. Here is " + gBonus.ToString() + " gold for you.";				break;
-						case 6:	sMessage = "How did you manage to get this bottle? Here is " + gBonus.ToString() + " gold for you.";				break;
-						case 7:	sMessage = "You seem to be good with a surgeons knife. Here is " + gBonus.ToString() + " gold for you.";			break;
-						case 8:	sMessage = "I have seen bottles like this before. Here is " + gBonus.ToString() + " gold for you.";					break;
-						case 9:	sMessage = "I have never seen such a nice bottle of this before. Here is " + gBonus.ToString() + " gold for you.";	break;
+						case 0:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_1_FORMAT, gBonus.ToString());						break;
+						case 1:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_2_FORMAT, gBonus.ToString());										break;
+						case 2:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_3_FORMAT, gBonus.ToString());								break;
+						case 3:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_4_FORMAT, gBonus.ToString());	break;
+						case 4:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_5_FORMAT, gBonus.ToString());					break;
+						case 5:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_6_FORMAT, gBonus.ToString());				break;
+						case 6:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_7_FORMAT, gBonus.ToString());				break;
+						case 7:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_8_FORMAT, gBonus.ToString());			break;
+						case 8:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_9_FORMAT, gBonus.ToString());					break;
+						case 9:	sMessage = string.Format(BaseVendorStringConstants.BOTTLE_REWARD_10_FORMAT, gBonus.ToString());	break;
 					}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 					dropped.Delete();
 					return true;
 				}
@@ -1635,35 +1587,34 @@ namespace Server.Mobiles
 					dropped is LeatherTunicArtifact || 
 					dropped is RuinedPaintingArtifact ) )
 				{
-					int TombRaid = 8000;
+					int TombRaid = BaseVendorConstants.TOMB_RAID_DEFAULT;
 
-					if ( dropped is RockArtifact || dropped is SkullCandleArtifact || dropped is BottleArtifact || dropped is DamagedBooksArtifact ){ TombRaid = 5000; }
-					else if ( dropped is StretchedHideArtifact || dropped is BrazierArtifact ){ TombRaid = 6000; }
-					else if ( dropped is LampPostArtifact || dropped is BooksNorthArtifact || dropped is BooksWestArtifact || dropped is BooksFaceDownArtifact ){ TombRaid = 7000; }
-					else if ( dropped is StuddedTunicArtifact || dropped is CocoonArtifact ){ TombRaid = 9000; }
-					else if ( dropped is SkinnedDeerArtifact ){ TombRaid = 10000; }
-					else if ( dropped is SaddleArtifact || dropped is LeatherTunicArtifact ){ TombRaid = 11000; }
-					else if ( dropped is RuinedPaintingArtifact ){ TombRaid = 12000; }
+					if ( dropped is RockArtifact || dropped is SkullCandleArtifact || dropped is BottleArtifact || dropped is DamagedBooksArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_COMMON; }
+					else if ( dropped is StretchedHideArtifact || dropped is BrazierArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_UNCOMMON; }
+					else if ( dropped is LampPostArtifact || dropped is BooksNorthArtifact || dropped is BooksWestArtifact || dropped is BooksFaceDownArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_RARE; }
+					else if ( dropped is StuddedTunicArtifact || dropped is CocoonArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_VERY_RARE; }
+					else if ( dropped is SkinnedDeerArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_EXTREMELY_RARE; }
+					else if ( dropped is SaddleArtifact || dropped is LeatherTunicArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_LEGENDARY; }
+					else if ( dropped is RuinedPaintingArtifact ){ TombRaid = BaseVendorConstants.TOMB_RAID_UNIQUE; }
 
 					from.AddToBackpack ( new Gold( TombRaid ) );
 					string sMessage = "";
-					switch ( Utility.RandomMinMax( 0, 9 ) )
+					switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_REWARD_MESSAGE_COUNT - 1 ) )
 					{
-						case 0:	sMessage = "Hmmmm...someone has been busy. Here is " + TombRaid.ToString() + " gold for you.";						break;
-						case 1:	sMessage = "I'll take that. Here is " + TombRaid.ToString() + " gold for you.";										break;
-						case 2:	sMessage = "I assume the traps were well avoided? Here is " + TombRaid.ToString() + " gold for you.";				break;
-						case 3:	sMessage = "You are better than some of the thieves I have met. Here is " + TombRaid.ToString() + " gold for you.";	break;
-						case 4:	sMessage = "This is a good one you stole here. Here is " + TombRaid.ToString() + " gold for you.";					break;
-						case 5:	sMessage = "Keep this up and we will both be rich. Here is " + TombRaid.ToString() + " gold for you.";				break;
-						case 6:	sMessage = "How did you manage to steal this one? Here is " + TombRaid.ToString() + " gold for you.";				break;
-						case 7:	sMessage = "You seem to be avoiding the dangers out there. Here is " + TombRaid.ToString() + " gold for you.";		break;
-						case 8:	sMessage = "I haven't seen one like this before. Here is " + TombRaid.ToString() + " gold for you.";				break;
-						case 9:	sMessage = "Why earn when you can take? Here is " + TombRaid.ToString() + " gold for you.";							break;
+						case 0:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_1_FORMAT, TombRaid.ToString());						break;
+						case 1:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_2_FORMAT, TombRaid.ToString());										break;
+						case 2:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_3_FORMAT, TombRaid.ToString());				break;
+						case 3:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_4_FORMAT, TombRaid.ToString());	break;
+						case 4:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_5_FORMAT, TombRaid.ToString());					break;
+						case 5:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_6_FORMAT, TombRaid.ToString());				break;
+						case 6:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_7_FORMAT, TombRaid.ToString());				break;
+						case 7:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_8_FORMAT, TombRaid.ToString());		break;
+						case 8:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_9_FORMAT, TombRaid.ToString());				break;
+						case 9:	sMessage = string.Format(BaseVendorStringConstants.TOMB_RAID_10_FORMAT, TombRaid.ToString());							break;
 					}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 
-					Titles.AwardFame( from, TombRaid/25, true );
-					//Titles.AwardKarma( from, -TombRaid/25, true );
+					Titles.AwardFame( from, TombRaid/BaseVendorConstants.TOMB_RAID_FAME_DIVISOR, true );
 
 					dropped.Delete();
 					return true;
@@ -1674,34 +1625,34 @@ namespace Server.Mobiles
 
 					int iAmThief = (int)from.Skills[SkillName.Stealing].Value;
 
-					if ( iAmThief < 10 ){ this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "I only deal with fellow thieves.", from.NetState); }
+					if ( iAmThief < BaseVendorConstants.THIEF_SKILL_REQUIREMENT ){ this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, BaseVendorStringConstants.THIEF_REJECTION, from.NetState); }
 					else if ( dropped is StealBox || dropped is StealMetalBox || dropped is StealBag )
 					{
-						int gBonus = (int)Math.Round((( from.Skills[SkillName.ItemID].Value * 500 ) / 100), 0);
-						if ( this.NpcGuild != NpcGuild.None && this.NpcGuild == pm.NpcGuild ){ gBonus = gBonus + (int)Math.Round((( 100.00 * 500 ) / 100), 0); GuildMember = 1; } // FOR GUILD MEMBERS
+						int gBonus = (int)Math.Round((( from.Skills[SkillName.ItemID].Value * BaseVendorConstants.STEAL_BOX_BASE_VALUE ) / 100), 0);
+						if ( this.NpcGuild != NpcGuild.None && this.NpcGuild == pm.NpcGuild ){ gBonus = gBonus + (int)Math.Round((( 100.00 * BaseVendorConstants.STEAL_BOX_BASE_VALUE ) / 100), 0); GuildMember = 1; } // FOR GUILD MEMBERS
 						if ( BeggingPose(from) > 0 && GuildMember == 0 ) // LET US SEE IF THEY ARE BEGGING
 						{
 							Titles.AwardKarma( from, -BeggingKarma( from ), true );
 							from.Say( BeggingWords() );
-							gBonus = (int)Math.Round((( from.Skills[SkillName.Begging].Value * 500 ) / 100), 0);
+							gBonus = (int)Math.Round((( from.Skills[SkillName.Begging].Value * BaseVendorConstants.STEAL_BOX_BASE_VALUE ) / 100), 0);
 						}
-						gBonus = gBonus + 500;
+						gBonus = gBonus + BaseVendorConstants.STEAL_BOX_BASE_VALUE;
 						from.AddToBackpack ( new Gold( gBonus ) );
 						string sMessage = "";
-						switch ( Utility.RandomMinMax( 0, 9 ) )
+						switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_REWARD_MESSAGE_COUNT - 1 ) )
 						{
-							case 0:	sMessage = "Hmmmm...someone has been busy. Here is " + gBonus.ToString() + " gold for you.";						break;
-							case 1:	sMessage = "I'll take that. Here is " + gBonus.ToString() + " gold for you.";										break;
-							case 2:	sMessage = "I assume the traps were well avoided? Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 3:	sMessage = "You are better than some of the thieves I have met. Here is " + gBonus.ToString() + " gold for you.";	break;
-							case 4:	sMessage = "This is a good one you stole here. Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 5:	sMessage = "Keep this up and we will both be rich. Here is " + gBonus.ToString() + " gold for you.";				break;
-							case 6:	sMessage = "How did you manage to steal this one? Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 7:	sMessage = "You seem to be avoiding the dangers out there. Here is " + gBonus.ToString() + " gold for you.";		break;
-							case 8:	sMessage = "I have seen one like this before. Here is " + gBonus.ToString() + " gold for you.";						break;
-							case 9:	sMessage = "Why earn when you can take? Here is " + gBonus.ToString() + " gold for you.";							break;
+							case 0:	sMessage = string.Format(BaseVendorStringConstants.THIEF_1_FORMAT, gBonus.ToString());						break;
+							case 1:	sMessage = string.Format(BaseVendorStringConstants.THIEF_2_FORMAT, gBonus.ToString());										break;
+							case 2:	sMessage = string.Format(BaseVendorStringConstants.THIEF_3_FORMAT, gBonus.ToString());					break;
+							case 3:	sMessage = string.Format(BaseVendorStringConstants.THIEF_4_FORMAT, gBonus.ToString());	break;
+							case 4:	sMessage = string.Format(BaseVendorStringConstants.THIEF_5_FORMAT, gBonus.ToString());					break;
+							case 5:	sMessage = string.Format(BaseVendorStringConstants.THIEF_6_FORMAT, gBonus.ToString());				break;
+							case 6:	sMessage = string.Format(BaseVendorStringConstants.THIEF_7_FORMAT, gBonus.ToString());					break;
+							case 7:	sMessage = string.Format(BaseVendorStringConstants.THIEF_8_FORMAT, gBonus.ToString());		break;
+							case 8:	sMessage = string.Format(BaseVendorStringConstants.THIEF_9_FORMAT, gBonus.ToString());						break;
+							case 9:	sMessage = string.Format(BaseVendorStringConstants.THIEF_10_FORMAT, gBonus.ToString());							break;
 						}
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+						this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 						dropped.Delete();
 						return true;
 					}
@@ -1721,20 +1672,20 @@ namespace Server.Mobiles
 						gBonus = gBonus + vRipoff;
 						from.AddToBackpack ( new Gold( gBonus ) );
 						string sMessage = "";
-						switch ( Utility.RandomMinMax( 0, 9 ) )
+						switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_REWARD_MESSAGE_COUNT - 1 ) )
 						{
-							case 0:	sMessage = "Hmmmm...someone has been busy. Here is " + gBonus.ToString() + " gold for you.";						break;
-							case 1:	sMessage = "I'll take that. Here is " + gBonus.ToString() + " gold for you.";										break;
-							case 2:	sMessage = "I assume the traps were well avoided? Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 3:	sMessage = "You are better than some of the thieves I have met. Here is " + gBonus.ToString() + " gold for you.";	break;
-							case 4:	sMessage = "This is a good one you stole here. Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 5:	sMessage = "Keep this up and we will both be rich. Here is " + gBonus.ToString() + " gold for you.";				break;
-							case 6:	sMessage = "How did you manage to steal this one? Here is " + gBonus.ToString() + " gold for you.";					break;
-							case 7:	sMessage = "You seem to be avoiding the dangers out there. Here is " + gBonus.ToString() + " gold for you.";		break;
-							case 8:	sMessage = "I have seen one like this before. Here is " + gBonus.ToString() + " gold for you.";						break;
-							case 9:	sMessage = "Why earn when you can take? Here is " + gBonus.ToString() + " gold for you.";							break;
+							case 0:	sMessage = string.Format(BaseVendorStringConstants.THIEF_1_FORMAT, gBonus.ToString());						break;
+							case 1:	sMessage = string.Format(BaseVendorStringConstants.THIEF_2_FORMAT, gBonus.ToString());										break;
+							case 2:	sMessage = string.Format(BaseVendorStringConstants.THIEF_3_FORMAT, gBonus.ToString());					break;
+							case 3:	sMessage = string.Format(BaseVendorStringConstants.THIEF_4_FORMAT, gBonus.ToString());	break;
+							case 4:	sMessage = string.Format(BaseVendorStringConstants.THIEF_5_FORMAT, gBonus.ToString());					break;
+							case 5:	sMessage = string.Format(BaseVendorStringConstants.THIEF_6_FORMAT, gBonus.ToString());				break;
+							case 6:	sMessage = string.Format(BaseVendorStringConstants.THIEF_7_FORMAT, gBonus.ToString());					break;
+							case 7:	sMessage = string.Format(BaseVendorStringConstants.THIEF_8_FORMAT, gBonus.ToString());		break;
+							case 8:	sMessage = string.Format(BaseVendorStringConstants.THIEF_9_FORMAT, gBonus.ToString());						break;
+							case 9:	sMessage = string.Format(BaseVendorStringConstants.THIEF_10_FORMAT, gBonus.ToString());							break;
 						}
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+						this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 						dropped.Delete();
 						return true;
 					}
@@ -1743,16 +1694,16 @@ namespace Server.Mobiles
 				{
 					int fairTrade = 1;
 					string sMessage = "";
-					switch ( Utility.RandomMinMax( 0, 7 ) )
+					switch ( Utility.RandomMinMax( 0, BaseVendorConstants.RANDOM_HENCHMAN_MESSAGE_COUNT - 1 ) )
 					{
-						case 0:	sMessage = "So, this follower is not working out for you?"; break;
-						case 1:	sMessage = "Looking for a replacement henchman eh?"; break;
-						case 2:	sMessage = "Well...this one is looking for fame and fortune."; break;
-						case 3:	sMessage = "Maybe this one will be a better fit in your group."; break;
-						case 4:	sMessage = "Not all relationships work out."; break;
-						case 5:	sMessage = "At you least you parted ways amiably."; break;
-						case 6:	sMessage = "This one has been hanging out around here."; break;
-						case 7:	sMessage = "This one also seeks great treasure.";		break;
+						case 0:	sMessage = BaseVendorStringConstants.HENCHMAN_1; break;
+						case 1:	sMessage = BaseVendorStringConstants.HENCHMAN_2; break;
+						case 2:	sMessage = BaseVendorStringConstants.HENCHMAN_3; break;
+						case 3:	sMessage = BaseVendorStringConstants.HENCHMAN_4; break;
+						case 4:	sMessage = BaseVendorStringConstants.HENCHMAN_5; break;
+						case 5:	sMessage = BaseVendorStringConstants.HENCHMAN_6; break;
+						case 6:	sMessage = BaseVendorStringConstants.HENCHMAN_7; break;
+						case 7:	sMessage = BaseVendorStringConstants.HENCHMAN_8;		break;
 					}
 					if ( dropped is HenchmanFighterItem )
 					{
@@ -1789,11 +1740,11 @@ namespace Server.Mobiles
 					}
 					if ( fairTrade == 1 )
 					{
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+						this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sMessage, from.NetState);
 						dropped.Delete();
 						return true;
 					}
-					else { this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "This is not a graveyard! Bury them somewhere else!", from.NetState); }
+					else { this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, BaseVendorStringConstants.HENCHMAN_REJECTION, from.NetState); }
 				}
 				else if ( dropped is BookBox && ( this is Mage || this is KeeperOfChivalry || this is Witches || this is Necromancer || this is MageGuildmaster || this is HolyMage || this is NecroMage ) )
 				{
@@ -1807,7 +1758,7 @@ namespace Server.Mobiles
 						{
 							from.AddToBackpack ( item );
 						}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "The curse has been lifted from the books.", from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, BaseVendorStringConstants.CURSE_REMOVED_BOOKS, from.NetState);
 					dropped.Delete();
 					return true;
 				}
@@ -1824,8 +1775,8 @@ namespace Server.Mobiles
 							from.AddToBackpack ( item );
 						}
 					string curseName = dropped.Name;
-						if ( curseName == ""){ curseName = "item"; }
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "The curse has been lifted from the " + curseName + ".", from.NetState);
+						if ( curseName == ""){ curseName = BaseVendorStringConstants.DEFAULT_ITEM_NAME; }
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, string.Format(BaseVendorStringConstants.CURSE_REMOVED_FORMAT, curseName), from.NetState);
 					dropped.Delete();
 					return true;
 				}
@@ -1841,7 +1792,7 @@ namespace Server.Mobiles
 						{
 							from.AddToBackpack ( item );
 						}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "The item has been cleaned.", from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, BaseVendorStringConstants.ITEM_CLEANED, from.NetState);
 					dropped.Delete();
 					return true;
 				}
@@ -1857,14 +1808,11 @@ namespace Server.Mobiles
 						{
 							from.AddToBackpack ( item );
 						}
-					this.PrivateOverheadMessage(MessageType.Regular, 1153, false, "The weeds have been removed.", from.NetState);
+					this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, BaseVendorStringConstants.WEEDS_REMOVED, from.NetState);
 					dropped.Delete();
 					return true;
 				}
 
-				//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-				/* TODO: Thou art giving me? and fame/karma for gold gifts */
 
 				if ( dropped is SmallBOD || dropped is LargeBOD )
 				{
@@ -1909,15 +1857,14 @@ namespace Server.Mobiles
 						((PlayerMobile)from).TailorBOD += creds; 
 					}
 					
-					from.SendSound( 0x3D );
+					from.SendSound( BaseVendorConstants.SOUND_RELIC );
 
-					//SayTo( from, 1045132 ); // Thank you so much!  Here is a reward for your effort.
-					SayTo( from, "Thank you!  You've earned " + (creds) + " credits with the Guild." );
-					SayTo( from, "You can always ask me about your credits total or to redeem them." );
+					SayTo( from, string.Format(BaseVendorStringConstants.BOD_CREDITS_EARNED_FORMAT, creds.ToString()) );
+					SayTo( from, BaseVendorStringConstants.BOD_CREDITS_INFO );
 
 					OnSuccessfulBulkOrderReceive( from );
 
-					((PlayerMobile)from).NextBODTurnInTime = DateTime.Now + TimeSpan.FromSeconds( 10.0 );
+					((PlayerMobile)from).NextBODTurnInTime = DateTime.Now + TimeSpan.FromSeconds( BaseVendorConstants.BOD_TURNIN_DELAY_SECONDS );
 
 					dropped.Delete();
 					return true;
@@ -1926,6 +1873,10 @@ namespace Server.Mobiles
 
 			return base.OnDragDrop( from, dropped );
 		}
+
+		#endregion
+
+		#region Buy/Sell Item Processing
 
 		private GenericBuyInfo LookupDisplayObject( object obj )
 		{
@@ -1940,7 +1891,11 @@ namespace Server.Mobiles
 
 			return null;
 		}
-		
+
+		#endregion
+
+		#region Credit System
+
 		public void ClaimCredits(Mobile from, int amount)
 		{
 			if (!from.Player || from.Backpack == null)
@@ -1952,10 +1907,10 @@ namespace Server.Mobiles
 			if ( ( this is Blacksmith || this is BlacksmithGuildmaster) && ((PlayerMobile)from).BlacksmithBOD <= 0)
 				return;
 		
-			this.Say("Thank you for your help!");
-			this.Say("Let me see what I can find for you... ");
+			this.Say(BaseVendorStringConstants.CREDITS_THANK_YOU);
+			this.Say(BaseVendorStringConstants.CREDITS_LOOKING);
 			
-			Timer.DelayCall( TimeSpan.FromSeconds( 2 ), new TimerStateCallback ( LookForReward ), new object[]{ from, amount }  );
+			Timer.DelayCall( TimeSpan.FromSeconds( BaseVendorConstants.LOOK_FOR_REWARD_DELAY_SECONDS ), new TimerStateCallback ( LookForReward ), new object[]{ from, amount }  );
 
 		}
 		
@@ -1971,26 +1926,25 @@ namespace Server.Mobiles
 			if (!(from is PlayerMobile) || from == null)
 				return;
 				
-			switch (Utility.Random(5))
+			switch (Utility.Random(BaseVendorConstants.RANDOM_LOOK_REWARD_COUNT))
 			{
-				case 0: Emote("I have this... "); break;
-				case 1: Emote("Perhaps I could part with that there..."); break;
-				case 2: Emote("Points to an item on a shelf and changes his mind."); break;
-				case 3: Emote("I can't give that soo...."); break;
-				case 4: Emote("ah... maybe you could use this."); break;
+				case 0: Emote(BaseVendorStringConstants.LOOK_REWARD_1); break;
+				case 1: Emote(BaseVendorStringConstants.LOOK_REWARD_2); break;
+				case 2: Emote(BaseVendorStringConstants.LOOK_REWARD_3); break;
+				case 3: Emote(BaseVendorStringConstants.LOOK_REWARD_4); break;
+				case 4: Emote(BaseVendorStringConstants.LOOK_REWARD_5); break;
 			}
 			
-			if (Utility.RandomDouble() > 0.75)
+			if (Utility.RandomDouble() > BaseVendorConstants.CREDIT_VAR_HIGH)
 				GiveReward(from, amount);
 			else 
-				Timer.DelayCall( TimeSpan.FromSeconds( 2 ), new TimerStateCallback ( LookForReward ), new object[]{ from, amount } );
+				Timer.DelayCall( TimeSpan.FromSeconds( BaseVendorConstants.LOOK_FOR_REWARD_DELAY_SECONDS ), new TimerStateCallback ( LookForReward ), new object[]{ from, amount } );
 		}
 				
 		
 		private void GiveReward(Mobile from, int amount)
 		{ 
-			//determine the type of credit rewards
-			int credittype = 1; // backsmith
+			int credittype = 1; // blacksmith
 			if (this is Tailor || this is TailorGuildmaster)
 				credittype = 2;
 			
@@ -2026,27 +1980,26 @@ namespace Server.Mobiles
     				((PlayerMobile)from).TailorBOD -= credits;
     			}
 
-			Titles.AwardFame( from, (credits/50), true );
+			Titles.AwardFame( from, (credits/BaseVendorConstants.FAME_DIVISOR), true );
 			
-			this.Say("Here you go.");
-			from.SendMessage("You have redeemed "+ credits+ " credits from the Guild.");
+			this.Say(BaseVendorStringConstants.CREDITS_REWARD_GIVEN);
+			from.SendMessage(string.Format(BaseVendorStringConstants.CREDITS_REDEEMED_FORMAT, credits.ToString()));
 		
 			Item reward = null;
 			int gold = 0;
 			
-			//add variability
-			if (Utility.RandomDouble() < 33)
-				credits = (int)((double)credits * 0.85);
-			else if (Utility.RandomDouble() > 0.80)
-				credits = (int)((double)credits * 1.15);
+			if (Utility.RandomDouble() < BaseVendorConstants.CREDIT_VAR_LOW)
+				credits = (int)((double)credits * BaseVendorConstants.CREDIT_MULT_LOW);
+			else if (Utility.RandomDouble() > BaseVendorConstants.CREDIT_VAR_HIGH)
+				credits = (int)((double)credits * BaseVendorConstants.CREDIT_MULT_HIGH);
 			
-			AdventuresFunctions.DiminishingReturns( credits, 12000 );
+			AdventuresFunctions.DiminishingReturns( credits, BaseVendorConstants.DIMINISHING_RETURNS_CAP );
 			
 			if (credittype == 1)//smith
 			{
-				int basecred = 20; // variable which makes editing all reward values much easier for balancing
+				int basecred = BaseVendorConstants.BASE_CREDIT; // variable which makes editing all reward values much easier for balancing
 				
-				if (credits <= (basecred *4))
+				if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_1))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2055,7 +2008,7 @@ namespace Server.Mobiles
 						case 2: reward = new LeatherGlovesOfMining( 1 ); break;
 					}
 				}
-				else if (credits <= (basecred *10))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_2))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2064,7 +2017,7 @@ namespace Server.Mobiles
 						case 2: reward = new StuddedGlovesOfMining( 3 ); break;
 					}
 				}
-				else if (credits <= (basecred *20))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_3))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2073,52 +2026,52 @@ namespace Server.Mobiles
 						case 2: reward = new RingmailGlovesOfMining( 5 ); break;
 					}
 				}
-				else if (credits <= (basecred *34))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_4))
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicHammer( CraftResource.Iron + 1, ( 55 - (1*5) ) ); break;
+						case 0: reward = new RunicHammer( CraftResource.Iron + 1, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (1*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 						case 1: reward = new ProspectorsTool(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 2, ( 55 - (2*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 2, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (2*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *70))//+18
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_5))//+18
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicHammer( CraftResource.Iron + 2, ( 55 - (2*5) ) ); break;
+						case 0: reward = new RunicHammer( CraftResource.Iron + 2, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (2*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 						case 1: reward = new ColoredAnvil(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 3, ( 55 - (3*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 3, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (3*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *92)) //+22
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_6)) //+22
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicHammer( CraftResource.Iron + 2, ( 55 - (2*5) ) ); break;
+						case 0: reward = new RunicHammer( CraftResource.Iron + 2, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (2*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 						case 1: reward = new ColoredAnvil(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 3, ( 55 - (3*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 3, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (3*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *118)) //+26
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_7)) //+26
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicHammer( CraftResource.Iron + 3, ( 55 - (3*5) ) ); break;
+						case 0: reward = new RunicHammer( CraftResource.Iron + 3, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (3*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 						case 1: reward = new ColoredAnvil(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 4, ( 55 - (4*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 4, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (4*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *148)) //+30
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_8)) //+30
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicHammer( CraftResource.Iron + 4, ( 55 - (4*5) ) ); break;
+						case 0: reward = new RunicHammer( CraftResource.Iron + 4, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (4*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 						case 1: reward = new DwarvenForge(); break;
 						case 2: reward = new EnhancementDeed(); break;
 					}
 				}
-				else if (credits <= (basecred *172)) //+34
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_9)) //+34
 				{
 					switch (Utility.Random(3))
 					{
@@ -2127,7 +2080,7 @@ namespace Server.Mobiles
 						case 2: reward = new EnhancementDeed(); break;
 					}
 				}
-				else if (credits <= (basecred *200)) //+38
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_10)) //+38
 				{
 					switch (Utility.Random(3))
 					{
@@ -2136,81 +2089,81 @@ namespace Server.Mobiles
 						case 2: reward = new EnhancementDeed(); break;
 					}
 				}
-				else if (credits <= (basecred *230)) //+38
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_11)) //+38
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new AncientSmithyHammer( 15 ); break;
 						case 1: reward = new ElvenForgeDeed(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 5, ( 55 - (5*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 5, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (5*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *262)) //+42
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_12)) //+42
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new AncientSmithyHammer( 20 ); break;
 						case 1: reward = new ElvenForgeDeed(); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 6, ( 55 - (6*5) ) ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 6, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (6*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *308)) //+46
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_13)) //+46
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new AncientSmithyHammer( 20 ); break;
-						case 1: reward = new PowerScroll( SkillName.Blacksmith, 100 + 5 ); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 7, ( 55 - (7*5) ) ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 7, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (7*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *358)) //+50
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_14)) //+50
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new AncientSmithyHammer( 25 ); break;
-						case 1: reward = new PowerScroll( SkillName.Blacksmith, 100 + 5 ); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( 55 - (8*5) ) ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (8*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *412)) //+54
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_15)) //+54
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new OneHandedDeed(); break;
-						case 1: reward = new PowerScroll( SkillName.Blacksmith, 100 + 10 ); break;
-						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( 55 - (8*5) ) ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (8*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
 					}
 				}
-				else if (credits <= (basecred *470)) //+58
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //+58
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new OneHandedDeed(); break;
-						case 1: reward = new PowerScroll( SkillName.Blacksmith, 100 + 10 ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 ); break;
 						case 2: reward = new ItemBlessDeed(); break;
 					}
 				}
-				else if (credits > (basecred *470)) //only powerscrolls from here
+				else if (credits > (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //only powerscrolls from here
 				{
 					double odds = Utility.RandomDouble();
-					if (odds >= 0.97)
-						reward = new PowerScroll( SkillName.Blacksmith, 100 + 25 );
-					else if (odds >= 90)
-						reward = new PowerScroll( SkillName.Blacksmith, 100 + 20 );
-					else if (odds >= 75)
-						reward = new PowerScroll( SkillName.Blacksmith, 100 + 15 );
-					else if (odds >= 20)
-						reward = new PowerScroll( SkillName.Blacksmith, 100 + 10 );
+					if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_1)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_5 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_2)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_4 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_3)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_3 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_4)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 );
 					else 
-						reward = new PowerScroll( SkillName.Blacksmith, 100 + 5 );
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 );
 				}
 			
 			}
 			else if (credittype == 2)//tailor
 			{
-				int basecred = 20; // variable which makes editing all reward values much easier for balancing
+				int basecred = BaseVendorConstants.BASE_CREDIT; // variable which makes editing all reward values much easier for balancing
 				
-				if (credits <= (basecred *4))
+				if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_1))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2219,7 +2172,7 @@ namespace Server.Mobiles
 						case 2: reward = new TallBannerEast(); break;
 					}
 				}
-				else if (credits <= (basecred *10))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_2))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2228,7 +2181,7 @@ namespace Server.Mobiles
 						case 2: reward = new TallBannerNorth(); break;
 					}
 				}
-				else if (credits <= (basecred *20))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_3))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2237,7 +2190,7 @@ namespace Server.Mobiles
 						case 2: reward = new SalvageBag(); break;
 					}
 				}
-				else if (credits <= (basecred *34))
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_4))
 				{
 					switch (Utility.Random(3))
 					{
@@ -2246,7 +2199,7 @@ namespace Server.Mobiles
 						case 2: reward = new SalvageBag(); break;
 					}
 				}
-				else if (credits <= (basecred *70))//+18
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_5))//+18
 				{
 					switch (Utility.Random(3))
 					{
@@ -2255,16 +2208,16 @@ namespace Server.Mobiles
 						case 2: reward = new SalvageBag(); break;
 					}
 				}
-				else if (credits <= (basecred *92)) //+22
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_6)) //+22
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new DarkFlowerTapestryEastDeed(); break;
 						case 1: reward = new DarkFlowerTapestrySouthDeed(); break;
-						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 1, 60 - (1*15) ); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 1, BaseVendorConstants.RUNIC_CHARGES_SEWING - (1*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 					}
 				}
-				else if (credits <= (basecred *118)) //+26
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_7)) //+26
 				{
 					switch (Utility.Random(3))
 					{
@@ -2273,7 +2226,7 @@ namespace Server.Mobiles
 						case 2: reward = new GuildedTallBannerEast(); break;
 					}
 				}
-				else if (credits <= (basecred *148)) //+30
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_8)) //+30
 				{
 					switch (Utility.Random(3))
 					{
@@ -2282,7 +2235,7 @@ namespace Server.Mobiles
 						case 2: reward = new MagicScissors(); break;
 					}
 				}
-				else if (credits <= (basecred *182)) //+34
+				else if (credits <= (basecred * 182)) //+34 (Note: 182 not in constants, keeping as-is for now)
 				{
 					switch (Utility.Random(3))
 					{
@@ -2291,82 +2244,82 @@ namespace Server.Mobiles
 						case 2: reward = new EnhancementDeed(); break;
 					}
 				}
-				else if (credits <= (basecred *220)) //+38
+				else if (credits <= (basecred * 220)) //+38 (Note: 220 not in constants, keeping as-is for now)
 				{
 					switch (Utility.Random(3))
 					{
-						case 0: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, 60 - (2*15) ); break;
+						case 0: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 						case 1: reward = new GuildedTallBannerNorth(); break;
 						case 2: reward = new EnhancementDeed(); break;
 					}
 				}
-				else if (credits <= (basecred *220)) //+38
+				else if (credits <= (basecred * 220)) //+38 (duplicate - keeping as-is)
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new EnhancementDeed(); break;
-						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, 60 - (2*15) ); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 						case 2: reward = new CathedralWindow1(); break;
 					}
 				}
-				else if (credits <= (basecred *262)) //+42
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_12)) //+42
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new CathedralWindow3(); break;
-						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, 60 - (2*15) ); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 						case 2: reward = new CathedralWindow2(); break;
 					}
 				}
-				else if (credits <= (basecred *308)) //+46
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_13)) //+46
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new CathedralWindow4(); break;
-						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, 60 - (2*15) ); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 						case 2: reward = new CathedralWindow5(); break;
 					}
 				}
-				else if (credits <= (basecred *358)) //+50
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_14)) //+50
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new LegsOfMusicalPanache(); break;
-						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, 60 - (3*15) ); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 						case 2: reward = new SkirtOfPower(); break;
 					}
 				}
-				else if (credits <= (basecred *412)) //+54
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_15)) //+54
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new ClothingBlessDeed(); break;
-						case 1: reward = new PowerScroll( SkillName.Tailoring, 100 + 5 ); break;
-						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, 60 - (3*15) ); break;
+						case 1: reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
 					}
 				}
-				else if (credits <= (basecred *470)) //+58
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //+58
 				{
 					switch (Utility.Random(3))
 					{
 						case 0: reward = new ItemBlessDeed(); break;
-						case 1: reward = new PowerScroll( SkillName.Tailoring, 100 + 5 ); break;
-						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, 60 - (3*15) );; break;
+						case 1: reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) );; break;
 					}
 				}
-				else if (credits > (basecred *470)) //only powerscrolls from here
+				else if (credits > (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //only powerscrolls from here
 				{
 					double odds = Utility.RandomDouble();
-					if (odds >= 0.97)
-						reward = new PowerScroll( SkillName.Tailoring, 100 + 25 );
-					else if (odds >= 90)
-						reward = new PowerScroll( SkillName.Tailoring, 100 + 20 );
-					else if (odds >= 75)
-						reward = new PowerScroll( SkillName.Tailoring, 100 + 15 );
-					else if (odds >= 20)
-						reward = new PowerScroll( SkillName.Tailoring, 100 + 10 );
+					if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_1)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_5 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_2)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_4 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_3)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_3 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_4)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 );
 					else 
-						reward = new PowerScroll( SkillName.Tailoring, 100 + 5 );
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 );
 				}
 			}
 						
@@ -2375,12 +2328,12 @@ namespace Server.Mobiles
 				from.AddToBackpack( reward );
 			}
 				
-			gold = credits * Utility.RandomMinMax(4,7);
+			gold = credits * Utility.RandomMinMax(BaseVendorConstants.GOLD_PER_CREDIT_MIN, BaseVendorConstants.GOLD_PER_CREDIT_MAX);
 					
 			if (AdventuresFunctions.IsInMidland((object)this))
-				gold /= 2;
+				gold /= BaseVendorConstants.MIDLAND_GOLD_DIVISOR;
 
-			if ( gold > 2500 )
+			if ( gold > BaseVendorConstants.BANK_DEPOSIT_THRESHOLD )
 				Banker.Deposit(from, gold );
 			else if ( gold > 0 )
 				from.AddToBackpack( new Gold( gold ) );	
@@ -2502,8 +2455,7 @@ namespace Server.Mobiles
 
 			if ( !CheckVendorAccess( buyer ) )
 			{
-				//Say( 501522 ); // I shall not treat with scum like thee!
-				this.Say("Eu não faço negócios com você!");
+				this.Say(BaseVendorStringConstants.ERROR_NO_BUSINESS);
 				return false;
 			}
 
@@ -2588,11 +2540,11 @@ namespace Server.Mobiles
 			{
 				if ( cont.ConsumeTotal( typeof( Gold ), totalCost ) )
 					bought = true;
-				else if ( totalCost < 2000 )
+				else if ( totalCost < BaseVendorConstants.BANK_THRESHOLD_GOLD )
 					SayTo( buyer, 500192 );//Begging thy pardon, but thou casnt afford that.
 			}
 
-			if ( !bought && totalCost >= 2000 )
+			if ( !bought && totalCost >= BaseVendorConstants.BANK_THRESHOLD_GOLD )
 			{
 				cont = buyer.FindBankNoCreate();
 				if ( cont != null && cont.ConsumeTotal( typeof( Gold ), totalCost ) )
@@ -2609,7 +2561,7 @@ namespace Server.Mobiles
 			if ( !bought )
 				return false;
 			else
-				buyer.PlaySound( 0x32 );
+				buyer.PlaySound( BaseVendorConstants.SOUND_BUY );
 
 			cont = buyer.Backpack;
 			if ( cont == null )
@@ -2686,42 +2638,44 @@ namespace Server.Mobiles
 			if ( fullPurchase )
 			{
 				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
-					SayTo( buyer, true, "I would not presume to charge thee anything.  Here are the goods you requested." );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_FULL );
 				else if ( fromBank )
-					SayTo( buyer, true, "The total of thy purchase is {0} gold, which has been withdrawn from your bank account.  My thanks for the patronage.", totalCost );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_FORMAT, totalCost );
 				else
-					SayTo( buyer, true, "The total of thy purchase is {0} gold.  My thanks for the patronage.", totalCost );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_FORMAT, totalCost );
 			}
 			else
 			{
 				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
-					SayTo( buyer, true, "I would not presume to charge thee anything.  Unfortunately, I could not sell you all the goods you requested." );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_PARTIAL );
 				else if ( fromBank )
-					SayTo( buyer, true, "The total of thy purchase is {0} gold, which has been withdrawn from your bank account.  My thanks for the patronage.  Unfortunately, I could not sell you all the goods you requested.", totalCost );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_PARTIAL_FORMAT, totalCost );
 				else
-					SayTo( buyer, true, "The total of thy purchase is {0} gold.  My thanks for the patronage.  Unfortunately, I could not sell you all the goods you requested.", totalCost );
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_PARTIAL_FORMAT, totalCost );
 			}
 
 			return true;
 		}
+
+		#endregion
+
+		#region Access Control
 
 		public virtual bool CheckVendorAccess( Mobile from )
 		{
 			PlayerMobile pm = (PlayerMobile)from;
 
-			/*if ( from.Blessed )
-				return false;*/
-
-			/*if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
-				return false;*/
-
-			if ( this is BaseGuildmaster && this.NpcGuild != pm.NpcGuild ) // ONLY GUILD MEMBERS CAN BUY FROM GUILD MASTERS
+			if ( this is BaseGuildmaster && this.NpcGuild != pm.NpcGuild )
 				return false;
 
 			return true;
 		}
 
-        public virtual bool OnSellItems( Mobile seller, List<SellItemResponse> list )
+		#endregion
+
+		#region Buy/Sell Item Processing (continued)
+
+		public virtual bool OnSellItems( Mobile seller, List<SellItemResponse> list )
 		{
 			if ( !IsActiveBuyer )
 				return false;
@@ -2731,15 +2685,12 @@ namespace Server.Mobiles
 
 			if ( !CheckVendorAccess( seller ) )
 			{
-                //Say( 501522 ); // I shall not treat with scum like thee!
-                string sSay = "Eu não faço negócios com você!";
-                this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, seller.NetState);
-
-                //this.Say( "I have no business with you." );
+				string sSay = BaseVendorStringConstants.ERROR_NO_BUSINESS;
+				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, seller.NetState);
 				return false;
 			}
 
-			seller.PlaySound( 0x32 );
+			seller.PlaySound( BaseVendorConstants.SOUND_BUY );
 
 			IShopSellInfo[] info = GetSellInfo();
 			IBuyItemInfo[] buyInfo = this.GetBuyInfo();
@@ -2762,9 +2713,9 @@ namespace Server.Mobiles
 				}
 			}
 
-			if ( Sold > MaxSell )
+			if ( Sold > BaseVendorConstants.MAX_SELL_ITEMS )
 			{
-				SayTo( seller, true, "You may only sell {0} items at a time!", MaxSell );
+				SayTo( seller, true, BaseVendorStringConstants.SELL_LIMIT_FORMAT, BaseVendorConstants.MAX_SELL_ITEMS );
 				return false;
 			}
 			else if ( Sold == 0 )
@@ -2783,7 +2734,6 @@ namespace Server.Mobiles
 				}
 
 				PlayerMobile pm = (PlayerMobile)seller;
-				int GuildMember = 0;
 
 				foreach ( IShopSellInfo ssi in info )
 				{
@@ -2821,20 +2771,17 @@ namespace Server.Mobiles
 									{
 										item.SetLastMoved();
 										cont.DropItem( item );
-										//resp.item.Delete();
 									}
 									else
 									{
 										resp.Item.SetLastMoved();
 										cont.DropItem( item );
-										//resp.item.Delete();
 									}
 								}
 								else
 								{
 									resp.Item.SetLastMoved();
 									cont.DropItem( resp.Item );
-									//resp.item.Delete();
 								}
 							}
 						}
@@ -2846,28 +2793,23 @@ namespace Server.Mobiles
 								resp.Item.Delete();
 						}
 
-						int barter = (int)seller.Skills[SkillName.ItemID].Value;
-						if ( barter < 100 && this.NpcGuild != NpcGuild.None && this.NpcGuild == pm.NpcGuild ){ barter = 100; GuildMember = 1; } // FOR GUILD MEMBERS
-
-						if ( BeggingPose(seller) > 0 && GuildMember == 0 ) // LET US SEE IF THEY ARE BEGGING
+						int GuildMember;
+						int barter = VendorBarterHelper.CalculateBarterSkill(this, seller, out GuildMember);
+						
+						if (BeggingPose(seller) > 0 && GuildMember == 0)
 						{
-							seller.CheckSkill( SkillName.Begging, 0, 100 );
-							barter = (int)seller.Skills[SkillName.Begging].Value;
+							seller.CheckSkill(SkillName.Begging, 0, BaseVendorConstants.GUILD_BARTER_CAP);
 						}
-							//this.Say("Getsellprice is " + ssi.GetSellPriceFor( resp.Item, barter ));
-							int money = ssi.GetSellPriceFor( resp.Item, barter );
+						
+						int money = ssi.GetSellPriceFor( resp.Item, barter );
 
-							if (!m_sellingpriceadjusted)
-							{
-								// Use centralized price manager for sell prices
-								// GetSellPriceFor already applies most modifiers, but we need to apply final pricing with vendor context
-								money = VendorPriceManager.CalculateSellPrice(money, resp.Item, this, seller, barter);
-
-								m_sellingpriceadjusted = true;
-							}
+						if (!m_sellingpriceadjusted)
+						{
+							money = VendorPriceManager.CalculateSellPrice(money, resp.Item, this, seller, barter);
+							m_sellingpriceadjusted = true;
+						}
 
 						GiveGold += money * amount;
-						//this.Say("givegold is " + GiveGold);
 						break;
 					}
 				}
@@ -2875,17 +2817,12 @@ namespace Server.Mobiles
 
 			if ( GiveGold > 0 )
 			{
-/*				while ( GiveGold > 30000 )
-				{
-					seller.AddToBackpack( new Gold( 30000 ) );
-					GiveGold -= 60000;
-				}*/
-				if ( GiveGold > 10000 )
+				if ( GiveGold > BaseVendorConstants.BANK_CHECK_THRESHOLD )
 					seller.AddToBackpack( new BankCheck( GiveGold ) );
 				else
 					seller.AddToBackpack( new Gold( GiveGold ) );
 
-				seller.PlaySound( 0x0037 );//Gold dropping sound
+				seller.PlaySound( BaseVendorConstants.SOUND_SELL );//Gold dropping sound
 
 				if ( SupportsBulkOrders( seller ) )
 				{
@@ -2901,6 +2838,10 @@ namespace Server.Mobiles
 			return true;
 		}
 
+		#endregion
+
+		#region Properties and Display
+
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
@@ -2910,8 +2851,8 @@ namespace Server.Mobiles
 
 			if (this is Blacksmith || this is BlacksmithGuildmaster || this is Tailor || this is TailorGuildmaster)
 			{
-				list.Add("Bulk orders give credits, say 'credits' to see how many you have.");
-				list.Add("To redeem your credits, say 'claim'.");
+				list.Add(BaseVendorStringConstants.PROPERTY_BULK_ORDERS);
+				list.Add(BaseVendorStringConstants.PROPERTY_REDEEM_CREDITS);
 			}
 
 		}
@@ -2920,7 +2861,7 @@ namespace Server.Mobiles
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int)1 ); // version
+			writer.Write( (int)BaseVendorConstants.SERIALIZATION_VERSION ); // version
 
 			List<SBInfo> sbInfos = this.SBInfos;
 
@@ -2943,8 +2884,7 @@ namespace Server.Mobiles
 					}
 				}
 			}
-            //writer.Write((bool)m_canTeach);
-            writer.WriteEncodedInt( 0 );
+			writer.WriteEncodedInt( 0 );
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -2961,9 +2901,7 @@ namespace Server.Mobiles
 			{
 				case 1:
 					{
-                        //m_canTeach = reader.ReadBool();
-
-                        int index;
+						int index;
 
 						while ( ( index = reader.ReadEncodedInt() ) > 0 )
 						{
@@ -2984,7 +2922,7 @@ namespace Server.Mobiles
 									{
 										GenericBuyInfo gbi = (GenericBuyInfo)buyInfo[buyInfoIndex];
 
-										int amount = 20;
+										int amount = BaseVendorConstants.DESERIALIZE_DEFAULT_AMOUNT;
 
 										gbi.Amount = gbi.MaxAmount = amount;
 									}
@@ -3040,6 +2978,10 @@ namespace Server.Mobiles
 			base.AddCustomContextEntries( from, list );
 		}
 
+		#endregion
+
+		#region Shop Info Management
+
 		public virtual IShopSellInfo[] GetSellInfo()
 		{
 			return (IShopSellInfo[])m_ArmorSellInfo.ToArray( typeof( IShopSellInfo ) );
@@ -3050,10 +2992,16 @@ namespace Server.Mobiles
 			return (IBuyItemInfo[])m_ArmorBuyInfo.ToArray( typeof( IBuyItemInfo ) );
 		}
 
+		#endregion
+
+		#region Damage and Combat
+
 		public override bool CanBeDamaged()
 		{
 			return !IsInvulnerable;
 		}
+
+		#endregion
 	}
 }
 
@@ -3064,7 +3012,7 @@ namespace Server.ContextMenus
 		private BaseVendor m_Vendor;
 		private Mobile m_From;
 		
-		public SetupShoppeEntry( Mobile from, BaseVendor vendor ) : base( 6164, 3 )
+		public SetupShoppeEntry( Mobile from, BaseVendor vendor ) : base( BaseVendorConstants.CONTEXT_MENU_SETUP_SHOPPE, BaseVendorConstants.CONTEXT_MENU_RANGE_SETUP )
 		{
 			m_Vendor = vendor;
 			m_From = from;
@@ -3084,7 +3032,7 @@ namespace Server.ContextMenus
 	{
 		private BaseVendor m_Vendor;
 
-		public VendorBuyEntry( Mobile from, BaseVendor vendor ) : base( 6103, 8 )
+		public VendorBuyEntry( Mobile from, BaseVendor vendor ) : base( BaseVendorConstants.CONTEXT_MENU_BUY, BaseVendorConstants.CONTEXT_MENU_RANGE_BUY_SELL )
 		{
 			m_Vendor = vendor;
 			Enabled = vendor.CheckVendorAccess( from );
@@ -3100,7 +3048,7 @@ namespace Server.ContextMenus
 	{
 		private BaseVendor m_Vendor;
 
-		public VendorSellEntry( Mobile from, BaseVendor vendor ) : base( 6104, 8 )
+		public VendorSellEntry( Mobile from, BaseVendor vendor ) : base( BaseVendorConstants.CONTEXT_MENU_SELL, BaseVendorConstants.CONTEXT_MENU_RANGE_BUY_SELL )
 		{
 			m_Vendor = vendor;
 			Enabled = vendor.CheckVendorAccess( from );

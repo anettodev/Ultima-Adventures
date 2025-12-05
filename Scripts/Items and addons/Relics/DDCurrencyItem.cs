@@ -149,8 +149,7 @@ namespace Server.Items
                     {
                         from.AddToBackpack(new Gold(goldAmount));
                     }
-
-                    if (changeAmount > 0)
+                    else if (changeAmount > 0)
                     {
                         AddChangeToBackpack(from, changeAmount);
                     }

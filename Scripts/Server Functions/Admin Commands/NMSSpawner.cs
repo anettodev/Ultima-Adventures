@@ -241,7 +241,7 @@ namespace Server.Gumps
 
                         // Mounts
                         "Horse", "DesertOstard", "ForestOstard", "FrenziedOstard", "SnowOstard",
-                        "RidableLlama", "GiantHawk", "GiantRaven", "Roc", "YoungRoc",
+                        "RidableLlama", "GiantHawk", "GiantRaven", "Roc", "YoungRoc", "Unicorn",
 
                         // Canines
                         "Dog", "TimberWolf", "GreyWolf", "DireWolf", "BlackWolf",
