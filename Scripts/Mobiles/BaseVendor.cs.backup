@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using Server.Items;
 using Server.Network;
 using Server.ContextMenus;
@@ -12,7 +11,6 @@ using Server.Regions;
 using Server.Custom;
 using Server.Multis;
 using Server.Mobiles.Vendors;
-using Server.Gumps;
 
 namespace Server.Mobiles
 {
@@ -110,10 +108,6 @@ namespace Server.Mobiles
 		private bool m_pricesadjusted;
 
 		private bool m_sellingpriceadjusted;
-
-		// Caching fields for performance optimization
-		private bool? m_isInMidland;
-		private bool m_midlandCacheValid;
 
 		public override bool CanTeach { get { return true; } }
 		public override bool BardImmune { get { return false; } }
@@ -564,7 +558,7 @@ namespace Server.Mobiles
 
 			Server.Mobiles.PremiumSpawner.SpreadOut( this );
 
-			if (IsInMidlandCached())
+			if (AdventuresFunctions.IsInMidland((object)this))
 			{
 				if ( reg.Name == BaseVendorStringConstants.REGION_MIDKEMIA  )
 				{
@@ -670,9 +664,6 @@ namespace Server.Mobiles
 
 		protected override void OnMapChange( Map oldMap )
 		{
-			// Invalidate caches when moving
-			InvalidateMidlandCache();
-
 			base.OnMapChange( oldMap );
 
 			if ( !Server.Items.EssenceBase.ColorCitizen( this ) )
@@ -992,7 +983,7 @@ namespace Server.Mobiles
 				return;
 			}
 
-			if (IsInMidlandCached())
+			if (AdventuresFunctions.IsInMidland((object)this))
 			{
 				this.Say(BaseVendorStringConstants.ERROR_MIDLAND_NO_TRADE);
 				return;
@@ -1199,7 +1190,7 @@ namespace Server.Mobiles
 				return;
 			}
 
-			if (IsInMidlandCached())
+			if (AdventuresFunctions.IsInMidland((object)this))
 			{
 				this.Say( BaseVendorStringConstants.ERROR_MIDLAND_NO_TRADE );
 				return;
@@ -1270,20 +1261,21 @@ namespace Server.Mobiles
 		/// </summary>
 		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
-			// Check for training gold deposits first
-			if (dropped is Gold && m_TrainingDeposits.ContainsKey(from.Serial))
+			if ( from.Blessed )
 			{
-				return HandleTrainingGoldDeposit(from, (Gold)dropped);
-			}
-
-			if (!ValidateInteraction(from))
-			{
+				string sSay = BaseVendorStringConstants.ERROR_BLESSED;
+				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
 				return false;
 			}
-
-			PlayerMobile pm;
-			if (ValidatePlayerMobile(from, out pm))
+			else if ( IntelligentAction.GetMyEnemies( from, this, false ) == true )
 			{
+				string sSay = BaseVendorStringConstants.ERROR_ENEMY;
+				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
+				return false;
+			}
+			else if (from is PlayerMobile)
+			{
+				PlayerMobile pm = (PlayerMobile)from;
 
 				// Check for tinker items first
 				if (HandleTinkerItems(from, dropped)) return true;
@@ -1329,83 +1321,6 @@ namespace Server.Mobiles
 			}
 
 			return base.OnDragDrop( from, dropped );
-		}
-
-		#endregion
-
-		#region Validation Methods
-
-		/// <summary>
-		/// Validates if a mobile can interact with this vendor
-		/// </summary>
-		/// <param name="from">The mobile attempting to interact</param>
-		/// <returns>True if the mobile can interact, false otherwise</returns>
-		private bool ValidateInteraction(Mobile from)
-		{
-			if (from.Blessed)
-			{
-				string sSay = BaseVendorStringConstants.ERROR_BLESSED;
-				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
-				return false;
-			}
-
-			if (IntelligentAction.GetMyEnemies(from, this, false) == true)
-			{
-				string sSay = BaseVendorStringConstants.ERROR_ENEMY;
-				this.PrivateOverheadMessage(MessageType.Regular, BaseVendorConstants.MESSAGE_HUE_DEFAULT, false, sSay, from.NetState);
-				return false;
-			}
-
-			return true;
-		}
-
-		/// <summary>
-		/// Validates if the mobile is a player mobile
-		/// </summary>
-		/// <param name="from">The mobile to validate</param>
-		/// <param name="pm">Output parameter for the PlayerMobile if valid</param>
-		/// <returns>True if the mobile is a valid PlayerMobile, false otherwise</returns>
-		private bool ValidatePlayerMobile(Mobile from, out PlayerMobile pm)
-		{
-			pm = from as PlayerMobile;
-			return pm != null;
-		}
-
-		#endregion
-
-		#region Caching Methods
-
-		/// <summary>
-		/// Gets cached Midland status for this vendor
-		/// </summary>
-		/// <returns>True if the vendor is in Midland region</returns>
-		private bool IsInMidlandCached()
-		{
-			if (!m_midlandCacheValid)
-			{
-				m_isInMidland = AdventuresFunctions.IsInMidland((object)this);
-				m_midlandCacheValid = true;
-			}
-			return m_isInMidland.Value;
-		}
-
-		/// <summary>
-		/// Invalidates the Midland cache (call when vendor moves regions)
-		/// </summary>
-		private void InvalidateMidlandCache()
-		{
-			m_midlandCacheValid = false;
-			m_isInMidland = null;
-		}
-
-		/// <summary>
-		/// Gets a PlayerMobile reference with proper casting
-		/// </summary>
-		/// <param name="from">The mobile to cast</param>
-		/// <returns>PlayerMobile instance or null if not a player</returns>
-		private PlayerMobile GetPlayerMobile(Mobile from)
-		{
-			return from as PlayerMobile;
 		}
 
 		#endregion
@@ -2166,8 +2081,7 @@ namespace Server.Mobiles
 		{
 			if (!(dropped is SmallBOD || dropped is LargeBOD)) return false;
 
-			PlayerMobile pm = GetPlayerMobile(from);
-			if (Core.ML && pm != null && pm.NextBODTurnInTime > DateTime.UtcNow)
+			if (Core.ML && ((PlayerMobile)from).NextBODTurnInTime > DateTime.UtcNow)
 			{
 				SayTo(from, 1079976);
 				return false;
@@ -2194,7 +2108,7 @@ namespace Server.Mobiles
 				else
 					creds = SmithRewardCalculator.Instance.ComputePoints((SmallBOD)dropped) / 3;
 
-				if (pm != null) pm.BlacksmithBOD += creds;
+				((PlayerMobile)from).BlacksmithBOD += creds;
 			}
 			else if ((dropped is LargeTailorBOD || dropped is SmallTailorBOD) && from is PlayerMobile)
 			{
@@ -2203,7 +2117,7 @@ namespace Server.Mobiles
 				else
 					creds = TailorRewardCalculator.Instance.ComputePoints((SmallBOD)dropped) / 3;
 
-				if (pm != null) pm.TailorBOD += creds;
+				((PlayerMobile)from).TailorBOD += creds;
 			}
 
 			from.SendSound(BaseVendorConstants.SOUND_RELIC);
@@ -2211,7 +2125,7 @@ namespace Server.Mobiles
 			SayTo(from, BaseVendorStringConstants.BOD_CREDITS_INFO);
 
 			OnSuccessfulBulkOrderReceive(from);
-			if (pm != null) pm.NextBODTurnInTime = DateTime.Now + TimeSpan.FromSeconds(BaseVendorConstants.BOD_TURNIN_DELAY_SECONDS);
+			((PlayerMobile)from).NextBODTurnInTime = DateTime.Now + TimeSpan.FromSeconds(BaseVendorConstants.BOD_TURNIN_DELAY_SECONDS);
 
 			dropped.Delete();
 			return true;
@@ -2237,7 +2151,7 @@ namespace Server.Mobiles
 
 		#endregion
 
-		#region Buy/Sell Item Processing (continued)
+		#region Buy/Sell Item Processing
 
 		private GenericBuyInfo LookupDisplayObject( object obj )
 		{
@@ -2252,6 +2166,10 @@ namespace Server.Mobiles
 
 			return null;
 		}
+
+		#endregion
+
+		#region Credit System
 
 		public void ClaimCredits(Mobile from, int amount)
 		{
@@ -2306,17 +2224,47 @@ namespace Server.Mobiles
 		/// <param name="amount">The amount of credits to redeem</param>
 		private void GiveReward(Mobile from, int amount)
 		{
-			int credittype = (this is Tailor || this is TailorGuildmaster) ? 2 : 1; // 1 = blacksmith, 2 = tailor
+			int creditType = (this is Tailor || this is TailorGuildmaster) ? 2 : 1; // 1 = blacksmith, 2 = tailor
 
-			int credits = ProcessCreditRedemption(from, amount, credittype);
-			if (credits == 0) return;
+			int credits = ProcessCreditRedemption(from, amount, creditType);
+			if (credits <= 0) return;
+			if (amount >= 1)
+   			{
+	  			if (credittype == 1)
+      				{
+	  				if (amount > ((PlayerMobile)from).BlacksmithBOD)
+       						return;
+	     
+	  				credits = amount;
+      					((PlayerMobile)from).BlacksmithBOD -= credits;
+	   			}
+	   			else if (credittype == 2)
+       				{
+	   				if (amount > ((PlayerMobile)from).TailorBOD)
+       						return;
+
+      					credits = amount;
+       					((PlayerMobile)from).TailorBOD -= credits;
+	    			}
+	    		}
+      
+			else if (credittype == 1)
+   			{
+				credits = ((PlayerMobile)from).BlacksmithBOD;
+    				((PlayerMobile)from).BlacksmithBOD -= credits;
+			}
+			else //tailor
+   			{
+				credits = ((PlayerMobile)from).TailorBOD;
+    				((PlayerMobile)from).TailorBOD -= credits;
+    			}
 
 			Titles.AwardFame(from, (credits / BaseVendorConstants.FAME_DIVISOR), true);
 
 			this.Say(BaseVendorStringConstants.CREDITS_REWARD_GIVEN);
 			from.SendMessage(string.Format(BaseVendorStringConstants.CREDITS_REDEEMED_FORMAT, credits.ToString()));
 
-			Item reward = BulkOrderRewardCalculator.CalculateReward(credits, credittype);
+			Item reward = CalculateBulkOrderReward(creditType, credits);
 
 			if (reward != null)
 				from.AddToBackpack(reward);
@@ -2406,7 +2354,7 @@ namespace Server.Mobiles
 		{
 			int gold = credits * Utility.RandomMinMax(BaseVendorConstants.GOLD_PER_CREDIT_MIN, BaseVendorConstants.GOLD_PER_CREDIT_MAX);
 
-			if (IsInMidlandCached())
+			if (AdventuresFunctions.IsInMidland((object)this))
 				gold /= BaseVendorConstants.MIDLAND_GOLD_DIVISOR;
 
 			if (gold > BaseVendorConstants.BANK_DEPOSIT_THRESHOLD)
@@ -2417,13 +2365,595 @@ namespace Server.Mobiles
 
 		#endregion
 
+		#region Buy/Sell Item Processing
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 10 ); break;
+						case 1: reward = new DwarvenForge(); break;
+						case 2: reward = new EnhancementDeed(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_10)) //+38
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 15 ); break;
+						case 1: reward = new DwarvenForge(); break;
+						case 2: reward = new EnhancementDeed(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_11)) //+38
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 15 ); break;
+						case 1: reward = new ElvenForgeDeed(); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 5, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (5*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_12)) //+42
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 20 ); break;
+						case 1: reward = new ElvenForgeDeed(); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 6, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (6*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_13)) //+46
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 20 ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 7, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (7*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_14)) //+50
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new AncientSmithyHammer( 25 ); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (8*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_15)) //+54
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new OneHandedDeed(); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 ); break;
+						case 2: reward = new RunicHammer( CraftResource.Iron + 8, ( BaseVendorConstants.RUNIC_CHARGES_BASE - (8*BaseVendorConstants.RUNIC_CHARGE_REDUCTION) ) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //+58
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new OneHandedDeed(); break;
+						case 1: reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 ); break;
+						case 2: reward = new ItemBlessDeed(); break;
+					}
+				}
+				else if (credits > (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //only powerscrolls from here
+				{
+					double odds = Utility.RandomDouble();
+					if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_1)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_5 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_2)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_4 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_3)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_3 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_4)
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 );
+					else 
+						reward = new PowerScroll( SkillName.Blacksmith, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 );
+				}
+			
+			}
+			else if (credittype == 2)//tailor
+			{
+				int basecred = BaseVendorConstants.BASE_CREDIT; // variable which makes editing all reward values much easier for balancing
+				
+				if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_1))
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new SmallStretchedHideEastDeed(); break;
+						case 1: reward = new SmallStretchedHideSouthDeed(); break;
+						case 2: reward = new TallBannerEast(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_2))
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new MediumStretchedHideEastDeed(); break;
+						case 1: reward = new MediumStretchedHideSouthDeed(); break;
+						case 2: reward = new TallBannerNorth(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_3))
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new LightFlowerTapestryEastDeed(); break;
+						case 1: reward = new LightFlowerTapestrySouthDeed(); break;
+						case 2: reward = new SalvageBag(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_4))
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new BrownBearRugEastDeed(); break;
+						case 1: reward = new BrownBearRugSouthDeed(); break;
+						case 2: reward = new SalvageBag(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_5))//+18
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new PolarBearRugEastDeed(); break;
+						case 1: reward = new PolarBearRugSouthDeed(); break;
+						case 2: reward = new SalvageBag(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_6)) //+22
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new DarkFlowerTapestryEastDeed(); break;
+						case 1: reward = new DarkFlowerTapestrySouthDeed(); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 1, BaseVendorConstants.RUNIC_CHARGES_SEWING - (1*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_7)) //+26
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new MagicScissors(); break;
+						case 1: reward = new TallBannerEast(); break;
+						case 2: reward = new GuildedTallBannerEast(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_8)) //+30
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new GuildedTallBannerNorth(); break;
+						case 1: reward = new TallBannerNorth(); break;
+						case 2: reward = new MagicScissors(); break;
+					}
+				}
+				else if (credits <= (basecred * 182)) //+34 (Note: 182 not in constants, keeping as-is for now)
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new EnhancementDeed(); break;
+						case 1: reward = new GuildedTallBannerEast(); break;
+						case 2: reward = new EnhancementDeed(); break;
+					}
+				}
+				else if (credits <= (basecred * 220)) //+38 (Note: 220 not in constants, keeping as-is for now)
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+						case 1: reward = new GuildedTallBannerNorth(); break;
+						case 2: reward = new EnhancementDeed(); break;
+					}
+				}
+				else if (credits <= (basecred * 220)) //+38 (duplicate - keeping as-is)
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new EnhancementDeed(); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+						case 2: reward = new CathedralWindow1(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_12)) //+42
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new CathedralWindow3(); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+						case 2: reward = new CathedralWindow2(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_13)) //+46
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new CathedralWindow4(); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 2, BaseVendorConstants.RUNIC_CHARGES_SEWING - (2*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+						case 2: reward = new CathedralWindow5(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_14)) //+50
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new LegsOfMusicalPanache(); break;
+						case 1: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+						case 2: reward = new SkirtOfPower(); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_15)) //+54
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new ClothingBlessDeed(); break;
+						case 1: reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) ); break;
+					}
+				}
+				else if (credits <= (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //+58
+				{
+					switch (Utility.Random(3))
+					{
+						case 0: reward = new ItemBlessDeed(); break;
+						case 1: reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 ); break;
+						case 2: reward = new RunicSewingKit( CraftResource.RegularLeather + 3, BaseVendorConstants.RUNIC_CHARGES_SEWING - (3*BaseVendorConstants.RUNIC_SEWING_CHARGE_REDUCTION) );; break;
+					}
+				}
+				else if (credits > (basecred * BaseVendorConstants.CREDIT_MULT_TIER_16)) //only powerscrolls from here
+				{
+					double odds = Utility.RandomDouble();
+					if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_1)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_5 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_2)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_4 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_3)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_3 );
+					else if (odds >= BaseVendorConstants.POWER_SCROLL_ODDS_4)
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_2 );
+					else 
+						reward = new PowerScroll( SkillName.Tailoring, BaseVendorConstants.POWER_SCROLL_BASE + BaseVendorConstants.POWER_SCROLL_BONUS_1 );
+				}
+			}
+						
+			if ( reward != null )
+			{
+				from.AddToBackpack( reward );
+			}
+				
+			gold = credits * Utility.RandomMinMax(BaseVendorConstants.GOLD_PER_CREDIT_MIN, BaseVendorConstants.GOLD_PER_CREDIT_MAX);
+					
+			if (AdventuresFunctions.IsInMidland((object)this))
+				gold /= BaseVendorConstants.MIDLAND_GOLD_DIVISOR;
+
+			if ( gold > BaseVendorConstants.BANK_DEPOSIT_THRESHOLD )
+				Banker.Deposit(from, gold );
+			else if ( gold > 0 )
+				from.AddToBackpack( new Gold( gold ) );	
+				
+		}
+
+        private void ProcessSinglePurchase( BuyItemResponse buy, IBuyItemInfo bii, List<BuyItemResponse> validBuy, ref int controlSlots, ref bool fullPurchase, ref int totalCost )
+		{
+			int amount = buy.Amount;
+
+			if ( amount > bii.Amount )
+				amount = bii.Amount;
+
+			if ( amount <= 0 )
+				return;
+
+			int slots = bii.ControlSlots * amount;
+
+			if ( controlSlots >= slots )
+			{
+				controlSlots -= slots;
+			}
+			else
+			{
+				fullPurchase = false;
+				return;
+			}
+
+			totalCost += bii.Price * amount;
+			validBuy.Add( buy );
+		}
+
+		private void ProcessValidPurchase( int amount, IBuyItemInfo bii, Mobile buyer, Container cont )
+		{
+			if ( amount > bii.Amount )
+				amount = bii.Amount;
+
+			if ( amount < 1 )
+				return;
+
+			bii.Amount -= amount;
+
+			IEntity o = bii.GetEntity();
+
+			if ( o is Item )
+			{
+				Item item = (Item)o;
+
+				if ( item.Stackable )
+				{
+					item.Amount = amount;
+
+					if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+						item.MoveToWorld( buyer.Location, buyer.Map );
+				}
+				else
+				{
+					item.Amount = 1;
+
+					if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+						item.MoveToWorld( buyer.Location, buyer.Map );
+
+					for ( int i = 1; i < amount; i++ )
+					{
+						item = bii.GetEntity() as Item;
+
+						if ( item != null )
+						{
+							item.Amount = 1;
+
+							if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+								item.MoveToWorld( buyer.Location, buyer.Map );
+						}
+					}
+				}
+			}
+			else if ( o is Mobile )
+			{
+				Mobile m = (Mobile)o;
+
+				m.Direction = (Direction)Utility.Random( 8 );
+				m.MoveToWorld( buyer.Location, buyer.Map );
+				m.PlaySound( m.GetIdleSound() );
+
+				if ( m is BaseCreature )
+				{
+					( (BaseCreature)m ).SetControlMaster( buyer );
+					( (BaseCreature)m ).Tamable = true;
+					( (BaseCreature)m ).MinTameSkill = 29.1;
+				}
+
+				for ( int i = 1; i < amount; ++i )
+				{
+					m = bii.GetEntity() as Mobile;
+
+					if ( m != null )
+					{
+						m.Direction = (Direction)Utility.Random( 8 );
+						m.MoveToWorld( buyer.Location, buyer.Map );
+
+						if ( m is BaseCreature )
+						{
+							( (BaseCreature)m ).SetControlMaster( buyer );
+							( (BaseCreature)m ).Tamable = true;
+							( (BaseCreature)m ).MinTameSkill = 29.1;
+						}
+					}
+				}
+			}
+		}
+
+        public virtual bool OnBuyItems( Mobile buyer, List<BuyItemResponse> list )
+		{
+			if ( !IsActiveSeller )
+				return false;
+
+			if ( !buyer.CheckAlive() )
+				return false;
+
+			if ( !CheckVendorAccess( buyer ) )
+			{
+				this.Say(BaseVendorStringConstants.ERROR_NO_BUSINESS);
+				return false;
+			}
+
+			UpdateBuyInfo();
+
+			IBuyItemInfo[] buyInfo = this.GetBuyInfo();
+			IShopSellInfo[] info = GetSellInfo();
+			int totalCost = 0;
+            List<BuyItemResponse> validBuy = new List<BuyItemResponse>( list.Count );
+			Container cont;
+			bool bought = false;
+			bool fromBank = false;
+			bool fullPurchase = true;
+			int controlSlots = buyer.FollowersMax - buyer.Followers;
+
+			foreach ( BuyItemResponse buy in list )
+			{
+				Serial ser = buy.Serial;
+				int amount = buy.Amount;
+
+				if ( ser.IsItem )
+				{
+					Item item = World.FindItem( ser );
+
+					if ( item == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( item );
+
+					if ( gbi != null )
+					{
+						ProcessSinglePurchase( buy, gbi, validBuy, ref controlSlots, ref fullPurchase, ref totalCost );
+					}
+					else if ( item != this.BuyPack && item.IsChildOf( this.BuyPack ) )
+					{
+						if ( amount > item.Amount )
+							amount = item.Amount;
+
+						if ( amount <= 0 )
+							continue;
+
+						foreach ( IShopSellInfo ssi in info )
+						{
+							if ( ssi.IsSellable( item ) )
+							{
+								if ( ssi.IsResellable( item ) )
+								{
+									totalCost += ssi.GetBuyPriceFor( item ) * amount;
+									validBuy.Add( buy );
+									break;
+								}
+							}
+						}
+					}
+				}
+				else if ( ser.IsMobile )
+				{
+					Mobile mob = World.FindMobile( ser );
+
+					if ( mob == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( mob );
+
+					if ( gbi != null )
+						ProcessSinglePurchase( buy, gbi, validBuy, ref controlSlots, ref fullPurchase, ref totalCost );
+				}
+			}//foreach
+
+			if ( fullPurchase && validBuy.Count == 0 )
+				SayTo( buyer, BaseVendorConstants.UO_MSG_BOUGHT_NOTHING ); // Thou hast bought nothing!
+			else if ( validBuy.Count == 0 )
+				SayTo( buyer, 500187 ); // Your order cannot be fulfilled, please try again.
+
+			if ( validBuy.Count == 0 )
+				return false;
+
+			bought = ( buyer.AccessLevel >= AccessLevel.GameMaster );
+
+			cont = buyer.Backpack;
+			if ( !bought && cont != null )
+			{
+				if ( cont.ConsumeTotal( typeof( Gold ), totalCost ) )
+					bought = true;
+				else if ( totalCost < BaseVendorConstants.BANK_THRESHOLD_GOLD )
+					SayTo( buyer, 500192 );//Begging thy pardon, but thou casnt afford that.
+			}
+
+			if ( !bought && totalCost >= BaseVendorConstants.BANK_THRESHOLD_GOLD )
+			{
+				cont = buyer.FindBankNoCreate();
+				if ( cont != null && cont.ConsumeTotal( typeof( Gold ), totalCost ) )
+				{
+					bought = true;
+					fromBank = true;
+				}
+				else
+				{
+					SayTo( buyer, 500191 ); //Begging thy pardon, but thy bank account lacks these funds.
+				}
+			}
+
+			if ( !bought )
+				return false;
+			else
+				buyer.PlaySound( BaseVendorConstants.SOUND_BUY );
+
+			cont = buyer.Backpack;
+			if ( cont == null )
+				cont = buyer.BankBox;
+
+			foreach ( BuyItemResponse buy in validBuy )
+			{
+				Serial ser = buy.Serial;
+				int amount = buy.Amount;
+
+				if ( amount < 1 )
+					continue;
+
+				if ( ser.IsItem )
+				{
+					Item item = World.FindItem( ser );
+
+					if ( item == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( item );
+
+					if ( gbi != null )
+					{
+						ProcessValidPurchase( amount, gbi, buyer, cont );
+					}
+					else
+					{
+						if ( amount > item.Amount )
+							amount = item.Amount;
+
+						foreach ( IShopSellInfo ssi in info )
+						{
+							if ( ssi.IsSellable( item ) )
+							{
+								if ( ssi.IsResellable( item ) )
+								{
+									Item buyItem;
+									if ( amount >= item.Amount )
+									{
+										buyItem = item;
+									}
+									else
+									{
+										buyItem = Mobile.LiftItemDupe( item, item.Amount - amount );
+
+										if ( buyItem == null )
+											buyItem = item;
+									}
+
+									if ( cont == null || !cont.TryDropItem( buyer, buyItem, false ) )
+										buyItem.MoveToWorld( buyer.Location, buyer.Map );
+
+									break;
+								}
+							}
+						}
+					}
+				}
+				else if ( ser.IsMobile )
+				{
+					Mobile mob = World.FindMobile( ser );
+
+					if ( mob == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( mob );
+
+					if ( gbi != null )
+						ProcessValidPurchase( amount, gbi, buyer, cont );
+				}
+			}//foreach
+
+			if ( fullPurchase )
+			{
+				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_FULL );
+				else if ( fromBank )
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_FORMAT, totalCost );
+				else
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_FORMAT, totalCost );
+			}
+			else
+			{
+				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_PARTIAL );
+				else if ( fromBank )
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_PARTIAL_FORMAT, totalCost );
+				else
+					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_PARTIAL_FORMAT, totalCost );
+			}
+
+			return true;
+		}
+
+		#endregion
+
 		#region Access Control
 
-		/// <summary>
-		/// Checks if a mobile has access to interact with this vendor
-		/// </summary>
-		/// <param name="from">The mobile attempting to access the vendor</param>
-		/// <returns>True if the mobile has access, false otherwise</returns>
 		public virtual bool CheckVendorAccess( Mobile from )
 		{
 			PlayerMobile pm = (PlayerMobile)from;
@@ -2438,12 +2968,6 @@ namespace Server.Mobiles
 
 		#region Buy/Sell Item Processing (continued)
 
-		/// <summary>
-		/// Processes a list of items being sold to the vendor
-		/// </summary>
-		/// <param name="seller">The mobile selling the items</param>
-		/// <param name="list">List of sell responses containing items and prices</param>
-		/// <returns>True if the sale was processed successfully, false otherwise</returns>
 		public virtual bool OnSellItems( Mobile seller, List<SellItemResponse> list )
 		{
 			if ( !IsActiveBuyer )
@@ -2607,295 +3131,10 @@ namespace Server.Mobiles
 			return true;
 		}
 
-		/// <summary>
-		/// Processes a single valid purchase from the vendor
-		/// </summary>
-		/// <param name="amount">The amount to purchase</param>
-		/// <param name="gbi">The buy info for the item</param>
-		/// <param name="buyer">The mobile buying the item</param>
-		/// <param name="totalCost">Reference to total cost accumulator</param>
-		/// <param name="controlSlots">Reference to control slots available</param>
-		/// <param name="bought">Reference to bought flag</param>
-		/// <param name="validBuy">Reference to valid buy list</param>
-		private void ProcessValidPurchase( int amount, GenericBuyInfo gbi, Mobile buyer, ref int totalCost, ref int controlSlots, ref bool bought, ref List<BuyItemResponse> validBuy )
-		{
-			if ( gbi.Amount <= 0 || amount <= 0 )
-				return;
-
-			int amountToBuy = amount;
-			if ( amountToBuy > gbi.Amount )
-				amountToBuy = gbi.Amount;
-
-			if ( controlSlots >= gbi.ControlSlots * amountToBuy )
-			{
-				controlSlots -= gbi.ControlSlots * amountToBuy;
-			}
-			else
-			{
-				amountToBuy = controlSlots / gbi.ControlSlots;
-				if ( amountToBuy < 1 )
-					return;
-				controlSlots -= gbi.ControlSlots * amountToBuy;
-			}
-
-			totalCost += gbi.Price * amountToBuy;
-			bought = true;
-		}
-
-		/// <summary>
-		/// Handles the "comandos" speech command to list available commands
-		/// </summary>
-		protected virtual bool HandleComandosCommand(SpeechEventArgs e)
-		{
-			if (!Insensitive.Contains(e.Speech, "comandos") && !Insensitive.Contains(e.Speech, "commands"))
-				return false;
-
-			e.Handled = true;
-
-			StringBuilder commands = new StringBuilder();
-			commands.Append("Comandos aceitos são:\n\n");
-
-			// Base vendor commands
-			if (IsActiveSeller)
-				commands.Append("- Comprar (através do menu de contexto)\n");
-
-			if (IsActiveBuyer)
-				commands.Append("- Vender (através do menu de contexto)\n");
-
-			// Item interactions
-			if (this is Tinker || this is TinkerGuildmaster)
-			{
-				commands.Append("- Manual do Golem (soltar item)\n");
-				commands.Append("- Orbe do Abismo (soltar item)\n");
-				commands.Append("- Esquemas do Robô (soltar item)\n");
-			}
-
-			if (this is AnimalTrainer || this is Veterinarian)
-			{
-				commands.Append("- Ovos Alienígena/Earthy/Corrupted/Fey/Prehistoric/Reptilian/Dragon (soltar item)\n");
-			}
-
-			if (this is NecromancerGuildmaster)
-			{
-				commands.Append("- Crânio Dracolich (soltar item)\n");
-				commands.Append("- Prisão Demoníaca (soltar item)\n");
-			}
-
-			if (this is Waiter)
-			{
-				commands.Append("- Item de Café (soltar item)\n");
-			}
-
-			if (this is VarietyDealer)
-			{
-				commands.Append("- Museu (soltar item)\n");
-			}
-
-			if (this is Tailor || this is TailorGuildmaster)
-			{
-				commands.Append("- Tapete Mágico (soltar item)\n");
-			}
-
-			if (this is Mapmaker)
-			{
-				commands.Append("- Ouro (100 moedas) para mapa personalizado\n");
-			}
-
-			if (this is Minter || this is Banker)
-			{
-				commands.Append("- Moedas de Cobre/Prata/Xormite/Cristais/Jóias/Gemas/Nuggets de Ouro (soltar item)\n");
-			}
-
-			if (this is Alchemist || this is Witches)
-			{
-				commands.Append("- Garrafa de Peças (soltar item)\n");
-			}
-
-			if (this is ThiefGuildmaster && e.Mobile is PlayerMobile && ((PlayerMobile)e.Mobile).NpcGuild == NpcGuild.ThievesGuild)
-			{
-				commands.Append("- Artefatos da Tumba (soltar item)\n");
-			}
-
-			if (this is InnKeeper || this is TavernKeeper || this is Barkeeper || this is Waiter)
-			{
-				commands.Append("- Itens Sujos/Espuma (soltar item)\n");
-			}
-
-			if (this is Alchemist || this is Herbalist)
-			{
-				commands.Append("- Item Encapotado (soltar item)\n");
-			}
-
-			// Bulk orders
-			if (SupportsBulkOrders(e.Mobile))
-			{
-				commands.Append("- Ordens em Massa (através do menu de contexto)\n");
-			}
-
-			// Relic items (most vendors accept these)
-			commands.Append("- Itens Relíquia (soltar item)\n");
-
-			// Hired help
-			if (this is InnKeeper || this is TavernKeeper || this is Barkeeper)
-			{
-				commands.Append("- Item Ajudante Lutador/Arqueiro/Mago (soltar item)\n");
-			}
-
-			// Cursed items
-			if (this is Mage || this is KeeperOfChivalry || this is Witches || this is Necromancer || this is MageGuildmaster || this is HolyMage || this is NecroMage)
-			{
-				commands.Append("- Caixa de Livros/Item Amaldiçoado (soltar item)\n");
-			}
-
-			e.Mobile.SendMessage(0x5A, commands.ToString().TrimEnd());
-			return true;
-		}
-
-		public override void OnSpeech(SpeechEventArgs e)
-		{
-			if (!e.Handled && e.Mobile.InRange(this, 3))
-			{
-				if (HandleComandosCommand(e))
-					return;
-
-				if (HandleTrainingCommand(e))
-					return;
-			}
-
-			base.OnSpeech(e);
-		}
-
-		/// <summary>
-		/// Handles training speech commands
-		/// </summary>
-		private bool HandleTrainingCommand(SpeechEventArgs e)
-		{
-			if (!Insensitive.Contains(e.Speech, "treinar") && !Insensitive.Contains(e.Speech, "train"))
-				return false;
-
-			e.Handled = true;
-			BeginTraining(e.Mobile);
-			return true;
-		}
-
-		/// <summary>
-		/// Processes a list of items being bought from the vendor
-		/// </summary>
-		/// <param name="buyer">The mobile buying the items</param>
-		/// <param name="list">List of buy responses containing items and prices</param>
-		/// <returns>True if the purchase was processed successfully, false otherwise</returns>
-		public virtual bool OnBuyItems( Mobile buyer, List<BuyItemResponse> list )
-		{
-			if ( !IsActiveSeller )
-				return false;
-
-			if ( !buyer.CheckAlive() )
-				return false;
-
-			if ( !CheckVendorAccess( buyer ) )
-			{
-				this.Say(BaseVendorStringConstants.ERROR_NO_BUSINESS);
-				return false;
-			}
-
-			UpdateBuyInfo();
-
-			IBuyItemInfo[] buyInfo = this.GetBuyInfo();
-			IShopSellInfo[] info = GetSellInfo();
-			int totalCost = 0;
-			List<BuyItemResponse> validBuy = new List<BuyItemResponse>( list.Count );
-			Container cont;
-			bool bought = false;
-			bool fromBank = false;
-			bool fullPurchase = true;
-			int controlSlots = buyer.FollowersMax - buyer.Followers;
-
-			foreach ( BuyItemResponse buy in list )
-			{
-				Serial ser = buy.Serial;
-				int amount = buy.Amount;
-
-				if ( ser.IsItem && amount > 0 )
-				{
-					Item item = World.FindItem( ser );
-
-					if ( item == null )
-						continue;
-
-					GenericBuyInfo gbi = LookupDisplayObject( item );
-
-					if ( gbi != null )
-					{
-						ProcessValidPurchase( amount, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
-					}
-					else if ( item != this.BuyPack && item.IsChildOf( this.BuyPack ) )
-					{
-						if ( amount > item.Amount )
-							amount = item.Amount;
-
-						if ( amount <= 0 )
-							continue;
-
-						foreach ( IShopSellInfo ssi in info )
-						{
-							if ( ssi.IsSellable( item ) )
-							{
-								if ( ssi.IsResellable( item ) )
-								{
-									totalCost += ssi.GetBuyPriceFor( item ) * amount;
-									validBuy.Add( buy );
-									break;
-								}
-							}
-						}
-					}
-				}
-				else if ( ser.IsMobile )
-				{
-					Mobile mob = World.FindMobile( ser );
-
-					if ( mob == null )
-						continue;
-
-					GenericBuyInfo gbi = LookupDisplayObject( mob );
-
-					if ( gbi != null )
-						ProcessValidPurchase( amount, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
-				}
-			}
-
-			if ( fullPurchase && validBuy.Count == 0 )
-				return false;
-			else if ( validBuy.Count == list.Count )
-			{
-				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_FULL );
-				else if ( fromBank )
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_FORMAT, totalCost );
-				else
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_FORMAT, totalCost );
-			}
-			else
-			{
-				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_PARTIAL );
-				else if ( fromBank )
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_BANK_PARTIAL_FORMAT, totalCost );
-				else
-					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_PARTIAL_FORMAT, totalCost );
-			}
-
-			return true;
-		}
-
 		#endregion
 
 		#region Properties and Display
 
-		/// <summary>
-		/// Adds vendor-specific properties to the object's property list
-		/// </summary>
-		/// <param name="list">The property list to add properties to</param>
 		public override void GetProperties( ObjectPropertyList list )
 		{
 			base.GetProperties( list );
@@ -2911,10 +3150,6 @@ namespace Server.Mobiles
 
 		}
 
-		/// <summary>
-		/// Serializes the vendor's state to save game data
-		/// </summary>
-		/// <param name="writer">The writer to serialize data to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
@@ -2945,10 +3180,6 @@ namespace Server.Mobiles
 			writer.WriteEncodedInt( 0 );
 		}
 
-		/// <summary>
-		/// Deserializes the vendor's state from saved game data
-		/// </summary>
-		/// <param name="reader">The reader to deserialize data from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
@@ -3009,7 +3240,7 @@ namespace Server.Mobiles
 			{
 				if ( SupportsBulkOrders( from ) )
 					list.Add( new BulkOrderInfoEntry( from, this ) );
-
+				
 				if ( MyServerSettings.buysellcontext() )
 				{
 					if ( IsActiveSeller )
@@ -3018,10 +3249,6 @@ namespace Server.Mobiles
 					if ( IsActiveBuyer )
 						list.Add( new VendorSellEntry( from, this ) );
 				}
-
-				// Add training context menu entry if vendor has trainable skills
-				if ( GetTrainableSkills().Count > 0 )
-					list.Add( new TrainingEntry( from, this ) );
 			}
 
 			if (
@@ -3042,564 +3269,6 @@ namespace Server.Mobiles
 			}
 
 			base.AddCustomContextEntries( from, list );
-		}
-
-		#endregion
-
-		#region Generic Training System
-
-		// Training System Limits
-		private const double TRAINING_SKILL_CAP = 70.0; // Maximum trainable skill level (any vendor, any skill)
-		private const double BEGINNER_TIER_MAX = 333.0 / 10.0; // End of beginner tier (0-33.3) - more precise
-		private const double ADVANCED_TIER_MIN = 33.3; // Start of advanced tier (33.3-70.0)
-
-		// Pricing Tiers (gold per 0.1 skill points)
-		private const int BEGINNER_COST_PER_0_1 = 10; // 10 gold per 0.1 points (0-33.3 range)
-		private const int ADVANCED_COST_PER_0_1 = 100; // 100 gold per 0.1 points (33.3-70.0 range)
-
-		// Daily Limits
-		private const double ADVANCED_DAILY_LIMIT = 5.0; // Max 5 points per day for advanced tier
-		private const double TRAINING_INCREMENT = 0.1; // Skill increase per session
-
-		// Training System Data Structures
-		private static Dictionary<Serial, PlayerSkillTrainingData> m_PlayerSkillTraining = new Dictionary<Serial, PlayerSkillTrainingData>();
-		private static Dictionary<Serial, TrainingDepositState> m_TrainingDeposits = new Dictionary<Serial, TrainingDepositState>();
-
-		/// <summary>
-		/// Tracks daily training points per skill for each player
-		/// </summary>
-		private class PlayerSkillTrainingData
-		{
-			public DateTime LastTrainingDate { get; set; }
-			public Dictionary<SkillName, double> DailyPointsTrained { get; set; }
-
-			public PlayerSkillTrainingData()
-			{
-				LastTrainingDate = DateTime.MinValue;
-				DailyPointsTrained = new Dictionary<SkillName, double>();
-			}
-		}
-
-		/// <summary>
-		/// Tracks active training deposit sessions
-		/// </summary>
-		private class TrainingDepositState
-		{
-			public SkillName Skill { get; set; }
-			public string SkillName { get; set; }
-			public TrainingTier Tier { get; set; }
-			public DateTime DepositStartTime { get; set; }
-
-			public TrainingDepositState(SkillName skill, string skillName, TrainingTier tier)
-			{
-				Skill = skill;
-				SkillName = skillName;
-				Tier = tier;
-				DepositStartTime = DateTime.UtcNow;
-			}
-		}
-
-		/// <summary>
-		/// Training tier enumeration
-		/// </summary>
-		private enum TrainingTier
-		{
-			Beginner, // 0-33.3
-			Advanced  // 33.3-70.0
-		}
-
-		/// <summary>
-		/// Training calculation result
-		/// </summary>
-		private class TrainingCalculation
-		{
-			public double MaxTrainablePoints { get; set; }
-			public int TotalCost { get; set; }
-			public double RemainingDailyPoints { get; set; }
-			public bool CanTrain { get; set; }
-			public string Message { get; set; }
-		}
-
-		/// <summary>
-		/// Training validation result
-		/// </summary>
-		public class TrainingValidationResult
-		{
-			public bool CanTrain { get; set; }
-			public string Message { get; set; }
-			public bool IsHardCapMessage { get; set; }
-
-			public TrainingValidationResult(bool canTrain, string message, bool isHardCapMessage = false)
-			{
-				CanTrain = canTrain;
-				Message = message;
-				IsHardCapMessage = isHardCapMessage;
-			}
-		}
-
-		/// <summary>
-		/// Gets player training data, creating it if necessary
-		/// </summary>
-		private PlayerSkillTrainingData GetPlayerTrainingData(Mobile from)
-		{
-			PlayerSkillTrainingData data;
-			if (!m_PlayerSkillTraining.TryGetValue(from.Serial, out data))
-			{
-				data = new PlayerSkillTrainingData();
-				m_PlayerSkillTraining[from.Serial] = data;
-			}
-			return data;
-		}
-
-		/// <summary>
-		/// Virtual method to check if vendor can train a specific skill
-		/// Default implementation: vendor must have at least 1 point in the skill
-		/// </summary>
-		public virtual bool CanVendorTrainSkill(SkillName skill)
-		{
-			return this.Skills[skill].Value > 0;
-		}
-
-		/// <summary>
-		/// Virtual method to check if player skill is below vendor's skill level
-		/// </summary>
-		public virtual bool IsPlayerBelowVendorSkill(Mobile from, SkillName skill)
-		{
-			return from.Skills[skill].Base < this.Skills[skill].Value;
-		}
-
-		/// <summary>
-		/// Comprehensive validation for training eligibility
-		/// </summary>
-		public virtual TrainingValidationResult ValidateTrainingEligibility(Mobile from, SkillName skill)
-		{
-			// Check if vendor has the skill
-			if (!CanVendorTrainSkill(skill))
-			{
-				return new TrainingValidationResult(false, "Este treinador não possui conhecimento suficiente nesta habilidade.");
-			}
-
-			// Check if player skill is below vendor skill level
-			if (!IsPlayerBelowVendorSkill(from, skill))
-			{
-				return new TrainingValidationResult(false, "Você já possui mais conhecimento nesta habilidade do que este treinador pode ensinar.");
-			}
-
-			// Check training cap (70.0)
-			if (from.Skills[skill].Base >= TRAINING_SKILL_CAP)
-			{
-				return new TrainingValidationResult(false, "Este é o limite que pode ser treinado aqui. Você já atingiu o máximo ensinável por treinadores.", true);
-			}
-
-			return new TrainingValidationResult(true, "");
-		}
-
-		/// <summary>
-		/// Gets all skills that this vendor can train
-		/// </summary>
-		public virtual List<SkillName> GetTrainableSkills()
-		{
-			List<SkillName> trainableSkills = new List<SkillName>();
-
-			// Check all possible skills
-			foreach (SkillName skill in Enum.GetValues(typeof(SkillName)))
-			{
-				if (CanVendorTrainSkill(skill))
-				{
-					trainableSkills.Add(skill);
-				}
-			}
-
-			return trainableSkills;
-		}
-
-		/// <summary>
-		/// Gets the training tier for a player's skill level
-		/// </summary>
-		private TrainingTier GetTrainingTier(Mobile from, SkillName skill)
-		{
-			double currentSkill = from.Skills[skill].Base;
-			return currentSkill < BEGINNER_TIER_MAX ? TrainingTier.Beginner : TrainingTier.Advanced;
-		}
-
-		/// <summary>
-		/// Formats skill name for display (English)
-		/// </summary>
-		private string GetSkillDisplayName(SkillName skill)
-		{
-			// Return the original English skill name, formatted nicely
-			string skillString = skill.ToString();
-
-			// Convert PascalCase to Title Case (e.g., "AnimalTaming" -> "Animal Taming")
-			if (skillString.Length > 0)
-			{
-				StringBuilder result = new StringBuilder();
-				result.Append(skillString[0]);
-
-				for (int i = 1; i < skillString.Length; i++)
-				{
-					if (char.IsUpper(skillString[i]) && i > 0)
-					{
-						result.Append(' ');
-					}
-					result.Append(skillString[i]);
-				}
-
-				return result.ToString();
-			}
-
-			return skillString;
-		}
-
-		/// <summary>
-		/// Virtual method for vendors to initiate training
-		/// </summary>
-		public virtual void BeginTraining(Mobile from)
-		{
-			List<SkillName> trainableSkills = GetTrainableSkills();
-
-			if (trainableSkills.Count == 0)
-			{
-				SayTo(from, "Desculpe, mas eu não tenho conhecimento suficiente para treinar nenhuma habilidade.");
-				return;
-			}
-
-			// Default implementation - send training gump
-			from.SendGump(new TrainingGump(this, from));
-		}
-
-		/// <summary>
-		/// Virtual method to start training a specific skill
-		/// </summary>
-		public virtual void TrainSkill(Mobile from, SkillName skill, string skillName)
-		{
-			if (!from.CheckAlive())
-				return;
-
-			if (!(from is PlayerMobile))
-				return;
-
-			// Validate training eligibility
-			var validation = ValidateTrainingEligibility(from, skill);
-			if (!validation.CanTrain)
-			{
-				SayTo(from, validation.Message);
-				return;
-			}
-
-			// Set player in deposit mode
-			TrainingTier tier = GetTrainingTier(from, skill);
-			m_TrainingDeposits[from.Serial] = new TrainingDepositState(skill, skillName, tier);
-
-			// Show deposit instructions
-			ShowDepositInstructions(from, skillName, tier);
-		}
-
-		/// <summary>
-		/// Shows deposit instructions to player
-		/// </summary>
-		private void ShowDepositInstructions(Mobile from, string skillName, TrainingTier tier)
-		{
-			string message;
-
-			if (tier == TrainingTier.Beginner)
-			{
-				message = string.Format(
-					"Para treinar {0}: 10 moedas de ouro por cada 0,1 pontos de habilidade. " +
-					"Deposite o ouro desejado no NPC!",
-					skillName);
-			}
-			else
-			{
-				message = string.Format(
-					"Para treinar {0}: 100 moedas de ouro por cada 0,1 pontos de habilidade. " +
-					"Deposite o ouro desejado no NPC!",
-					skillName);
-			}
-
-			// Overhead message (visible to everyone nearby)
-			this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false, message);
-
-			// Also send private message to player
-			from.SendMessage(0x3B2, message);
-		}
-
-		/// <summary>
-		/// Handles gold deposits for training
-		/// </summary>
-		private bool HandleTrainingGoldDeposit(Mobile from, Gold gold)
-		{
-			if (!m_TrainingDeposits.ContainsKey(from.Serial))
-			{
-				// Not in training mode, return gold
-				gold.MoveToWorld(from.Location, from.Map);
-				return false;
-			}
-
-			TrainingDepositState depositState = m_TrainingDeposits[from.Serial];
-
-			// Calculate points from gold amount
-			double pointsToTrain = CalculatePointsFromGold(gold.Amount, depositState.Tier);
-
-			// Validate against training limits
-			PlayerSkillTrainingData trainingData = GetPlayerTrainingData(from);
-			var maxTraining = CalculateMaxTrainingParameters(from, depositState.Skill, trainingData);
-
-			if (pointsToTrain > maxTraining.MaxTrainablePoints)
-			{
-				double maxPointsPossible = maxTraining.MaxTrainablePoints;
-				int maxGoldPossible = CalculateMaxGoldForPoints(maxPointsPossible, depositState.Tier);
-
-				SayTo(from, string.Format(
-					"Você depositou ouro demais. Com {0} moedas treinaria {1:F1} pontos, " +
-					"mas só pode treinar {2:F1} pontos (máximo {3} moedas).",
-					gold.Amount, pointsToTrain, maxPointsPossible, maxGoldPossible));
-
-				// Return gold to player
-				gold.MoveToWorld(from.Location, from.Map);
-				return false;
-			}
-
-			// Apply training
-			from.Skills[depositState.Skill].Base += pointsToTrain;
-
-			// Cap at training limit
-			if (from.Skills[depositState.Skill].Base > TRAINING_SKILL_CAP)
-				from.Skills[depositState.Skill].Base = TRAINING_SKILL_CAP;
-
-			// Record training points for daily limits (ONLY for advanced tier)
-			if (depositState.Tier == TrainingTier.Advanced)
-			{
-				RecordTrainingPoints(from, depositState.Skill, pointsToTrain);
-			}
-
-			// Clear deposit state
-			m_TrainingDeposits.Remove(from.Serial);
-
-			// Success message
-			SayTo(from, string.Format(
-				"Você depositou {0} ouro e treinou {1:F1} pontos de {2}!",
-				gold.Amount, pointsToTrain, depositState.SkillName));
-
-			// Delete the gold
-			gold.Delete();
-
-			return true;
-		}
-
-		/// <summary>
-		/// Calculates skill points from gold amount based on tier
-		/// </summary>
-		private double CalculatePointsFromGold(int goldAmount, TrainingTier tier)
-		{
-			if (tier == TrainingTier.Beginner)
-			{
-				return goldAmount / 100.0; // 100 gold = 1.0 points (10 gold per 0.1 points)
-			}
-			else
-			{
-				return goldAmount / 1000.0; // 1000 gold = 1.0 points (100 gold per 0.1 points)
-			}
-		}
-
-		/// <summary>
-		/// Calculates maximum gold needed for points based on tier
-		/// </summary>
-		private int CalculateMaxGoldForPoints(double points, TrainingTier tier)
-		{
-			if (tier == TrainingTier.Beginner)
-			{
-				return (int)(points * 100); // 1.0 points = 100 gold (10 gold per 0.1 points)
-			}
-			else
-			{
-				return (int)(points * 1000); // 1.0 points = 1000 gold (100 gold per 0.1 points)
-			}
-		}
-
-		/// <summary>
-		/// Calculates maximum training parameters for a player and skill
-		/// </summary>
-		private TrainingCalculation CalculateMaxTrainingParameters(Mobile from, SkillName skill, PlayerSkillTrainingData trainingData)
-		{
-			var result = new TrainingCalculation();
-			double currentSkill = from.Skills[skill].Base;
-
-			if (currentSkill < BEGINNER_TIER_MAX)
-			{
-				// Beginner Tier (0-33.3): Can train up to 33.3 total, no daily limit
-				double pointsToMax = BEGINNER_TIER_MAX - currentSkill;
-				result.MaxTrainablePoints = pointsToMax;
-				result.TotalCost = (int)(pointsToMax * 100); // 100 gold per 1.0 point (10 gold per 0.1 points)
-				result.RemainingDailyPoints = -1; // No daily limit for beginner tier
-				result.CanTrain = pointsToMax > 0;
-			}
-			else
-			{
-				// Advanced Tier (33.3+): Daily limit of 5.0 points
-				double remainingDailyPoints = GetRemainingDailyPoints(from, skill, trainingData);
-				double pointsToCap = TRAINING_SKILL_CAP - currentSkill;
-				result.MaxTrainablePoints = Math.Min(remainingDailyPoints, pointsToCap);
-				result.TotalCost = (int)(result.MaxTrainablePoints * 1000); // 1000 gold per 1.0 point (100 gold per 0.1 points)
-				result.RemainingDailyPoints = remainingDailyPoints;
-				result.CanTrain = result.MaxTrainablePoints > 0;
-			}
-
-			return result;
-		}
-
-		/// <summary>
-		/// Records training points for daily limit tracking
-		/// </summary>
-		private void RecordTrainingPoints(Mobile from, SkillName skill, double pointsTrained)
-		{
-			// Only record daily points for advanced tier
-			TrainingTier tier = GetTrainingTier(from, skill);
-			if (tier != TrainingTier.Advanced)
-				return;
-
-			PlayerSkillTrainingData data = GetPlayerTrainingData(from);
-			data.LastTrainingDate = DateTime.Today;
-
-			if (!data.DailyPointsTrained.ContainsKey(skill))
-				data.DailyPointsTrained[skill] = 0;
-
-			data.DailyPointsTrained[skill] += pointsTrained;
-		}
-
-		/// <summary>
-		/// Training gump for selecting skills to train
-		/// </summary>
-		private class TrainingGump : Gump
-		{
-			private BaseVendor m_Vendor;
-			private Mobile m_From;
-			private List<SkillName> m_TrainableSkills;
-
-			public TrainingGump(BaseVendor vendor, Mobile from)
-				: base(25, 25)
-			{
-				m_Vendor = vendor;
-				m_From = from;
-				m_TrainableSkills = vendor.GetTrainableSkills();
-
-				// Gump setup
-				this.Closable = true;
-				this.Disposable = true;
-				this.Dragable = true;
-				this.Resizable = false;
-
-				AddPage(0);
-				AddImage(0, 0, 155); // Background
-				AddImage(300, 0, 155);
-				AddImage(0, 300, 155);
-				AddImage(300, 300, 155);
-				AddImage(2, 2, 129); // Borders
-				AddImage(298, 2, 129);
-				AddImage(2, 298, 129);
-				AddImage(298, 298, 129);
-				AddImage(7, 8, 133); // Header
-				AddImage(218, 47, 132); // Divider
-				AddImage(380, 8, 134); // Button background
-
-				AddHtml(174, 68, 300, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>HABILIDADES DE TREINAMENTO</BIG></BASEFONT></BODY>", false, false);
-
-				int y = 95;
-				int buttonIndex = 1;
-
-				foreach (SkillName skill in m_TrainableSkills)
-				{
-					if (y > 400) break; // Prevent gump from being too long
-
-					y += 35;
-
-					string skillDisplayName = vendor.GetSkillDisplayName(skill);
-					string trainingInfo = vendor.GetSkillTrainingInfo(from, skill);
-
-					AddHtml(145, y, 425, 20,
-						string.Format(@"<BODY><BASEFONT Color=#FCFF00><BIG>{0} {1}</BIG></BASEFONT></BODY>",
-							skillDisplayName, trainingInfo), false, false);
-					AddButton(105, y, 4005, 4005, buttonIndex, GumpButtonType.Reply, 0);
-
-					buttonIndex++;
-				}
-			}
-
-			public override void OnResponse(NetState sender, RelayInfo info)
-			{
-				if (info.ButtonID > 0 && info.ButtonID <= m_TrainableSkills.Count)
-				{
-					SkillName selectedSkill = m_TrainableSkills[info.ButtonID - 1];
-					string skillName = m_Vendor.GetSkillDisplayName(selectedSkill);
-
-					// Start training for selected skill
-					m_Vendor.TrainSkill(m_From, selectedSkill, skillName);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Gets training information for display in gump
-		/// </summary>
-		private string GetSkillTrainingInfo(Mobile from, SkillName skill)
-		{
-			double currentSkill = from.Skills[skill].Base;
-
-			if (currentSkill >= TRAINING_SKILL_CAP)
-			{
-				return "(Limite atingido)";
-			}
-
-			TrainingTier tier = GetTrainingTier(from, skill);
-
-			if (tier == TrainingTier.Beginner)
-			{
-				// Beginner tier: can train up to 33.3 total
-				// If skill is very low (less than 0.05), treat as 0 for display purposes
-				double effectiveCurrentSkill = currentSkill < 0.05 ? 0.0 : currentSkill;
-				double maxPoints = BEGINNER_TIER_MAX - effectiveCurrentSkill;
-				int maxGold = (int)(maxPoints * 100); // 100 gold per 1.0 point (10 gold per 0.1 points)
-				return string.Format("(até {0:F1} pts por {1} ouro)", maxPoints, maxGold);
-			}
-			else
-			{
-				// Advanced tier: daily limit of 5.0 points
-				double remainingPoints = GetRemainingDailyPoints(from, skill, GetPlayerTrainingData(from));
-				if (remainingPoints <= 0)
-				{
-					return "(Limite diário atingido)";
-				}
-
-				int maxGold = (int)(remainingPoints * 1000); // 1000 gold per 1.0 point (100 gold per 0.1 points)
-				return string.Format("(até {0:F1} pts por {1} ouro hoje)", remainingPoints, maxGold);
-			}
-		}
-
-		/// <summary>
-		/// Gets remaining daily points for advanced tier training
-		/// </summary>
-		private double GetRemainingDailyPoints(Mobile from, SkillName skill, PlayerSkillTrainingData trainingData)
-		{
-			// Only apply daily limits for advanced tier
-			TrainingTier tier = GetTrainingTier(from, skill);
-			if (tier != TrainingTier.Advanced)
-				return double.MaxValue; // Unlimited for beginner tier
-
-			// Reset daily counter if it's a new day
-			if (trainingData.LastTrainingDate.Date < DateTime.Today)
-			{
-				trainingData.LastTrainingDate = DateTime.Today;
-				trainingData.DailyPointsTrained.Clear();
-			}
-
-			double pointsTrainedToday;
-			if (!trainingData.DailyPointsTrained.TryGetValue(skill, out pointsTrainedToday))
-			{
-				pointsTrainedToday = 0;
-			}
-
-			double remaining = ADVANCED_DAILY_LIMIT - pointsTrainedToday;
-			return Math.Max(0, remaining); // Never return negative
 		}
 
 		#endregion
@@ -3681,22 +3350,6 @@ namespace Server.ContextMenus
 		public override void OnClick()
 		{
 			m_Vendor.VendorSell( this.Owner.From );
-		}
-	}
-
-	public class TrainingEntry : ContextMenuEntry
-	{
-		private BaseVendor m_Vendor;
-
-		public TrainingEntry( Mobile from, BaseVendor vendor ) : base( BaseVendorConstants.CONTEXT_MENU_TRAINING, BaseVendorConstants.CONTEXT_MENU_RANGE_TRAINING )
-		{
-			m_Vendor = vendor;
-			Enabled = vendor.CheckVendorAccess( from );
-		}
-
-		public override void OnClick()
-		{
-			m_Vendor.BeginTraining( this.Owner.From );
 		}
 	}
 }

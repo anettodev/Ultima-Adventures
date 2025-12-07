@@ -282,9 +282,9 @@ namespace Server.Items
 				from.SendMessage( FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_REGION_RANGER_OUTPOST );
 				return true;
 			}
-			else if ( regionName == FishingStringConstants.REGION_NAME_DARK_DRUIDS )
+			else if ( regionName == FishingStringConstants.REGION_NAME_DRUID_SANCTUARY )
 			{
-				from.SendMessage( FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_REGION_DARK_DRUIDS );
+				from.SendMessage( FishingStringConstants.COLOR_ERROR, FishingStringConstants.ERROR_REGION_DRUID_SANCTUARY );
 				return true;
 			}
 

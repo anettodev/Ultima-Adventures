@@ -8863,7 +8863,7 @@ namespace Server
 		/// </summary>
 		public virtual void OnPoisonImmunity( Mobile from, Poison poison )
 		{
-			this.PrivateOverheadMessage( MessageType.Emote, 11, "* Eba! O veneno parece n�o fazer efeito em mim. *" ); // 1005534 * The poison seems to have no effect. *
+			this.PrivateOverheadMessage( MessageType.Emote, 11, false, "* Eba! O veneno parece nao fazer efeito em mim. *", this.NetState ); // 1005534 * The poison seems to have no effect. *
         }
 
 		/// <summary>

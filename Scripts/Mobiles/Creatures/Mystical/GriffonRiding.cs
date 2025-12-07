@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Server.Items;
+using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Mobiles
@@ -8,6 +9,7 @@ namespace Server.Mobiles
 	[CorpseName( "a griffon corpse" )]
 	public class GriffonRiding : BaseMount
 	{
+
 		public override WeaponAbility GetWeaponAbility()
 		{
 			return WeaponAbility.BleedAttack;

@@ -55,7 +55,7 @@ namespace Server.Misc
 												reg.IsPartOf( "Waterfall Cavern" ) || 
 												reg.IsPartOf( "the Crumbling Cave" ) || 
 												reg.IsPartOf( "Steamfire Cave" ) || 
-												reg.IsPartOf( "the Valley of Dark Druids" ) || 
+												reg.IsPartOf( "o Santuário Druida" ) || 
 												reg.IsPartOf( "Vordo's Castle Grounds" ) || 
 												reg.IsPartOf( "the Kuldara Sewers" ) || 
 												reg.IsPartOf( "the Crypts of Kuldar" ) || 
@@ -482,7 +482,7 @@ namespace Server.Misc
 			if ( reg.IsPartOf( typeof( DungeonRegion ) ) )
 				return false;
 
-			if ( world == "ilha de Kuldar" )
+			if ( world == "ilha de Kuldar" && !reg.IsPartOf( "Waterfall Cavern" ) )
 				return false;
 
 			if ( world == "the Underworld" )
@@ -872,7 +872,7 @@ namespace Server.Misc
 
 			if ( zone == "the City of the Dead" && map == Map.Trammel ){ loc = new Point3D(5828, 3263, 0); }
 			else if ( zone == "the Mausoleum" && map == Map.Trammel ){ loc = new Point3D(1529, 3599, 0); }
-			else if ( zone == "the Valley of Dark Druids" && map == Map.Trammel ){ loc = new Point3D(6763, 1423, 2); }
+			else if ( zone == "o Santuário Druida" && map == Map.Trammel ){ loc = new Point3D(6763, 1423, 2); }
 			else if ( zone == "Vordo's Castle" && map == Map.Trammel ){ loc = new Point3D(6708, 1729, 25); }
 			else if ( zone == "Vordo's Dungeon" && map == Map.Trammel ){ loc = new Point3D(6708, 1729, 25); }
 			else if ( zone == "the Crypts of Kuldar" && map == Map.Trammel ){ loc = new Point3D(6668, 1568, 10); }
@@ -1063,7 +1063,7 @@ namespace Server.Misc
 				else if ( i == 72 ){ dungeon = "the Undersea Castle"; location = GetAreaEntrance( dungeon, Map.TerMur ); listing = listing + "Savaged Empire<br>" + dungeon + "<br>" + location + "<br><br>"; }
 				else if ( i == 73 ){ dungeon = "the Crypts of Kuldar"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
 				else if ( i == 74 ){ dungeon = "the Kuldara Sewers"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
-				else if ( i == 75 ){ dungeon = "the Valley of Dark Druids"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
+				else if ( i == 75 ){ dungeon = "o Santuário Druida"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
 				else if ( i == 76 ){ dungeon = "Vordo's Castle"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
 				else if ( i == 77 ){ dungeon = "Vordo's Dungeon"; location = GetAreaEntrance( dungeon, Map.Trammel ); listing = listing + "Kuldar<br>" + dungeon + "<br>" + location + "<br><br>"; }
 				else if ( i == 78 ){ dungeon = "Argentrock Castle"; location = GetAreaEntrance( dungeon, Map.Felucca ); listing = listing + "Underworld<br>" + dungeon + "<br>" + location + "<br><br>"; }

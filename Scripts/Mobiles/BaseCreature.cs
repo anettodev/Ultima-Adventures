@@ -284,6 +284,7 @@ namespace Server.Mobiles
 		private List<Mobile> m_Friends;
 
 		private bool		m_IsStabled;
+		private DateTime	m_StabledDate;
 
 		private bool		m_HasGeneratedLoot; // have we generated our loot yet?
 
@@ -421,7 +422,7 @@ namespace Server.Mobiles
 
         }
 
-        [CommandProperty( AccessLevel.GameMaster, AccessLevel.Administrator )]
+		[CommandProperty( AccessLevel.GameMaster, AccessLevel.Administrator )]
 		public bool IsStabled
 		{
 			get{ return m_IsStabled; }
@@ -429,8 +430,18 @@ namespace Server.Mobiles
 			{
 				m_IsStabled = value;
 				if ( m_IsStabled )
+				{
 					StopDeleteTimer();
+					m_StabledDate = DateTime.UtcNow;
+				}
 			}
+		}
+
+		[CommandProperty( AccessLevel.GameMaster, AccessLevel.Administrator )]
+		public DateTime StabledDate
+		{
+			get{ return m_StabledDate; }
+			set{ m_StabledDate = value; }
 		}
 
 		[CommandProperty( AccessLevel.GameMaster )]
@@ -5559,7 +5570,7 @@ namespace Server.Mobiles
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int) 30 ); // version, breeding check
+			writer.Write( (int) 31 ); // version, stable date tracking
 			writer.Write( (int)m_CurrentAI );
 			writer.Write( (int)m_DefaultAI );
 
@@ -5731,6 +5742,10 @@ namespace Server.Mobiles
 
 			//30
 			writer.Write(m_breeding);
+
+			//31 - Stable date tracking
+			writer.Write(m_IsStabled);
+			writer.Write(m_StabledDate);
 
 
         }
@@ -6020,6 +6035,12 @@ namespace Server.Mobiles
 
 			if (version >= 30)
 				m_breeding = reader.ReadBool();
+
+			if (version >= 31)
+			{
+				m_IsStabled = reader.ReadBool();
+				m_StabledDate = reader.ReadDateTime();
+			}
 
             if ( deleteTime > TimeSpan.Zero || LastOwner != null && !Controlled && !IsStabled )
 			{
@@ -11412,5 +11433,6 @@ namespace Server.Mobiles
 				c.Delete();
 			}
 		}
+
 	}
 }

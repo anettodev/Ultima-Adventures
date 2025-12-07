@@ -1234,7 +1234,7 @@
 			<rect x="6632" y="1597" width="40" height="18" />
 			<rect x="6632" y="1547" width="55" height="51" />
 		</region>
-		<region type="OutDoorBadRegion" priority="50" name="the Valley of Dark Druids">
+		<region type="OutDoorRegion" priority="50" name="o Santuário Druida">
 			<rect x="6638" y="78" width="322" height="279" />
 		</region>
 		<region type="OutDoorBadRegion" priority="80" name="castelo de Vordo">

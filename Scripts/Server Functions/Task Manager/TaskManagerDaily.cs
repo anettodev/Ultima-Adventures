@@ -85,6 +85,49 @@ namespace Server.Items
 			} 
 		}
 
+		public static void CleanupExpiredStabledPets()
+		{
+			int cleanedCount = 0;
+			TimeSpan maxStableTime = TimeSpan.FromDays(7.0);
+
+			foreach (Mobile m in World.Mobiles.Values)
+			{
+				if (m is PlayerMobile)
+				{
+					PlayerMobile pm = (PlayerMobile)m;
+
+					// Create a list of expired pets to remove
+					List<BaseCreature> expiredPets = new List<BaseCreature>();
+
+					foreach (BaseCreature pet in pm.Stabled)
+					{
+						if (pet != null && !pet.Deleted && pet.IsStabled && pet.StabledDate != DateTime.MinValue)
+						{
+							TimeSpan timeStabled = DateTime.UtcNow - pet.StabledDate;
+							if (timeStabled >= maxStableTime)
+							{
+								expiredPets.Add(pet);
+							}
+						}
+					}
+
+					// Remove expired pets
+					foreach (BaseCreature pet in expiredPets)
+					{
+						pm.Stabled.Remove(pet);
+						pet.Delete();
+						cleanedCount++;
+					}
+				}
+			}
+
+			if (cleanedCount > 0)
+			{
+				LoggingFunctions.LogServer(string.Format("Cleaned up {0} expired stabled pets", cleanedCount));
+				Console.WriteLine("Cleaned up {0} expired stabled pets", cleanedCount);
+			}
+		}
+
 		public static void RunThis()
 		{
 			
@@ -453,8 +496,9 @@ namespace Server.Items
 				//Server.Items.WorkingSpots.PopulateVillages();
 				Farms.PlantGardens();
 				Server.Mobiles.Citizens.PopulateCities();
-				ThiefGuildmaster.WipeFlaggedList();		
-				Server.Misc.AdventuresFunctions.CleanupInternalObjects( null, true );		
+				ThiefGuildmaster.WipeFlaggedList();
+				Server.Misc.AdventuresFunctions.CleanupInternalObjects( null, true );
+				CleanupExpiredStabledPets();
 				LoggingFunctions.LogServer( "Done - Remove Spread Out Monsters, Drinkers, And Healers" );
 				Console.WriteLine( "End Daily Tasks" );
 				//World.Broadcast( 0x35, true, "End daily tasks" );

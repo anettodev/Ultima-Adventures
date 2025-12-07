@@ -21,6 +21,9 @@ namespace Server.Misc
 			Item prisoner = new Prisoner();
 				prisoner.Delete();
 
+			Item herbGathering = new HerbGatheringQuest();
+				herbGathering.Delete();
+
 			ArrayList SBtargets = new ArrayList();
 			foreach ( Item item in World.Items.Values )
 			if ( item is SearchBase || ( item is Prisoner ) )
@@ -46,7 +49,7 @@ namespace Server.Misc
 				else if ( area == 3 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the Altar of the Blood God
 				else if ( area == 4 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the City of the Dead
 				else if ( area == 5 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the Mausoleum
-				else if ( area == 6 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the Valley of Dark Druids
+				else if ( area == 6 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); herbGathering = new HerbGatheringQuest(); MoveQuestPedestals( herbGathering, area ); } // o Santuário Druida
 				else if ( area == 7 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // Vordo's Castle
 				else if ( area == 8 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the Crypts of Kuldar
 				else if ( area == 9 ){ pedestal = new SearchBase(0); MoveQuestPedestals( pedestal, area ); prisoner = new Prisoner(); MoveQuestPedestals( prisoner, area ); } // the Caverns of Poseidon
@@ -157,7 +160,7 @@ namespace Server.Misc
 				case 3:	loc = new Point3D(3831, 3363, 40); map = Map.Trammel; break;
 				case 4:	loc = new Point3D(3964, 3453, 0); map = Map.Trammel; break;
 			}
-			} else if ( area == 6 ){ switch ( Utility.RandomMinMax( 1, 4 ) ) // "the Valley of Dark Druids"
+			} else if ( area == 6 ){ switch ( Utility.RandomMinMax( 1, 4 ) ) // "o Santuário Druida"
 			{
 				case 1:	loc = new Point3D(6828, 200, 5); map = Map.Trammel; break;
 				case 2:	loc = new Point3D(6790, 146, 0); map = Map.Trammel; break;

@@ -133,7 +133,7 @@ namespace Server.Misc
 
 				case 17: sPlace = "the City of the Dead"; break;
 				case 18: sPlace = "the Mausoleum"; break;
-				case 19: sPlace = "the Valley of Dark Druids"; break;
+				case 19: sPlace = "o Santuário Druida"; break;
 				case 20: sPlace = "Vordo's Castle"; break;
 				case 21: sPlace = "Vordo's Dungeon"; break;
 				case 22: sPlace = "the Crypts of Kuldar"; break;

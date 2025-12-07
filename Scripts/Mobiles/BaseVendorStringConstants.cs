@@ -76,6 +76,30 @@ namespace Server.Mobiles
 		/// <summary>Error: No items of interest</summary>
 		public const string ERROR_NO_INTEREST = "Não acredito que você tenha algo do meu interesse.";
 
+		/// <summary>Error: Cannot afford purchase (English UO message)</summary>
+		public const string ERROR_CANNOT_AFFORD_PURCHASE = "Begging thy pardon, but thou casnt afford that.";
+
+		/// <summary>Error: Bank account insufficient (English UO message)</summary>
+		public const string ERROR_BANK_INSUFFICIENT = "Begging thy pardon, but thy bank account lacks these funds.";
+
+		/// <summary>Message: Bought nothing</summary>
+		public const string MSG_BOUGHT_NOTHING = "Thou hast bought nothing!";
+
+		/// <summary>Message: Order cannot be fulfilled</summary>
+		public const string MSG_ORDER_CANNOT_FULFILL = "Your order cannot be fulfilled, please try again.";
+
+		/// <summary>Message: Bulk order cooldown format</summary>
+		public const string MSG_BULK_ORDER_COOLDOWN = "An offer may be available in about ~1_minutes~ minutes.";
+
+		/// <summary>Message: Wrong shopkeeper for order</summary>
+		public const string MSG_WRONG_SHOPKEEPER = "That order is for some other shopkeeper.";
+
+		/// <summary>Message: Order not complete</summary>
+		public const string MSG_ORDER_NOT_COMPLETE = "You have not completed the order yet.";
+
+		/// <summary>Message: Can get order now</summary>
+		public const string MSG_CAN_GET_ORDER = "You can get an order now.";
+
 		#endregion
 
 		#region Combat Messages (English - Game Standard)
@@ -551,6 +575,12 @@ namespace Server.Mobiles
 
 		/// <summary>Item type: cappucino</summary>
 		public const string ITEM_TYPE_CAPPUCINO = "cappucino";
+
+		// UO System Messages
+		/// <summary>Message shown when trying to turn in BOD to wrong shopkeeper</summary>
+		public const string UO_MSG_WRONG_SHOPKEEPER = "You'll have to check back with the shopkeeper who gave you the order.";
+		/// <summary>Message shown when trying to turn in incomplete BOD</summary>
+		public const string UO_MSG_ORDER_NOT_COMPLETE = "You have not completed the order yet.";
 
 		#endregion
 	}

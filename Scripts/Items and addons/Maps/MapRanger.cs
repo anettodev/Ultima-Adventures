@@ -229,7 +229,7 @@ namespace Server.Items
 				{
 					case 0: paper.m_MapDestination = "the City of the Dead"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(5828, 3263, 0); break;
 					case 1: paper.m_MapDestination = "the Mausoleum"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(1529, 3599, 0); break;
-					case 2: paper.m_MapDestination = "the Valley of Dark Druids"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6763, 1423, 2); break;
+					case 2: paper.m_MapDestination = "o Santuário Druida"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6763, 1423, 2); break;
 					case 3: paper.m_MapDestination = "Vordo's Castle"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6708, 1729, 25); break;
 					case 4: paper.m_MapDestination = "the Crypts of Kuldar"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6668, 1568, 10); break;
 					case 5: paper.m_MapDestination = "the Kuldara Sewers"; paper.m_MapDest = Map.Trammel; paper.m_PointDest = new Point3D(6790, 1745, 24); break;

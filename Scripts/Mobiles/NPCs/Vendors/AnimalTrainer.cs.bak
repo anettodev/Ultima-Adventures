@@ -492,8 +492,8 @@ namespace Server.Mobiles
 			if ( reg.IsPartOf( "the Hedge Maze" ) )
 				return true;
 
-			if ( reg.IsPartOf( "the Valley of Dark Druids" ) )
-				return true;
+			// if ( reg.IsPartOf( "o Santuário Druida" ) )
+			//	return true;
 
 			if ( reg.IsPartOf( "the Altar of the Dragon King" ) )
 				return true;
@@ -501,7 +501,7 @@ namespace Server.Mobiles
 			if ( reg.IsPartOf( "the Altar of the Blood God" ) )
 				return true;
 
-			if ( !reg.IsPartOf( "the Port" ) && ( reg is ProtectedRegion || reg is CaveRegion || reg is BardDungeonRegion || reg is MoonCore || reg is UmbraRegion || reg is DungeonRegion || reg is PublicRegion ) )
+			if ( !reg.IsPartOf( "the Port" ) && !reg.IsPartOf( "Waterfall Cavern" ) && ( reg is ProtectedRegion || reg is CaveRegion || reg is BardDungeonRegion || reg is MoonCore || reg is UmbraRegion || reg is DungeonRegion || reg is PublicRegion ) )
 
 					return true;
 

@@ -14,6 +14,7 @@ namespace Server.Mobiles
 	[CorpseName( "a dragon corpse" )]
 	public class RidingDragon : BaseMount
 	{
+
 		[Constructable]
 		public RidingDragon() : this( "a dragon", 59, 0 )
 		{

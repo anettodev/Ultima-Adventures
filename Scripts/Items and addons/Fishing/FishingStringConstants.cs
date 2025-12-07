@@ -400,8 +400,8 @@ namespace Server.Items
         /// <summary>Error when sextant blocked in Ranger Outpost</summary>
         public const string ERROR_REGION_RANGER_OUTPOST = "Você não pode usar um sextante porque as nuvens da montanha bloqueiam o céu!";
 
-        /// <summary>Error when sextant blocked in Dark Druids valley</summary>
-        public const string ERROR_REGION_DARK_DRUIDS = "Os druidas mascaram este vale com nuvens espessas!";
+        /// <summary>Error when sextant blocked in Druid's Sanctuary</summary>
+        public const string ERROR_REGION_DRUID_SANCTUARY = "A magia antiga deste santuário vela as estrelas com uma aura mística!";
 
         /// <summary>Error when sextant doesn't work</summary>
         public const string ERROR_SEXTANT_NOT_WORKING = "O sextante parece não funcionar aqui!";
@@ -418,8 +418,8 @@ namespace Server.Items
         /// <summary>Region name: Ranger Outpost</summary>
         public const string REGION_NAME_RANGER_OUTPOST = "the Ranger Outpost";
 
-        /// <summary>Region name: Valley of Dark Druids</summary>
-        public const string REGION_NAME_DARK_DRUIDS = "the Valley of Dark Druids";
+        /// <summary>Region name: Druid's Sanctuary</summary>
+        public const string REGION_NAME_DRUID_SANCTUARY = "o Santuário Druida";
 
         #endregion
 

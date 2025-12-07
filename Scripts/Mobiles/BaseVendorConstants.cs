@@ -528,6 +528,12 @@ namespace Server.Mobiles
 		/// <summary>Diminishing returns cap</summary>
 		public const int DIMINISHING_RETURNS_CAP = 12000;
 
+		/// <summary>Credit multiplier tier 17 (tailor specific)</summary>
+		public const int CREDIT_MULT_TIER_17 = 182;
+
+		/// <summary>Credit multiplier tier 18 (tailor specific)</summary>
+		public const int CREDIT_MULT_TIER_18 = 220;
+
 		/// <summary>Fame divisor for credits</summary>
 		public const int FAME_DIVISOR = 50;
 
@@ -666,6 +672,43 @@ namespace Server.Mobiles
 
 		/// <summary>Context menu range for buy/sell</summary>
 		public const int CONTEXT_MENU_RANGE_BUY_SELL = 8;
+
+		/// <summary>Context menu ID for training</summary>
+		public const int CONTEXT_MENU_TRAINING = 6127;
+
+		/// <summary>Context menu range for training</summary>
+		public const int CONTEXT_MENU_RANGE_TRAINING = 12;
+
+		#endregion
+
+		#region UO Localized Messages
+
+		/// <summary>UO localized message: Greetings. Have a look around.</summary>
+		public const int UO_MSG_GREETINGS = 500186;
+
+		/// <summary>UO localized message: Thou hast bought nothing!</summary>
+		public const int UO_MSG_BOUGHT_NOTHING = 500190;
+
+		/// <summary>UO localized message: Your order cannot be fulfilled, please try again.</summary>
+		public const int UO_MSG_ORDER_CANNOT_FULFILL = 500187;
+
+		/// <summary>UO localized message: Begging thy pardon, but thou casnt afford that.</summary>
+		public const int UO_MSG_CANNOT_AFFORD = 500192;
+
+		/// <summary>UO localized message: Begging thy pardon, but thy bank account lacks these funds.</summary>
+		public const int UO_MSG_BANK_INSUFFICIENT = 500191;
+
+		/// <summary>UO localized message: An offer may be available in about ~1_minutes~ minutes.</summary>
+		public const int UO_MSG_BULK_ORDER_COOLDOWN = 1072058;
+
+		/// <summary>UO localized message: That order is for some other shopkeeper.</summary>
+		public const int UO_MSG_WRONG_SHOPKEEPER = 1045130;
+
+		/// <summary>UO localized message: You have not completed the order yet.</summary>
+		public const int UO_MSG_ORDER_NOT_COMPLETE = 1045131;
+
+		/// <summary>UO localized message: You can get an order now.</summary>
+		public const int UO_MSG_CAN_GET_ORDER = 1049038;
 
 		#endregion
 

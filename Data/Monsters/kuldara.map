@@ -83,6 +83,8 @@
 *|druid||||||6806|1698|10|2|5|10|2|2|1|1|0|0|0|0|0
 *|sage||||||6709|1709|50|2|5|10|2|2|1|1|0|0|0|0|0
 *|sage||||||6765|1655|30|2|5|10|2|2|1|1|0|0|0|0|0
+*|druidtree||||||6810|1705|15|2|5|10|2|2|1|1|0|0|0|0|0
+*|druidguildmaster||||||6800|1700|10|2|5|10|2|2|1|1|0|0|0|0|0
 
 #######################################
 ##       FOOD & HOSPITALITY           ##
@@ -861,6 +863,58 @@
 
 # Original Kuldara wildlife spawner
 *|BlackBear:Boar:BrownBear:Cougar:Fox:GreatHart:GreyWolf:GrizzlyBearRiding:Hind:Jaguar:TimberWolf|Bird:Bird:Bird:Bird:Eagle|||||6778|1391|8|2|120s|10m|30|30|8989|3|4|0|0|0|0
+
+#######################################
+# Druid's Sanctuary Peaceful Creatures #
+#######################################
+# Peaceful wildlife in the Druid's Sanctuary
+# Rabbits - gentle forest dwellers
+*|Rabbit:JackRabbit:WhiteRabbit||||||6750|150|5|2|300s|10m|3|3|8989|1|2|0|0|0|0
+*|Rabbit:JackRabbit:WhiteRabbit||||||6780|120|5|2|300s|10m|3|3|8989|1|2|0|0|0|0
+*|Rabbit:JackRabbit:WhiteRabbit||||||6820|180|10|2|300s|10m|3|3|8989|1|2|0|0|0|0
+*|Rabbit:JackRabbit:WhiteRabbit||||||6790|220|5|2|300s|10m|3|3|8989|1|2|0|0|0|0
+*|Rabbit:JackRabbit:WhiteRabbit||||||6760|200|8|2|300s|10m|3|3|8989|1|2|0|0|0|0
+*|Rabbit:JackRabbit:WhiteRabbit||||||6815|195|6|2|300s|10m|3|3|8989|1|2|0|0|0|0
+
+# Birds - colorful avians in the trees
+*|Bird:TropicalBird:SwampBird:DesertBird||||||6765|140|15|2|240s|8m|2|2|8989|1|1|0|0|0|0
+*|Bird:TropicalBird:SwampBird:DesertBird||||||6810|160|20|2|240s|8m|2|2|8989|1|1|0|0|0|0
+*|Bird:TropicalBird:SwampBird:DesertBird||||||6785|190|25|2|240s|8m|2|2|8989|1|1|0|0|0|0
+*|Bird:TropicalBird:SwampBird:DesertBird||||||6775|175|18|2|240s|8m|2|2|8989|1|1|0|0|0|0
+*|Bird:TropicalBird:SwampBird:DesertBird||||||6805|185|22|2|240s|8m|2|2|8989|1|1|0|0|0|0
+
+# Eagles - majestic birds of prey (peaceful in sanctuary)
+*|Bird:Eagle||||||6785|155|12|1|360s|12m|1|1|8989|1|1|0|0|0|0
+*|Bird:Eagle||||||6825|175|15|1|360s|12m|1|1|8989|1|1|0|0|0|0
+*|Bird:Eagle||||||6765|185|18|1|360s|12m|1|1|8989|1|1|0|0|0|0
+
+# Deer - graceful forest animals
+*|Hind:GreatHart||||||6795|205|9|1|480s|16m|1|1|8989|1|1|0|0|0|0
+*|Hind:GreatHart||||||6815|195|7|1|480s|16m|1|1|8989|1|1|0|0|0|0
+*|Hind:GreatHart||||||6775|225|11|1|480s|16m|1|1|8989|1|1|0|0|0|0
+*|Hind:GreatHart||||||6800|235|13|1|480s|16m|1|1|8989|1|1|0|0|0|0
+
+# Magical unicorns in the sanctuary
+*|Unicorn||||||6760|200|10|2|600s|20m|1|1|8989|1|0|0|0|0|0
+*|Unicorn||||||6830|150|15|2|600s|20m|1|1|8989|1|0|0|0|0|0
+
+# Herbalism gathering spots in the sanctuary (12 total - centralized distribution) - Always spawn
+*|PlantHerbalism_Leaf||||||6765|175|8|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6785|165|6|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6805|185|4|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6825|175|7|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6775|195|5|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6795|205|9|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6815|195|3|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6780|220|11|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6800|230|8|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6820|220|6|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6790|245|10|3|300s|10m|1|1|8989|1|0|0|0|0|0
+*|PlantHerbalism_Leaf||||||6810|255|7|3|300s|10m|1|1|8989|1|0|0|0|0|0
+
+# Alchemy workstations in the sanctuary
+*|AlchemyTub||||||6765|185|10|2|5|10|2|2|1|1|0|0|0|0|0
+*|AlchemyTub||||||6820|170|15|2|5|10|2|2|1|1|0|0|0|0|0
 
 
 #######################################################################

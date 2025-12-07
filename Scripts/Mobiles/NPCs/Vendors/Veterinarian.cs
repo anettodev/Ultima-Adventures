@@ -148,12 +148,12 @@ namespace Server.Mobiles
 				AddImage(2, 298, 129);
 				AddImage(300, 298, 129);
 				AddImage(598, 298, 129);
-				AddImage(7, 65, 20766);
+				//AddImage(7, 65, 20766);
 				AddImage(839, 356, 131);
 				AddImage(817, 537, 156);
-				AddHtml( 10, 10, 876, 43, @"<BODY><BASEFONT Color=#FCFF00><BIG>Below are creatures that can be ridden if they are tamed. If you see any creature that looks like these below, regardless of color, they can be used as mounts to travel with.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-				AddHtml( 599, 511, 231, 73, @"<BODY><BASEFONT Color=#FCFF00><BIG>* Only dragyns can be ridden if the Zuluu legends are true. Young dragons, however, cannot be ridden.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-				AddHtml( 648, 176, 24, 20, @"<BODY><BASEFONT Color=#FCFF00><BIG>*</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 10, 10, 876, 43, @"<BODY><BASEFONT Color=#FCFF00><BIG>Segue uma lista de animais que podem ser montados se forem adestrados. Se você vir alguma criatura que pareça com as listadas abaixo, independentemente da cor, ela pode ser usada como uma montaria para viajar com você.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( 599, 460, 231, 150, @"<BODY><BASEFONT Color=#FCFF00><BIG>* Alguns aventureiros dizem já terem visto outras criaturas mágicas aceitarem serem montadas. Isto deve requerer algum conhecimento ou poder sobrenatural...ou é apenas uma lenda.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				//AddHtml( 648, 280, 24, 20, @"<BODY><BASEFONT Color=#FCFF00><BIG>*</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			}
 		}
 
