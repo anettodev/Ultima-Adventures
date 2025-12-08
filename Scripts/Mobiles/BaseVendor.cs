@@ -115,7 +115,7 @@ namespace Server.Mobiles
 		private bool? m_isInMidland;
 		private bool m_midlandCacheValid;
 
-		public override bool CanTeach { get { return true; } }
+		public override bool CanTeach { get { return false; } }
 		public override bool BardImmune { get { return false; } }
 
 		public override bool PlayerRangeSensitive { get { return true; } }
@@ -329,19 +329,20 @@ namespace Server.Mobiles
 				SetResistance(ResistanceType.Poison, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
 				SetResistance(ResistanceType.Energy, BaseVendorConstants.RESISTANCE_MIN, BaseVendorConstants.RESISTANCE_MAX);
 
-				SetSkill(SkillName.Swords, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Fencing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Macing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);				
-				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.Swords, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.Fencing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.Macing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.EvalInt, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.Healing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				//SetSkill(SkillName.Parry, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+
+				SetSkill(SkillName.Anatomy, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Camping, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.DetectHidden, BaseVendorConstants.DETECT_HIDDEN_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Magery, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
 				SetSkill(SkillName.MagicResist, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
 				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Parry, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Anatomy, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Healing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Magery, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.EvalInt, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.DetectHidden, BaseVendorConstants.DETECT_HIDDEN_MIN, BaseVendorConstants.SKILL_MAX);
+				SetSkill(SkillName.Wrestling, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
 
 				m_pricesadjusted = false;
 				m_sellingpriceadjusted = false;
@@ -3050,35 +3051,19 @@ namespace Server.Mobiles
 
 		// Training System Limits
 		private const double TRAINING_SKILL_CAP = 70.0; // Maximum trainable skill level (any vendor, any skill)
-		private const double BEGINNER_TIER_MAX = 333.0 / 10.0; // End of beginner tier (0-33.3) - more precise
-		private const double ADVANCED_TIER_MIN = 33.3; // Start of advanced tier (33.3-70.0)
+		private const double BEGINNER_TIER_MAX = 35.0; // End of beginner tier (0-35.0)
+		private const double ADVANCED_TIER_MIN = 35.0; // Start of advanced tier (35.0-70.0)
 
 		// Pricing Tiers (gold per 0.1 skill points)
-		private const int BEGINNER_COST_PER_0_1 = 10; // 10 gold per 0.1 points (0-33.3 range)
-		private const int ADVANCED_COST_PER_0_1 = 100; // 100 gold per 0.1 points (33.3-70.0 range)
+		private const int BEGINNER_COST_PER_0_1 = 10; // 10 gold per 0.1 points (0-35.0 range)
+		private const int ADVANCED_COST_PER_0_1 = 100; // 100 gold per 0.1 points (35.0-70.0 range)
 
 		// Daily Limits
 		private const double ADVANCED_DAILY_LIMIT = 5.0; // Max 5 points per day for advanced tier
 		private const double TRAINING_INCREMENT = 0.1; // Skill increase per session
 
 		// Training System Data Structures
-		private static Dictionary<Serial, PlayerSkillTrainingData> m_PlayerSkillTraining = new Dictionary<Serial, PlayerSkillTrainingData>();
 		private static Dictionary<Serial, TrainingDepositState> m_TrainingDeposits = new Dictionary<Serial, TrainingDepositState>();
-
-		/// <summary>
-		/// Tracks daily training points per skill for each player
-		/// </summary>
-		private class PlayerSkillTrainingData
-		{
-			public DateTime LastTrainingDate { get; set; }
-			public Dictionary<SkillName, double> DailyPointsTrained { get; set; }
-
-			public PlayerSkillTrainingData()
-			{
-				LastTrainingDate = DateTime.MinValue;
-				DailyPointsTrained = new Dictionary<SkillName, double>();
-			}
-		}
 
 		/// <summary>
 		/// Tracks active training deposit sessions
@@ -3089,6 +3074,7 @@ namespace Server.Mobiles
 			public string SkillName { get; set; }
 			public TrainingTier Tier { get; set; }
 			public DateTime DepositStartTime { get; set; }
+			public List<Tuple<SkillName, double>> ReducedSkills { get; set; }
 
 			public TrainingDepositState(SkillName skill, string skillName, TrainingTier tier)
 			{
@@ -3096,6 +3082,7 @@ namespace Server.Mobiles
 				SkillName = skillName;
 				Tier = tier;
 				DepositStartTime = DateTime.UtcNow;
+				ReducedSkills = new List<Tuple<SkillName, double>>();
 			}
 		}
 
@@ -3104,8 +3091,8 @@ namespace Server.Mobiles
 		/// </summary>
 		private enum TrainingTier
 		{
-			Beginner, // 0-33.3
-			Advanced  // 33.3-70.0
+			Beginner, // 0-35.0
+			Advanced  // 35.0-70.0
 		}
 
 		/// <summary>
@@ -3138,20 +3125,6 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
-		/// Gets player training data, creating it if necessary
-		/// </summary>
-		private PlayerSkillTrainingData GetPlayerTrainingData(Mobile from)
-		{
-			PlayerSkillTrainingData data;
-			if (!m_PlayerSkillTraining.TryGetValue(from.Serial, out data))
-			{
-				data = new PlayerSkillTrainingData();
-				m_PlayerSkillTraining[from.Serial] = data;
-			}
-			return data;
-		}
-
-		/// <summary>
 		/// Virtual method to check if vendor can train a specific skill
 		/// Default implementation: vendor must have at least 1 point in the skill
 		/// </summary>
@@ -3176,19 +3149,19 @@ namespace Server.Mobiles
 			// Check if vendor has the skill
 			if (!CanVendorTrainSkill(skill))
 			{
-				return new TrainingValidationResult(false, "Este treinador não possui conhecimento suficiente nesta habilidade.");
+				return new TrainingValidationResult(false, "Eu não tenho conhecimento suficiente nesta habilidade.");
 			}
 
 			// Check if player skill is below vendor skill level
 			if (!IsPlayerBelowVendorSkill(from, skill))
 			{
-				return new TrainingValidationResult(false, "Você já possui mais conhecimento nesta habilidade do que este treinador pode ensinar.");
+				return new TrainingValidationResult(false, "Você possui mais conhecimento nesta habilidade do que eu posso te ensinar. Encontre outro treinador mais experiente!");
 			}
 
 			// Check training cap (70.0)
 			if (from.Skills[skill].Base >= TRAINING_SKILL_CAP)
 			{
-				return new TrainingValidationResult(false, "Este é o limite que pode ser treinado aqui. Você já atingiu o máximo ensinável por treinadores.", true);
+				return new TrainingValidationResult(false, "Você já atingiu o máximo ensinável por treinadores.", true);
 			}
 
 			return new TrainingValidationResult(true, "");
@@ -3220,6 +3193,80 @@ namespace Server.Mobiles
 		{
 			double currentSkill = from.Skills[skill].Base;
 			return currentSkill < BEGINNER_TIER_MAX ? TrainingTier.Beginner : TrainingTier.Advanced;
+		}
+
+		/// <summary>
+		/// Gets total skill points across all skills for a player
+		/// Skills.Total is in fixed point (×10), so divide by 10.0
+		/// </summary>
+		private double GetTotalSkillPoints(Mobile from)
+		{
+			return from.Skills.Total / 10.0;
+		}
+
+		/// <summary>
+		/// Finds all skills that can be reduced (Lock == Down) to make room for training
+		/// </summary>
+		/// <param name="from">The player mobile</param>
+		/// <param name="excludeSkill">Skill to exclude from reduction (the one being trained)</param>
+		/// <returns>List of reducible skills, sorted by highest first</returns>
+		private List<Skill> GetReducibleSkills(Mobile from, SkillName excludeSkill)
+		{
+			List<Skill> reducibleSkills = new List<Skill>();
+
+			foreach (Skill skill in from.Skills)
+			{
+				if (skill != null &&
+					skill.SkillName != excludeSkill &&
+					skill.Lock == SkillLock.Down &&
+					skill.Base > 0)
+				{
+					reducibleSkills.Add(skill);
+				}
+			}
+
+			// Sort by highest first (reduce from highest skills first)
+			reducibleSkills.Sort((a, b) => b.Base.CompareTo(a.Base));
+
+			return reducibleSkills;
+		}
+
+		/// <summary>
+		/// Reduces skills with Lock == Down to make room for training
+		/// Reduces from highest skills first, continues until enough points are freed
+		/// </summary>
+		/// <param name="from">The player mobile</param>
+		/// <param name="pointsNeeded">Points needed to free up</param>
+		/// <param name="trainingSkill">Skill being trained (to exclude from reduction)</param>
+		/// <returns>List of skills reduced with amounts reduced</returns>
+		private List<Tuple<SkillName, double>> ReduceSkillsToMakeRoom(Mobile from, double pointsNeeded, SkillName trainingSkill)
+		{
+			List<Tuple<SkillName, double>> reducedSkills = new List<Tuple<SkillName, double>>();
+			double pointsFreed = 0.0;
+
+			List<Skill> reducibleSkills = GetReducibleSkills(from, trainingSkill);
+
+			foreach (Skill skill in reducibleSkills)
+			{
+				if (pointsFreed >= pointsNeeded)
+					break;
+
+				double remainingNeeded = pointsNeeded - pointsFreed;
+				double availableToReduce = skill.Base;
+
+				// Reduce in 0.1 increments
+				int incrementsToReduce = (int)Math.Min(remainingNeeded * 10, availableToReduce * 10);
+				double actualReduction = incrementsToReduce * 0.1;
+
+				if (actualReduction > 0)
+				{
+					skill.Base -= actualReduction;
+					pointsFreed += actualReduction;
+					reducedSkills.Add(new Tuple<SkillName, double>(skill.SkillName, actualReduction));
+				}
+			}
+
+			return reducedSkills;
 		}
 
 		/// <summary>
@@ -3306,14 +3353,14 @@ namespace Server.Mobiles
 			{
 				message = string.Format(
 					"Para treinar {0}: 10 moedas de ouro por cada 0,1 pontos de habilidade. " +
-					"Deposite o ouro desejado no NPC!",
+					"Me entregue a quantidade de ouro necessária.",
 					skillName);
 			}
 			else
 			{
 				message = string.Format(
 					"Para treinar {0}: 100 moedas de ouro por cada 0,1 pontos de habilidade. " +
-					"Deposite o ouro desejado no NPC!",
+					"Me entregue a quantidade de ouro necessária.",
 					skillName);
 			}
 
@@ -3338,12 +3385,136 @@ namespace Server.Mobiles
 
 			TrainingDepositState depositState = m_TrainingDeposits[from.Serial];
 
-			// Calculate points from gold amount
-			double pointsToTrain = CalculatePointsFromGold(gold.Amount, depositState.Tier);
+			// Check minimum gold requirement
+			int minimumGold = depositState.Tier == TrainingTier.Beginner ? BEGINNER_COST_PER_0_1 : ADVANCED_COST_PER_0_1;
+			if (gold.Amount < minimumGold)
+			{
+				// Return gold to player's backpack
+				from.AddToBackpack(gold);
+
+				// Ludic message
+				string ludicMessage;
+				if (depositState.Tier == TrainingTier.Beginner)
+				{
+					ludicMessage = string.Format(
+						"*risos* {0}, você precisa de pelo menos {1} moedas de ouro para treinar {2}! " +
+						"Com {3} moedas não consigo ensinar nem 0,1 pontos! Aqui está seu ouro de volta.",
+						from.Name, minimumGold, depositState.SkillName, gold.Amount);
+				}
+				else
+				{
+					ludicMessage = string.Format(
+						"*risos* {0}, para treinar {1} no nível avançado você precisa de pelo menos {2} moedas de ouro! " +
+						"Com apenas {3} moedas não consigo fazer nada! Aqui está seu ouro de volta.",
+						from.Name, depositState.SkillName, minimumGold, gold.Amount);
+				}
+
+				this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false, ludicMessage);
+				from.SendMessage(0x3B2, ludicMessage);
+
+				// Clear deposit state
+				m_TrainingDeposits.Remove(from.Serial);
+				return false;
+			}
+
+			// Calculate how many full 0.1 point increments can be purchased
+			int costPerIncrement = depositState.Tier == TrainingTier.Beginner ? BEGINNER_COST_PER_0_1 : ADVANCED_COST_PER_0_1;
+			int incrementsPurchasable = gold.Amount / costPerIncrement;
+			
+			// Calculate exact points and gold cost
+			double pointsToTrain = incrementsPurchasable * 0.1;
+			int goldCost = incrementsPurchasable * costPerIncrement;
+			int change = gold.Amount - goldCost;
+
+			// Validate against server skill cap (total skill points across all skills)
+			double currentTotalSkills = GetTotalSkillPoints(from);
+			int serverSkillCap = MyServerSettings.skillcap();
+			double newTotalSkills = currentTotalSkills + pointsToTrain;
+
+			if (currentTotalSkills >= serverSkillCap)
+			{
+				// Scenario A: Already at server skill cap
+				this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+					string.Format("Você já atingiu o limite máximo de habilidades (skill cap:{0} pontos). Não posso treinar mais! Aqui está seu ouro de volta.",
+					serverSkillCap));
+				from.AddToBackpack(gold);
+				m_TrainingDeposits.Remove(from.Serial);
+				return false;
+			}
+			else if (newTotalSkills > serverSkillCap)
+			{
+				// Scenario B: Would exceed server skill cap - try to reduce skills with Lock == Down
+				double pointsNeeded = newTotalSkills - serverSkillCap;
+
+				// Check if player has skills set to Down
+				List<Skill> reducibleSkills = GetReducibleSkills(from, depositState.Skill);
+
+				if (reducibleSkills.Count == 0)
+				{
+					// No skills set to Down - inform player
+					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+						string.Format("Você atingiu o limite de habilidades ({0} pontos). " +
+						"Para treinar mais, você precisa definir algumas habilidades como 'Down' (↓) no painel de habilidades. " +
+						"Aqui está seu ouro de volta.", serverSkillCap));
+					from.AddToBackpack(gold);
+					m_TrainingDeposits.Remove(from.Serial);
+					return false;
+				}
+
+				// Try to reduce skills to make room
+				List<Tuple<SkillName, double>> reducedSkills = ReduceSkillsToMakeRoom(from, pointsNeeded, depositState.Skill);
+				double pointsFreed = 0.0;
+				foreach (var reduction in reducedSkills)
+				{
+					pointsFreed += reduction.Item2;
+				}
+
+				// Recalculate total after reduction
+				double newTotalAfterReduction = GetTotalSkillPoints(from);
+				double maxTrainableAfterReduction = serverSkillCap - newTotalAfterReduction;
+
+				if (maxTrainableAfterReduction < 0.1)
+				{
+					// Still too close even after reduction
+					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+						string.Format("Mesmo reduzindo habilidades, você ainda está muito próximo do limite ({0} pontos). " +
+						"Aqui está seu ouro de volta.", serverSkillCap));
+					from.AddToBackpack(gold);
+					m_TrainingDeposits.Remove(from.Serial);
+					return false;
+				}
+
+				// Check if we can train full amount or need to adjust
+				if (pointsFreed >= pointsNeeded)
+				{
+					// Enough room freed - can train full amount
+					// pointsToTrain, goldCost, change remain as calculated
+					// Store reduction info for message later
+					m_TrainingDeposits[from.Serial].ReducedSkills = reducedSkills;
+				}
+				else
+				{
+					// Not enough room freed - recalculate for partial training
+					int maxIncrements = (int)(maxTrainableAfterReduction * 10); // Convert to increments
+					pointsToTrain = maxIncrements * 0.1;
+					goldCost = maxIncrements * costPerIncrement;
+					change = gold.Amount - goldCost;
+					// Store reduction info for message later
+					m_TrainingDeposits[from.Serial].ReducedSkills = reducedSkills;
+				}
+			}
+			// Scenario C: Within server skill cap - continue with normal training
 
 			// Validate against training limits
-			PlayerSkillTrainingData trainingData = GetPlayerTrainingData(from);
-			var maxTraining = CalculateMaxTrainingParameters(from, depositState.Skill, trainingData);
+			PlayerMobile pm = GetPlayerMobile(from);
+			if (pm == null)
+			{
+				this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false, "Erro: dados de treinamento não encontrados.");
+				from.AddToBackpack(gold);
+				m_TrainingDeposits.Remove(from.Serial);
+				return false;
+			}
+			var maxTraining = CalculateMaxTrainingParameters(from, depositState.Skill, pm);
 
 			if (pointsToTrain > maxTraining.MaxTrainablePoints)
 			{
@@ -3356,16 +3527,80 @@ namespace Server.Mobiles
 					gold.Amount, pointsToTrain, maxPointsPossible, maxGoldPossible));
 
 				// Return gold to player
-				gold.MoveToWorld(from.Location, from.Map);
+				from.AddToBackpack(gold);
 				return false;
 			}
 
-			// Apply training
-			from.Skills[depositState.Skill].Base += pointsToTrain;
+			// Check if player can train at least 0.1 points
+			if (pointsToTrain < 0.1)
+			{
+				// This should have been caught by minimum check, but just in case
+				from.AddToBackpack(gold);
+				return false;
+			}
 
-			// Cap at training limit
-			if (from.Skills[depositState.Skill].Base > TRAINING_SKILL_CAP)
-				from.Skills[depositState.Skill].Base = TRAINING_SKILL_CAP;
+			// Get the skill object
+			Skill skill = from.Skills[depositState.Skill];
+			if (skill == null)
+			{
+				from.AddToBackpack(gold);
+				return false;
+			}
+
+			// Check if skill is locked (cannot be raised)
+			if (skill.Lock == SkillLock.Locked)
+			{
+				this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+					string.Format("*risos* {0}, a habilidade {1} está bloqueada para o treinamento! Aqui está seu ouro de volta.",
+					from.Name, depositState.SkillName));
+				from.AddToBackpack(gold);
+				m_TrainingDeposits.Remove(from.Serial);
+				return false;
+			}
+
+			// Check if skill is already at or above training cap
+			double currentSkillBase = skill.Base;
+			if (currentSkillBase >= TRAINING_SKILL_CAP)
+			{
+				this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+					string.Format("Você já atingiu o máximo de conhecimento (skill cap: {0:F1} pontos). Talvez você precise esquecer alguma(s) habilidade(s)!",
+					TRAINING_SKILL_CAP));
+				from.AddToBackpack(gold);
+				m_TrainingDeposits.Remove(from.Serial);
+				return false;
+			}
+
+			// Check if training would exceed cap - adjust points to train
+			double newSkillBase = currentSkillBase + pointsToTrain;
+			if (newSkillBase > TRAINING_SKILL_CAP)
+			{
+				// Calculate how many points can actually be trained
+				double maxPointsPossible = TRAINING_SKILL_CAP - currentSkillBase;
+				
+				if (maxPointsPossible < 0.1)
+				{
+					// Too close to cap, can't train even 0.1 points
+					this.PublicOverheadMessage(MessageType.Regular, 0x3B2, false,
+						string.Format("O copo está muito próximo de transbordar (total de skill: {0:F1} pontos)! Talvez eu consiga te ensinar menos! Aqui está seu ouro de volta.",
+						TRAINING_SKILL_CAP));
+					from.AddToBackpack(gold);
+					m_TrainingDeposits.Remove(from.Serial);
+					return false;
+				}
+
+				// Recalculate increments and cost for the adjusted amount
+				int adjustedIncrements = (int)(maxPointsPossible * 10); // Convert to increments
+				pointsToTrain = adjustedIncrements * 0.1;
+				goldCost = adjustedIncrements * costPerIncrement;
+				change = gold.Amount - goldCost;
+			}
+
+			// Apply training
+			skill.Base += pointsToTrain;
+
+			// Ensure we don't exceed cap (safety check)
+			if (skill.Base > TRAINING_SKILL_CAP)
+				skill.Base = TRAINING_SKILL_CAP;
 
 			// Record training points for daily limits (ONLY for advanced tier)
 			if (depositState.Tier == TrainingTier.Advanced)
@@ -3373,16 +3608,60 @@ namespace Server.Mobiles
 				RecordTrainingPoints(from, depositState.Skill, pointsToTrain);
 			}
 
+			// Store original amount and reduced skills info for message before deleting
+			int originalAmount = gold.Amount;
+			List<Tuple<SkillName, double>> skillsReduced = depositState.ReducedSkills;
+
 			// Clear deposit state
 			m_TrainingDeposits.Remove(from.Serial);
 
-			// Success message
-			SayTo(from, string.Format(
-				"Você depositou {0} ouro e treinou {1:F1} pontos de {2}!",
-				gold.Amount, pointsToTrain, depositState.SkillName));
-
-			// Delete the gold
+			// Delete the gold that was used
 			gold.Delete();
+
+			// Build success message with reduction info if applicable
+			string successMessage;
+			if (skillsReduced != null && skillsReduced.Count > 0)
+			{
+				// Build reduction details
+				List<string> reductionDetails = new List<string>();
+				foreach (var reduction in skillsReduced)
+				{
+					string skillName = GetSkillDisplayName(reduction.Item1);
+					reductionDetails.Add(string.Format("{0} ({1:F1} pts)", skillName, reduction.Item2));
+				}
+				string reductionText = string.Join(", ", reductionDetails);
+
+				if (change > 0)
+				{
+					successMessage = string.Format(
+						"Você depositou {0} ouro, reduzi {1} para fazer espaço de treino, treinei {2:F1} pontos de {3} e devolvi {4} moedas de troco!",
+						originalAmount, reductionText, pointsToTrain, depositState.SkillName, change);
+				}
+				else
+				{
+					successMessage = string.Format(
+						"Você depositou {0} ouro, reduzi {1} para fazer espaço de treino e treinei {2:F1} pontos de {3}!",
+						originalAmount, reductionText, pointsToTrain, depositState.SkillName);
+				}
+			}
+			else
+			{
+				// No skills reduced
+				if (change > 0)
+				{
+					successMessage = string.Format(
+						"Você depositou {0} ouro, treinei {1:F1} pontos de {2} e devolvi {3} moedas de troco!",
+						originalAmount, pointsToTrain, depositState.SkillName, change);
+				}
+				else
+				{
+					successMessage = string.Format(
+						"Você depositou {0} ouro e treinou {1:F1} pontos de {2}!",
+						originalAmount, pointsToTrain, depositState.SkillName);
+				}
+			}
+
+			SayTo(from, successMessage);
 
 			return true;
 		}
@@ -3420,14 +3699,14 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Calculates maximum training parameters for a player and skill
 		/// </summary>
-		private TrainingCalculation CalculateMaxTrainingParameters(Mobile from, SkillName skill, PlayerSkillTrainingData trainingData)
+		private TrainingCalculation CalculateMaxTrainingParameters(Mobile from, SkillName skill, PlayerMobile pm)
 		{
 			var result = new TrainingCalculation();
 			double currentSkill = from.Skills[skill].Base;
 
 			if (currentSkill < BEGINNER_TIER_MAX)
 			{
-				// Beginner Tier (0-33.3): Can train up to 33.3 total, no daily limit
+				// Beginner Tier (0-35.0): Can train up to 35.0 total, no daily limit
 				double pointsToMax = BEGINNER_TIER_MAX - currentSkill;
 				result.MaxTrainablePoints = pointsToMax;
 				result.TotalCost = (int)(pointsToMax * 100); // 100 gold per 1.0 point (10 gold per 0.1 points)
@@ -3436,8 +3715,8 @@ namespace Server.Mobiles
 			}
 			else
 			{
-				// Advanced Tier (33.3+): Daily limit of 5.0 points
-				double remainingDailyPoints = GetRemainingDailyPoints(from, skill, trainingData);
+				// Advanced Tier (35.0+): Daily limit of 5.0 points
+				double remainingDailyPoints = GetRemainingDailyPoints(from, skill, pm);
 				double pointsToCap = TRAINING_SKILL_CAP - currentSkill;
 				result.MaxTrainablePoints = Math.Min(remainingDailyPoints, pointsToCap);
 				result.TotalCost = (int)(result.MaxTrainablePoints * 1000); // 1000 gold per 1.0 point (100 gold per 0.1 points)
@@ -3458,13 +3737,16 @@ namespace Server.Mobiles
 			if (tier != TrainingTier.Advanced)
 				return;
 
-			PlayerSkillTrainingData data = GetPlayerTrainingData(from);
-			data.LastTrainingDate = DateTime.Today;
+			PlayerMobile pm = GetPlayerMobile(from);
+			if (pm == null)
+				return;
 
-			if (!data.DailyPointsTrained.ContainsKey(skill))
-				data.DailyPointsTrained[skill] = 0;
+			pm.LastTrainingDate = DateTime.Today;
 
-			data.DailyPointsTrained[skill] += pointsTrained;
+			if (!pm.DailyPointsTrained.ContainsKey(skill))
+				pm.DailyPointsTrained[skill] = 0;
+
+			pm.DailyPointsTrained[skill] += pointsTrained;
 		}
 
 		/// <summary>
@@ -3475,8 +3757,13 @@ namespace Server.Mobiles
 			private BaseVendor m_Vendor;
 			private Mobile m_From;
 			private List<SkillName> m_TrainableSkills;
+			private int m_CurrentPage;
+			private int m_TotalPages;
+			private const int SKILLS_PER_PAGE = 8; // Number of skills to display per page
+			private const int START_Y = 115; // Starting Y position for skills
+			private const int SKILL_HEIGHT = 35; // Height per skill entry
 
-			public TrainingGump(BaseVendor vendor, Mobile from)
+			public TrainingGump(BaseVendor vendor, Mobile from, int page = 0)
 				: base(25, 25)
 			{
 				m_Vendor = vendor;
@@ -3489,51 +3776,129 @@ namespace Server.Mobiles
 				this.Dragable = true;
 				this.Resizable = false;
 
+				// Calculate pagination
+				m_TotalPages = (m_TrainableSkills.Count + SKILLS_PER_PAGE - 1) / SKILLS_PER_PAGE;
+				if (m_TotalPages == 0)
+					m_TotalPages = 1;
+
+				// Ensure page is within valid range (0-based internally, displayed as 1-based)
+				if (page < 0)
+					page = 0;
+				if (page >= m_TotalPages)
+					page = m_TotalPages - 1;
+
+				m_CurrentPage = page;
+
+				// Create only the current page (simpler and more reliable)
 				AddPage(0);
-				AddImage(0, 0, 155); // Background
-				AddImage(300, 0, 155);
-				AddImage(0, 300, 155);
-				AddImage(300, 300, 155);
+
+				// Background images
+				AddImage(0, 0, 155); // Background - top left
+				AddImage(300, 0, 155); // Background - top center (fills gap)
+				AddImage(350, 0, 155); // Background - top right
+				AddImage(0, 300, 155); // Background - bottom left
+				AddImage(300, 300, 155); // Background - bottom center (fills gap)
+				AddImage(350, 300, 155); // Background - bottom right
+				// Add dark overlay to center vertical area (300-350px)
+				AddImageTiled(300, 0, 50, 600, 2624); // Dark background tile for center area
 				AddImage(2, 2, 129); // Borders
-				AddImage(298, 2, 129);
+				AddImage(348, 2, 129);
 				AddImage(2, 298, 129);
-				AddImage(298, 298, 129);
+				AddImage(348, 298, 129);
 				AddImage(7, 8, 133); // Header
 				AddImage(218, 47, 132); // Divider
-				AddImage(380, 8, 134); // Button background
+				AddImage(430, 8, 134); // Button background
 
-				AddHtml(174, 68, 300, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>HABILIDADES DE TREINAMENTO</BIG></BASEFONT></BODY>", false, false);
+				AddHtml(174, 68, 350, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>HABILIDADES DE TREINAMENTO</BIG></BASEFONT></BODY>", false, false);
+				AddHtml(174, 90, 400, 40, @"<BODY><BASEFONT Color=#00FFFF><SMALL>* Limites para treinamento serão renovados todos os dias.</SMALL></BASEFONT></BODY>", false, false);
 
-				int y = 95;
-				int buttonIndex = 1;
+				// Calculate which skills to show on current page
+				int startIndex = m_CurrentPage * SKILLS_PER_PAGE;
+				int endIndex = Math.Min(startIndex + SKILLS_PER_PAGE, m_TrainableSkills.Count);
 
-				foreach (SkillName skill in m_TrainableSkills)
+				// Display skills for current page
+				int y = START_Y;
+
+				for (int i = startIndex; i < endIndex; i++)
 				{
-					if (y > 400) break; // Prevent gump from being too long
+					SkillName skill = m_TrainableSkills[i];
 
-					y += 35;
+					y += SKILL_HEIGHT;
 
 					string skillDisplayName = vendor.GetSkillDisplayName(skill);
 					string trainingInfo = vendor.GetSkillTrainingInfo(from, skill);
 
-					AddHtml(145, y, 425, 20,
+					AddHtml(145, y, 490, 20,
 						string.Format(@"<BODY><BASEFONT Color=#FCFF00><BIG>{0} {1}</BIG></BASEFONT></BODY>",
 							skillDisplayName, trainingInfo), false, false);
-					AddButton(105, y, 4005, 4005, buttonIndex, GumpButtonType.Reply, 0);
+					// Use skill index + 1 as button ID (1-based, avoids conflict with page navigation)
+					AddButton(105, y, 4005, 4005, i + 1, GumpButtonType.Reply, 0);
+				}
 
-					buttonIndex++;
+				// Add pagination buttons if needed
+				// Button IDs: 10000 = Previous, 20000 = Next
+				if (m_TotalPages > 1)
+				{
+					// Previous button - only show if NOT on first page (page 0)
+					if (m_CurrentPage > 0)
+					{
+						AddButton(200, 450, 4014, 4016, 10000, GumpButtonType.Reply, 0);
+						AddHtml(235, 452, 100, 20, @"<BODY><BASEFONT Color=#FFFFFF>Anterior</BASEFONT></BODY>", false, false);
+					}
+
+					// Page indicator (display as 1-based for user: page 0 = "Página 1")
+					AddHtml(300, 452, 100, 20, string.Format(@"<BODY><BASEFONT Color=#FFFFFF>Página {0}/{1}</BASEFONT></BODY>", m_CurrentPage + 1, m_TotalPages), false, false);
+
+					// Next button - only show if NOT on last page
+					if (m_CurrentPage < m_TotalPages - 1)
+					{
+						AddButton(400, 450, 4005, 4007, 20000, GumpButtonType.Reply, 0);
+						AddHtml(435, 452, 100, 20, @"<BODY><BASEFONT Color=#FFFFFF>Próxima</BASEFONT></BODY>", false, false);
+					}
 				}
 			}
 
 			public override void OnResponse(NetState sender, RelayInfo info)
 			{
-				if (info.ButtonID > 0 && info.ButtonID <= m_TrainableSkills.Count)
+				Mobile from = sender.Mobile;
+				int buttonID = info.ButtonID;
+				
+				// Handle page navigation
+				if (buttonID == 10000)
 				{
-					SkillName selectedSkill = m_TrainableSkills[info.ButtonID - 1];
-					string skillName = m_Vendor.GetSkillDisplayName(selectedSkill);
+					// Previous button clicked - go to previous page
+					int previousPage = m_CurrentPage - 1;
+					if (previousPage >= 0)
+					{
+						from.SendGump(new TrainingGump(m_Vendor, m_From, previousPage));
+					}
+					return;
+				}
+				else if (buttonID == 20000)
+				{
+					// Next button clicked - go to next page
+					int nextPage = m_CurrentPage + 1;
+					if (nextPage < m_TotalPages)
+					{
+						from.SendGump(new TrainingGump(m_Vendor, m_From, nextPage));
+					}
+					return;
+				}
+				
+				// Handle skill selection
+				// Button IDs are skill index + 1 (1-based, range 1 to m_TrainableSkills.Count)
+				if (buttonID > 0 && buttonID <= m_TrainableSkills.Count)
+				{
+					int skillIndex = buttonID - 1;
 
-					// Start training for selected skill
-					m_Vendor.TrainSkill(m_From, selectedSkill, skillName);
+					if (skillIndex >= 0 && skillIndex < m_TrainableSkills.Count)
+					{
+						SkillName selectedSkill = m_TrainableSkills[skillIndex];
+						string skillName = m_Vendor.GetSkillDisplayName(selectedSkill);
+
+						// Start training for selected skill
+						m_Vendor.TrainSkill(m_From, selectedSkill, skillName);
+					}
 				}
 			}
 		}
@@ -3547,53 +3912,61 @@ namespace Server.Mobiles
 
 			if (currentSkill >= TRAINING_SKILL_CAP)
 			{
-				return "(Limite atingido)";
+				return "<BASEFONT Color=#FFFFFF>(Limite máx. - Não há como treinar aqui.)</BASEFONT>";
 			}
 
 			TrainingTier tier = GetTrainingTier(from, skill);
 
 			if (tier == TrainingTier.Beginner)
 			{
-				// Beginner tier: can train up to 33.3 total
+				// Beginner tier: can train up to 35.0 total
 				// If skill is very low (less than 0.05), treat as 0 for display purposes
 				double effectiveCurrentSkill = currentSkill < 0.05 ? 0.0 : currentSkill;
 				double maxPoints = BEGINNER_TIER_MAX - effectiveCurrentSkill;
 				int maxGold = (int)(maxPoints * 100); // 100 gold per 1.0 point (10 gold per 0.1 points)
-				return string.Format("(até {0:F1} pts por {1} ouro)", maxPoints, maxGold);
+				return string.Format("({0:F1} pts por {1} moedas de ouro) <BASEFONT Color=#00FFFF>- Iniciante</BASEFONT>", maxPoints, maxGold);
 			}
 			else
 			{
 				// Advanced tier: daily limit of 5.0 points
-				double remainingPoints = GetRemainingDailyPoints(from, skill, GetPlayerTrainingData(from));
+				PlayerMobile pm = GetPlayerMobile(from);
+				if (pm == null)
+					return "<BASEFONT Color=#FFFFFF>(Limite máx. - Não há como treinar aqui.)</BASEFONT>";
+
+				double remainingPoints = GetRemainingDailyPoints(from, skill, pm);
 				if (remainingPoints <= 0)
 				{
-					return "(Limite diário atingido)";
+					return "<BASEFONT Color=#FF0000>(Limite diário atingido - volte amanhã!)</BASEFONT>";
 				}
 
 				int maxGold = (int)(remainingPoints * 1000); // 1000 gold per 1.0 point (100 gold per 0.1 points)
-				return string.Format("(até {0:F1} pts por {1} ouro hoje)", remainingPoints, maxGold);
+				return string.Format("(até {0:F1} pts por {1} moedas de ouro) <BASEFONT Color=#00FFFF>- Avançado</BASEFONT>", remainingPoints, maxGold);
 			}
 		}
 
 		/// <summary>
 		/// Gets remaining daily points for advanced tier training
 		/// </summary>
-		private double GetRemainingDailyPoints(Mobile from, SkillName skill, PlayerSkillTrainingData trainingData)
+		private double GetRemainingDailyPoints(Mobile from, SkillName skill, PlayerMobile pm)
 		{
 			// Only apply daily limits for advanced tier
 			TrainingTier tier = GetTrainingTier(from, skill);
 			if (tier != TrainingTier.Advanced)
 				return double.MaxValue; // Unlimited for beginner tier
 
-			// Reset daily counter if it's a new day
-			if (trainingData.LastTrainingDate.Date < DateTime.Today)
+			if (pm == null)
+				return 0;
+
+			// Reset daily counter only if it's a new day (midnight reset)
+			// Only reset if LastTrainingDate is not MinValue (has been set before) AND date has changed
+			if (pm.LastTrainingDate != DateTime.MinValue && pm.LastTrainingDate.Date < DateTime.Today)
 			{
-				trainingData.LastTrainingDate = DateTime.Today;
-				trainingData.DailyPointsTrained.Clear();
+				pm.LastTrainingDate = DateTime.Today;
+				pm.DailyPointsTrained.Clear();
 			}
 
 			double pointsTrainedToday;
-			if (!trainingData.DailyPointsTrained.TryGetValue(skill, out pointsTrainedToday))
+			if (!pm.DailyPointsTrained.TryGetValue(skill, out pointsTrainedToday))
 			{
 				pointsTrainedToday = 0;
 			}

@@ -674,7 +674,7 @@ namespace Server.Mobiles
 		public const int CONTEXT_MENU_RANGE_BUY_SELL = 8;
 
 		/// <summary>Context menu ID for training</summary>
-		public const int CONTEXT_MENU_TRAINING = 6127;
+		public const int CONTEXT_MENU_TRAINING = 1044297;
 
 		/// <summary>Context menu range for training</summary>
 		public const int CONTEXT_MENU_RANGE_TRAINING = 12;

@@ -28,6 +28,7 @@ namespace Server.Mobiles
 		// Costs
 		private const int STABLE_COST_PER_PET = 250;
 		private const int FIND_FOLLOWERS_COST = 1000;
+		private const int TICKET_COST = 250;
 
 		// Ranges
 		private const int SPEECH_RANGE = 4;
@@ -164,6 +165,16 @@ namespace Server.Mobiles
 		private const string MSG_NO_FUNDS_BACKPACK = "Mas você não tem o ouro na sua mochila!";
 		private const string MSG_NO_GOLD_BACKPACK = "Você não tem ouro suficiente na sua mochila.";
 		private const string MSG_TOO_FAR_AWAY = "Isso está muito longe.";
+
+		// Ticket Messages (PT-BR)
+		private const string MSG_TICKET_WHICH_ANIMAL = "Qual animal você gostaria de criar um ticket?";
+		private const string MSG_TICKET_NO_GOLD = "Você não tem ouro suficiente na sua mochila! (250 moedas necessárias)";
+		private const string MSG_TICKET_NOT_TAMABLE = "Apenas animais domados podem ser convertidos em ticket!";
+		private const string MSG_TICKET_SUMMONED = "Criaturas invocadas não podem ser convertidas em ticket!";
+		private const string MSG_TICKET_NOT_OWNER = "Você não é o dono desse animal!";
+		private const string MSG_TICKET_NOT_ALIVE = "Apenas animais vivos podem ser convertidos em ticket!";
+		private const string MSG_TICKET_SUCCESS = "Ticket criado com sucesso! O ticket expira em 15 dias.";
+		private const string MSG_TICKET_EXPIRED = "Este ticket expirou e não pode mais ser usado.";
 
 
 		#endregion
@@ -355,6 +366,12 @@ namespace Server.Mobiles
 				AddImage(269, 342, GUMP_IMAGE_BOTTOM);
 				AddHtml( GUMP_HEADER_X, GUMP_HEADER_Y, GUMP_HEADER_WIDTH, GUMP_HEADER_HEIGHT, GUMP_HTML_HEADER, (bool)false, (bool)false);
 
+				// Add pet count label (current/max)
+				int currentPets = m_From.Stabled.Count;
+				int maxPets = GetMaxStabled(m_From);
+				string petCountLabel = string.Format("<BODY><BASEFONT Color=#00FFFF><SMALL>TOTAL:{0}/{1}</SMALL></BASEFONT></BODY>", currentPets, maxPets);
+				AddHtml( GUMP_HEADER_X, GUMP_HEADER_Y + 25, GUMP_HEADER_WIDTH, 20, petCountLabel, (bool)false, (bool)false);
+
 				int y = 95;
 
 				for ( int i = 0; i < list.Count; ++i )
@@ -543,6 +560,26 @@ namespace Server.Mobiles
 					m_Trainer.SayTo( from, MSG_STABLE_ERROR_HUMAN );
 				else
 					m_Trainer.SayTo( from, MSG_STABLE_ERROR_NOT_CONTROLLED );
+			}
+		}
+
+		private class TicketTarget : Target
+		{
+			private AnimalTrainer m_Trainer;
+
+			public TicketTarget( AnimalTrainer trainer ) : base( CONTEXT_MENU_RANGE, false, TargetFlags.None )
+			{
+				m_Trainer = trainer;
+			}
+
+			protected override void OnTarget( Mobile from, object targeted )
+			{
+				if ( targeted is BaseCreature )
+					m_Trainer.EndCreateTicket( from, (BaseCreature)targeted );
+				else if ( targeted == from )
+					m_Trainer.SayTo( from, MSG_STABLE_ERROR_HUMAN );
+				else
+					m_Trainer.SayTo( from, MSG_TICKET_NOT_TAMABLE );
 			}
 		}
 		
@@ -831,7 +868,7 @@ namespace Server.Mobiles
 			}
 			else
 			{
-				SayTo( from, "Eu cobro 250 moedas de ouro por animal para uma semana de estábulo. Vou retirar do seu banco. Qual animal você gostaria de estabular aqui?" );
+				SayTo( from, "Eu cobro 250 moedas de ouro por animal para uma semana de estábulo. Qual animal você gostaria de guardar aqui?" );
 
 				from.Target = new StableTarget( this );
 			}
@@ -1099,6 +1136,27 @@ namespace Server.Mobiles
 			}
 		}
 
+		/// <summary>
+		/// Context menu entry for creating a pet ticket
+		/// </summary>
+		public class TicketEntry : ContextMenuEntry
+		{
+			private AnimalTrainer m_Trainer;
+			private Mobile m_From;
+
+			public TicketEntry( AnimalTrainer trainer, Mobile from ) : base( 3006097, 12 )
+			{
+				m_Trainer = trainer;
+				m_From = from;
+			}
+
+			public override void OnClick()
+			{
+				m_Trainer.CloseClaimList( m_From );
+				m_Trainer.BeginCreateTicket( m_From );
+			}
+		}
+
 
 
 
@@ -1171,6 +1229,7 @@ namespace Server.Mobiles
 						list.Add( new ClaimAllEntry( this, from ) );
 				}
 
+				list.Add( new TicketEntry( this, from ) );
 				list.Add( new SpeechGumpEntryAnimals( from, this ) ); 
             	//list.Add( new RidingGumpEntry( from, this ) );
 
@@ -1191,7 +1250,7 @@ namespace Server.Mobiles
 		{
 			if( e.Mobile.InRange( this, SPEECH_RANGE ) && !e.Handled )
 			{
-				if ( HandleStableCommand( e ) || HandleClaimCommand( e ) || HandleFindCommand( e ) || HandleTrainCommand( e ) )
+				if ( HandleStableCommand( e ) || HandleClaimCommand( e ) || HandleFindCommand( e ) || HandleTrainCommand( e ) || HandleTicketCommand( e ) )
 					return;
 				}
 
@@ -1286,6 +1345,19 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
+		/// Handles the ticket speech command
+		/// </summary>
+		private bool HandleTicketCommand( SpeechEventArgs e )
+		{
+			if ( !Insensitive.Contains( e.Speech, "ticket" ) )
+				return false;
+
+			e.Handled = true;
+			BeginCreateTicket( e.Mobile );
+			return true;
+		}
+
+		/// <summary>
 		/// Handles the "comandos" speech command for AnimalTrainer specific commands
 		/// </summary>
 		protected override bool HandleComandosCommand(SpeechEventArgs e)
@@ -1309,6 +1381,7 @@ namespace Server.Mobiles
 			commands.Append("- \"Retirar [nome]\" : Retira animal específico por nome\n");
 			commands.Append("- \"Buscar\" / \"Procurar\" / \"Find\" / \"Fetch\" : Busca animais perdidos\n");
 			commands.Append("- \"Treinar\" / \"Train\" : Treina habilidades de animais\n");
+			commands.Append("- \"Ticket\" : Cria um ticket de um animal domado (250 moedas de ouro, expira em 15 dias)\n");
 
 			e.Mobile.SendMessage(0x5A, commands.ToString().TrimEnd());
 			return true;
@@ -1374,6 +1447,95 @@ namespace Server.Mobiles
 			}
 
 			from.SendMessage( string.Format( "Seu animal {0} foi encontrado e trazido até você.", pet.Name ) );
+		}
+
+		/// <summary>
+		/// Initiates the ticket creation process by prompting the player to select a pet
+		/// </summary>
+		/// <param name="from">The player wanting to create a ticket</param>
+		public void BeginCreateTicket( Mobile from )
+		{
+			if ( Deleted || !from.CheckAlive() )
+				return;
+
+			if ( !HasEnoughGold( from, TICKET_COST ) )
+			{
+				SayTo( from, MSG_TICKET_NO_GOLD );
+			}
+			else
+			{
+				SayTo( from, MSG_TICKET_WHICH_ANIMAL );
+				from.Target = new TicketTarget( this );
+			}
+		}
+
+		/// <summary>
+		/// Processes the creation of a ticket from a specific pet
+		/// </summary>
+		/// <param name="from">The player creating the ticket</param>
+		/// <param name="pet">The pet being converted to a ticket</param>
+		public void EndCreateTicket( Mobile from, BaseCreature pet )
+		{
+			if ( Deleted || !from.CheckAlive() )
+				return;
+
+			string errorMessage = ValidatePetForTicket( from, pet );
+			if ( errorMessage != null )
+			{
+				SayTo( from, errorMessage );
+				return;
+			}
+
+			if ( !ConsumeGold( from, TICKET_COST ) )
+			{
+				SayTo( from, MSG_NO_FUNDS_BACKPACK );
+				return;
+			}
+
+			// Create the ticket
+			Server.Items.PetTicket ticket = new Server.Items.PetTicket( pet );
+			
+			// Add to player's backpack
+			if ( from.Backpack != null )
+			{
+				from.Backpack.DropItem( ticket );
+			}
+			else
+			{
+				ticket.MoveToWorld( from.Location, from.Map );
+			}
+
+			// Delete the original creature
+			pet.Delete();
+
+			SayTo( from, MSG_TICKET_SUCCESS );
+		}
+
+		/// <summary>
+		/// Validates if a pet can be converted to a ticket
+		/// </summary>
+		/// <returns>Error message if validation fails, null if valid</returns>
+		private string ValidatePetForTicket( Mobile from, BaseCreature pet )
+		{
+			if ( pet == null || pet.Deleted )
+				return MSG_TICKET_NOT_TAMABLE;
+
+			if ( pet.Body.IsHuman )
+				return MSG_STABLE_ERROR_HUMAN;
+
+			if ( !pet.Controlled )
+				return MSG_TICKET_NOT_TAMABLE;
+
+			if ( pet.ControlMaster != from )
+				return MSG_TICKET_NOT_OWNER;
+
+			if ( pet.IsDeadPet || !pet.Alive )
+				return MSG_TICKET_NOT_ALIVE;
+
+			if ( pet.Summoned )
+				return MSG_TICKET_SUMMONED;
+
+			return null;
 		}
 
 		public AnimalTrainer( Serial serial ) : base( serial )

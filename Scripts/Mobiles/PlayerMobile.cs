@@ -5218,7 +5218,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			base.Serialize( writer );
 
-			writer.Write( (int) 47 ); // 47 added lastlogout
+			writer.Write( (int) 48 ); // 48 added skill training data
 
 			writer.Write( (DateTime)m_LastLogout);
 
@@ -5364,6 +5364,17 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			writer.Write( this.GameTime );
 			
 			writer.Write( m_BalanceStatus );
+
+			// Version 48: Skill training data
+			if (m_DailyPointsTrained == null)
+				m_DailyPointsTrained = new Dictionary<SkillName, double>();
+			writer.Write( (DateTime)m_LastTrainingDate );
+			writer.Write( m_DailyPointsTrained.Count );
+			foreach (KeyValuePair<SkillName, double> kvp in m_DailyPointsTrained)
+			{
+				writer.Write( (int)kvp.Key );
+				writer.Write( (double)kvp.Value );
+			}
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -5373,6 +5384,8 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			switch ( version )
 			{
+				case 48:
+					goto case 47;
 				case 47:
 					m_LastLogout = reader.ReadDateTime();
 					goto case 46;
@@ -5659,6 +5672,21 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				}
 			
 
+			}
+
+			// Version 48: Skill training data (read at end, after all other data)
+			if (version >= 48)
+			{
+				if (m_DailyPointsTrained == null)
+					m_DailyPointsTrained = new Dictionary<SkillName, double>();
+				m_LastTrainingDate = reader.ReadDateTime();
+				int trainingCount = reader.ReadInt();
+				for (int i = 0; i < trainingCount; i++)
+				{
+					SkillName skill = (SkillName)reader.ReadInt();
+					double points = reader.ReadDouble();
+					m_DailyPointsTrained[skill] = points;
+				}
 			}
 
 			if (m_SongEffects == null) 
@@ -6471,6 +6499,48 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 		public bool HonorActive{ get{ return m_HonorActive; } set{ m_HonorActive = value; } }
 		public HonorContext ReceivedHonorContext{ get{ return m_ReceivedHonorContext; } set{ m_ReceivedHonorContext = value; } }
 		public HonorContext SentHonorContext{ get{ return m_SentHonorContext; } set{ m_SentHonorContext = value; } }
+		#endregion
+
+		#region Skill Training System
+		private DateTime m_LastTrainingDate;
+		private Dictionary<SkillName, double> m_DailyPointsTrained;
+
+		[CommandProperty( AccessLevel.GameMaster )]
+		public DateTime LastTrainingDate
+		{
+			get { return m_LastTrainingDate; }
+			set { m_LastTrainingDate = value; }
+		}
+
+		public Dictionary<SkillName, double> DailyPointsTrained
+		{
+			get
+			{
+				if (m_DailyPointsTrained == null)
+					m_DailyPointsTrained = new Dictionary<SkillName, double>();
+				return m_DailyPointsTrained;
+			}
+			set { m_DailyPointsTrained = value; }
+		}
+
+		[CommandProperty( AccessLevel.GameMaster )]
+		public string DailyPointsTrainedDisplay
+		{
+			get
+			{
+				if (m_DailyPointsTrained == null || m_DailyPointsTrained.Count == 0)
+					return "None";
+
+				System.Text.StringBuilder sb = new System.Text.StringBuilder();
+				foreach (KeyValuePair<SkillName, double> kvp in m_DailyPointsTrained)
+				{
+					if (sb.Length > 0)
+						sb.Append(", ");
+					sb.AppendFormat("{0}: {1:F1}", kvp.Key, kvp.Value);
+				}
+				return sb.ToString();
+			}
+		}
 		#endregion
 
 		#region Young system
