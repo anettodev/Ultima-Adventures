@@ -1,129 +1,236 @@
-//#01 ordre alphab�tique
-
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Server;
 using Server.Gumps;
-using Server.Multis;
-using Server.Prompts;
 using Server.Mobiles;
-using Server.ContextMenus;
+using Server.Network;
 
 namespace Server.Items
 {
+	/// <summary>
+	/// Taming BOD Book - Item that stores Taming Bulk Order Deeds.
+	/// Can hold up to 20 deeds and displays them in a gump interface.
+	/// Entries are automatically sorted alphabetically when added.
+	/// </summary>
 	public class TamingBODBook : Item
-	{		
-		private ArrayList m_Entries;
+	{
+		#region Fields
 
-		public ArrayList Entries
+		private List<TamingBODEntry> m_Entries;
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the list of entries in the book.
+		/// </summary>
+		public List<TamingBODEntry> Entries
 		{
-			get{ return m_Entries; }
+			get { return m_Entries; }
 		}
 
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the TamingBODBook class.
+		/// </summary>
 		[Constructable]
-		public TamingBODBook() : base( 0x2259 )
+		public TamingBODBook() : base(TamingBODBookConstants.ITEM_ID)
 		{
-			Weight = 1.0;
-			Hue = 1204;
-			Name= "Taming BOD Book";
-			m_Entries = new ArrayList();
+			Weight = TamingBODBookConstants.WEIGHT;
+			Hue = TamingBODBookConstants.HUE;
+			Name = TamingBODBookStringConstants.ITEM_NAME;
+			m_Entries = new List<TamingBODEntry>();
 		}
 
-		public override void OnDoubleClick( Mobile from )
+		/// <summary>
+		/// Deserialization constructor.
+		/// </summary>
+		public TamingBODBook(Serial serial) : base(serial)
 		{
-			if ( !from.InRange( GetWorldLocation(), 2 ) )
-				from.LocalOverheadMessage( Network.MessageType.Regular, 0x3B2, 1019045 ); // I can't reach that.
-			else if ( m_Entries.Count == 0 )
-				from.SendLocalizedMessage( 1062381 ); // The book is empty.
-			else if ( from is PlayerMobile )
-				from.SendGump( new TamingBODBookGump( (PlayerMobile)from, this ) );
 		}
 
-		public override bool OnDragDrop( Mobile from, Item dropped )
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the TamingBODBook.
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			if ( dropped is TamingBOD )
+			base.Serialize(writer);
+
+			writer.Write((int)TamingBODBookConstants.SERIALIZATION_VERSION);
+
+			writer.WriteEncodedInt((int)m_Entries.Count);
+
+			for (int i = 0; i < m_Entries.Count; ++i)
 			{
-				TamingBOD MC = dropped as TamingBOD;
-				if ( !IsChildOf( from.Backpack ) )
+				TamingBODEntry entry = m_Entries[i];
+				if (entry != null)
 				{
-					from.SendLocalizedMessage( 1062385 ); // You must have the book in your backpack to add deeds to it.
-					return false;
+					entry.Serialize(writer);
 				}
-				else if ( m_Entries.Count < 20 )
-				{
-					m_Entries.Add( new TamingBODEntry( MC.AmountTamed, MC.AmountToTame, MC.Reward ) );
-					
-					m_Entries.Sort();//#01
-					
-					InvalidateProperties();
-
-					from.SendLocalizedMessage( 1062386 ); // Deed added to book.
-
-					if ( from is PlayerMobile )
-						from.SendGump( new TamingBODBookGump( (PlayerMobile)from, this ) );
-
-					dropped.Delete();
-					return true;
-				}
-				else
-				{
-					from.SendLocalizedMessage( 1062387 ); // The book is full of deeds.
-					return false;
-				}
-			}
-
-			from.SendMessage( "This is not a valid contract.");
-			return false;
-		}
-
-		public TamingBODBook( Serial serial ) : base( serial )
-		{
-		}
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-
-			writer.Write( (int) 0 ); // version
-
-			writer.WriteEncodedInt( (int) m_Entries.Count );
-
-			for ( int i = 0; i < m_Entries.Count; ++i )
-			{
-				TamingBODEntry obj = m_Entries[i] as TamingBODEntry;
-				
-				if( obj != null )
-					obj.Serialize( writer );
 			}
 		}
 
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the TamingBODBook.
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
+			base.Deserialize(reader);
 
 			int version = reader.ReadInt();
 
-			switch ( version )
+			switch (version)
 			{
 				case 0:
 				{
 					int count = reader.ReadEncodedInt();
 
-					m_Entries = new ArrayList( count );
+					m_Entries = new List<TamingBODEntry>(count);
 
-					for ( int i = 0; i < count; ++i )
-						m_Entries.Add( new TamingBODEntry( reader ) );
+					for (int i = 0; i < count; ++i)
+					{
+						m_Entries.Add(new TamingBODEntry(reader));
+					}
 					break;
 				}
 			}
 		}
 
-		public override void GetProperties( ObjectPropertyList list )
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles double-click to display the book's gump interface.
+		/// </summary>
+		/// <param name="from">The player using the book</param>
+		public override void OnDoubleClick(Mobile from)
 		{
-			base.GetProperties( list );
+			if (!from.InRange(GetWorldLocation(), TamingBODBookConstants.RANGE_CHECK_DISTANCE))
+			{
+				from.LocalOverheadMessage(MessageType.Regular, TamingBODBookConstants.MESSAGE_COLOR, TamingBODBookConstants.MSG_CANT_REACH);
+				return;
+			}
 
-			list.Add( 1062344, m_Entries.Count.ToString() ); // Deeds in book: ~1_val~
+			if (m_Entries.Count == 0)
+			{
+				from.SendLocalizedMessage(TamingBODBookConstants.MSG_BOOK_EMPTY);
+				return;
+			}
 
+			DisplayGump(from);
 		}
+
+		/// <summary>
+		/// Handles drag and drop of TamingBOD items into the book.
+		/// </summary>
+		/// <param name="from">The player dropping the item</param>
+		/// <param name="dropped">The item being dropped</param>
+		/// <returns>True if the item was successfully added, false otherwise</returns>
+		public override bool OnDragDrop(Mobile from, Item dropped)
+		{
+			TamingBOD bod = dropped as TamingBOD;
+			if (bod == null)
+			{
+				from.SendMessage(TamingBODBookStringConstants.MSG_INVALID_CONTRACT);
+				return false;
+			}
+
+			if (!ValidateBookInBackpack(from))
+				return false;
+
+			if (!CanAddEntry())
+			{
+				from.SendLocalizedMessage(TamingBODBookConstants.MSG_BOOK_FULL);
+				return false;
+			}
+
+			AddEntryToBook(bod, from);
+			return true;
+		}
+
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Validates that the book is in the player's backpack.
+		/// </summary>
+		/// <param name="from">The player to validate</param>
+		/// <returns>True if valid, false otherwise</returns>
+		private bool ValidateBookInBackpack(Mobile from)
+		{
+			if (!IsChildOf(from.Backpack))
+			{
+				from.SendLocalizedMessage(TamingBODBookConstants.MSG_MUST_BE_IN_BACKPACK);
+				return false;
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Checks if a new entry can be added to the book.
+		/// </summary>
+		/// <returns>True if the book has space, false if it's full</returns>
+		private bool CanAddEntry()
+		{
+			return m_Entries.Count < TamingBODBookConstants.MAX_ENTRIES;
+		}
+
+		/// <summary>
+		/// Adds a TamingBOD entry to the book and updates the display.
+		/// </summary>
+		/// <param name="bod">The TamingBOD being added</param>
+		/// <param name="from">The player adding the entry</param>
+		private void AddEntryToBook(TamingBOD bod, Mobile from)
+		{
+			// Use the new constructor that accepts TamingBOD to preserve tier and creature type
+			m_Entries.Add(new TamingBODEntry(bod));
+			m_Entries.Sort(); // Sort alphabetically
+			InvalidateProperties();
+
+			from.SendLocalizedMessage(TamingBODBookConstants.MSG_DEED_ADDED);
+			DisplayGump(from);
+			bod.Delete();
+		}
+
+		/// <summary>
+		/// Displays the book's gump interface to the player.
+		/// </summary>
+		/// <param name="from">The player to display the gump to</param>
+		private void DisplayGump(Mobile from)
+		{
+			PlayerMobile player = from as PlayerMobile;
+			if (player != null)
+			{
+				player.SendGump(new TamingBODBookGump(player, this));
+			}
+		}
+
+		#endregion
+
+		#region Property Display
+
+		/// <summary>
+		/// Adds properties to the object property list.
+		/// </summary>
+		/// <param name="list">The property list to add to</param>
+		public override void GetProperties(ObjectPropertyList list)
+		{
+			base.GetProperties(list);
+
+			list.Add(TamingBODBookStringConstants.CONTRACT_TYPE);
+			list.Add(TamingBODBookConstants.MSG_DEEDS_IN_BOOK, m_Entries.Count.ToString());
+		}
+
+		#endregion
 	}
 }

@@ -35,6 +35,7 @@ namespace Server.Mobiles
 		private const int CLAIM_RANGE = 14;
 		private const int COMBATANT_RANGE = 12;
 		private const int CONTEXT_MENU_RANGE = 12;
+		private const int APPRAISE_RANGE = 12;
 
 		// Skill Thresholds (Animal Taming + Animal Lore sum)
 		private const double SKILL_SUM_LEVEL_7 = 240.0; // Max stabled: 8 (CAP - 120+120 skills)
@@ -115,6 +116,8 @@ namespace Server.Mobiles
 
 		// Property Values
 		private const string NPC_TITLE = "o treinador de animais";
+		private const string NPC_TITLE_SPECIAL = "o Domador de Feras";
+		private const double SPECIAL_SPAWN_CHANCE = 0.20; // 20% chance to be special variant
 		private const string GUMP_TITLE_ANIMAL_COMPANIONS = "Companheiros Animais";
 		private const string SPEECH_CATEGORY_PETS = "Animais de Estimação";
 		private const string PET_LANGUAGE_MOUNT = "montaria";
@@ -175,6 +178,22 @@ namespace Server.Mobiles
 		private const string MSG_TICKET_NOT_ALIVE = "Apenas animais vivos podem ser convertidos em ticket!";
 		private const string MSG_TICKET_SUCCESS = "Ticket criado com sucesso! O ticket expira em 15 dias.";
 		private const string MSG_TICKET_EXPIRED = "Este ticket expirou e não pode mais ser usado.";
+
+		// Appraise Messages (PT-BR)
+		private const string MSG_APPRAISE_WHICH_ANIMAL = "Qual animal você gostaria de avaliar?";
+		private const string MSG_APPRAISE_NOT_CONTROLLED = "Você não pode avaliar isso!";
+		private const string MSG_APPRAISE_NOT_OWNER = "Você não é o dono desse animal de estimação!";
+		private const string MSG_APPRAISE_DEAD_PET = "Apenas animais vivos, por favor.";
+		private const string MSG_APPRAISE_SUMMONED = "Eu não posso avaliar criaturas invocadas.";
+		private const string MSG_APPRAISE_HUMAN = "HA HA HA! Desculpe, eu não sou um traficante de humanos.";
+
+		// Pet Sale Messages (PT-BR)
+		private const string MSG_SALE_DECLINED = "Que pena! Se mudar de ideia, estarei aqui.";
+		private const string MSG_SALE_SUCCESS_LOW = "Tenho muitos {0}, então vou te dar {1} moedas de ouro.";
+		private const string MSG_SALE_SUCCESS_MEDIUM = "Obrigado {0}, vou adicionar este {1} à minha coleção! Aqui estão {2} moedas pelos seus problemas.";
+		private const string MSG_SALE_SUCCESS_RARE = "Que achado raro!!! Obrigado pelo {0}, vale {1} para o comprador certo..";
+		private const string MSG_SALE_SUCCESS_VERY_RARE = "Que espécime incrível! Vou te pagar {0} por ele!";
+		private const string MSG_SALE_SUCCESS_ULTRA_RARE = "Vou pagar {0}! Sempre quis um destes!!!";
 
 
 		#endregion
@@ -263,6 +282,18 @@ namespace Server.Mobiles
 
 		#endregion
 
+		#region Fields and Properties
+
+		private bool m_IsSpecialTrainer = false;
+
+		/// <summary>
+		/// Gets whether this AnimalTrainer is a special variant ("Domador de Feras")
+		/// Used to determine special buy/sell lists and behavior
+		/// </summary>
+		public bool IsSpecialTrainer { get { return m_IsSpecialTrainer; } }
+
+		#endregion
+
 		private List<SBInfo> m_SBInfos = new List<SBInfo>();
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
@@ -270,10 +301,18 @@ namespace Server.Mobiles
 
 		/// <summary>
 		/// Constructs a new AnimalTrainer NPC with default skills and properties
+		/// 80% chance to be regular "o treinador de animais", 20% chance to be special "Domador de Feras"
 		/// </summary>
 		[Constructable]
 		public AnimalTrainer() : base( NPC_TITLE )
 		{
+			// Determine if this is a special variant (20% chance)
+			if ( Utility.RandomDouble() < SPECIAL_SPAWN_CHANCE )
+			{
+				m_IsSpecialTrainer = true;
+				Title = NPC_TITLE_SPECIAL;
+			}
+
 			Job = JobFragment.animal;
 			Karma = Utility.RandomMinMax( KARMA_MIN, KARMA_MAX );
 			SetSkill( SkillName.AnimalLore, SKILL_ANIMAL_LORE_MIN, SKILL_ANIMAL_LORE_MAX );
@@ -283,6 +322,7 @@ namespace Server.Mobiles
 
 		/// <summary>
 		/// Initializes the vendor's buy/sell information based on the current world region
+		/// Special variant will have additional buy/sell lists (to be defined in StoreSalesList.cs)
 		/// </summary>
 		public override void InitSBInfo()
 		{
@@ -307,7 +347,14 @@ namespace Server.Mobiles
 				m_SBInfos.Add( new SBHumanAnimalTrainer() );
 			}
 			m_SBInfos.Add( new SBAnimalTrainer() ); 
-			m_SBInfos.Add( new SBBuyArtifacts() ); 
+			m_SBInfos.Add( new SBBuyArtifacts() );
+
+			// Add special buy/sell lists for special variant (to be defined in StoreSalesList.cs)
+			if ( m_IsSpecialTrainer )
+			{
+				// TODO: Add SBSpecialAnimalTrainer when defined in StoreSalesList.cs
+				// m_SBInfos.Add( new SBSpecialAnimalTrainer() );
+			}
 		}
 
 		public override VendorShoeType ShoeType
@@ -324,7 +371,32 @@ namespace Server.Mobiles
 		{
 			base.InitOutfit();
 
-			AddItem( Utility.RandomBool() ? (Item)new QuarterStaff() : (Item)new ShepherdsCrook() );
+			if ( m_IsSpecialTrainer )
+			{
+				// Special variant uses different clothing/equipment
+				// More rugged/wild appearance for "Domador de Feras"
+				AddItem( new Robe( Utility.RandomList( 0x455, 0x4B6, 0x4B7 ) ) ); // Darker robe colors
+				AddItem( Utility.RandomBool() ? (Item)new WarHammer() : (Item)new Bardiche() );
+				
+				// Add one of three random hats
+				switch ( Utility.Random( 3 ) )
+				{
+					case 0:
+						AddItem( new TallStrawHat() );
+						break;
+					case 1:
+						AddItem( new StrawHat() );
+						break;
+					case 2:
+						AddItem( new WideBrimHat() );
+						break;
+				}
+			}
+			else
+			{
+				// Regular variant uses standard equipment
+				AddItem( Utility.RandomBool() ? (Item)new QuarterStaff() : (Item)new ShepherdsCrook() );
+			}
 		}
 
 
@@ -495,6 +567,69 @@ namespace Server.Mobiles
 			}
 		}
 
+		private class SellPetConfirmationGump : Gump
+		{
+			private AnimalTrainer m_Trainer;
+			private Mobile m_From;
+			private BaseCreature m_Pet;
+			private int m_Price;
+
+			public SellPetConfirmationGump( AnimalTrainer trainer, Mobile from, BaseCreature pet, int price ) : base( 200, 200 )
+			{
+				m_Trainer = trainer;
+				m_From = from;
+				m_Pet = pet;
+				m_Price = price;
+
+				from.CloseGump( typeof( SellPetConfirmationGump ) );
+
+				this.Closable = true;
+				this.Disposable = true;
+				this.Dragable = true;
+				this.Resizable = false;
+
+				AddPage( 0 );
+				AddBackground( 0, 0, 300, 200, 5054 );
+				AddImageTiled( 10, 10, 280, 20, 2624 );
+				AddImageTiled( 10, 40, 280, 140, 2624 );
+				AddAlphaRegion( 10, 10, 280, 170 );
+
+				AddHtml( 20, 15, 260, 20, @"<CENTER><BASEFONT COLOR=#00FFFF><B>Vender Animal</B></BASEFONT></CENTER>", false, false );
+
+				string petName = m_Pet != null && !m_Pet.Deleted ? m_Pet.Name : "Animal";
+				string message = string.Format( "Eu posso pagar <BASEFONT COLOR=#FFFF00>{0} moedas de ouro</BASEFONT> por este {1}.<BR><BR>Deseja vender?", m_Price, petName );
+				AddHtml( 20, 45, 260, 100, message, true, true );
+
+				AddButton( 50, 155, 4005, 4007, 1, GumpButtonType.Reply, 0 ); // YES
+				AddHtml( 85, 157, 50, 20, @"<CENTER><BASEFONT COLOR=#00FF00><B>SIM</B></BASEFONT></CENTER>", false, false );
+
+				AddButton( 200, 155, 4005, 4007, 0, GumpButtonType.Reply, 0 ); // NO
+				AddHtml( 235, 157, 50, 20, @"<CENTER><BASEFONT COLOR=#FF0000><B>NÃO</B></BASEFONT></CENTER>", false, false );
+			}
+
+			public override void OnResponse( NetState sender, RelayInfo info )
+			{
+				if ( m_Trainer == null || m_Trainer.Deleted || m_From == null || m_From.Deleted )
+					return;
+
+				if ( info.ButtonID == 1 ) // YES - Sell the pet
+				{
+					if ( m_Pet != null && !m_Pet.Deleted && m_Pet.ControlMaster == m_From && m_Pet.Controlled )
+					{
+						m_Trainer.SellPetForGold( m_From, m_Pet, m_Price );
+					}
+					else
+					{
+						m_Trainer.SayTo( m_From, MSG_APPRAISE_NOT_OWNER );
+					}
+				}
+				else // NO - Decline
+				{
+					m_Trainer.SayTo( m_From, MSG_SALE_DECLINED );
+				}
+			}
+		}
+
 		#endregion
 
 		#region Static Utility Methods
@@ -580,6 +715,26 @@ namespace Server.Mobiles
 					m_Trainer.SayTo( from, MSG_STABLE_ERROR_HUMAN );
 				else
 					m_Trainer.SayTo( from, MSG_TICKET_NOT_TAMABLE );
+			}
+		}
+
+		private class AppraiseTarget : Target
+		{
+			private AnimalTrainer m_Trainer;
+
+			public AppraiseTarget( AnimalTrainer trainer ) : base( APPRAISE_RANGE, false, TargetFlags.None )
+			{
+				m_Trainer = trainer;
+			}
+
+			protected override void OnTarget( Mobile from, object targeted )
+			{
+				if ( targeted is BaseCreature )
+					m_Trainer.EndAppraise( from, (BaseCreature)targeted );
+				else if ( targeted == from )
+					m_Trainer.SayTo( from, MSG_APPRAISE_HUMAN );
+				else
+					m_Trainer.SayTo( from, MSG_APPRAISE_NOT_CONTROLLED );
 			}
 		}
 		
@@ -1157,6 +1312,38 @@ namespace Server.Mobiles
 			}
 		}
 
+		/// <summary>
+		/// Context menu entry for finding lost pets
+		/// </summary>
+		public class FindLostPetsEntry : ContextMenuEntry
+		{
+			private AnimalTrainer m_Trainer;
+			private Mobile m_From;
+
+			public FindLostPetsEntry( AnimalTrainer trainer, Mobile from ) : base( 3006134, 12 )
+			{
+				m_Trainer = trainer;
+				m_From = from;
+			}
+
+			public override void OnClick()
+			{
+				m_Trainer.CloseClaimList( m_From );
+				
+				// Show gump with lost pets (payment happens when selecting a pet)
+				List<BaseCreature> lostPets = m_Trainer.GetLostPets( m_From );
+				if ( lostPets.Count > 0 )
+				{
+					m_From.SendGump( new LostPetsGump( m_Trainer, m_From, lostPets ) );
+				}
+				else
+				{
+					m_Trainer.SayTo( m_From, "Você não tem animais perdidos para buscar." );
+					m_From.SendMessage( "Certifique-se de que seus animais não estão estabulados ou montados." );
+				}
+			}
+		}
+
 
 
 
@@ -1193,7 +1380,7 @@ namespace Server.Mobiles
             private Mobile m_Mobile;
             private Mobile m_Giver;
             
-            public RidingGumpEntry( Mobile from, Mobile giver ) : base( 6098, 3 )
+            public RidingGumpEntry( Mobile from, Mobile giver ) : base( 3006098, 3 )
             {
                 m_Mobile = from;
                 m_Giver = giver;
@@ -1221,7 +1408,7 @@ namespace Server.Mobiles
 				base.GetContextMenuEntries( from, list ); 
 				// Add stable-related entries
 				list.Add( new StableEntry( this, from ) );
-
+				list.Add( new TicketEntry( this, from ) );
 				if ( from.Stabled.Count > 0 )
 				{
 					list.Add( new ClaimSpecificEntry( this, from ) );
@@ -1229,7 +1416,7 @@ namespace Server.Mobiles
 						list.Add( new ClaimAllEntry( this, from ) );
 				}
 
-				list.Add( new TicketEntry( this, from ) );
+				list.Add( new FindLostPetsEntry( this, from ) );
 				list.Add( new SpeechGumpEntryAnimals( from, this ) ); 
             	//list.Add( new RidingGumpEntry( from, this ) );
 
@@ -1245,16 +1432,34 @@ namespace Server.Mobiles
 		/// - "retirar [pet name]" / "claim [pet name]" : Claim specific pet by name
 		/// - "buscar" / "procurar" / "find" / "fetch" : Find lost pets
 		/// - "treinar" / "train" : Train skills
+		/// Special variant may have additional commands (to be implemented)
 		/// </summary>
 		public override void OnSpeech( SpeechEventArgs e )
 		{
 			if( e.Mobile.InRange( this, SPEECH_RANGE ) && !e.Handled )
 			{
-				if ( HandleStableCommand( e ) || HandleClaimCommand( e ) || HandleFindCommand( e ) || HandleTrainCommand( e ) || HandleTicketCommand( e ) )
+				// Check for special variant commands first (if implemented)
+				if ( m_IsSpecialTrainer && HandleSpecialCommands( e ) )
+					return;
+
+				if ( HandleStableCommand( e ) || HandleClaimCommand( e ) || HandleFindCommand( e ) || HandleTrainCommand( e ) || HandleTicketCommand( e ) || HandleAppraiseCommand( e ) )
 					return;
 				}
 
 			base.OnSpeech( e );
+		}
+
+		/// <summary>
+		/// Handles special commands for the special variant ("Domador de Feras")
+		/// Placeholder for future implementation
+		/// </summary>
+		/// <param name="e">Speech event arguments</param>
+		/// <returns>True if command was handled, false otherwise</returns>
+		private bool HandleSpecialCommands( SpeechEventArgs e )
+		{
+			// TODO: Implement special commands for "Domador de Feras" variant
+			// Example: Different taming commands, special pet services, etc.
+			return false;
 		}
 
 		/// <summary>
@@ -1358,6 +1563,19 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
+		/// Handles the appraise speech command
+		/// </summary>
+		private bool HandleAppraiseCommand( SpeechEventArgs e )
+		{
+			if ( !Insensitive.Contains( e.Speech, "avaliar" ) && !Insensitive.Contains( e.Speech, "appraise" ) )
+				return false;
+
+			e.Handled = true;
+			BeginAppraise( e.Mobile );
+			return true;
+		}
+
+		/// <summary>
 		/// Handles the "comandos" speech command for AnimalTrainer specific commands
 		/// </summary>
 		protected override bool HandleComandosCommand(SpeechEventArgs e)
@@ -1390,7 +1608,7 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Gets a list of the player's lost pets (not stabled, not controlled, not mounted, and far away)
 		/// </summary>
-		private List<BaseCreature> GetLostPets( Mobile from )
+		internal List<BaseCreature> GetLostPets( Mobile from )
 		{
 			List<BaseCreature> lostPets = new List<BaseCreature>();
 
@@ -1538,6 +1756,196 @@ namespace Server.Mobiles
 			return null;
 		}
 
+		/// <summary>
+		/// Initiates the pet appraise process by prompting the player to select a pet
+		/// </summary>
+		/// <param name="from">The player wanting to appraise a pet</param>
+		public void BeginAppraise( Mobile from )
+		{
+			if ( Deleted || !from.CheckAlive() )
+				return;
+
+			SayTo( from, MSG_APPRAISE_WHICH_ANIMAL );
+			from.Target = new AppraiseTarget( this );
+		}
+
+		/// <summary>
+		/// Processes the appraisal of a specific pet
+		/// </summary>
+		/// <param name="from">The player appraising the pet</param>
+		/// <param name="pet">The pet being appraised</param>
+		public void EndAppraise( Mobile from, BaseCreature pet )
+		{
+			if ( Deleted || !from.CheckAlive() )
+				return;
+
+			string errorMessage = ValidatePetForAppraise( from, pet );
+			if ( errorMessage != null )
+			{
+				SayTo( from, errorMessage );
+				return;
+			}
+
+			double oldvalue = pet.MinTameSkill;
+			int petpriceint = ValuatePet( pet, this );
+
+			// Reset the value to what it was (appraise doesn't modify the pet)
+			pet.MinTameSkill = oldvalue;
+
+			// Show confirmation gump instead of just saying the price
+			from.SendGump( new SellPetConfirmationGump( this, from, pet, petpriceint ) );
+		}
+
+		/// <summary>
+		/// Validates if a pet can be appraised
+		/// </summary>
+		/// <returns>Error message if validation fails, null if valid</returns>
+		private string ValidatePetForAppraise( Mobile from, BaseCreature pet )
+		{
+			if ( pet == null || pet.Deleted )
+				return MSG_APPRAISE_NOT_CONTROLLED;
+
+			if ( pet.Body.IsHuman )
+				return MSG_APPRAISE_HUMAN;
+
+			if ( !pet.Controlled )
+				return MSG_APPRAISE_NOT_CONTROLLED;
+
+			if ( pet.ControlMaster != from )
+				return MSG_APPRAISE_NOT_OWNER;
+
+			if ( pet.IsDeadPet || !pet.Alive )
+				return MSG_APPRAISE_DEAD_PET;
+
+			if ( pet.Summoned )
+				return MSG_APPRAISE_SUMMONED;
+
+			return null;
+		}
+
+		/// <summary>
+		/// Calculates the value of a pet for selling purposes
+		/// </summary>
+		/// <param name="pet">The pet to value</param>
+		/// <param name="broker">The broker/trainer evaluating the pet</param>
+		/// <returns>The calculated value in gold</returns>
+		private static int ValuatePet( BaseCreature pet, Mobile broker )
+		{
+			pet.DynamicFameKarma(); // refreshes values ...if pet was trained etc
+			pet.DynamicTaming( false );
+
+			double basevalue = pet.MinTameSkill;
+			if ( basevalue >= 125 )
+			{
+				pet.MinTameSkill = 124; // divide by 0 check
+				basevalue = 124;
+			}
+
+			if ( !pet.CanAngerOnTame ) // easier tames are worth less this way
+				basevalue /= 1.15;
+
+			double final = 0;
+			double step = 10;
+			double factorial = 1 / ((125 - basevalue) / (pet.MinTameSkill * 15));
+
+			if ( basevalue < step )
+				final = basevalue * factorial;
+			else
+			{
+				while ( basevalue > 0 )
+				{
+					if ( basevalue > step )
+					{
+						basevalue -= step;
+						final += step * factorial;
+					}
+					else
+					{
+						final += basevalue * factorial;
+						basevalue = 0;
+					}
+				}
+			}
+
+			double petprice = final;
+			petprice *= ((double)Misc.MyServerSettings.GetGoldCutRate( broker, null ) / 100); // tie it to the balancelevel
+
+			if ( pet.Level > 1 ) // increased price for each level
+			{
+				petprice /= ((Math.Pow( pet.Level, 0.25 )) / ((double)pet.Level)); // change exponent > 0 && < 1. higher means less gold. 0.15 was too small, increased to 0.33
+			}
+
+			int petpriceint = Convert.ToInt32( petprice );
+
+			if ( petpriceint <= 10 )
+				petpriceint = 10;
+
+			return petpriceint;
+		}
+
+		/// <summary>
+		/// Sells a pet to the trainer and gives gold to the player
+		/// </summary>
+		/// <param name="from">The player selling the pet</param>
+		/// <param name="pet">The pet being sold</param>
+		/// <param name="goldamount">The amount of gold to pay</param>
+		private void SellPetForGold( Mobile from, BaseCreature pet, int goldamount )
+		{
+			if ( pet == null || pet.Deleted || from == null || from.Deleted )
+				return;
+
+			// Validate pet ownership one more time
+			if ( !pet.Controlled || pet.ControlMaster != from )
+			{
+				SayTo( from, MSG_APPRAISE_NOT_OWNER );
+				return;
+			}
+
+			// Store pet info before deletion
+			string petName = pet.Name;
+			int petFame = pet.Fame;
+
+			// Log the sale (before deletion)
+			LoggingFunctions.LogPetSale( from, pet, goldamount );
+
+			// Create gold or bank check
+			Item gold = null;
+			if ( goldamount < 60000 )
+				gold = new Gold( goldamount );
+			else
+				gold = new BankCheck( goldamount );
+
+			// Remove pet control and delete
+			pet.ControlTarget = null;
+			pet.ControlOrder = OrderType.None;
+			pet.Internalize();
+			pet.SetControlMaster( null );
+			pet.SummonMaster = null;
+			pet.Delete();
+
+			// Give gold to player
+			Container backpack = from.Backpack;
+			if ( backpack == null || !backpack.TryDropItem( from, gold, false ) )
+			{
+				gold.MoveToWorld( from.Location, from.Map );
+			}
+
+			// Award fame
+			Titles.AwardFame( from, (petFame / 100), true );
+
+			// Say appropriate message based on price
+			if ( goldamount <= 400 )
+				Say( string.Format( MSG_SALE_SUCCESS_LOW, petName, goldamount ) );
+			else if ( goldamount <= 1000 )
+				Say( string.Format( MSG_SALE_SUCCESS_MEDIUM, from.Name, petName, goldamount ) );
+			else if ( goldamount <= 5000 )
+				Say( string.Format( MSG_SALE_SUCCESS_RARE, petName, goldamount ) );
+			else if ( goldamount <= 10001 )
+				Say( string.Format( MSG_SALE_SUCCESS_VERY_RARE, goldamount ) );
+			else if ( goldamount >= 40001 )
+				Say( string.Format( MSG_SALE_SUCCESS_ULTRA_RARE, goldamount ) );
+		}
+
 		public AnimalTrainer( Serial serial ) : base( serial )
 		{
 		}
@@ -1550,7 +1958,10 @@ namespace Server.Mobiles
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int) 0 ); // version
+			writer.Write( (int) 1 ); // version
+
+			// Version 1: Save special trainer flag
+			writer.Write( (bool) m_IsSpecialTrainer );
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -1558,6 +1969,19 @@ namespace Server.Mobiles
 			base.Deserialize( reader );
 
 			int version = reader.ReadInt();
+
+			if ( version >= 1 )
+			{
+				// Version 1: Load special trainer flag
+				m_IsSpecialTrainer = reader.ReadBool();
+			}
+			// Version 0: Default to false (backward compatibility)
+
+			// Ensure Title is set correctly based on flag (in case of version upgrade)
+			if ( m_IsSpecialTrainer && Title != NPC_TITLE_SPECIAL )
+			{
+				Title = NPC_TITLE_SPECIAL;
+			}
 		}
 
 		#endregion

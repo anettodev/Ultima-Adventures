@@ -1,4 +1,3 @@
-
 using System;
 using Server;
 using Server.Items;
@@ -8,116 +7,284 @@ using Server.Targeting;
 
 namespace Server.Gumps
 {
+	/// <summary>
+	/// Gump for displaying and managing Taming BOD contracts.
+	/// Allows players to add pets to contracts and claim rewards.
+	/// </summary>
 	public class TamingBODGump : Gump
 	{
-		private TamingBOD MCparent;
-		
-		public TamingBODGump( Mobile from, TamingBOD parentMC ) : base( 0, 0 )
-		{
-			if(from != null)from.CloseGump( typeof( TamingBODGump ) );
-			
-			if(parentMC != null)
-			{
-				
-				MCparent = parentMC;
-			
-				this.Closable=true;
-				this.Disposable=true;
-				this.Dragable=true;
-				this.Resizable=false;
+		#region Fields
 
-				this.AddPage(0);
-				this.AddBackground(0, 0, 300, 170, 5170);
-				this.AddLabel(40, 40, 0, @"Contract For: " + parentMC.AmountToTame + " creatures" );
-				this.AddLabel(40, 60, 0, @"Quantity Tamed: " + parentMC.AmountTamed);
-				this.AddLabel(40, 80, 0, @"Reward: " + parentMC.Reward);
-				if ( parentMC.AmountTamed < parentMC.AmountToTame )
-				{
-					this.AddButton(90, 110, 2061, 2062, 1, GumpButtonType.Reply, 0);
-					this.AddLabel(104, 108, 0, @"Add creature");
-				}
-				else
-				{
-					this.AddButton(90, 110, 2061, 2062, 2, GumpButtonType.Reply, 0);
-					this.AddLabel(104, 108, 0, @"Reward");
-				}
+		private TamingBOD m_Parent;
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the TamingBODGump class.
+		/// </summary>
+		/// <param name="from">The player viewing the gump</param>
+		/// <param name="parentBOD">The Taming BOD to display</param>
+		public TamingBODGump(Mobile from, TamingBOD parentBOD) : base(TamingBODGumpConstants.GUMP_PAGE_ID, TamingBODGumpConstants.GUMP_PAGE_ID)
+		{
+			if (from != null)
+			{
+				from.CloseGump(typeof(TamingBODGump));
+			}
+
+			if (parentBOD != null)
+			{
+				m_Parent = parentBOD;
+
+				Closable = true;
+				Disposable = true;
+				Dragable = true;
+				Resizable = false;
+
+				AddPage(TamingBODGumpConstants.GUMP_PAGE_ID);
+				AddGumpElements();
 			}
 		}
-		
-		public override void OnResponse( NetState state, RelayInfo info )
-		{
-			Mobile m_from = state.Mobile;
-			
-			if(m_from != null && MCparent != null)
-			{
-				if ( info.ButtonID == 1 )
-				{
-					m_from.SendMessage("Choose the tamed creature to add.");
-					m_from.Target = new TamingBODTarget( MCparent );
-				}
-				if ( info.ButtonID == 2 )
-				{
-					if (TamingBOD.PayRewardTo(m_from, MCparent))
-						MCparent.Delete();
-				}
-			}
-		}
-	}
-	
-	public class TamingBODTarget : Target
-	{
-		private TamingBOD MCparent;
-		
-		public TamingBODTarget( TamingBOD parentMC ) : base( -1, true, TargetFlags.None )
-		{
-			MCparent = parentMC;
-		}
-		
-		protected override void OnTarget( Mobile from, object o )
-		{
-            if ( MCparent == null || from == null || o == null )
-            {
-                Console.WriteLine( "TamingBOD: Sa bug !! Mais o�, on sait pas :p" );
-                return;
-            }
-			
-			
-			if ( o is BaseCreature )
-			{
-				BaseCreature pet = (BaseCreature)o;
 
-				if ( !pet.Controlled || pet.ControlMaster != from ) 
-					from.SendLocalizedMessage( 1042562 ); // You do not own that pet! 
-				else if ( pet.IsDeadPet ) 
-					from.SendLocalizedMessage( 1049668 ); // Living pets only, please. 
-				else if ( pet.Summoned ) 
-					from.SendMessage( "This creature was summoned." ); // I can not PetSale summoned creatures. 
-				else if ( pet is Squire  ) 
-					from.SendMessage( "This creature is too big to fit in this small deed." ); // I can not PetSale summoned creatures.
-				else if ( pet.Body.IsHuman ) 
-					from.SendMessage( "This won't work on humans." ); // HA HA HA! Sorry, I am not an inn. 
-				else if ( (pet is PackLlama || pet is PackHorse || pet is Beetle) && (pet.Backpack != null && pet.Backpack.Items.Count > 0) ) 
-					from.SendLocalizedMessage( 1042563 ); // You need to unload your pet. 
-				else if ( pet.Combatant != null && pet.InRange( pet.Combatant, 12 ) && pet.Map == pet.Combatant.Map ) 
-					from.SendLocalizedMessage( 1042564 ); // I'm sorry.  Your pet seems to be busy. 
-				else if (pet.Tamable)
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Handles gump button responses.
+		/// </summary>
+		/// <param name="state">The network state</param>
+		/// <param name="info">The relay information</param>
+		public override void OnResponse(NetState state, RelayInfo info)
+		{
+			Mobile from = state.Mobile;
+
+			if (from != null && m_Parent != null)
+			{
+				if (info.ButtonID == TamingBODGumpConstants.BUTTON_ADD_ID)
+				{
+					from.SendMessage(TamingBODGumpStringConstants.MSG_CHOOSE_TAMED_CREATURE);
+					from.Target = new TamingBODTarget(m_Parent);
+				}
+				else if (info.ButtonID == TamingBODGumpConstants.BUTTON_REWARD_ID)
+				{
+					if (TamingBOD.PayRewardTo(from, m_Parent))
 					{
-						MCparent.Reward += (int)((double)Server.Mobiles.AnimalTrainerLord.ValuatePet( pet, from )  * 0.75);
-						MCparent.AmountTamed += 1;
-						MCparent.InvalidateProperties();
-						pet.ControlTarget = null; 
-						pet.ControlOrder = OrderType.None; 
-						pet.Internalize(); 
-						pet.SetControlMaster( null ); 
-						pet.SummonMaster = null;
-						pet.Delete();	
+						m_Parent.Delete();
 					}
-				else
-					from.SendMessage("This pet won't work.");
+				}
+			}
+		}
+
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Adds all gump elements (background, labels, buttons).
+		/// </summary>
+		private void AddGumpElements()
+		{
+			AddBackground(
+				TamingBODGumpConstants.GUMP_X,
+				TamingBODGumpConstants.GUMP_Y,
+				TamingBODGumpConstants.GUMP_WIDTH,
+				TamingBODGumpConstants.GUMP_HEIGHT,
+				TamingBODGumpConstants.GUMP_BACKGROUND_ID);
+
+			AddLabels();
+
+			if (m_Parent.AmountTamed < m_Parent.AmountToTame)
+			{
+				AddAddCreatureButton();
 			}
 			else
-				from.SendMessage("This is not a tamable pet.");
+			{
+				AddRewardButton();
+			}
 		}
 
+		/// <summary>
+		/// Adds all labels to the gump.
+		/// </summary>
+		private void AddLabels()
+		{
+			// Build contract label based on tier and creature type
+			string contractLabel;
+			if (m_Parent.Tier == 1 || m_Parent.CreatureType == null)
+			{
+				// Generic contract
+				contractLabel = string.Format(TamingBODGumpStringConstants.LABEL_CONTRACT_FORMAT, m_Parent.AmountToTame);
+			}
+			else
+			{
+				// Specific creature type contract
+				string creatureTypeName = TamingBODCreatureTypes.GetCreatureTypeName(m_Parent.CreatureType, m_Parent.Tier);
+				if (creatureTypeName != null)
+				{
+					contractLabel = string.Format(TamingBODGumpStringConstants.LABEL_CONTRACT_FORMAT_SPECIFIC, m_Parent.AmountToTame, creatureTypeName);
+				}
+				else
+				{
+					// Fallback to generic if name not found
+					contractLabel = string.Format(TamingBODGumpStringConstants.LABEL_CONTRACT_FORMAT, m_Parent.AmountToTame);
+				}
+			}
+
+			AddLabel(
+				TamingBODGumpConstants.LABEL_X,
+				TamingBODGumpConstants.LABEL_CONTRACT_Y,
+				TamingBODGumpConstants.LABEL_COLOR,
+				contractLabel);
+
+			AddLabel(
+				TamingBODGumpConstants.LABEL_X,
+				TamingBODGumpConstants.LABEL_QUANTITY_Y,
+				TamingBODGumpConstants.LABEL_COLOR,
+				string.Format(TamingBODGumpStringConstants.LABEL_QUANTITY_FORMAT, m_Parent.AmountTamed));
+
+			AddLabel(
+				TamingBODGumpConstants.LABEL_X,
+				TamingBODGumpConstants.LABEL_REWARD_Y,
+				TamingBODGumpConstants.LABEL_COLOR,
+				string.Format(TamingBODGumpStringConstants.LABEL_REWARD_FORMAT, m_Parent.Reward));
+		}
+
+		/// <summary>
+		/// Adds the "Add creature" button.
+		/// </summary>
+		private void AddAddCreatureButton()
+		{
+			AddButton(
+				TamingBODGumpConstants.BUTTON_X,
+				TamingBODGumpConstants.BUTTON_Y,
+				TamingBODGumpConstants.BUTTON_NORMAL_ID ,
+				TamingBODGumpConstants.BUTTON_NORMAL_ID,
+				TamingBODGumpConstants.BUTTON_ADD_ID,
+				GumpButtonType.Reply,
+				0);
+
+			AddLabel(
+				TamingBODGumpConstants.BUTTON_LABEL_X,
+				TamingBODGumpConstants.BUTTON_LABEL_Y_REWARD,
+				1153,
+				TamingBODGumpStringConstants.BUTTON_ADD_CREATURE);
+		}
+
+		/// <summary>
+		/// Adds the "Reward" button.
+		/// </summary>
+		private void AddRewardButton()
+		{
+			AddButton(
+				TamingBODGumpConstants.BUTTON_X,
+				TamingBODGumpConstants.BUTTON_Y,
+				TamingBODGumpConstants.BUTTON_REWARD_PRESSED_ID,
+				TamingBODGumpConstants.BUTTON_REWARD_PRESSED_ID,
+				TamingBODGumpConstants.BUTTON_REWARD_ID,
+				GumpButtonType.Reply,
+				0);
+
+			AddLabel(
+				TamingBODGumpConstants.BUTTON_LABEL_X_REWARD,
+				TamingBODGumpConstants.BUTTON_LABEL_Y_REWARD,
+				TamingBODGumpConstants.LABEL_WHITE_COLOR,
+				TamingBODGumpStringConstants.BUTTON_REWARD);
+		}
+
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Target class for selecting a pet to add to a contract.
+		/// </summary>
+		private class TamingBODTarget : Target
+		{
+			#region Fields
+
+			private TamingBOD m_Parent;
+
+			#endregion
+
+			#region Constructors
+
+			/// <summary>
+			/// Initializes a new instance of the TamingBODTarget class.
+			/// </summary>
+			/// <param name="parentBOD">The Taming BOD</param>
+			public TamingBODTarget(TamingBOD parentBOD) : base(TamingBODGumpConstants.TARGET_RANGE_UNLIMITED, true, TargetFlags.None)
+			{
+				m_Parent = parentBOD;
+			}
+
+			#endregion
+
+			#region Core Logic
+
+			/// <summary>
+			/// Handles the target selection.
+			/// </summary>
+			/// <param name="from">The player who selected the target</param>
+			/// <param name="o">The object that was targeted</param>
+			protected override void OnTarget(Mobile from, object o)
+			{
+				if (m_Parent == null || from == null || o == null)
+				{
+					return;
+				}
+
+				BaseCreature pet = o as BaseCreature;
+				if (pet == null)
+				{
+					from.SendMessage(TamingBODGumpStringConstants.MSG_NOT_TAMABLE_PET);
+					return;
+				}
+
+				string errorMessage = PetValidationHelper.ValidatePetForContract(pet, from, TamingBODGumpConstants.PET_COMBAT_RANGE, m_Parent.Tier, m_Parent.CreatureType);
+				if (errorMessage != null)
+				{
+					if (errorMessage.Length > 0)
+					{
+						from.SendMessage(errorMessage);
+					}
+					return;
+				}
+
+				if (pet.Tamable)
+				{
+					ProcessPetForContract(pet, from);
+				}
+				else
+				{
+					from.SendMessage(TamingBODGumpStringConstants.MSG_PET_WONT_WORK);
+				}
+			}
+
+			#endregion
+
+			#region Helper Methods
+
+			/// <summary>
+			/// Processes a pet for the contract (adds reward, increments count, deletes pet).
+			/// </summary>
+			/// <param name="pet">The pet to process</param>
+			/// <param name="from">The player who owns the pet</param>
+			private void ProcessPetForContract(BaseCreature pet, Mobile from)
+			{
+				// Use tier-based reward system
+				int reward = PetValidationHelper.CalculateTierBasedReward(m_Parent.Tier);
+				m_Parent.Reward += reward;
+				m_Parent.AmountTamed += 1;
+				m_Parent.InvalidateProperties();
+
+				PetValidationHelper.ProcessPetForContract(pet);
+			}
+
+			#endregion
+		}
+
+		#endregion
 	}
 }

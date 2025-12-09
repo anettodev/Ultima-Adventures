@@ -2609,17 +2609,18 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
-		/// Processes a single valid purchase from the vendor
+		/// Processes a single valid purchase from the vendor (validation phase)
 		/// </summary>
-		/// <param name="amount">The amount to purchase</param>
+		/// <param name="buy">The buy response containing purchase details</param>
 		/// <param name="gbi">The buy info for the item</param>
 		/// <param name="buyer">The mobile buying the item</param>
 		/// <param name="totalCost">Reference to total cost accumulator</param>
 		/// <param name="controlSlots">Reference to control slots available</param>
 		/// <param name="bought">Reference to bought flag</param>
 		/// <param name="validBuy">Reference to valid buy list</param>
-		private void ProcessValidPurchase( int amount, GenericBuyInfo gbi, Mobile buyer, ref int totalCost, ref int controlSlots, ref bool bought, ref List<BuyItemResponse> validBuy )
+		private void ProcessValidPurchase( BuyItemResponse buy, GenericBuyInfo gbi, Mobile buyer, ref int totalCost, ref int controlSlots, ref bool bought, ref List<BuyItemResponse> validBuy )
 		{
+			int amount = buy.Amount;
 			if ( gbi.Amount <= 0 || amount <= 0 )
 				return;
 
@@ -2641,6 +2642,93 @@ namespace Server.Mobiles
 
 			totalCost += gbi.Price * amountToBuy;
 			bought = true;
+			validBuy.Add( buy );
+		}
+
+		/// <summary>
+		/// Processes a single valid purchase from the vendor (execution phase - creates items and gives to player)
+		/// </summary>
+		/// <param name="amount">The amount to purchase</param>
+		/// <param name="bii">The buy info for the item</param>
+		/// <param name="buyer">The mobile buying the item</param>
+		/// <param name="cont">The container to place items in</param>
+		private void ProcessValidPurchase( int amount, IBuyItemInfo bii, Mobile buyer, Container cont )
+		{
+			if ( amount > bii.Amount )
+				amount = bii.Amount;
+
+			if ( amount < 1 )
+				return;
+
+			bii.Amount -= amount;
+
+			IEntity o = bii.GetEntity();
+
+			if ( o is Item )
+			{
+				Item item = (Item)o;
+
+				if ( item.Stackable )
+				{
+					item.Amount = amount;
+
+					if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+						item.MoveToWorld( buyer.Location, buyer.Map );
+				}
+				else
+				{
+					item.Amount = 1;
+
+					if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+						item.MoveToWorld( buyer.Location, buyer.Map );
+
+					for ( int i = 1; i < amount; i++ )
+					{
+						item = bii.GetEntity() as Item;
+
+						if ( item != null )
+						{
+							item.Amount = 1;
+
+							if ( cont == null || !cont.TryDropItem( buyer, item, false ) )
+								item.MoveToWorld( buyer.Location, buyer.Map );
+						}
+					}
+				}
+			}
+			else if ( o is Mobile )
+			{
+				Mobile m = (Mobile)o;
+
+				m.Direction = (Direction)Utility.Random( 8 );
+				m.MoveToWorld( buyer.Location, buyer.Map );
+				m.PlaySound( m.GetIdleSound() );
+
+				if ( m is BaseCreature )
+				{
+					( (BaseCreature)m ).SetControlMaster( buyer );
+					( (BaseCreature)m ).Tamable = true;
+					( (BaseCreature)m ).MinTameSkill = 29.1;
+				}
+
+				for ( int i = 1; i < amount; ++i )
+				{
+					m = bii.GetEntity() as Mobile;
+
+					if ( m != null )
+					{
+						m.Direction = (Direction)Utility.Random( 8 );
+						m.MoveToWorld( buyer.Location, buyer.Map );
+
+						if ( m is BaseCreature )
+						{
+							( (BaseCreature)m ).SetControlMaster( buyer );
+							( (BaseCreature)m ).Tamable = true;
+							( (BaseCreature)m ).MinTameSkill = 29.1;
+						}
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -2827,7 +2915,7 @@ namespace Server.Mobiles
 
 					if ( gbi != null )
 					{
-						ProcessValidPurchase( amount, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
+						ProcessValidPurchase( buy, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
 					}
 					else if ( item != this.BuyPack && item.IsChildOf( this.BuyPack ) )
 					{
@@ -2861,13 +2949,121 @@ namespace Server.Mobiles
 					GenericBuyInfo gbi = LookupDisplayObject( mob );
 
 					if ( gbi != null )
-						ProcessValidPurchase( amount, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
+						ProcessValidPurchase( buy, gbi, buyer, ref totalCost, ref controlSlots, ref bought, ref validBuy );
 				}
 			}
 
 			if ( fullPurchase && validBuy.Count == 0 )
 				return false;
-			else if ( validBuy.Count == list.Count )
+
+			bought = ( buyer.AccessLevel >= AccessLevel.GameMaster );
+
+			// Always try backpack first
+			cont = buyer.Backpack;
+			if ( !bought && cont != null )
+			{
+				if ( cont.ConsumeTotal( typeof( Gold ), totalCost ) )
+						bought = true;
+			}
+
+			// If backpack failed and totalCost > 100000, try bank
+			if ( !bought && totalCost > 100000 )
+			{
+				cont = buyer.FindBankNoCreate();
+				if ( cont != null && cont.ConsumeTotal( typeof( Gold ), totalCost ) )
+				{
+					bought = true;
+					fromBank = true;
+				}
+				else
+				{
+					SayTo( buyer, 500191 ); // Begging thy pardon, but thy bank account lacks these funds.
+				}
+			}
+			else if ( !bought && totalCost <= 100000 )
+			{
+				// If totalCost <= 100000 and backpack lacks funds, show error and don't try bank
+				SayTo( buyer, 500192 ); // Begging thy pardon, but thou canst afford that.
+			}
+
+			if ( !bought )
+				return false;
+			else
+				buyer.PlaySound( BaseVendorConstants.SOUND_BUY );
+
+			cont = buyer.Backpack;
+			if ( cont == null )
+				cont = buyer.BankBox;
+
+			foreach ( BuyItemResponse buy in validBuy )
+			{
+				Serial ser = buy.Serial;
+				int amount = buy.Amount;
+
+				if ( amount < 1 )
+					continue;
+
+				if ( ser.IsItem )
+				{
+					Item item = World.FindItem( ser );
+
+					if ( item == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( item );
+
+					if ( gbi != null )
+					{
+						ProcessValidPurchase( amount, gbi, buyer, cont );
+					}
+					else if ( item != this.BuyPack && item.IsChildOf( this.BuyPack ) )
+					{
+						if ( amount > item.Amount )
+							amount = item.Amount;
+
+						foreach ( IShopSellInfo ssi in info )
+						{
+							if ( ssi.IsSellable( item ) )
+							{
+								if ( ssi.IsResellable( item ) )
+								{
+									Item buyItem;
+									if ( amount >= item.Amount )
+									{
+										buyItem = item;
+									}
+									else
+									{
+										buyItem = Mobile.LiftItemDupe( item, item.Amount - amount );
+
+										if ( buyItem == null )
+											buyItem = item;
+									}
+
+									if ( cont == null || !cont.TryDropItem( buyer, buyItem, false ) )
+										buyItem.MoveToWorld( buyer.Location, buyer.Map );
+
+									break;
+								}
+							}
+						}
+					}
+				}
+				else if ( ser.IsMobile )
+				{
+					Mobile mob = World.FindMobile( ser );
+
+					if ( mob == null )
+						continue;
+
+					GenericBuyInfo gbi = LookupDisplayObject( mob );
+
+					if ( gbi != null )
+						ProcessValidPurchase( amount, gbi, buyer, cont );
+				}
+			}
+
+			if ( fullPurchase )
 			{
 				if ( buyer.AccessLevel >= AccessLevel.GameMaster )
 					SayTo( buyer, true, BaseVendorStringConstants.PURCHASE_GM_FULL );
@@ -4061,7 +4257,7 @@ namespace Server.ContextMenus
 	{
 		private BaseVendor m_Vendor;
 
-		public TrainingEntry( Mobile from, BaseVendor vendor ) : base( BaseVendorConstants.CONTEXT_MENU_TRAINING, BaseVendorConstants.CONTEXT_MENU_RANGE_TRAINING )
+		public TrainingEntry( Mobile from, BaseVendor vendor ) : base( 3006058, BaseVendorConstants.CONTEXT_MENU_RANGE_TRAINING )
 		{
 			m_Vendor = vendor;
 			Enabled = vendor.CheckVendorAccess( from );

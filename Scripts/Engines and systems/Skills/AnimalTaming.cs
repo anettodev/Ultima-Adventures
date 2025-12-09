@@ -31,7 +31,7 @@ namespace Server.SkillHandlers
 		{
 			m.RevealingAction();
 
-			m.Target = new InternalTarget();
+			m.Target = new InternalTarget(m);
 			m.RevealingAction();
 
 			if ( !m_DisableMessage )
@@ -103,12 +103,33 @@ namespace Server.SkillHandlers
 			}
 		}
 
+		/// <summary>
+		/// Calculates the taming range based on AnimalTaming skill
+		/// Base: 4 tiles, +1 per 10 points after 80, max 12 tiles
+		/// </summary>
+		private static int GetTamingRange(Mobile tamer)
+		{
+			double tamingSkill = tamer.Skills[SkillName.AnimalTaming].Value;
+			
+			if (tamingSkill < 80.0)
+				return 4; // Base range
+			
+			// After 80: +1 tile per 10 skill points
+			int bonusTiles = (int)((tamingSkill - 80.0) / 10.0);
+			int range = 4 + bonusTiles;
+			
+			// Cap at 12 tiles
+			return Math.Min(range, 12);
+		}
+
 		private class InternalTarget : Target
 		{
 			private bool m_SetSkillTime = true;
+			private Mobile m_From;
 
-			public InternalTarget() :  base ( 2, false, TargetFlags.None )
+			public InternalTarget(Mobile from) : base(GetTamingRange(from), false, TargetFlags.None)
 			{
+				m_From = from;
 			}
 
 			protected override void OnTargetFinish( Mobile from )
@@ -240,6 +261,25 @@ namespace Server.SkillHandlers
 				}
 			}
 
+			/// <summary>
+			/// Calculates the taming timer interval based on AnimalTaming skill
+			/// Base: 3 seconds, -1 second per 10 points after 80, minimum 6 seconds
+			/// </summary>
+			private static TimeSpan GetTamingTimerInterval(Mobile tamer)
+			{
+				double tamingSkill = tamer.Skills[SkillName.AnimalTaming].Value;
+				
+				if (tamingSkill < 80.0)
+					return TimeSpan.FromSeconds(3.0); // Base interval
+				
+				// After 80: -1 second per 10 skill points
+				int reductionSeconds = (int)((tamingSkill - 80.0) / 10.0);
+				int intervalSeconds = 3 - reductionSeconds;
+				
+				// Minimum 6 seconds (to avoid conflict with base of 3 seconds)
+				return TimeSpan.FromSeconds(Math.Max(intervalSeconds, 6));
+			}
+
 			private class InternalTimer : Timer
 			{
 				private Mobile m_Tamer;
@@ -248,14 +288,16 @@ namespace Server.SkillHandlers
 				private int m_Count;
 				private bool m_Paralyzed;
 				private DateTime m_StartTime;
+				private int m_TamingRange;
 
-				public InternalTimer( Mobile tamer, BaseCreature creature, int count ) : base( TimeSpan.FromSeconds( 3.0 ), TimeSpan.FromSeconds( 3.0 ), count )
+				public InternalTimer( Mobile tamer, BaseCreature creature, int count ) : base( GetTamingTimerInterval(tamer), GetTamingTimerInterval(tamer), count )
 				{
 					m_Tamer = tamer;
 					m_Creature = creature;
 					m_MaxCount = count;
 					m_Paralyzed = creature.Paralyzed;
 					m_StartTime = DateTime.UtcNow;
+					m_TamingRange = GetTamingRange(tamer);
 					Priority = TimerPriority.TwoFiftyMS;
 				}
 
@@ -266,7 +308,8 @@ namespace Server.SkillHandlers
 					DamageEntry de = m_Creature.FindMostRecentDamageEntry( false );
 					bool alreadyOwned = m_Creature.Owners.Contains( m_Tamer );
 
-					if ( !m_Tamer.InRange( m_Creature, 6 ) )
+					// Use dynamic range based on tamer's skill
+					if ( !m_Tamer.InRange( m_Creature, m_TamingRange ) )
 					{
 						m_BeingTamed.Remove( m_Creature );
 						m_Tamer.NextSkillTime = Core.TickCount;

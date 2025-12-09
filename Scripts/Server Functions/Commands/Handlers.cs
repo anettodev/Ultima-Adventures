@@ -82,6 +82,8 @@ namespace Server.Commands
 			Register( "ReplaceBankers", AccessLevel.Administrator, new CommandEventHandler( ReplaceBankers_OnCommand ) );
 
 			Register( "SpeedBoost", AccessLevel.Counselor, new CommandEventHandler( SpeedBoost_OnCommand ) );
+
+			Register( "AddPetTicket", AccessLevel.GameMaster, new CommandEventHandler( AddPetTicket_OnCommand ) );
 		}
 
 		public static void Register( string command, AccessLevel access, CommandEventHandler handler )
@@ -1148,6 +1150,104 @@ namespace Server.Commands
 			e.Mobile.SendMessage( "Open Connections: {0}", Network.NetState.Instances.Count );
 			e.Mobile.SendMessage( "Mobiles: {0}", World.Mobiles.Count );
 			e.Mobile.SendMessage( "Items: {0}", World.Items.Count );
+		}
+
+		[Usage( "AddPetTicket <creature type name>" )]
+		[Description( "Creates a PetTicket for the specified creature type. The creature type name must match exactly. Example: [AddPetTicket Llama or [add petticket llama" )]
+		public static void AddPetTicket_OnCommand( CommandEventArgs e )
+		{
+			Mobile from = e.Mobile;
+
+			string creatureTypeName = null;
+
+			// Support both [AddPetTicket llama and [add petticket llama formats
+			if ( e.Length == 0 )
+			{
+				from.SendMessage( "Format: AddPetTicket <creature type name>" );
+				from.SendMessage( "Example: [AddPetTicket Llama or [add petticket llama" );
+				return;
+			}
+			else if ( e.Length >= 2 && Insensitive.Equals( e.GetString( 0 ), "petticket" ) )
+			{
+				// Format: [add petticket llama
+				creatureTypeName = e.GetString( 1 );
+			}
+			else
+			{
+				// Format: [AddPetTicket llama
+				creatureTypeName = e.GetString( 0 );
+			}
+
+			if ( string.IsNullOrEmpty( creatureTypeName ) )
+			{
+				from.SendMessage( "Format: AddPetTicket <creature type name>" );
+				from.SendMessage( "Example: [AddPetTicket Llama or [add petticket llama" );
+				return;
+			}
+
+			// Find the type by name
+			Type creatureType = ScriptCompiler.FindTypeByName( creatureTypeName );
+
+			if ( creatureType == null )
+			{
+				from.SendMessage( "No type with that name was found." );
+				return;
+			}
+
+			// Validate it's a BaseCreature
+			if ( !creatureType.IsSubclassOf( typeof( BaseCreature ) ) && creatureType != typeof( BaseCreature ) )
+			{
+				from.SendMessage( "The specified type is not a BaseCreature." );
+				return;
+			}
+
+			// Create a temporary instance to use for the PetTicket
+			BaseCreature tempCreature = null;
+			try
+			{
+				tempCreature = (BaseCreature)Activator.CreateInstance( creatureType );
+				if ( tempCreature == null )
+				{
+					from.SendMessage( "Failed to create an instance of that creature type." );
+					return;
+				}
+			}
+			catch ( Exception ex )
+			{
+				from.SendMessage( "Error creating creature instance: {0}", ex.Message );
+				return;
+			}
+
+			// Create the PetTicket
+			PetTicket ticket = null;
+			try
+			{
+				ticket = new PetTicket( tempCreature );
+			}
+			catch ( Exception ex )
+			{
+				from.SendMessage( "Error creating PetTicket: {0}", ex.Message );
+				if ( tempCreature != null )
+					tempCreature.Delete();
+				return;
+			}
+
+			// Delete the temporary creature
+			tempCreature.Delete();
+
+			// Add ticket to player's backpack
+			if ( from.Backpack != null )
+			{
+				from.Backpack.DropItem( ticket );
+				from.SendMessage( "PetTicket for {0} has been created and added to your backpack.", creatureTypeName );
+				CommandLogging.WriteLine( from, "{0} {1} created PetTicket for {2}", from.AccessLevel, CommandLogging.Format( from ), creatureTypeName );
+			}
+			else
+			{
+				ticket.MoveToWorld( from.Location, from.Map );
+				from.SendMessage( "PetTicket for {0} has been created at your location (backpack full).", creatureTypeName );
+				CommandLogging.WriteLine( from, "{0} {1} created PetTicket for {2} at location", from.AccessLevel, CommandLogging.Format( from ), creatureTypeName );
+			}
 		}
 	}
 }

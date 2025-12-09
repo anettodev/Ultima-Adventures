@@ -2067,7 +2067,7 @@ namespace Server.Mobiles.Vendors.ShopDefinitions
 		public const int ITEMID_PET_DYE_TUB = 0x0012;
 
 		/// <summary>Price for PetTrainer</summary>
-		public const int PRICE_PET_TRAINER = 2500;
+		public const int PRICE_PET_TRAINER = 1500;
 		/// <summary>Quantity for PetTrainer</summary>
 		public const int QTY_PET_TRAINER = 4;
 		/// <summary>Item ID for PetTrainer</summary>

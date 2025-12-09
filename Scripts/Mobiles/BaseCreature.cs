@@ -469,6 +469,36 @@ namespace Server.Mobiles
 		public virtual TimeSpan BondingDelay{ get{ return TimeSpan.FromDays( 7.0 ); } }
 		public virtual TimeSpan BondingAbandonDelay{ get{ return TimeSpan.FromDays( 1.0 ); } }
 
+		/// <summary>
+		/// Calculates bonding delay based on player skills
+		/// Reduces 1 day for each skill >= 80: AnimalTaming, AnimalLore, Herding, Veterinary
+		/// </summary>
+		/// <param name="master">The pet's control master</param>
+		/// <returns>Calculated bonding delay in days</returns>
+		public virtual double CalculateBondingDelayDays(Mobile master)
+		{
+			double days = 7.0; // Base 7 days
+
+			if (master != null)
+			{
+				// Reduce 1 day for each skill >= 80
+				if (master.Skills[SkillName.AnimalTaming].Base >= 80.0)
+					days -= 1.0;
+				if (master.Skills[SkillName.AnimalLore].Base >= 80.0)
+					days -= 1.0;
+				if (master.Skills[SkillName.Herding].Base >= 80.0)
+					days -= 1.0;
+				if (master.Skills[SkillName.Veterinary].Base >= 80.0)
+					days -= 1.0;
+			}
+
+			// Minimum 1 day
+			if (days < 1.0)
+				days = 1.0;
+
+			return days;
+		}
+
 		public override bool CanRegenHits{ get{ return !m_IsDeadPet && base.CanRegenHits; } }
 		public override bool CanRegenStam{ get{ return !m_IsDeadPet && base.CanRegenStam; } }
 		public override bool CanRegenMana{ get{ return !m_IsDeadPet && base.CanRegenMana; } }
@@ -6381,12 +6411,31 @@ namespace Server.Mobiles
 									if ( BondingBegin == DateTime.MinValue )
 									{
 										BondingBegin = DateTime.UtcNow;
+										double delayDays = CalculateBondingDelayDays(master);
+										int daysRemaining = (int)Math.Ceiling(delayDays);
+										from.SendMessage(33, "O processo de vínculo começou! Seu animal se vinculará a você em aproximadamente {0} dia{1} quando você o alimentar novamente.", daysRemaining, daysRemaining == 1 ? "" : "s");
 									}
-									else if ( (BondingBegin + BondingDelay) <= DateTime.UtcNow )
+									else
 									{
-										IsBonded = true;
-										BondingBegin = DateTime.MinValue;
-										from.SendLocalizedMessage( 1049666 ); // Your pet has bonded with you!
+										double delayDays = CalculateBondingDelayDays(master);
+										TimeSpan calculatedDelay = TimeSpan.FromDays(delayDays);
+										DateTime bondDate = BondingBegin + calculatedDelay;
+										
+										if ( bondDate <= DateTime.UtcNow )
+										{
+											IsBonded = true;
+											BondingBegin = DateTime.MinValue;
+											from.SendMessage(63, "Seu animal se vinculou a você! Agora vocês compartilham um laço especial.");
+										}
+										else
+										{
+											TimeSpan remaining = bondDate - DateTime.UtcNow;
+											int daysRemaining = (int)Math.Ceiling(remaining.TotalDays);
+											if (daysRemaining > 0)
+											{
+												from.SendMessage(33, "O vínculo está em progresso. Seu animal se vinculará a você em aproximadamente {0} dia{1}.", daysRemaining, daysRemaining == 1 ? "" : "s");
+											}
+										}
 									}
 								}
 								else if( Core.ML )
@@ -11395,20 +11444,20 @@ namespace Server.Mobiles
 										if (((HitchingPost)item).StabledTable != null && ((HitchingPost)item).StabledTable.Count > 0)
 										{
 											Mobile ownerpost = null;
-											foreach( DictionaryEntry de in ((HitchingPost)item).StabledTable )
+											foreach (System.Collections.Generic.KeyValuePair<Mobile, BaseCreature> kvp in ((HitchingPost)item).StabledTable)
 											{
-												if (de.Value is BaseCreature)								
+												if (kvp.Value is BaseCreature)								
 												{
 
-													if ( (BaseCreature)de.Value == c)
+													if (kvp.Value == c)
 													{
-														ownerpost = (Mobile)de.Key;
+														ownerpost = kvp.Key;
 
 													}
 												}
 											}
 											if (ownerpost != null)
-												((HitchingPost)item).removeowner(ownerpost); 
+												((HitchingPost)item).RemoveOwner(ownerpost); 
 										}
 									}
 								}

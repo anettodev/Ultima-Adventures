@@ -1981,61 +1981,20 @@ namespace Server.Mobiles
 			/// </summary>
 			public InternalBuyInfo()
 			{
-				// Animals (with chance, except Rabbit which is always available)
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(Cat), StoreSalesListConstants.PRICE_CAT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(Dog), StoreSalesListConstants.PRICE_DOG, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				// Rabbit (always available)
-				Add(new AnimalBuyInfo(1, typeof(Rabbit), StoreSalesListConstants.PRICE_RABBIT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RABBIT, StoreSalesListConstants.HUE_DEFAULT));
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(Eagle), StoreSalesListConstants.PRICE_EAGLE, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_EAGLE, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(BrownBear), StoreSalesListConstants.PRICE_BROWN_BEAR, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_BROWN_BEAR, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(GrizzlyBearRiding), StoreSalesListConstants.PRICE_GRIZZLY_BEAR_RIDING, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_GRIZZLY_BEAR_RIDING, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(Panther), StoreSalesListConstants.PRICE_PANTHER, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_PANTHER, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(TimberWolf), StoreSalesListConstants.PRICE_TIMBER_WOLF, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_TIMBER_WOLF, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				if (MyServerSettings.SellChance())
-				{
-					Add(new AnimalBuyInfo(1, typeof(Rat), StoreSalesListConstants.PRICE_RAT, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RAT, StoreSalesListConstants.HUE_DEFAULT));
-				}
-
-				// Equipment and supplies (with chance)
-				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(HitchingPost), StoreSalesListConstants.PRICE_HITCHING_POST, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_HITCHING_POST);
-				StoreSalesListHelper.AddBuyItemWithChanceRandom(this, typeof(TamingBODBook), StoreSalesListConstants.PRICE_TAMING_BOD_BOOK, StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX, StoreSalesListConstants.ITEMID_TAMING_BOD_BOOK);
-				if (MyServerSettings.SellRareChance())
-				{
-					Add(new GenericBuyInfo(typeof(PetDyeTub), StoreSalesListConstants.PRICE_PET_DYE_TUB, Utility.Random(StoreSalesListConstants.QTY_RANDOM_SMALL_MIN, StoreSalesListConstants.QTY_RANDOM_SMALL_MAX), StoreSalesListConstants.ITEMID_PET_DYE_TUB, StoreSalesListConstants.HUE_DEFAULT));
-				}
-				if (MyServerSettings.SellVeryRareChance())
-				{
-					Add(new GenericBuyInfo(typeof(PetTrainer), StoreSalesListConstants.PRICE_PET_TRAINER, StoreSalesListConstants.QTY_PET_TRAINER, StoreSalesListConstants.ITEMID_PET_TRAINER, StoreSalesListConstants.HUE_DEFAULT));
-				}
+				// Animals (always available)
+				// Horse (random 3 types - Horse class randomizes appearance)
+				Add(new AnimalBuyInfo(1, "Equinos", typeof(Horse), 550, StoreSalesListConstants.QTY_ANIMALS, 204, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new AnimalBuyInfo(1, typeof(PackHorse), StoreSalesListConstants.PRICE_PACK_HORSE, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_PACK_HORSE, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new AnimalBuyInfo(1, typeof(Rat), 30, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RAT, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new AnimalBuyInfo(1, typeof(Dog), 55, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new AnimalBuyInfo(1, typeof(Cat), 47, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new AnimalBuyInfo(1, typeof(Rabbit), 38, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RABBIT, StoreSalesListConstants.HUE_DEFAULT));
+				
+				// Equipment and supplies
+				Add(new GenericBuyInfo(typeof(HitchingPost), 9000, Utility.Random(2, 6), StoreSalesListConstants.ITEMID_HITCHING_POST, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(TamingBODBook), 600, Utility.Random(3, 7), StoreSalesListConstants.ITEMID_TAMING_BOD_BOOK, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(PetTrainer), StoreSalesListConstants.PRICE_PET_TRAINER, Utility.Random(3, 7), StoreSalesListConstants.ITEMID_PET_TRAINER, StoreSalesListConstants.HUE_DEFAULT));
+				Add(new GenericBuyInfo(typeof(PetBondDeed), 1800, 8, 0x14F0, 1759));
 			}
 		}
 
@@ -2053,10 +2012,7 @@ namespace Server.Mobiles
 			/// </summary>
 			public InternalSellInfo()
 			{
-				// Equipment
-				StoreSalesListHelper.AddSellItemWithChance(this, typeof(HitchingPost), StoreSalesListConstants.SELL_PRICE_HITCHING_POST);
-
-				// Eggs (random prices)
+				// Eggs (random prices, chance-based)
 				if (MyServerSettings.BuyChance())
 				{
 					Add(typeof(AlienEgg), Utility.Random(StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MIN, StoreSalesListConstants.SELL_PRICE_ALIEN_EGG_MAX));
@@ -2086,10 +2042,8 @@ namespace Server.Mobiles
 		{
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( Horse ), 550, 10, 204, 0 ) );
-				Add( new AnimalBuyInfo( 1, typeof( PackHorse ), 631, 10, 291, 0 ) );
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackMule ), 10000, 1, 291, 0 ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( PetTrainer ), 2500, 4, 0x166E, 0 ) ); }
+				Add( new AnimalBuyInfo( 1, typeof( PackMule ), 5000, Utility.Random( 1, 4 ), 291, 0 ) );
+				Add( new AnimalBuyInfo( 1, typeof( PackLlama ), 700, 5, 292, 0 ) );
 			}
 		}
 
@@ -2116,9 +2070,7 @@ namespace Server.Mobiles
 		{
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( SwampDragon ), 1700, 10, 0x31A, 0 ) );
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackTurtle ), 14500, 1, 134, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new GenericBuyInfo( typeof( PetTrainer ), 2500, 4, 0x166E, 0 ) ); }
+				Add( new AnimalBuyInfo( 1, typeof( PackTurtle ), 10000, Utility.Random( 1, 4 ), 134, 0 ) );
 			}
 		}
 
@@ -2145,14 +2097,7 @@ namespace Server.Mobiles
 		{
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( ForestOstard ), 700, 10, 171, 0x89f ) );
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( DesertOstard ), 700, 10, 171, 1701 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( SnowOstard ), 700, 10, 171, 0x481 ) ); }
-				Add( new AnimalBuyInfo( 1, typeof( PackLlama ), 565, 10, 292, 0 ) );
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 1, typeof( WhiteWolf ), 1000, 10, 277, 0x47E ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 1, typeof( BlackWolf ), 1000, 10, 277, 0x76B ) ); }
-				if ( MyServerSettings.SellRareChance() ){Add( new GenericBuyInfo( typeof( PetTrainer ), 2500, 4, 0x166E, 0 ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackMule ), 10000, 1, 291, 0 ) ); }
+				// Empty - no items for SBElfAnimalTrainer
 			}
 		}
 
@@ -2179,12 +2124,7 @@ namespace Server.Mobiles
 		{
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( Horse ), 550, 10, 204, 0 ) );
-				Add( new AnimalBuyInfo( 1, typeof( PackHorse ), 631, 10, 291, 0 ) );
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackMule ), 10000, 1, 291, 0 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( GreatBear ), 1500, 10, 213, 0x908 ) ); }
-				if ( MyServerSettings.SellChance() ){Add( new AnimalBuyInfo( 1, typeof( KodiakBear ), 1500, 10, 213, 0x76B ) ); }
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackBear ), 12500, 1, 213, 0x908 ) ); }
+				Add( new AnimalBuyInfo( 1, typeof( PackBear ), 10000, Utility.Random( 1, 3 ), 213, 0x908 ) );
 			}
 		}
 
@@ -2211,8 +2151,7 @@ namespace Server.Mobiles
 		{
 			public InternalBuyInfo()
 			{
-				Add( new AnimalBuyInfo( 1, typeof( Ridgeback ), 1500, 10, 187, 0x7D1 ) );
-				if ( MyServerSettings.SellVeryRareChance() ){Add( new AnimalBuyInfo( 5, typeof( PackStegosaurus ), 15500, 1, 134, 0 ) ); }
+				Add( new AnimalBuyInfo( 1, typeof( PackStegosaurus ), 15500, 1, 134, 0 ) );
 			}
 		}
 
@@ -10715,15 +10654,7 @@ namespace Server.Mobiles
 		{
 			public InternalSellInfo()
 			{
-								if ( MyServerSettings.BuyRareChance() ){Add( typeof( AbysmalGloves ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AchillesShield ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AchillesSpear ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AcidProofRobe ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( Aegis ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AilricsLongbow ), Utility.Random( 20000,30000 ) ); }
 				if ( MyServerSettings.BuyRareChance() ){Add( typeof( Antiquity ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AngelicEmbrace ), Utility.Random( 20000,30000 ) ); }
-				if ( MyServerSettings.BuyRareChance() ){Add( typeof( AngeroftheGods ), Utility.Random( 20000,30000 ) ); }
 				if ( MyServerSettings.BuyRareChance() ){Add( typeof( Annihilation ), Utility.Random( 20000,30000 ) ); }
 				if ( MyServerSettings.BuyRareChance() ){Add( typeof( ArcaneArms ), Utility.Random( 20000,30000 ) ); }
 				if ( MyServerSettings.BuyRareChance() ){Add( typeof( ArcaneCap ), Utility.Random( 20000,30000 ) ); }
