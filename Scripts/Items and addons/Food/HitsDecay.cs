@@ -12,8 +12,8 @@ namespace Server.Misc
 		{
 			new HitsDecayTimer().Start();
 		}
-		// Based on the same timespan used in RegenRates.cs
-		public HitsDecayTimer() : base( TimeSpan.FromSeconds( 11 ), TimeSpan.FromSeconds( 11 ) )
+		// Timer for starvation effects when hunger = 0
+		public HitsDecayTimer() : base( TimeSpan.FromSeconds( 4 ), TimeSpan.FromSeconds( 4 ) )
 		{
 			Priority = TimerPriority.OneSecond;
 		}
@@ -31,39 +31,21 @@ namespace Server.Misc
 			}
 		}
 
-		// Check hunger level if below the value set take away 1 hit
+		// Check hunger level - when hunger = 0, apply starvation effects
 		public static void HitsDecaying( Mobile m )
 		{
-			if ( m is PlayerMobile )
+			if ( m is PlayerMobile && m != null && m.Hunger == 0 && m.Alive )
 			{
-				if ( m != null && m.Hunger < 5 && m.Hits > 18 )
-				{
-					switch (m.Hunger)
-					{
-						case 4: m.Hits -= 5; break;
-						case 3: m.Hits -= 8; break;
-						case 2: m.Hits -= 11; break;
-						case 1: m.Hits -= 14; break;
-						case 0:
-						{
-							m.Hits -= 17;
-							m.SendMessage( "You are starving to death!" );
-							m.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "I am starving to death!");
-							break;
-						}
-					}
-				}
-				if ( m != null && m.Hunger < 5 && m.Mana > 10 )
-				{
-					switch (m.Hunger)
-					{
-						case 4: m.Mana -= 2; break;
-						case 3: m.Mana -= 4; break;
-						case 2: m.Mana -= 6; break;
-						case 1: m.Mana -= 8; break;
-						case 0: m.Mana -= 10; break;
-					}
-				}
+				// Hunger = 0: -2 Hits, -2 Mana, -2 Stam per 4 seconds
+				if ( m.Hits > 2 )
+					m.Hits -= 2;
+				if ( m.Mana > 2 )
+					m.Mana -= 2;
+				if ( m.Stam > 2 )
+					m.Stam -= 2;
+
+				m.SendMessage( "You are starving to death!" );
+				m.LocalOverheadMessage(MessageType.Emote, 0xB1F, true, "I am starving to death!");
 			}
 		}
 	}

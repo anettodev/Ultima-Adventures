@@ -123,7 +123,32 @@ namespace Server.Items
 		}
 
 		/// <summary>
+		/// Calculates the contract reward based on dynamic pet valuation with bonus.
+		/// Uses AnimalTrainerLord.ValuatePet() with 15-35% premium bonus for contracts.
+		/// This provides better rewards for higher-value pets and incentivizes contracts over direct sales.
+		/// </summary>
+		/// <param name="pet">The pet being added to the contract</param>
+		/// <param name="from">The player who owns the pet</param>
+		/// <returns>The calculated reward amount with bonus</returns>
+		public static int CalculateDynamicContractReward(BaseCreature pet, Mobile from)
+		{
+			if (pet == null || from == null)
+				return 0;
+
+			// Calculate base pet value using the same system as Animal Broker
+			int baseValue = Server.Mobiles.AnimalTrainerLord.ValuatePet(pet, from);
+			
+			// Apply 15-35% premium bonus for contracts (incentivizes contracts over direct sales)
+			int bonusPercent = Utility.RandomMinMax(15, 35);
+			int reward = (int)((double)baseValue * (1.0 + ((double)bonusPercent / 100.0)));
+			
+			return reward;
+		}
+
+		/// <summary>
 		/// Calculates the contract reward based on tier system.
+		/// DEPRECATED: Use CalculateDynamicContractReward() instead for better rewards.
+		/// Kept for backward compatibility if needed.
 		/// </summary>
 		/// <param name="tier">The contract tier (1-5)</param>
 		/// <returns>The calculated reward amount per creature</returns>

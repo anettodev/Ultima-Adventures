@@ -268,6 +268,7 @@ namespace Server.Items
 
 		/// <summary>
 		/// Pays the reward to the player when the contract is completed.
+		/// Awards money (bank check) and AnimalTaming skill points based on tier.
 		/// </summary>
 		/// <param name="from">The player receiving the reward</param>
 		/// <param name="tamingBOD">The completed contract</param>
@@ -302,7 +303,52 @@ namespace Server.Items
 			backpack.DropItem(new BankCheck(tamingBOD.Reward));
 			from.SendMessage(TamingBODStringConstants.MSG_REWARD_PLACED);
 
+			// Award AnimalTaming skill points: 0.1 * tier (max 0.5 for tier 5)
+			// Cap reward to not exceed 120.0 skill points total
+			AwardSkillPoints(from, tamingBOD.Tier);
+
 			return true;
+		}
+
+		/// <summary>
+		/// Awards AnimalTaming skill points based on contract tier.
+		/// Reward: 0.1 * tier (Tier 1 = 0.1, Tier 2 = 0.2, ..., Tier 5 = 0.5 max)
+		/// Caps the reward if it would exceed 120.0 total skill points.
+		/// </summary>
+		/// <param name="from">The player receiving the skill points</param>
+		/// <param name="tier">The contract tier (1-5)</param>
+		private static void AwardSkillPoints(Mobile from, int tier)
+		{
+			if (from == null || from.Skills == null)
+				return;
+
+			// Calculate base reward: 0.1 * tier
+			double skillReward = 0.1 * (double)tier;
+			
+			// Cap at 0.5 for tier 5
+			if (skillReward > 0.5)
+				skillReward = 0.5;
+
+			// Get current AnimalTaming skill
+			Skill animalTaming = from.Skills[SkillName.AnimalTaming];
+			if (animalTaming == null)
+				return;
+
+			double currentSkill = animalTaming.Base;
+
+			// Check if adding reward would exceed 120.0
+			if (currentSkill + skillReward > 120.0)
+			{
+				// Cap the reward to not exceed 120.0
+				skillReward = Math.Max(0.0, 120.0 - currentSkill);
+			}
+
+			// Award skill points if there's any reward to give
+			if (skillReward > 0.0)
+			{
+				animalTaming.Base += skillReward;
+				from.SendMessage("Você recebeu {0:F1} pontos de habilidade em Domar Animais!", skillReward);
+			}
 		}
 
 		#endregion

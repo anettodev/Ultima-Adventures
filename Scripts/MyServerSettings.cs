@@ -548,7 +548,7 @@ namespace Server.Misc
 		
 		public static int skillcap() // This server can accomodate unlimited skillcap.  What should a NEW CHARACTER's skillcap be?
 		{
-			return 850;
+			return 8500;
 		}
 		
 		public static int skillcapbarbaric() // Skill cap for Barbaric characters

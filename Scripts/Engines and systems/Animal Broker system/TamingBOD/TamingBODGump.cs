@@ -267,14 +267,16 @@ namespace Server.Gumps
 			#region Helper Methods
 
 			/// <summary>
+			/// <summary>
 			/// Processes a pet for the contract (adds reward, increments count, deletes pet).
+			/// Uses dynamic reward calculation based on pet value with 15-35% bonus.
 			/// </summary>
 			/// <param name="pet">The pet to process</param>
 			/// <param name="from">The player who owns the pet</param>
 			private void ProcessPetForContract(BaseCreature pet, Mobile from)
 			{
-				// Use tier-based reward system
-				int reward = PetValidationHelper.CalculateTierBasedReward(m_Parent.Tier);
+				// Use dynamic reward system (pet value + 15-35% bonus)
+				int reward = PetValidationHelper.CalculateDynamicContractReward(pet, from);
 				m_Parent.Reward += reward;
 				m_Parent.AmountTamed += 1;
 				m_Parent.InvalidateProperties();

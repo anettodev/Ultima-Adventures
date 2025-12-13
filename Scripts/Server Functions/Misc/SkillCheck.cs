@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server;
 using Server.Mobiles;
 using Server.Regions;
@@ -9,6 +10,195 @@ namespace Server.Misc
 {
 	public class SkillCheck
 	{
+		#region Guild Skills Lookup
+
+		/// <summary>
+		/// Dictionary mapping NPC guilds to their associated skills for faster lookup.
+		/// Replaces the massive if-else chain in IsGuildSkill, reducing complexity from ~25 to 1.
+		/// </summary>
+		private static readonly Dictionary<NpcGuild, HashSet<SkillName>> s_GuildSkills = new Dictionary<NpcGuild, HashSet<SkillName>>();
+
+		/// <summary>
+		/// Initializes the guild skills lookup dictionary.
+		/// </summary>
+		private static void InitializeGuildSkills()
+		{
+			if (s_GuildSkills.Count > 0)
+				return; // Already initialized
+
+			s_GuildSkills[NpcGuild.MagesGuild] = new HashSet<SkillName>
+			{
+				SkillName.EvalInt,
+				SkillName.Magery,
+				SkillName.Meditation,
+				SkillName.Inscribe,
+				SkillName.Alchemy
+			};
+
+			s_GuildSkills[NpcGuild.WarriorsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Fencing,
+				SkillName.Macing,
+				SkillName.Parry,
+				SkillName.Swords,
+				SkillName.Tactics,
+				SkillName.Healing,
+				SkillName.Anatomy,
+				SkillName.Chivalry
+			};
+
+			s_GuildSkills[NpcGuild.ThievesGuild] = new HashSet<SkillName>
+			{
+				SkillName.Hiding,
+				SkillName.Lockpicking,
+				SkillName.Snooping,
+				SkillName.Stealing,
+				SkillName.Stealth,
+				SkillName.DetectHidden,
+				SkillName.Ninjitsu
+			};
+
+			s_GuildSkills[NpcGuild.BardsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Discordance,
+				SkillName.Musicianship,
+				SkillName.Peacemaking,
+				SkillName.Provocation
+			};
+
+			s_GuildSkills[NpcGuild.BlacksmithsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Blacksmith,
+				SkillName.ArmsLore,
+				SkillName.Mining,
+				SkillName.Tinkering
+			};
+
+			s_GuildSkills[NpcGuild.NecromancersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Forensics,
+				SkillName.Necromancy,
+				SkillName.SpiritSpeak,
+				SkillName.Alchemy,
+				SkillName.Inscribe
+			};
+
+			s_GuildSkills[NpcGuild.DruidsGuild] = new HashSet<SkillName>
+			{
+				SkillName.AnimalLore,
+				SkillName.AnimalTaming,
+				SkillName.Herding,
+				SkillName.Veterinary,
+				SkillName.Cooking,
+				SkillName.Camping,
+				SkillName.Tracking
+			};
+
+			s_GuildSkills[NpcGuild.CartographersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Cartography,
+				SkillName.RemoveTrap,
+				SkillName.Lockpicking,
+				SkillName.Fishing
+			};
+
+			s_GuildSkills[NpcGuild.AssassinsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Fencing,
+				SkillName.Hiding,
+				SkillName.Poisoning,
+				SkillName.Stealth,
+				SkillName.Archery,
+				SkillName.Alchemy,
+				SkillName.Bushido
+			};
+
+			s_GuildSkills[NpcGuild.MerchantsGuild] = new HashSet<SkillName>
+			{
+				SkillName.ItemID,
+				SkillName.ArmsLore,
+				SkillName.TasteID
+			};
+
+			s_GuildSkills[NpcGuild.TailorsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Tailoring,
+				SkillName.Tinkering
+			};
+
+			s_GuildSkills[NpcGuild.CarpentersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Carpentry,
+				SkillName.Lumberjacking,
+				SkillName.Fletching,
+				SkillName.Tinkering
+			};
+
+			s_GuildSkills[NpcGuild.CulinariansGuild] = new HashSet<SkillName>
+			{
+				SkillName.Cooking,
+				SkillName.TasteID,
+				SkillName.Tinkering
+			};
+
+			s_GuildSkills[NpcGuild.TinkersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Tinkering,
+				SkillName.Fletching,
+				SkillName.Carpentry,
+				SkillName.Tailoring
+			};
+
+			s_GuildSkills[NpcGuild.ArchersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Archery,
+				SkillName.Fletching,
+				SkillName.Tactics,
+				SkillName.Chivalry
+			};
+
+			s_GuildSkills[NpcGuild.AlchemistsGuild] = new HashSet<SkillName>
+			{
+				SkillName.Alchemy,
+				SkillName.Cooking,
+				SkillName.TasteID
+			};
+
+			s_GuildSkills[NpcGuild.RangersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Camping,
+				SkillName.Tracking
+			};
+
+			s_GuildSkills[NpcGuild.LibrariansGuild] = new HashSet<SkillName>
+			{
+				SkillName.ItemID,
+				SkillName.Inscribe
+			};
+
+			s_GuildSkills[NpcGuild.FishermensGuild] = new HashSet<SkillName>
+			{
+				SkillName.Fishing
+			};
+
+			s_GuildSkills[NpcGuild.HealersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Anatomy,
+				SkillName.Healing,
+				SkillName.Veterinary
+			};
+
+			s_GuildSkills[NpcGuild.MinersGuild] = new HashSet<SkillName>
+			{
+				SkillName.Mining,
+				SkillName.ArmsLore,
+				SkillName.Blacksmith,
+				SkillName.Tinkering
+			};
+		}
+
+		#endregion
+
 		private static readonly bool AntiMacroCode = MyServerSettings.NoMacroing();		// Change this to false to disable anti-macro code
 		public static TimeSpan AntiMacroExpire = TimeSpan.FromMinutes( 5.0 ); 			// How long do we remember targets/locations?
 		public const int Allowance = 3;													// How many times may we use the same location/target for gain
@@ -75,11 +265,39 @@ namespace Server.Misc
 
 		public static void Initialize()
 		{
+			InitializeGuildSkills();
+
 			Mobile.SkillCheckLocationHandler = new SkillCheckLocationHandler( Mobile_SkillCheckLocation );
 			Mobile.SkillCheckDirectLocationHandler = new SkillCheckDirectLocationHandler( Mobile_SkillCheckDirectLocation );
 
 			Mobile.SkillCheckTargetHandler = new SkillCheckTargetHandler( Mobile_SkillCheckTarget );
 			Mobile.SkillCheckDirectTargetHandler = new SkillCheckDirectTargetHandler( Mobile_SkillCheckDirectTarget );
+		}
+
+	/// <summary>
+	/// Calculates skill check chance based on skill value and min/max skill ranges.
+	/// Returns a value between 0.0 and 1.0 representing the chance of success.
+	/// </summary>
+	/// <param name="skillValue">Current skill value</param>
+	/// <param name="minSkill">Minimum skill required</param>
+	/// <param name="maxSkill">Maximum skill for the check</param>
+	/// <param name="chance">Output: calculated chance (0.0-1.0)</param>
+	/// <returns>True if skill check is valid (not too difficult or too easy), false otherwise</returns>
+	private static bool CalculateSkillChance( double skillValue, double minSkill, double maxSkill, out double chance )
+	{
+		chance = 0.0;
+
+		if ( skillValue < minSkill )
+			return false; // Too difficult
+		else if ( skillValue >= maxSkill )
+		{
+			chance = 1.0; // No challenge
+			return true;
+		}
+
+		// Linear interpolation: chance increases from 0.0 to 1.0 as skill increases from minSkill to maxSkill
+		chance = (skillValue - minSkill) / (maxSkill - minSkill);
+		return true;
 		}
 
 		public static bool Mobile_SkillCheckLocation( Mobile from, SkillName skillName, double minSkill, double maxSkill )
@@ -89,18 +307,28 @@ namespace Server.Misc
 			if ( skill == null )
 				return false;
 
-			double value = skill.Value;
-
-			if ( value < minSkill )
+		double chance;
+		if ( !CalculateSkillChance( skill.Value, minSkill, maxSkill, out chance ) )
 				return false; // Too difficult
-			else if ( value >= maxSkill )
-				return true; // No challenge
-
-			double chance = (value - minSkill) / (maxSkill - minSkill);
 
 			Point2D loc = new Point2D( from.Location.X / LocationSize, from.Location.Y / LocationSize );
 			return CheckSkill( from, skill, loc, chance );
 		}
+
+	/// <summary>
+	/// Validates a direct skill chance value.
+	/// </summary>
+	/// <param name="chance">The chance value to validate</param>
+	/// <returns>True if chance is valid (0.0-1.0), false if too difficult</returns>
+	private static bool ValidateSkillChance( double chance )
+	{
+		if ( chance < 0.0 )
+			return false; // Too difficult
+		else if ( chance >= 1.0 )
+			return true; // No challenge (will be handled by CheckSkill)
+		
+		return true;
+	}
 
 		public static bool Mobile_SkillCheckDirectLocation( Mobile from, SkillName skillName, double chance )
 		{
@@ -109,184 +337,353 @@ namespace Server.Misc
 			if ( skill == null )
 				return false;
 
-			if ( chance < 0.0 )
+		if ( !ValidateSkillChance( chance ) )
 				return false; // Too difficult
-			else if ( chance >= 1.0 )
-				return true; // No challenge
 
 			Point2D loc = new Point2D( from.Location.X / LocationSize, from.Location.Y / LocationSize );
 			return CheckSkill( from, skill, loc, chance );
 		}
 
-		public static bool CheckSkill( Mobile from, Skill skill, object amObj, double chance )
+	#region Skill Gain Calculation Helpers
+
+	/// <summary>
+	/// Calculates the gainer divisor for skill gain calculations.
+	/// Guild members get a bonus gainer (lower divisor = faster gain).
+	/// </summary>
+	/// <param name="from">The mobile performing the skill check</param>
+	/// <param name="skillName">The skill being checked</param>
+	/// <returns>The gainer divisor to use</returns>
+	private static double CalculateGainer( Mobile from, SkillName skillName )
+	{
+		double gainer = SkillCheckConstants.DEFAULT_GAINER;
+
+		if ( from is PlayerMobile && IsGuildSkill( from, skillName ) )
 		{
-			SkillName skillName = skill.SkillName;
+			// Guild members gain skills faster (lower gainer = faster gain)
+			int randomGainer = Utility.RandomMinMax( 0, SkillCheckConstants.GUILD_GAINER_OPTIONS - 1 );
+			gainer = SkillCheckConstants.GUILD_GAINER_MAX - (randomGainer * 0.05);
+		}
 
-			if ( from.Skills.Cap == 0 )
-				return false;
+		return gainer;
+	}
 
-			double gainer = 2;
+	/// <summary>
+	/// Calculates the base gain chance (gc) before modifiers.
+	/// </summary>
+	/// <param name="skill">The skill being checked</param>
+	/// <param name="chance">The skill check chance (0.0-1.0)</param>
+	/// <param name="gainer">The gainer divisor</param>
+	/// <param name="success">Whether the skill check succeeded</param>
+	/// <returns>The base gain chance</returns>
+	private static double CalculateBaseGainChance( Skill skill, double chance, double gainer, bool success )
+	{
+		// Base calculation: how much room for improvement (cap - base) / cap
+		double gc = (double)(skill.Cap - skill.Base) / skill.Cap;
+		gc /= gainer;
 
-			if ( from is PlayerMobile )
+		// Add bonus/penalty based on success/failure
+		double failureBonus = Core.AOS ? SkillCheckConstants.AOS_FAILURE_BONUS : SkillCheckConstants.LEGACY_FAILURE_BONUS;
+		gc += ( 1.0 - chance ) * ( success ? SkillCheckConstants.SUCCESS_BONUS : failureBonus );
+		gc /= gainer;
+
+		// Apply skill-specific gain factor
+		gc *= skill.Info.GainFactor;
+
+		return gc;
+	}
+
+	/// <summary>
+	/// Applies skill-specific bonuses to gain chance.
+	/// </summary>
+	/// <param name="gc">Current gain chance</param>
+	/// <param name="skillName">The skill being checked</param>
+	/// <param name="amObj">The target object</param>
+	/// <returns>Modified gain chance</returns>
+	private static double ApplySkillSpecificBonuses( double gc, SkillName skillName, object amObj )
+	{
+		// Apply Animal Lore wild creature bonus (for learning from untamed/wild animals)
+		if ( skillName == SkillName.AnimalLore && amObj is BaseCreature )
+		{
+			BaseCreature creature = (BaseCreature)amObj;
+			// Bonus applies to wild/untamed creatures that are not vendor-bought
+			if ( !creature.Controlled && !creature.IsVendorBought )
 			{
-				if ( IsGuildSkill( from, skillName ) == true ) // WIZARD WANTS GUILD MEMBERS TO GAIN QUICKER
-				{
-					switch( Utility.RandomMinMax( 0, 5 ) )
-					{
-						case 0: gainer = 1.80; break;
-						case 1: gainer = 1.75; break;
-						case 2: gainer = 1.70; break;
-						case 3: gainer = 1.65; break;
-						case 4: gainer = 1.60; break;
-						case 5: gainer = 1.55; break;
-					}
-				}
+				gc *= SkillCheckConstants.ANIMAL_LORE_WILD_BONUS;
 			}
+		}
 
+		return gc;
+	}
+
+	/// <summary>
+	/// Applies player-specific modifiers to gain chance (Avatar, Hunger, SoulBound, FastGain).
+	/// </summary>
+	/// <param name="gc">Current gain chance</param>
+	/// <param name="from">The player mobile</param>
+	/// <returns>Modified gain chance</returns>
+	private static double ApplyPlayerModifiers( double gc, PlayerMobile from )
+	{
+		// Avatar vs Normal player multiplier
+		if ( from.Avatar )
+			gc *= SkillCheckConstants.AVATAR_GAIN_MULTIPLIER;
+		else 
+			gc *= SkillCheckConstants.NORMAL_GAIN_MULTIPLIER;
+
+		// Hunger system modifiers
+		if ( from.Hunger <= SkillCheckConstants.HUNGER_STARVING )
+			gc /= SkillCheckConstants.STARVING_PENALTY;
+		else if ( from.Hunger <= SkillCheckConstants.HUNGER_HUNGRY )
+			gc /= SkillCheckConstants.HUNGRY_PENALTY;
+		else if ( from.Hunger <= SkillCheckConstants.HUNGER_NORMAL )
+			gc *= SkillCheckConstants.NORMAL_HUNGER_BONUS;
+		else if ( from.Hunger <= SkillCheckConstants.HUNGER_WELL_FED )
+			gc *= SkillCheckConstants.WELL_FED_BONUS;
+		else if ( from.Hunger <= SkillCheckConstants.HUNGER_VERY_WELL_FED )
+			gc *= SkillCheckConstants.VERY_WELL_FED_BONUS;
+		else if ( from.Hunger <= SkillCheckConstants.HUNGER_OVERFED )
+			gc *= SkillCheckConstants.OVERFED_BONUS;
+
+		// SoulBound phylactery modifier
+		double gcModifier = 1.00;
+		if ( from.SoulBound )
+		{
+			Phylactery phylactery = from.FindPhylactery();
+			if ( phylactery != null )
+			{
+				gcModifier += phylactery.CalculateSkillGainModifier();
+			}
+		}
+		gc *= gcModifier;
+
+		// FastGain modifier (if > 1)
+		if ( from.FastGain > 1 )
+			gc *= from.FastGain;
+
+		return gc;
+	}
+
+	/// <summary>
+	/// Applies region-specific bonuses to gain chance (Church of Justice, Basement).
+	/// </summary>
+	/// <param name="gc">Current gain chance</param>
+	/// <param name="from">The player mobile</param>
+	/// <returns>Modified gain chance</returns>
+	private static double ApplyRegionBonuses( double gc, PlayerMobile from )
+	{
+		// Church of Justice bonus (Trammel, specific coordinates, specific guild)
+		if ( from.Map != null && from.Map == Map.Trammel 
+			&& from.X >= SkillCheckConstants.CHURCH_OF_JUSTICE_X_MIN 
+			&& from.X <= SkillCheckConstants.CHURCH_OF_JUSTICE_X_MAX 
+			&& from.Y >= SkillCheckConstants.CHURCH_OF_JUSTICE_Y_MIN 
+			&& from.Y <= SkillCheckConstants.CHURCH_OF_JUSTICE_Y_MAX 
+			&& from.Guild != null 
+			&& !from.Guild.Disbanded 
+			&& Insensitive.Contains( from.Guild.Name, SkillCheckConstants.CHURCH_OF_JUSTICE_GUILD_NAME ) )
+		{
+			gc *= SkillCheckConstants.CHURCH_OF_JUSTICE_BONUS;
+		}
+
+		// Basement SoulBound bonus
+		if ( from.SoulBound && Server.Misc.Worlds.GetRegionName( from.Map, from.Location ) == "the Basement" )
+			gc *= SkillCheckConstants.BASEMENT_SOULBOUND_BONUS;
+
+		return gc;
+	}
+
+	/// <summary>
+	/// Calculates dungeon region bonus based on skill type and difficulty level.
+	/// </summary>
+	/// <param name="skillName">The skill being checked</param>
+	/// <param name="difficultyLevel">The difficulty level of the dungeon</param>
+	/// <returns>The bonus multiplier to apply</returns>
+	private static double CalculateDungeonBonus( SkillName skillName, double difficultyLevel )
+	{
+		double bonus = difficultyLevel / SkillCheckConstants.DIFFICULTY_DIVISOR;
+
+		// Passive skills get reduced bonus
+		if ( skillName == SkillName.DetectHidden ||
+			skillName == SkillName.Meditation ||
+			skillName == SkillName.TasteID ||
+			skillName == SkillName.ItemID ||
+			skillName == SkillName.Anatomy ||
+			skillName == SkillName.Lockpicking ||
+			skillName == SkillName.RemoveTrap ||
+			skillName == SkillName.Tactics ||
+			skillName == SkillName.Musicianship ||
+			skillName == SkillName.AnimalLore ||
+			skillName == SkillName.Mining ||
+			skillName == SkillName.Tracking ||
+			skillName == SkillName.Parry ||
+			skillName == SkillName.EvalInt ||
+			skillName == SkillName.Hiding )
+		{
+			bonus = 1 + (bonus / SkillCheckConstants.PASSIVE_SKILL_DIVISOR);
+		}
+		// Active combat/magic skills get full bonus
+		else if ( skillName == SkillName.Swords ||
+			skillName == SkillName.Fencing ||
+			skillName == SkillName.Macing ||
+			skillName == SkillName.Magery ||
+			skillName == SkillName.Necromancy ||
+			skillName == SkillName.Provocation ||
+			skillName == SkillName.Discordance ||
+			skillName == SkillName.Peacemaking ||
+			skillName == SkillName.Chivalry ||
+			skillName == SkillName.Stealing ||
+			skillName == SkillName.Stealth ||
+			skillName == SkillName.Ninjitsu ||
+			skillName == SkillName.Bushido ||
+			skillName == SkillName.Archery )
+		{
+			bonus = 1 + bonus;
+		}
+		// Other skills get no bonus
+		else
+		{
+			bonus = 1;
+		}
+
+		return bonus;
+	}
+
+	#endregion
+
+	public static bool CheckSkill( Mobile from, Skill skill, object amObj, double chance )
+	{
+		SkillName skillName = skill.SkillName;
+
+		if ( from.Skills.Cap == 0 )
+			return false;
+
+		// Calculate gainer (guild bonus)
+		double gainer = CalculateGainer( from, skillName );
+
+		// Determine success
 			bool success = ( chance >= Utility.RandomDouble() );
-			double gc = (double)(skill.Cap - skill.Base) / skill.Cap;
-			gc /= gainer;
 
-			gc += ( 1.0 - chance ) * ( success ? 0.5 : (Core.AOS ? 0.0 : 0.2) );
-			gc /= gainer;
+		// Calculate base gain chance
+		double gc = CalculateBaseGainChance( skill, chance, gainer, success );
 
-			gc *= skill.Info.GainFactor;
+		// Apply skill-specific bonuses
+		gc = ApplySkillSpecificBonuses( gc, skillName, amObj );
 
-			if ( gc < 0.01 )
-				gc = 0.01;
+		// Ensure minimum gain chance
+		if ( gc < SkillCheckConstants.MIN_GAIN_CHANCE )
+			gc = SkillCheckConstants.MIN_GAIN_CHANCE;
 
+		// Controlled creature bonus
 			if ( from is BaseCreature && ((BaseCreature)from).Controlled )
-				gc *= 1.45;
+			gc *= SkillCheckConstants.CONTROLLED_CREATURE_BONUS;
 
-			if (from is PlayerMobile)
+		// Apply player modifiers
+		if ( from is PlayerMobile )
+		{
+			PlayerMobile pm = (PlayerMobile)from;
+			gc = ApplyPlayerModifiers( gc, pm );
+			gc = ApplyRegionBonuses( gc, pm );
+
+			// Dungeon region bonus
+			Region reg = Region.Find( from.Location, from.Map );
+			if ( reg.IsPartOf( typeof( BardDungeonRegion ) ) || reg.IsPartOf( typeof( DungeonRegion ) ) )
 			{
-
-				if (((PlayerMobile)from).Avatar)
-					gc *= 1.75;
-				else 
-					gc *= 0.75;
-					
-				if (from.Hunger <= 3)
-					gc /= 1.5;
-				else if (from.Hunger <= 10)
-					gc /= 1.25;
-				else if (from.Hunger <= 20)
-					gc *= 1.10;
-				else if (from.Hunger <= 25)
-					gc *= 1.25;
-				else if (from.Hunger <= 30)
-					gc *= 1.50;
-				else if (from.Hunger <= 40)
-					gc *= 2.00;
-					
-				double gcModifier = 1.00;
-				if ( ((PlayerMobile)from).SoulBound) {
-					Phylactery phylactery = ((PlayerMobile)from).FindPhylactery();
-					if (phylactery != null) {
-						gcModifier += phylactery.CalculateSkillGainModifier();
-					}
-				}
-				gc *= gcModifier;
-
-				Region reg = Region.Find( from.Location, from.Map );
-
-				if ( from.Map != null && from.Map == Map.Trammel && from.X <= 2586 && from.X <= 2766 && from.Y >= 1402 && from.Y <= 1595 && from is PlayerMobile && from.Guild != null && !from.Guild.Disbanded && Insensitive.Contains( from.Guild.Name, "the church of justice" ) )
-				{					
-					gc *= 1.25;
-				}
-
-				if ( from is PlayerMobile )
-				{
-					if ( ((PlayerMobile)from).SoulBound && Server.Misc.Worlds.GetRegionName( from.Map, from.Location ) == "the Basement")
-						gc *= 4;
-					if ( ((PlayerMobile)from).FastGain > 1 )
-						gc *= ((PlayerMobile)from).FastGain;
-				}
-
-
-				if ( reg.IsPartOf( typeof( BardDungeonRegion ) ) || reg.IsPartOf( typeof( DungeonRegion ) ) )
-				{
-					double bonus = (Misc.MyServerSettings.GetDifficultyLevel( from.Location, from.Map ) / 5);
-
-					if (
-						skillName == SkillName.DetectHidden &&
-						skillName == SkillName.Meditation &&
-						skillName == SkillName.TasteID &&
-						skillName == SkillName.ItemID &&
-						skillName == SkillName.Anatomy &&
-						skillName == SkillName.Lockpicking &&
-						skillName == SkillName.RemoveTrap &&
-						skillName == SkillName.Tactics &&
-						skillName == SkillName.Musicianship &&
-						skillName == SkillName.AnimalLore &&
-						skillName == SkillName.Musicianship &&
-						skillName == SkillName.Mining &&
-						skillName == SkillName.Tracking &&
-						skillName == SkillName.Parry &&
-						skillName == SkillName.EvalInt &&
-						skillName == SkillName.Hiding
-					)
-						bonus = 1+ (bonus/3);					 
-
-					else if (
-						skillName == SkillName.Swords &&
-						skillName == SkillName.Fencing &&
-						skillName == SkillName.Macing &&
-						skillName == SkillName.Magery &&
-						skillName == SkillName.Necromancy &&
-						skillName == SkillName.Provocation &&
-						skillName == SkillName.Discordance &&
-						skillName == SkillName.Peacemaking &&
-						skillName == SkillName.Chivalry &&
-						skillName == SkillName.Stealing &&
-						skillName == SkillName.Stealth &&
-						skillName == SkillName.Ninjitsu &&
-						skillName == SkillName.Bushido &&
-						skillName == SkillName.Archery
-					)
-						bonus = 1+ bonus;	
-
-					else /*if (
-						skillName == SkillName.Inscribe &&
-						skillName == SkillName.Alchemy &&
-						skillName == SkillName.Blacksmith &&
-						skillName == SkillName.Tinkering &&
-						skillName == SkillName.Herding &&
-						skillName == SkillName.Cooking &&
-						skillName == SkillName.ArmsLore &&
-						skillName == SkillName.Fletching &&
-						skillName == SkillName.Carpentry &&
-						skillName == SkillName.Lumberjacking &&
-						skillName == SkillName.Camping &&
-						skillName == SkillName.Tailoring
-					)*/
-						bonus = 1;
-
-					 if (bonus >= 1)
-					 	gc *= bonus;
-				}
+				double difficultyLevel = Misc.MyServerSettings.GetDifficultyLevel( from.Location, from.Map );
+				double bonus = CalculateDungeonBonus( skillName, difficultyLevel );
+				if ( bonus >= 1 )
+					gc *= bonus;
 			}
+		}
 
-			if ( from.Alive && ( ( gc >= Utility.RandomDouble() && AllowGain( from, skill, amObj ) ) || skill.Base < 10.0 ) )
+			// Store random value for skill gain check
+			double randomValue = Utility.RandomDouble();
+			bool allowGainResult = AllowGain( from, skill, amObj );
+			
+			// Store skill value before gain for debug messages
+			// double skillBefore = skill.Base; // DEBUG: Commented out
+
+			if ( from.Alive && ( ( gc >= randomValue && allowGainResult ) || skill.Base < SkillCheckConstants.MIN_SKILL_BASE_FOR_GAIN ) )
 			{
 				// CAN ONLY GAIN FISHING SKILL ON A BOAT AFTER REACHING 60
-				if ( Worlds.IsOnBoat( from ) == false && skill.SkillName == SkillName.Fishing && from.Skills[SkillName.Fishing].Base >= 60 )
+				if ( Worlds.IsOnBoat( from ) == false && skill.SkillName == SkillName.Fishing && from.Skills[SkillName.Fishing].Base >= SkillCheckConstants.FISHING_BOAT_REQUIREMENT )
 				{
-					from.SendMessage("You will only get better at fishing if you do it from a boat.");
+					from.SendMessage(SkillCheckStringConstants.MSG_FISHING_REQUIRES_BOAT);
 				}
 				else
 				{
 					Gain( from, skill );
+					// bool skillGained = true; // DEBUG: Commented out
 				}
 			}
+			
+			/* DEBUG: Commented out - Debug messages for Animal Lore and Animal Taming when skill gain succeeds
+			if ( from is PlayerMobile && from.Alive && success && skillGained && ( skillName == SkillName.AnimalLore || skillName == SkillName.AnimalTaming ) )
+			{
+				double skillAfter = skill.Base;
+				double actualGain = skillAfter - skillBefore;
+				double successPercentage = gc * 100.0;
+				
+				string message;
+				if ( skillName == SkillName.AnimalLore )
+				{
+					message = string.Format( SkillCheckStringConstants.MSG_DEBUG_ANIMAL_LORE_SUCCESS_FORMAT, successPercentage, actualGain );
+				}
+				else
+				{
+					message = string.Format( SkillCheckStringConstants.MSG_DEBUG_ANIMAL_TAMING_SUCCESS_FORMAT, successPercentage, actualGain );
+				}
+				
+				from.SendMessage( 0x3FF, message );
+			}
+			*/
+
+			/* DEBUG: Commented out - Debug messages for Animal Lore and Animal Taming when skill gain fails
+			// Show when: skill check succeeded, but gain failed due to low chance or anti-macro
+			if ( from is PlayerMobile && from.Alive && success && !skillGained && skill.Base >= SkillCheckConstants.MIN_SKILL_BASE_FOR_GAIN )
+			{
+				if ( skillName == SkillName.AnimalLore || skillName == SkillName.AnimalTaming )
+				{
+					double successPercentage = gc * 100.0;
+					string antiMacroStatus = allowGainResult ? "OK" : "BLOQUEADO";
+					string lockStatus = skill.Lock == SkillLock.Up ? "OK" : skill.Lock.ToString();
+					string capStatus = skill.Base < skill.Cap ? "OK" : "ATINGIDO";
+					
+					// Check if total skill cap would be exceeded (assuming toGain = 1)
+					Skills skills = from.Skills;
+					string totalCapStatus = "OK";
+					int currentTotal = skills.Total;
+					int skillCap = skills.Cap;
+					if ( from.Player && (currentTotal + 1) > skillCap )
+					{
+						totalCapStatus = "EXCEDIDO";
+				}
+					
+					// Convert to display format (divide by 10 to show as skill points)
+					double currentTotalDisplay = (double)currentTotal / 10.0;
+					double skillCapDisplay = (double)skillCap / 10.0;
+					
+					string message;
+					if ( skillName == SkillName.AnimalLore )
+					{
+						message = string.Format( SkillCheckStringConstants.MSG_DEBUG_ANIMAL_LORE_FAILED_FORMAT, 
+							successPercentage, antiMacroStatus, lockStatus, capStatus, totalCapStatus, currentTotalDisplay, skillCapDisplay );
+					}
+					else
+					{
+						message = string.Format( SkillCheckStringConstants.MSG_DEBUG_ANIMAL_TAMING_FAILED_FORMAT, 
+							successPercentage, antiMacroStatus, lockStatus, capStatus, totalCapStatus, currentTotalDisplay, skillCapDisplay );
+					}
+					
+					from.SendMessage( 0x3B2, message );
+				}
+			}
+			*/
 
 			if (!success && from.Player && ((PlayerMobile)from).THC > 0)
 			{
 				PlayerMobile pm = (PlayerMobile)from;
-				if (Utility.RandomDouble() < (0.08 * ((double)pm.THC / 60)))
+				if (Utility.RandomDouble() < (SkillCheckConstants.THC_BOOST_MULTIPLIER * ((double)pm.THC / SkillCheckConstants.THC_BOOST_DIVISOR)))
 				{
 					success = true;
-					from.SendMessage("Your skill and focus seems a little ... higher.");
+					from.SendMessage(SkillCheckStringConstants.MSG_THC_SKILL_BOOST);
 				}
 			}
 
@@ -300,14 +697,9 @@ namespace Server.Misc
 			if ( skill == null )
 				return false;
 
-			double value = skill.Value;
-
-			if ( value < minSkill )
+		double chance;
+		if ( !CalculateSkillChance( skill.Value, minSkill, maxSkill, out chance ) )
 				return false; // Too difficult
-			else if ( value >= maxSkill )
-				return true; // No challenge
-
-			double chance = (value - minSkill) / (maxSkill - minSkill);
 
 			return CheckSkill( from, skill, target, chance );
 		}
@@ -319,184 +711,35 @@ namespace Server.Misc
 			if ( skill == null )
 				return false;
 
-			if ( chance < 0.0 )
+		if ( !ValidateSkillChance( chance ) )
 				return false; // Too difficult
-			else if ( chance >= 1.0 )
-				return true; // No challenge
 
 			return CheckSkill( from, skill, target, chance );
 		}
 
+		/// <summary>
+		/// Checks if a skill is associated with the player's NPC guild.
+		/// Uses dictionary lookup for O(1) performance instead of O(n) if-else chain.
+		/// </summary>
+		/// <param name="from">The mobile to check</param>
+		/// <param name="skillName">The skill to check</param>
+		/// <returns>True if the skill is a guild skill for the player's guild</returns>
 		public static bool IsGuildSkill( Mobile from, SkillName skillName )
 		{
+			if (!(from is PlayerMobile))
+				return false;
+
 			PlayerMobile pm = (PlayerMobile)from;
 
-			if ( pm.NpcGuild == NpcGuild.MagesGuild )
+			if (pm.NpcGuild == NpcGuild.None)
+				return false;
+
+			HashSet<SkillName> guildSkills;
+			if (s_GuildSkills.TryGetValue(pm.NpcGuild, out guildSkills))
 			{
-				if ( skillName == SkillName.EvalInt ){ return true; }
-				else if ( skillName == SkillName.Magery ){ return true; }
-				else if ( skillName == SkillName.Meditation ){ return true; }
-				else if ( skillName == SkillName.Inscribe ){ return true; }
-				else if ( skillName == SkillName.Alchemy ){ return true; }				
+				return guildSkills.Contains(skillName);
 			}
-			else if ( pm.NpcGuild == NpcGuild.WarriorsGuild )
-			{
-				if ( skillName == SkillName.Fencing ){ return true; }
-				else if ( skillName == SkillName.Macing ){ return true; }
-				else if ( skillName == SkillName.Parry ){ return true; }
-				else if ( skillName == SkillName.Swords ){ return true; }
-				else if ( skillName == SkillName.Tactics ){ return true; }
-				else if ( skillName == SkillName.Healing ){ return true; }
-				else if ( skillName == SkillName.Anatomy ){ return true; }
-				else if ( skillName == SkillName.Chivalry ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.ThievesGuild )
-			{
-				if ( skillName == SkillName.Hiding ){ return true; }
-				else if ( skillName == SkillName.Lockpicking ){ return true; }
-				else if ( skillName == SkillName.Snooping ){ return true; }
-				else if ( skillName == SkillName.Stealing ){ return true; }
-				else if ( skillName == SkillName.Stealth ){ return true; }
-				else if ( skillName == SkillName.DetectHidden ){ return true; }
-				else if ( skillName == SkillName.Ninjitsu ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.BardsGuild )
-			{
-				if ( skillName == SkillName.Discordance ){ return true; }
-				else if ( skillName == SkillName.Musicianship ){ return true; }
-				else if ( skillName == SkillName.Peacemaking ){ return true; }
-				else if ( skillName == SkillName.Provocation ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.BlacksmithsGuild )
-			{
-				if ( skillName == SkillName.Blacksmith ){ return true; }
-				else if ( skillName == SkillName.ArmsLore ){ return true; }
-				else if ( skillName == SkillName.Mining ){ return true; }
-				//else if ( skillName == SkillName.Lumberjacking ){ return true; }
-				//else if ( skillName == SkillName.Fletching ){ return true; }
-				//else if ( skillName == SkillName.Carpentry ){ return true; }
-				else if ( skillName == SkillName.Tinkering ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.NecromancersGuild )
-			{
-				if ( skillName == SkillName.Forensics ){ return true; }
-				else if ( skillName == SkillName.Necromancy ){ return true; }
-				else if ( skillName == SkillName.SpiritSpeak ){ return true; }
-				else if ( skillName == SkillName.Alchemy ){ return true; }
-				else if ( skillName == SkillName.Inscribe ){ return true; }				
-			}
-			else if ( pm.NpcGuild == NpcGuild.DruidsGuild )
-			{
-				if ( skillName == SkillName.AnimalLore ){ return true; }
-				else if ( skillName == SkillName.AnimalTaming ){ return true; }
-				else if ( skillName == SkillName.Herding ){ return true; }
-				else if ( skillName == SkillName.Veterinary ){ return true; }
-				else if ( skillName == SkillName.Cooking ){ return true; }
-				else if ( skillName == SkillName.Camping ){ return true; }
-				else if ( skillName == SkillName.Tracking ){ return true; }				
-			}
-			else if ( pm.NpcGuild == NpcGuild.CartographersGuild )
-				{
-				if ( skillName == SkillName.Cartography ){ return true; }
-				else if ( skillName == SkillName.RemoveTrap ){ return true; }
-				else if ( skillName == SkillName.Lockpicking ){ return true; }
-				//else if ( skillName == SkillName.Mining ){ return true; }
-				else if ( skillName == SkillName.Fishing ){ return true; }		
-			}
-			else if ( pm.NpcGuild == NpcGuild.AssassinsGuild )
-			{
-				if ( skillName == SkillName.Fencing ){ return true; }
-				else if ( skillName == SkillName.Hiding ){ return true; }
-				else if ( skillName == SkillName.Poisoning ){ return true; }
-				else if ( skillName == SkillName.Stealth ){ return true; }
-				else if ( skillName == SkillName.Archery ){ return true; }				
-				else if ( skillName == SkillName.Alchemy ){ return true; }
-				else if ( skillName == SkillName.Bushido ){ return true; }
-				}
-			else if ( pm.NpcGuild == NpcGuild.MerchantsGuild )
-			{
-				if ( skillName == SkillName.ItemID ){ return true; }
-				else if ( skillName == SkillName.ArmsLore ){ return true; }
-				else if ( skillName == SkillName.TasteID ){ return true; }
-			}				
-			else if ( pm.NpcGuild == NpcGuild.TailorsGuild )
-			{
-				if ( skillName == SkillName.Tailoring ){ return true; }
-				//else if ( skillName == SkillName.Mining ){ return true; }
-				//else if ( skillName == SkillName.Lumberjacking ){ return true; }
-				//else if ( skillName == SkillName.Fletching ){ return true; }
-				//else if ( skillName == SkillName.Carpentry ){ return true; }
-				else if ( skillName == SkillName.Tinkering ){ return true; }				
-			}				
-			else if ( pm.NpcGuild == NpcGuild.CarpentersGuild )
-			{
-				if ( skillName == SkillName.Carpentry ){ return true; }
-				else if ( skillName == SkillName.Lumberjacking ){ return true; }
-				//else if ( skillName == SkillName.Blacksmith ){ return true; }
-				//else if ( skillName == SkillName.Mining ){ return true; }
-				else if ( skillName == SkillName.Fletching ){ return true; }
-				else if ( skillName == SkillName.Tinkering ){ return true; }
-				//else if ( skillName == SkillName.Tailoring ){ return true; }
-			}				
-			else if ( pm.NpcGuild == NpcGuild.CulinariansGuild )
-			{
-				if ( skillName == SkillName.Cooking ){ return true; }
-				else if ( skillName == SkillName.TasteID ){ return true; }
-				else if ( skillName == SkillName.Tinkering ){ return true; }
-			}				
-			else if ( pm.NpcGuild == NpcGuild.TinkersGuild )
-			{
-				if ( skillName == SkillName.Tinkering ){ return true; }
-				//else if ( skillName == SkillName.Mining ){ return true; }
-				//else if ( skillName == SkillName.Lumberjacking ){ return true; }
-				else if ( skillName == SkillName.Fletching ){ return true; }
-				else if ( skillName == SkillName.Carpentry ){ return true; }
-				else if ( skillName == SkillName.Tailoring ){ return true; }
-				
-			}				
-			else if ( pm.NpcGuild == NpcGuild.ArchersGuild )
-			{
-				if ( skillName == SkillName.Archery ){ return true; }
-				else if ( skillName == SkillName.Fletching ){ return true; }
-				else if ( skillName == SkillName.Tactics ){ return true; }
-				else if ( skillName == SkillName.Chivalry ){ return true; }
-			}				
-			else if ( pm.NpcGuild == NpcGuild.AlchemistsGuild )
-			{
-				if ( skillName == SkillName.Alchemy ){ return true; }
-				else if ( skillName == SkillName.Cooking ){ return true; }
-				else if ( skillName == SkillName.TasteID ){ return true; }
-			}			
-			else if ( pm.NpcGuild == NpcGuild.RangersGuild )
-			{
-				if ( skillName == SkillName.Camping ){ return true; }
-				else if ( skillName == SkillName.Tracking ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.LibrariansGuild )
-			{
-				if ( skillName == SkillName.ItemID ){ return true; }
-				else if ( skillName == SkillName.Inscribe ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.FishermensGuild )
-			{
-				if ( skillName == SkillName.Fishing ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.HealersGuild )
-			{
-				if ( skillName == SkillName.Anatomy ){ return true; }
-				else if ( skillName == SkillName.Healing ){ return true; }
-				else if ( skillName == SkillName.Veterinary ){ return true; }
-			}
-			else if ( pm.NpcGuild == NpcGuild.MinersGuild )
-			{
-				if ( skillName == SkillName.Mining ){ return true; }
-				else if ( skillName == SkillName.ArmsLore ){ return true; }
-				else if ( skillName == SkillName.Blacksmith ){ return true; }
-				//else if ( skillName == SkillName.Lumberjacking ){ return true; }
-				//else if ( skillName == SkillName.Fletching ){ return true; }
-				//else if ( skillName == SkillName.Carpentry ){ return true; }
-				else if ( skillName == SkillName.Tinkering ){ return true; }
-			}			
+
 			return false;
 		}
 
@@ -533,20 +776,32 @@ namespace Server.Misc
 
 				if (AdventuresFunctions.IsInMidland((object)from))
 				{
-
+					// Midland Region skill gain rates
 					if ( skill.Base <= 25.0 )
-						toGain = Utility.RandomMinMax(4, 6);
+						toGain = Utility.RandomMinMax(3, 4); // 0.3-0.4 skill points
 
 					else if ( skill.Base <= 55.0 )
-						toGain = Utility.RandomMinMax(3, 4);
+						toGain = Utility.RandomMinMax(2, 3); // 0.2-0.3 skill points
 
-					else if ( skill.Base <= 70.0 )
-						toGain = Utility.RandomMinMax(1, 3);
+					else if ( skill.Base <= 90.0 )
+						toGain = 2; // 0.2 skill points (fixed)
 
-					else if ( skill.Base <= 80.0 )
-						toGain = 1;
+					else if ( skill.Base <= 100.0 )
+						toGain = 1; // 0.1 skill points (fixed)
 
-					else if ( skill.Base <= 85.0 )
+					else
+					{
+						// Skill > 100.0: Gain becomes harder (chance-based)
+						if ( skill.Base <= 105.0 )
+						{
+							harder = Utility.RandomMinMax( 0, 1 );
+							if ( harder == 1 )
+								toGain = 1;
+							else 
+								toGain = 0;
+						}
+						
+						else if ( skill.Base <= 110.0 )
 						{
 							harder = Utility.RandomMinMax( 0, 2 );
 							if ( harder == 1 )
@@ -555,58 +810,14 @@ namespace Server.Misc
 								toGain = 0;
 						}
 						
-					else if ( skill.Base <= 90.0 )
+						else if ( skill.Base >= 110.1 )
 						{
 							harder = Utility.RandomMinMax( 0, 3 );
 							if ( harder == 1 )
 								toGain = 1;
 							else 
 								toGain = 0;
-						}
-						
-					else if ( skill.Base <= 95.0 )
-						{
-							harder = Utility.RandomMinMax( 0, 4 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
-						}
-						
-					else if ( skill.Base <= 100.0 )
-						{
-							harder = Utility.RandomMinMax( 0, 5 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
-						}
-						
-					else if ( skill.Base <= 105 )
-						{
-							harder = Utility.RandomMinMax( 0, 6 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
 						}	
-
-					else if ( skill.Base <= 110 )
-						{
-							harder = Utility.RandomMinMax( 0, 7 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
-						}	
-
-					else if ( skill.Base >= 110.1 )
-						{
-							harder = Utility.RandomMinMax( 0, 8 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
 						}	
 
 					if ( toGain > 0 && (skill.SkillName == SkillName.Focus || skill.SkillName == SkillName.Meditation))
@@ -620,20 +831,20 @@ namespace Server.Misc
 				}
 				else
 				{
-
+					// Normal Region skill gain rates
 					if ( skill.Base <= 25.0 )
-						toGain = Utility.RandomMinMax(3, 5);
+						toGain = Utility.RandomMinMax(2, 3); // 0.2-0.3 skill points
 
 					else if ( skill.Base <= 55.0 )
-						toGain = Utility.RandomMinMax(2, 3);
+						toGain = 2; // 0.2 skill points (fixed)
 
-					else if ( skill.Base <= 70.0 )
-						toGain = Utility.RandomMinMax(1, 2);
+					else if ( skill.Base <= 90.0 )
+						toGain = 1; // 0.1 skill points (fixed)
 
-					else if ( skill.Base <= 80.0 )
-						toGain = 1;
-
-					else if ( skill.Base <= 85.0 )
+					else
+					{
+						// Skill > 90.0: Gain becomes harder (chance-based)
+						if ( skill.Base <= 95.0 )
 						{
 							harder = Utility.RandomMinMax( 0, 1 );
 							if ( harder == 1 )
@@ -642,7 +853,7 @@ namespace Server.Misc
 								toGain = 0;
 						}
 						
-					else if ( skill.Base <= 90.0 )
+						else if ( skill.Base <= 100.0 )
 						{
 							harder = Utility.RandomMinMax( 0, 2 );
 							if ( harder == 1 )
@@ -651,7 +862,7 @@ namespace Server.Misc
 								toGain = 0;
 						}
 						
-					else if ( skill.Base <= 95.0 )
+						else if ( skill.Base <= 105 )
 						{
 							harder = Utility.RandomMinMax( 0, 3 );
 							if ( harder == 1 )
@@ -660,7 +871,7 @@ namespace Server.Misc
 								toGain = 0;
 						}
 						
-					else if ( skill.Base <= 100.0 )
+						else if ( skill.Base <= 110 )
 						{
 							harder = Utility.RandomMinMax( 0, 4 );
 							if ( harder == 1 )
@@ -669,7 +880,7 @@ namespace Server.Misc
 								toGain = 0;
 						}
 						
-					else if ( skill.Base <= 105 )
+						else if ( skill.Base >= 110.1 )
 						{
 							harder = Utility.RandomMinMax( 0, 5 );
 							if ( harder == 1 )
@@ -677,23 +888,6 @@ namespace Server.Misc
 							else 
 								toGain = 0;
 						}	
-
-					else if ( skill.Base <= 110 )
-						{
-							harder = Utility.RandomMinMax( 0, 6 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
-						}	
-
-					else if ( skill.Base >= 110.1 )
-						{
-							harder = Utility.RandomMinMax( 0, 7 );
-							if ( harder == 1 )
-								toGain = 1;
-							else 
-								toGain = 0;
 						}	
 
 					if ( toGain > 0 && (skill.SkillName == SkillName.Focus || skill.SkillName == SkillName.Meditation))
@@ -728,20 +922,20 @@ namespace Server.Misc
 
 				if ( from is PlayerMobile )
 					if (pm != null && skill.SkillName == pm.AcceleratedSkill && pm.AcceleratedStart > DateTime.UtcNow)
-					toGain *= Utility.RandomMinMax(2, 4);
+					toGain *= Utility.RandomMinMax(SkillCheckConstants.SCROLL_ALACRITY_GAIN_MIN, SkillCheckConstants.SCROLL_ALACRITY_GAIN_MAX);
 					#endregion
 
-				if (from is PlayerMobile && skill.BaseFixedPoint < 1000 && (toGain + skill.BaseFixedPoint >= 1000))
+				if (from is PlayerMobile && skill.BaseFixedPoint < SkillCheckConstants.SKILL_MILESTONE_THRESHOLD && (toGain + skill.BaseFixedPoint >= SkillCheckConstants.SKILL_MILESTONE_THRESHOLD))
 					LoggingFunctions.LogGM( from, skill );
 
 				if ( !from.Player || (skills.Total + toGain) <= skills.Cap )
 				{
 					skill.BaseFixedPoint += toGain;
 
-					if ( skill.SkillName == SkillName.Focus && Utility.RandomMinMax( 1, 20 ) == 1 )
+					if ( skill.SkillName == SkillName.Focus && Utility.RandomMinMax( 1, SkillCheckConstants.FOCUS_MEDITATION_REFRESH_CHANCE ) == 1 )
 						{ Server.Gumps.SkillListingGump.RefreshSkillList( from ); }
 
-					else if ( skill.SkillName == SkillName.Meditation && Utility.RandomMinMax( 1, 20 ) == 1 )
+					else if ( skill.SkillName == SkillName.Meditation && Utility.RandomMinMax( 1, SkillCheckConstants.FOCUS_MEDITATION_REFRESH_CHANCE ) == 1 )
 						{ Server.Gumps.SkillListingGump.RefreshSkillList( from ); }
 
 					else
@@ -753,11 +947,11 @@ namespace Server.Misc
 			{
 				SkillInfo info = skill.Info;
 
-				if ( from.StrLock == StatLockType.Up && (info.StrGain / 33.3) > Utility.RandomDouble() )
+				if ( from.StrLock == StatLockType.Up && (info.StrGain / SkillCheckConstants.STAT_GAIN_DIVISOR) > Utility.RandomDouble() )
 					GainStat( from, Stat.Str );
-				else if ( from.DexLock == StatLockType.Up && (info.DexGain / 33.3) > Utility.RandomDouble() )
+				else if ( from.DexLock == StatLockType.Up && (info.DexGain / SkillCheckConstants.STAT_GAIN_DIVISOR) > Utility.RandomDouble() )
 					GainStat( from, Stat.Dex );
-				else if ( from.IntLock == StatLockType.Up && (info.IntGain / 33.3) > Utility.RandomDouble() )
+				else if ( from.IntLock == StatLockType.Up && (info.IntGain / SkillCheckConstants.STAT_GAIN_DIVISOR) > Utility.RandomDouble() )
 					GainStat( from, Stat.Int );
 			}
 		}
@@ -782,22 +976,22 @@ namespace Server.Misc
 					return false;
 			}
 
-			if ( from.StatCap > 275 )
+			if ( from.StatCap > SkillCheckConstants.HIGH_STAT_CAP_THRESHOLD )
 			{
 				switch ( stat )
 				{
-					case Stat.Str: return ( from.StrLock == StatLockType.Up && from.RawStr < 175 );
-					case Stat.Dex: return ( from.DexLock == StatLockType.Up && from.RawDex < 175 );
-					case Stat.Int: return ( from.IntLock == StatLockType.Up && from.RawInt < 175 );
+					case Stat.Str: return ( from.StrLock == StatLockType.Up && from.RawStr < SkillCheckConstants.HIGH_STAT_CAP_MAX );
+					case Stat.Dex: return ( from.DexLock == StatLockType.Up && from.RawDex < SkillCheckConstants.HIGH_STAT_CAP_MAX );
+					case Stat.Int: return ( from.IntLock == StatLockType.Up && from.RawInt < SkillCheckConstants.HIGH_STAT_CAP_MAX );
 				}
 			}
 			else
 			{
 				switch ( stat )
 				{
-					case Stat.Str: return ( from.StrLock == StatLockType.Up && from.RawStr < 150 );
-					case Stat.Dex: return ( from.DexLock == StatLockType.Up && from.RawDex < 150 );
-					case Stat.Int: return ( from.IntLock == StatLockType.Up && from.RawInt < 150 );
+					case Stat.Str: return ( from.StrLock == StatLockType.Up && from.RawStr < SkillCheckConstants.NORMAL_STAT_CAP_MAX );
+					case Stat.Dex: return ( from.DexLock == StatLockType.Up && from.RawDex < SkillCheckConstants.NORMAL_STAT_CAP_MAX );
+					case Stat.Int: return ( from.IntLock == StatLockType.Up && from.RawInt < SkillCheckConstants.NORMAL_STAT_CAP_MAX );
 				}
 			}
 
@@ -858,9 +1052,9 @@ namespace Server.Misc
 			}
 		}
 
-		private static double m_DefaultStatGainDelay = 15.0;
+		private static double m_DefaultStatGainDelay = SkillCheckConstants.DEFAULT_STAT_GAIN_DELAY_MINUTES;
 		private static TimeSpan m_StatGainDelay = TimeSpan.FromMinutes(m_DefaultStatGainDelay);
-		private static TimeSpan m_PetStatGainDelay = TimeSpan.FromMinutes( 5.0 );
+		private static TimeSpan m_PetStatGainDelay = TimeSpan.FromMinutes( SkillCheckConstants.PET_STAT_GAIN_DELAY_MINUTES );
 
 		public static void GainStat( Mobile from, Stat stat )
 		{
@@ -872,8 +1066,8 @@ namespace Server.Misc
 						m_StatGainDelay = TimeSpan.FromMinutes(phylactery.CalculateStatGainModifier(m_DefaultStatGainDelay));
 					}
 				}
-				if ( ((PlayerMobile)from).FastGain > 2)
-					m_StatGainDelay = TimeSpan.FromMinutes( ( m_DefaultStatGainDelay / 2 ));
+				if ( ((PlayerMobile)from).FastGain > SkillCheckConstants.FAST_GAIN_THRESHOLD)
+					m_StatGainDelay = TimeSpan.FromMinutes( ( m_DefaultStatGainDelay / SkillCheckConstants.FAST_GAIN_DELAY_DIVISOR ));
 			}
 		
 			switch( stat )

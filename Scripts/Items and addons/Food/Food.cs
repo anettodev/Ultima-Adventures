@@ -293,6 +293,20 @@ namespace Server.Items
 						}
 					}
 				}
+
+				// Stam recovery based on FillFactor (1 FillFactor = 1 Stam point, up to max 20)
+				int stamRecovery = fillFactor;
+				if ( stamRecovery > 20 )
+					stamRecovery = 20;
+				
+				if ( stamRecovery > 0 && from.Stam < from.StamMax )
+				{
+					int stamNeeded = from.StamMax - from.Stam;
+					if ( stamRecovery > stamNeeded )
+						stamRecovery = stamNeeded;
+					
+					from.Stam += stamRecovery;
+				}
 			}
 
 			from.Hunger += fd.m_benefit;

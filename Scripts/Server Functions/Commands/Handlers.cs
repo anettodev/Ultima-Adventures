@@ -84,6 +84,8 @@ namespace Server.Commands
 			Register( "SpeedBoost", AccessLevel.Counselor, new CommandEventHandler( SpeedBoost_OnCommand ) );
 
 			Register( "AddPetTicket", AccessLevel.GameMaster, new CommandEventHandler( AddPetTicket_OnCommand ) );
+
+			Register( "Pets", AccessLevel.Player, new CommandEventHandler( Pets_OnCommand ) );
 		}
 
 		public static void Register( string command, AccessLevel access, CommandEventHandler handler )
@@ -1247,6 +1249,40 @@ namespace Server.Commands
 				ticket.MoveToWorld( from.Location, from.Map );
 				from.SendMessage( "PetTicket for {0} has been created at your location (backpack full).", creatureTypeName );
 				CommandLogging.WriteLine( from, "{0} {1} created PetTicket for {2} at location", from.AccessLevel, CommandLogging.Format( from ), creatureTypeName );
+			}
+		}
+
+		[Usage( "Pets" )]
+		[Description( "Shows a gump with a list of active followers and buttons to release each one." )]
+		public static void Pets_OnCommand( CommandEventArgs e )
+		{
+			Mobile from = e.Mobile;
+
+			if ( from is PlayerMobile )
+			{
+				PlayerMobile pm = (PlayerMobile)from;
+				pm.UpdateFollowers();
+
+				List<BaseCreature> activeFollowers = new List<BaseCreature>();
+
+				foreach ( Mobile follower in pm.AllFollowers )
+				{
+					BaseCreature pet = follower as BaseCreature;
+					if ( pet != null && !pet.Deleted && ( pet.ControlMaster == pm || pet.SummonMaster == pm ) )
+					{
+						// Only include pets that are not stabled
+						if ( !pet.IsHitchStabled )
+						{
+							activeFollowers.Add( pet );
+						}
+					}
+				}
+
+				from.SendGump( new Server.Gumps.ActiveFollowersGump( from, activeFollowers ) );
+			}
+			else
+			{
+				from.SendMessage( "Este comando só está disponível para jogadores." );
 			}
 		}
 	}

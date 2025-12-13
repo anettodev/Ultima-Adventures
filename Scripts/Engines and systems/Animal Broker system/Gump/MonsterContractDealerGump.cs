@@ -34,13 +34,12 @@ namespace Server.Gumps
 			AddImage( 97, 49, 9005 );
 			AddImageTiled( 58, 39, 29, 390, 10460 );
 			AddImageTiled( 412, 37, 31, 389, 10460 );
-			AddLabel( 140, 60, 0x34, "Monster Contracts" );
+			AddLabel( 140, 60, 0x34, "Contratos de Animais & Bestas" );
 			
-
 			AddHtml( 107, 140, 300, 230, "<BODY>" +
 //----------------------/----------------------------------------------/
-"<BASEFONT COLOR=YELLOW>Hello there. Can I speak with you one second? I have a favor to ask and I wonder if you could help me.<BR><BR>I have in my possesion contracts  from buyers in the lands for certain beasts.  I will gladly give you the contracts and only keep a small commission for myself if you could fill the contracts for me.<BR>" +
-"<BASEFONT COLOR=YELLOW>Will you help me fill my contracts?<BR><BR>Oh, Thank you my friend. " + "</BODY>", false, true);
+"<BASEFONT COLOR=YELLOW>Olá. Tenho um favor a pedir e gostaria de saber se você poderia me ajudar.<BR><BR>Tenho em minha posse contratos de compradores para certos amimais e bestas. Ficarei feliz em dar-lhe os contratos e ficarei apenas com uma pequena comissão se você cumprir estes contratos.<BR>" +
+"<BASEFONT COLOR=YELLOW><BR>Você me ajudará a fechar estes contratos?<BR><BR>Obrigado meu amigo. " + "</BODY>", false, true);
 
 			AddImage( 430, 9, 10441);
 			AddImageTiled( 40, 38, 17, 391, 9263 );
@@ -66,8 +65,13 @@ namespace Server.Gumps
          { 
             case 0: //Case uses the ActionIDs defenied above. Case 0 defenies the actions for the button with the action id 0 
             { 
-               //Cancel 
-               from.SendMessage( "The contract was placed in your bag. Good Hunting" );
+               // Create contract only after player clicks the button
+               if ( from != null && from.Backpack != null )
+               {
+                  TamingBOD contract = new TamingBOD();
+                  from.Backpack.DropItem( contract );
+                  from.SendMessage( "O contrato foi colocado em sua mochila. Boa caça!" );
+               }
                break; 
             } 
 

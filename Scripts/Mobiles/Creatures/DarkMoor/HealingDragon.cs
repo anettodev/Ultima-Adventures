@@ -140,8 +140,9 @@ namespace Server.Mobiles
 		{
 			Direction = GetDirectionTo( m );
 
-			if ( m.CheckYoungHealTime() )
-			{
+			// COMMENTED OUT: CheckYoungHealTime is disabled - always allow healing
+			// if ( m.CheckYoungHealTime() )
+			// {
 				Say( 501229 ); // You look like you need some healing my child.
 
 				m.PlaySound( 0x1F2 );
@@ -151,11 +152,11 @@ namespace Server.Mobiles
 				Effects.SendLocationParticles( EffectItem.Create( this.Location, this.Map, EffectItem.DefaultDuration ), 0x3728, 1, 10, 0x26B6 );
 				Effects.PlaySound( this.Location, this.Map, this.BaseSoundID );
 				Delete();
-			}
-			else
-			{
-				Say( 501228 ); // I can do no more for you at this time.
-			}
+			// }
+			// else
+			// {
+			//	Say( 501228 ); // I can do no more for you at this time.
+			// }
 		}
 		
 		public HealingDragon( Serial serial ) : base( serial )
