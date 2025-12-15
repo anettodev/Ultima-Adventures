@@ -1501,8 +1501,8 @@ namespace Server.Multis
 				packKey.KeyValue = value;
 				bankKey.KeyValue = value;
 
-				packKey.LootType = LootType.Newbied;
-				bankKey.LootType = LootType.Newbied;
+				// House keys are no longer Newbied - they will drop on death
+				// Players can craft Eternal Keys (Chave Eterna) which are Newbied
 
 				BankBox box = m.BankBox;
 
@@ -3235,7 +3235,52 @@ namespace Server.Multis
 
 					if ( info.Item is StrongBox )
 					{
-						info.Item.Destroy();
+						StrongBox strongBox = (StrongBox)info.Item;
+						Mobile owner = strongBox.Owner;
+
+						if ( owner != null && !owner.Deleted && owner.BankBox != null )
+						{
+							// Create ProvisionerCrate to hold StrongBox items
+							ProvisionerCrate crate = new ProvisionerCrate();
+
+							// Move all items from StrongBox to crate
+							List<Item> items = new List<Item>( strongBox.Items );
+							foreach ( Item item in items )
+							{
+								if ( item != null && !item.Deleted )
+								{
+									crate.AddItem( item );
+								}
+							}
+
+							// Try to add crate to bank box
+							if ( owner.BankBox.CheckHold( owner, crate, false, true, 0, 0 ) )
+							{
+								owner.BankBox.DropItem( crate );
+							}
+							else
+							{
+								// Bank is full, drop crate on ground at StrongBox location
+								Point3D loc = strongBox.GetWorldLocation();
+								Map map = strongBox.Map;
+								if ( map != null && map != Map.Internal )
+								{
+									crate.MoveToWorld( loc, map );
+								}
+								else
+								{
+									// Fallback: destroy crate and drop items on ground
+									crate.Destroy();
+								}
+							}
+						}
+						else
+						{
+							// No owner or bank, drop items on ground (existing behavior)
+							strongBox.Destroy();
+						}
+
+						strongBox.Delete();
 					}
 					else
 					{

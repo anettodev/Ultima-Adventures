@@ -20,7 +20,7 @@ namespace Server.Items
 			m_Owner = owner;
 			m_House = house;
 
-			MaxItems = 25;
+			MaxItems = 50;
 		}
 
 		[CommandProperty( AccessLevel.GameMaster )]

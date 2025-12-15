@@ -464,7 +464,7 @@ namespace Server.Items
 			get {
 					Mobile m = ParentEntity as Mobile;
 					if ( m != null && (m.Player || m is PlayerVendor) && m.Backpack == this ) {
-                        return 250; // too high causes lag on player death and corpse loot
+                        return 125; // reduced from 250 to prevent lag on player death and corpse loot
                     } else {
 						return base.DefaultMaxItems;
 					}
@@ -1053,7 +1053,7 @@ namespace Server.Items
 		public WoodenBox() : base( 0x9AA )
 		{
 			Weight = 4.0;
-			Name = "Baú de Madeira (Pequeno)";
+			Name = "Baï¿½ de Madeira (Pequeno)";
 		}
 
 		public WoodenBox( Serial serial ) : base( serial )
@@ -1841,7 +1841,7 @@ namespace Server.Items
 		{
 			Weight = 2.0;
 			Hue = 0x724;
-			Name = "Baú de Madeira (Médio)";
+			Name = "Baï¿½ de Madeira (Mï¿½dio)";
 
         }
 
@@ -1907,7 +1907,7 @@ namespace Server.Items
 		[Constructable]
 		public OrnateWoodenChest() : base( 0x280D )
 		{
-			Name = "Cômoda Real";
+			Name = "Cï¿½moda Real";
 
         }
 
@@ -1940,7 +1940,7 @@ namespace Server.Items
 		[Constructable]
 		public GildedWoodenChest() : base( 0x280F )
 		{
-			Name = "Baú de Madeira Real";
+			Name = "Baï¿½ de Madeira Real";
 
         }
 
@@ -1974,7 +1974,7 @@ namespace Server.Items
 		public WoodenFootLocker() : base( 0x2811 )
 		{
 			GumpID = 0x10C;
-			Name = "Baú de Madeira (Baixo)";
+			Name = "Baï¿½ de Madeira (Baixo)";
 
         }
 
@@ -2009,7 +2009,7 @@ namespace Server.Items
 		[Constructable]
 		public WoodenCoffin() : base( 0x2800 )
 		{
-			Name = "Caixão Simples";
+			Name = "Caixï¿½o Simples";
 			GumpID = 0x41D;
 		}
 
@@ -2037,7 +2037,7 @@ namespace Server.Items
 		[Constructable]
 		public WoodenCasket() : base( 0x27E9 )
 		{
-			Name = "Caixão Elegante";
+			Name = "Caixï¿½o Elegante";
 			GumpID = 0x41D;
 		}
 
@@ -2237,7 +2237,7 @@ namespace Server.Items
 		[Constructable]
 		public FinishedWoodenChest() : base( 0x2813 )
 		{
-			Name = "Baú de Madeira (Grande)";
+			Name = "Baï¿½ de Madeira (Grande)";
 
         }
 
@@ -2505,6 +2505,17 @@ namespace Server.Items
 			GumpID = 0x2A77;
 			Weight = 10.0;
 			Hue = 0xABE;
+		}
+
+		public override int DefaultMaxWeight
+		{
+			get
+			{
+				if ( IsSecure )
+					return 0; // Unlimited weight when secured
+
+				return 800; // 800 stones when not secured
+			}
 		}
 
 		public ProvisionerCrate( Serial serial ) : base( serial )
