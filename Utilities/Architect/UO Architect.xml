@@ -1,13 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <settings>
-  <clientDirectory>C:\ULTIMA-ADVENTURES\CLASSICUO</clientDirectory>
   <prefix>[</prefix>
-  <multiPatch multiIdxTarget="C:\Ultima-Adventures\ClassicUO\multi.idx" multiMulTarget="C:\ULTIMA-ADVENTURES\CLASSICUO\MULTI.MUL" />
+  <multiPatch multiIdxTarget="C:\UOShard\Ultima-Adventures\Files\multi.idx" multiMulTarget="C:\UOSHARD\ULTIMA-ADVENTURES\FILES\MULTI.MUL" />
   <server id="978d3c78-f547-4137-bcdc-fba4ca1ae0bd">
-    <name>odyssey</name>
-    <password>micheal</password>
-    <ip>74.91.120.104</ip>
+    <name>nimeria-local</name>
+    <password>t213104br</password>
+    <ip>127.0.0.1</ip>
     <port>2594</port>
-    <acct>admin</acct>
+    <acct>developer</acct>
   </server>
 </settings>

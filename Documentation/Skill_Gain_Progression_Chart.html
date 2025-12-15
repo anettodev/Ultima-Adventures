@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultima Adventures - Skill Gain Progression Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .info-box h3 {
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-size: 1.3em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-box li:last-child {
+            border-bottom: none;
+        }
+
+        .info-box .skill-range {
+            font-weight: bold;
+            color: #ffd700;
+        }
+
+        .info-box .gain-amount {
+            color: #90ee90;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .midland-color {
+            background-color: #ff6b6b;
+        }
+
+        .normal-color {
+            background-color: #4ecdc4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚔️ Skill Gain Progression</h1>
+        <p class="subtitle">Ultima Adventures - Average Skill Gain per Successful Attempt</p>
+        
+        <div class="chart-container">
+            <canvas id="skillGainChart"></canvas>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color midland-color"></div>
+                <span><strong>Midland Region</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color normal-color"></div>
+                <span><strong>Normal Region</strong></span>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-box">
+                <h3>🏰 Midland Region</h3>
+                <ul>
+                    <li><span class="skill-range">0.0 - 25.0:</span> <span class="gain-amount">0.35 avg</span> (0.3-0.4 random)</li>
+                    <li><span class="skill-range">25.1 - 55.0:</span> <span class="gain-amount">0.25 avg</span> (0.2-0.3 random)</li>
+                    <li><span class="skill-range">55.1 - 90.0:</span> <span class="gain-amount">0.20 fixed</span></li>
+                    <li><span class="skill-range">90.1 - 100.0:</span> <span class="gain-amount">0.10 fixed</span></li>
+                    <li><span class="skill-range">100.1 - 105.0:</span> <span class="gain-amount">0.05 avg</span> (50% chance)</li>
+                    <li><span class="skill-range">105.1 - 110.0:</span> <span class="gain-amount">0.033 avg</span> (33% chance)</li>
+                    <li><span class="skill-range">110.1+:</span> <span class="gain-amount">0.025 avg</span> (25% chance)</li>
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>🌍 Normal Region</h3>
+                <ul>
+                    <li><span class="skill-range">0.0 - 25.0:</span> <span class="gain-amount">0.25 avg</span> (0.2-0.3 random)</li>
+                    <li><span class="skill-range">25.1 - 55.0:</span> <span class="gain-amount">0.20 fixed</span></li>
+                    <li><span class="skill-range">55.1 - 90.0:</span> <span class="gain-amount">0.10 fixed</span></li>
+                    <li><span class="skill-range">90.1 - 95.0:</span> <span class="gain-amount">0.05 avg</span> (50% chance)</li>
+                    <li><span class="skill-range">95.1 - 100.0:</span> <span class="gain-amount">0.033 avg</span> (33% chance)</li>
+                    <li><span class="skill-range">100.1 - 105.0:</span> <span class="gain-amount">0.025 avg</span> (25% chance)</li>
+                    <li><span class="skill-range">105.1 - 110.0:</span> <span class="gain-amount">0.02 avg</span> (20% chance)</li>
+                    <li><span class="skill-range">110.1+:</span> <span class="gain-amount">0.0167 avg</span> (16.7% chance)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate data points for the chart
+        function generateDataPoints() {
+            const points = [];
+            
+            // Generate points every 5 skill levels from 0 to 120
+            for (let skill = 0; skill <= 120; skill += 1) {
+                let midlandGain = 0;
+                let normalGain = 0;
+
+                // Midland Region
+                if (skill <= 25.0) {
+                    midlandGain = 0.35; // Average of 0.3-0.4
+                } else if (skill <= 55.0) {
+                    midlandGain = 0.25; // Average of 0.2-0.3
+                } else if (skill <= 90.0) {
+                    midlandGain = 0.20; // Fixed
+                } else if (skill <= 100.0) {
+                    midlandGain = 0.10; // Fixed
+                } else if (skill <= 105.0) {
+                    midlandGain = 0.05; // 50% chance of 0.1
+                } else if (skill <= 110.0) {
+                    midlandGain = 0.033; // 33% chance of 0.1
+                } else {
+                    midlandGain = 0.025; // 25% chance of 0.1
+                }
+
+                // Normal Region
+                if (skill <= 25.0) {
+                    normalGain = 0.25; // Average of 0.2-0.3
+                } else if (skill <= 55.0) {
+                    normalGain = 0.20; // Fixed
+                } else if (skill <= 90.0) {
+                    normalGain = 0.10; // Fixed
+                } else if (skill <= 95.0) {
+                    normalGain = 0.05; // 50% chance of 0.1
+                } else if (skill <= 100.0) {
+                    normalGain = 0.033; // 33% chance of 0.1
+                } else if (skill <= 105.0) {
+                    normalGain = 0.025; // 25% chance of 0.1
+                } else if (skill <= 110.0) {
+                    normalGain = 0.02; // 20% chance of 0.1
+                } else {
+                    normalGain = 0.0167; // 16.7% chance of 0.1
+                }
+
+                points.push({
+                    skill: skill,
+                    midland: midlandGain,
+                    normal: normalGain
+                });
+            }
+
+            return points;
+        }
+
+        const dataPoints = generateDataPoints();
+
+        const ctx = document.getElementById('skillGainChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataPoints.map(p => p.skill),
+                datasets: [
+                    {
+                        label: 'Midland Region',
+                        data: dataPoints.map(p => p.midland),
+                        borderColor: '#ff6b6b',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    },
+                    {
+                        label: 'Normal Region',
+                        data: dataPoints.map(p => p.normal),
+                        borderColor: '#4ecdc4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.1,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Average Skill Gain per Successful Attempt',
+                        font: {
+                            size: 18,
+                            weight: 'bold'
+                        },
+                        color: '#333',
+                        padding: 20
+                    },
+                    legend: {
+                        display: false // Using custom legend
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#fff',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(3) + ' skill points';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Skill Level',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        },
+                        ticks: {
+                            color: '#333',
+                            maxRotation: 0,
+                            stepSize: 10
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Average Gain (skill points)',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        },
+                        ticks: {
+                            color: '#333',
+                            callback: function(value) {
+                                return value.toFixed(2);
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        beginAtZero: true,
+                        max: 0.4
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
