@@ -893,6 +893,12 @@ namespace Server.Engines.Craft
 				}
 			}
 
+			// Eternal Key (Chave Eterna) has custom max chance of 35% at 120.0 skill
+			if ( m_Type == typeof(Server.Items.EternalKey) )
+			{
+				maxChance = 0.35; // Eternal Key caps at 35% success chance
+			}
+
 			if ( allRequiredSkills )
 				chance = craftSystem.GetChanceAtMin( this ) + ((valMainSkill - minMainSkill) / (maxMainSkill - minMainSkill) * (maxChance - craftSystem.GetChanceAtMin( this )));
 			else
