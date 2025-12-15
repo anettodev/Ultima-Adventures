@@ -19,6 +19,17 @@ namespace Server.Misc
 		{
 			Mobile from = args.Mobile;
 			int[] keywords = args.Keywords;
+			string speech = args.Speech.ToLower();
+
+			// Check for Portuguese renounce phrase: "Eu renuncio ser iniciante"
+			if ( from is PlayerMobile && ((PlayerMobile)from).Young && !from.HasGump( typeof( RenounceYoungGump ) ) )
+			{
+				if ( speech.Contains( "renuncio" ) && speech.Contains( "iniciante" ) )
+				{
+					from.SendGump( new RenounceYoungGump() );
+					return;
+				}
+			}
 
 			for ( int i = 0; i < keywords.Length; ++i )
 			{
@@ -44,7 +55,7 @@ namespace Server.Misc
 						}
 						break;
 					}
-					case 0x0035: // i renounce my young player status*
+					case 0x0035: // i renounce my young player status* (English - kept for compatibility)
 					{
 						if ( from is PlayerMobile && ((PlayerMobile)from).Young && !from.HasGump( typeof( RenounceYoungGump ) ) )
 						{

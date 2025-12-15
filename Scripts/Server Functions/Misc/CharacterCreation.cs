@@ -146,7 +146,8 @@ namespace Server.Misc
 				PlayerMobile pm = (PlayerMobile)newChar;
 				pm.Avatar = true;
 				pm.SoulBound = false;
-				pm.Young = false;
+				pm.Young = true; // New characters start with Young (Iniciante) status
+				pm.CreationTime = DateTime.UtcNow; // Set creation time
 				pm.BalanceStatus = 0;
 			}
 

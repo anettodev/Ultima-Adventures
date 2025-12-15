@@ -127,6 +127,10 @@ namespace Server.Mobiles
 
 			if (this is BlueGuard)
 			{
+				// Check if player recently cancelled the gump
+				if ( !BaseHealer.CanShowResurrectionGump( m ) )
+					return;
+
 				Direction = GetDirectionTo( m );
 
 				m.PlaySound( 0x214 );

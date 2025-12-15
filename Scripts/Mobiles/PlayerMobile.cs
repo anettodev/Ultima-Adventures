@@ -153,6 +153,13 @@ namespace Server.Mobiles
 			get { return m_LastLogin; } 
 			set { m_LastLogin = value; } 
 		}
+		private DateTime m_CreationTime;
+		[CommandProperty( AccessLevel.GameMaster )]
+		public DateTime CreationTime
+		{
+			get { return m_CreationTime; }
+			set { m_CreationTime = value; }
+		}
 		private bool m_SbResTimer;
 		public bool SbResTimer
 		{ 
@@ -428,14 +435,27 @@ namespace Server.Mobiles
 			set { m_soulbounddate = value; }
 		}
 
-		private DateTime m_lastautores;
+	private DateTime m_lastautores;
 
-		[CommandProperty( AccessLevel.GameMaster )]
-		public DateTime LastAutoRes
-		{
-			get { return m_lastautores; }
-			set { m_lastautores = value; }
-		}
+	[CommandProperty( AccessLevel.GameMaster )]
+	public DateTime LastAutoRes
+	{
+		get { return m_lastautores; }
+		set { m_lastautores = value; }
+	}
+
+	private int m_ResurrectionDebits;
+
+	/// <summary>
+	/// Number of times player has resurrected without paying (creates delay penalty)
+	/// </summary>
+	[CommandProperty( AccessLevel.GameMaster )]
+	public int ResurrectionDebits
+	{
+		get { return m_ResurrectionDebits; }
+		set { m_ResurrectionDebits = value; }
+	}
+
 
 		private int m_BalanceEffect;
 
@@ -1218,11 +1238,21 @@ namespace Server.Mobiles
 			}
 		}
 
-		private static void OnLogin( LoginEventArgs e )
-		{
-			Mobile from = e.Mobile;
+	private static void OnLogin( LoginEventArgs e )
+	{
+		Mobile from = e.Mobile;
 
-			CheckAtrophies( from );
+		// Update skill cap for existing characters if it's below the new minimum
+		if ( from is PlayerMobile && from.Skills != null )
+		{
+			int newSkillCap = MyServerSettings.skillcap();
+			if ( from.Skills.Cap < newSkillCap )
+			{
+				from.Skills.Cap = newSkillCap;
+			}
+		}
+
+		CheckAtrophies( from );
 
 			if ( AccountHandler.LockdownLevel > AccessLevel.Player )
 			{
@@ -3665,11 +3695,12 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			base.Resurrect();
 
-			this.Hunger = 10;
-			this.Thirst = 10;
-			this.Hits = 1;//this.HitsMax/2;
-			this.Stam = 1;// this.StamMax/2;
-			this.Mana = 1; //this.ManaMax/2;
+		this.Hunger = 10;
+		this.Thirst = 10;
+		// Ensure at least 1 point of Hits, Mana, and Stamina are recovered on resurrection
+		this.Hits = 1;
+		this.Stam = 1;
+		this.Mana = 1;
 
 			MusicName toPlay = MusicList[Utility.Random(MusicList.Length)];
 			this.Send(PlayMusic.GetInstance(toPlay));
@@ -3689,6 +3720,19 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			if ( this.Alive && !wasAlive )
 			{
+				// Remove any existing DeathRobe (from equipped layer or backpack)
+				DeathRobe oldRobe = this.FindItemOnLayer( Layer.OuterTorso ) as DeathRobe;
+				if ( oldRobe != null )
+					oldRobe.Delete();
+
+				// Also check backpack for any DeathRobe that might have moved there
+				if ( this.Backpack != null )
+				{
+					List<DeathRobe> items = this.Backpack.FindItemsByType<DeathRobe>();
+					foreach ( DeathRobe robe in items )
+						robe.Delete();
+				}
+
 				Item deathRobe = new DeathRobe();
 				
 				if ( !EquipItem( deathRobe ) )
@@ -4156,6 +4200,9 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			m_GuildRank = Guilds.RankDefinition.Lowest;
 
 			m_ChampionTitles = new ChampionTitleInfo();
+
+			// CreationTime is already initialized by base.Mobile constructor
+			// PlayerMobile's property provides a setter (base class is read-only)
 
 			InvalidateMyRunUO();
 		}
@@ -5216,9 +5263,9 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			CheckAtrophies( this );
 
-			base.Serialize( writer );
+		base.Serialize( writer );
 
-			writer.Write( (int) 48 ); // 48 added skill training data
+		writer.Write( (int) 49 ); // Keep version 49 (CreationTime is handled by base.Mobile)
 
 			writer.Write( (DateTime)m_LastLogout);
 
@@ -5252,6 +5299,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			writer.Write( (DateTime) m_lastautores);
 			writer.Write(m_LastGauntletLevel);
+			writer.Write( (int) m_ResurrectionDebits);
 			
 			if (m_OriginalBody == null) {
 				m_OriginalBody = this.Body;
@@ -5375,6 +5423,9 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				writer.Write( (int)kvp.Key );
 				writer.Write( (double)kvp.Value );
 			}
+
+			// NOTE: CreationTime is already serialized by base.Mobile.Serialize()
+			// No need to serialize it again here
 		}
 
 		public override void Deserialize( GenericReader reader )
@@ -5382,12 +5433,41 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
 
-			switch ( version )
-			{
-				case 48:
-					goto case 47;
+		switch ( version )
+		{
+			// COMMENTED OUT: Case 50 handler for CreationTime - causing Bad serialize errors
+			// case 50:
+			// 	// Version 50 had CreationTime serialized here, but base.Mobile already handles it
+			// 	// Skip the CreationTime read if it exists (for backward compatibility with old saves)
+			// 	try
+			// 	{
+			// 		DateTime dummyCreationTime = reader.ReadDateTime();
+			// 		// Ignore the value - base.Mobile already deserialized it
+			// 	}
+			// 	catch
+			// 	{
+			// 		// If CreationTime wasn't written, that's fine - base.Mobile handles it
+			// 	}
+			// 	goto case 49;
+			case 49:
+				// ResurrectionDebits is read AFTER case 33
+				// (it's written after LastGauntletLevel in serialize)
+				goto case 48;
+			case 48:
+				goto case 47;
 				case 47:
-					m_LastLogout = reader.ReadDateTime();
+					try
+					{
+						m_LastLogout = reader.ReadDateTime();
+						if (m_LastLogout.Ticks < DateTime.MinValue.Ticks || m_LastLogout.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_LastLogout = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_LastLogout = DateTime.MinValue;
+					}
 					goto case 46;
 				case 46:
 					m_BlacksmithBOD = reader.ReadInt();
@@ -5436,11 +5516,42 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 					m_lastwords = reader.ReadString();
 					goto case 34;
 				case 34:
-					m_lastautores = reader.ReadDateTime();
+					try
+					{
+						m_lastautores = reader.ReadDateTime();
+						if (m_lastautores.Ticks < DateTime.MinValue.Ticks || m_lastautores.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_lastautores = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_lastautores = DateTime.MinValue;
+					}
+					if (version < 49)
+					{
+						m_ResurrectionDebits = 0;
+					}
 					goto case 33;
 				case 33:
 					m_InGauntlet = false;
 					m_LastGauntletLevel = reader.ReadInt();
+					
+					// Version 49+: Read ResurrectionDebits
+					// (written after LastGauntletLevel in serialize, so read after it here)
+					if (version >= 49)
+					{
+						try
+						{
+							m_ResurrectionDebits = reader.ReadInt();
+						}
+						catch (Exception)
+						{
+							// Corrupted ResurrectionDebits data - use default
+							m_ResurrectionDebits = 0;
+						}
+					}
+					
 					goto case 32;
 				case 32:
 					m_OriginalBody = new Body(reader.ReadInt());
@@ -5448,7 +5559,18 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 					goto case 31;
 				case 31:
 				{
-					m_soulbounddate = reader.ReadDateTime();
+					try
+					{
+						m_soulbounddate = reader.ReadDateTime();
+						if (m_soulbounddate.Ticks < DateTime.MinValue.Ticks || m_soulbounddate.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_soulbounddate = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_soulbounddate = DateTime.MinValue;
+					}
 					goto case 30;
 				}
 				case 30: 
@@ -5458,25 +5580,69 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				}
 				case 28:
 				{
-					m_PeacedUntil = reader.ReadDateTime();
+					try
+					{
+						m_PeacedUntil = reader.ReadDateTime();
+						if (m_PeacedUntil.Ticks < DateTime.MinValue.Ticks || m_PeacedUntil.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_PeacedUntil = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_PeacedUntil = DateTime.MinValue;
+					}
 
 					goto case 27;
 				}
 				case 27:
 				{
-					m_AnkhNextUse = reader.ReadDateTime();
+					try
+					{
+						m_AnkhNextUse = reader.ReadDateTime();
+						if (m_AnkhNextUse.Ticks < DateTime.MinValue.Ticks || m_AnkhNextUse.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_AnkhNextUse = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_AnkhNextUse = DateTime.MinValue;
+					}
 
 					goto case 26;
 				}
 				case 26:
 				{
-					m_AutoStabled = reader.ReadStrongMobileList();
+					try
+					{
+						m_AutoStabled = reader.ReadStrongMobileList();
+					}
+					catch (Exception)
+					{
+						// Corrupted AutoStabled data - initialize empty list
+						m_AutoStabled = new List<Mobile>();
+					}
 
 					goto case 25;
 				}
 				case 25:
 				{
-					int recipeCount = reader.ReadInt();
+					int recipeCount = 0;
+					try
+					{
+						recipeCount = reader.ReadInt();
+						// Prevent reading excessive counts that could cause memory issues
+						if (recipeCount < 0 || recipeCount > 10000)
+						{
+							recipeCount = 0;
+						}
+					}
+					catch (Exception)
+					{
+						// Corrupted recipe count - set to 0
+						recipeCount = 0;
+					}
 
 					if( recipeCount > 0 )
 					{
@@ -5484,9 +5650,17 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 						for( int i = 0; i < recipeCount; i++ )
 						{
-							int r = reader.ReadInt();
-							if( reader.ReadBool() )	//Don't add in recipies which we haven't gotten or have been removed
-								m_AcquiredRecipes.Add( r, true );
+							try
+							{
+								int r = reader.ReadInt();
+								if( reader.ReadBool() )	//Don't add in recipies which we haven't gotten or have been removed
+									m_AcquiredRecipes.Add( r, true );
+							}
+							catch (Exception)
+							{
+								// Corrupted recipe data - skip this recipe and break to avoid further errors
+								break;
+							}
 						}
 					}
 					goto case 24;
@@ -5498,12 +5672,36 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				}
 				case 23:
 				{
-					m_ChampionTitles = new ChampionTitleInfo( reader );
+					try
+					{
+						m_ChampionTitles = new ChampionTitleInfo( reader );
+					}
+					catch (System.IO.EndOfStreamException)
+					{
+						// Stream ended unexpectedly - initialize with default values
+						m_ChampionTitles = new ChampionTitleInfo();
+					}
+					catch (Exception)
+					{
+						// Any other exception - initialize with default values
+						m_ChampionTitles = new ChampionTitleInfo();
+					}
 					goto case 22;
 				}
 				case 22:
 				{
-					m_LastValorLoss = reader.ReadDateTime();
+					try
+					{
+						m_LastValorLoss = reader.ReadDateTime();
+						if (m_LastValorLoss.Ticks < DateTime.MinValue.Ticks || m_LastValorLoss.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_LastValorLoss = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_LastValorLoss = DateTime.MinValue;
+					}
 					goto case 21;
 				}
 				case 21:
@@ -5526,24 +5724,65 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 						rank = maxRank;
 
 					m_GuildRank = Guilds.RankDefinition.Ranks[rank];
-					m_LastOnline = reader.ReadDateTime();
+					try
+					{
+						m_LastOnline = reader.ReadDateTime();
+						if (m_LastOnline.Ticks < DateTime.MinValue.Ticks || m_LastOnline.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_LastOnline = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_LastOnline = DateTime.MinValue;
+					}
 					goto case 18;
 				}
 				case 18:
 				{
-					m_SolenFriendship = (SolenFriendship) reader.ReadEncodedInt();
+					try
+					{
+						m_SolenFriendship = (SolenFriendship) reader.ReadEncodedInt();
+					}
+					catch (Exception)
+					{
+						// Corrupted SolenFriendship data - use default
+						m_SolenFriendship = SolenFriendship.None;
+					}
 
 					goto case 17;
 				}
 				case 17: // changed how DoneQuests is serialized
 				case 16:
 				{
-					m_Quest = QuestSerializer.DeserializeQuest( reader );
+					try
+					{
+						m_Quest = QuestSerializer.DeserializeQuest( reader );
+					}
+					catch (Exception)
+					{
+						// Corrupted quest data - set to null
+						m_Quest = null;
+					}
 
 					if ( m_Quest != null )
 						m_Quest.From = this;
 
-					int count = reader.ReadEncodedInt();
+					int count = 0;
+					try
+					{
+						count = reader.ReadEncodedInt();
+						// Prevent reading excessive counts that could cause memory issues
+						if (count < 0 || count > 1000)
+						{
+							count = 0;
+						}
+					}
+					catch (Exception)
+					{
+						// Corrupted count - set to 0
+						count = 0;
+					}
 
 					if ( count > 0 )
 					{
@@ -5551,19 +5790,73 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 						for ( int i = 0; i < count; ++i )
 						{
-							Type questType = QuestSerializer.ReadType( QuestSystem.QuestTypes, reader );
+							Type questType = null;
+							try
+							{
+								questType = QuestSerializer.ReadType( QuestSystem.QuestTypes, reader );
+							}
+							catch (Exception)
+							{
+								// Corrupted quest type - skip this quest
+								// Try to read the DateTime to advance stream position if version >= 17
+								if (version >= 17)
+								{
+									try
+									{
+										reader.ReadDateTime();
+									}
+									catch
+									{
+										// Can't read DateTime either - break out of loop
+										break;
+									}
+								}
+								continue; // Skip this quest entry
+							}
+
 							DateTime restartTime;
 
 							if ( version < 17 )
 								restartTime = DateTime.MaxValue;
 							else
-								restartTime = reader.ReadDateTime();
+							{
+								try
+								{
+									restartTime = reader.ReadDateTime();
+									if (restartTime.Ticks < DateTime.MinValue.Ticks || restartTime.Ticks > DateTime.MaxValue.Ticks)
+									{
+										restartTime = DateTime.MaxValue;
+									}
+								}
+								catch (Exception)
+								{
+									restartTime = DateTime.MaxValue;
+								}
+							}
 
-							m_DoneQuests.Add( new QuestRestartInfo( questType, restartTime ) );
+							// Only add if questType is valid
+							if (questType != null)
+							{
+								m_DoneQuests.Add( new QuestRestartInfo( questType, restartTime ) );
+							}
 						}
 					}
+					else
+					{
+						// Ensure DoneQuests is initialized even if count is 0
+						if (m_DoneQuests == null)
+							m_DoneQuests = new List<QuestRestartInfo>();
+					}
 
-					m_Profession = reader.ReadEncodedInt();
+					try
+					{
+						m_Profession = reader.ReadEncodedInt();
+					}
+					catch (Exception)
+					{
+						// Corrupted profession - use default
+						m_Profession = 0;
+					}
 					goto case 15;
 				}
 				case 15:
@@ -5617,13 +5910,32 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				case 8:
 				{
 					m_NpcGuild = (NpcGuild)reader.ReadInt();
-					m_NpcGuildJoinTime = reader.ReadDateTime();
+					try
+					{
+						m_NpcGuildJoinTime = reader.ReadDateTime();
+						if (m_NpcGuildJoinTime.Ticks < DateTime.MinValue.Ticks || m_NpcGuildJoinTime.Ticks > DateTime.MaxValue.Ticks)
+						{
+							m_NpcGuildJoinTime = DateTime.MinValue;
+						}
+					}
+					catch (Exception)
+					{
+						m_NpcGuildJoinTime = DateTime.MinValue;
+					}
 					m_NpcGuildGameTime = reader.ReadTimeSpan();
 					goto case 7;
 				}
 				case 7:
 				{
-					m_PermaFlags = reader.ReadStrongMobileList();
+					try
+					{
+						m_PermaFlags = reader.ReadStrongMobileList();
+					}
+					catch (Exception)
+					{
+						// Corrupted PermaFlags data - initialize empty list
+						m_PermaFlags = new List<Mobile>();
+					}
 					goto case 6;
 				}
 				case 6:
@@ -5638,8 +5950,24 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				}
 				case 4:
 				{
-					m_LastJusticeLoss = reader.ReadDeltaTime();
-					m_JusticeProtectors = reader.ReadStrongMobileList();
+					try
+					{
+						m_LastJusticeLoss = reader.ReadDeltaTime();
+					}
+					catch (Exception)
+					{
+						// Corrupted LastJusticeLoss data - use default
+						m_LastJusticeLoss = DateTime.MinValue;
+					}
+					try
+					{
+						m_JusticeProtectors = reader.ReadStrongMobileList();
+					}
+					catch (Exception)
+					{
+						// Corrupted JusticeProtectors data - initialize empty list
+						m_JusticeProtectors = new List<Mobile>();
+					}
 					goto case 3;
 				}
 				case 3:
@@ -5679,15 +6007,64 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			{
 				if (m_DailyPointsTrained == null)
 					m_DailyPointsTrained = new Dictionary<SkillName, double>();
-				m_LastTrainingDate = reader.ReadDateTime();
-				int trainingCount = reader.ReadInt();
+				try
+				{
+					m_LastTrainingDate = reader.ReadDateTime();
+					if (m_LastTrainingDate.Ticks < DateTime.MinValue.Ticks || m_LastTrainingDate.Ticks > DateTime.MaxValue.Ticks)
+					{
+						m_LastTrainingDate = DateTime.MinValue;
+					}
+				}
+				catch (Exception)
+				{
+					m_LastTrainingDate = DateTime.MinValue;
+				}
+				int trainingCount = 0;
+				try
+				{
+					trainingCount = reader.ReadInt();
+					// Prevent reading excessive counts that could cause memory issues
+					if (trainingCount < 0 || trainingCount > 1000)
+					{
+						trainingCount = 0;
+					}
+				}
+				catch (Exception)
+				{
+					// Corrupted training count - set to 0
+					trainingCount = 0;
+				}
 				for (int i = 0; i < trainingCount; i++)
 				{
-					SkillName skill = (SkillName)reader.ReadInt();
-					double points = reader.ReadDouble();
-					m_DailyPointsTrained[skill] = points;
+					try
+					{
+						SkillName skill = (SkillName)reader.ReadInt();
+						double points = reader.ReadDouble();
+						m_DailyPointsTrained[skill] = points;
+					}
+					catch (Exception)
+					{
+						// Corrupted training data - skip this entry and break to avoid further errors
+						break;
+					}
 				}
 			}
+
+			// COMMENTED OUT: CreationTime sync code - causing Bad serialize errors
+			// NOTE: CreationTime is already deserialized by base.Mobile.Deserialize()
+			// Since PlayerMobile has its own m_CreationTime field that hides the base class field,
+			// we need to sync it with the base class value after deserialization
+			// The base class property is read-only, so we sync our field with it
+			// DateTime baseCreationTime = base.CreationTime;
+			// if (baseCreationTime != DateTime.MinValue)
+			// {
+			// 	m_CreationTime = baseCreationTime;
+			// }
+			// else if (m_CreationTime == DateTime.MinValue)
+			// {
+			// 	// Both are MinValue - set to current time for old characters
+			// 	m_CreationTime = DateTime.UtcNow;
+			// }
 
 			if (m_SongEffects == null) 
 				m_SongEffects = new List<SongEffect>();
@@ -6159,6 +6536,9 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 		public override void OnKillsChange( int oldValue )
 		{
+			// COMMENTED OUT: Murder no longer removes Young status
+			// Young players can now commit murders without losing Iniciante status
+			/*
 			if ( this.Young && this.Kills > oldValue )
 			{
 				Account acc = this.Account as Account;
@@ -6166,6 +6546,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				if ( acc != null )
 					acc.RemoveYoungStatus( 0 );
 			}
+			*/
 
 			InvalidateMyRunUO();
 		}
@@ -6195,14 +6576,30 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			InvalidateMyRunUO();
 		}
 
+		/// <summary>
+		/// Checks if any skill is at or above 100.0 points
+		/// </summary>
+		private bool HasSkillAtOrAbove100()
+		{
+			for ( int i = 0; i < this.Skills.Length; i++ )
+			{
+				if ( this.Skills[i].Value >= 100.0 )
+					return true;
+			}
+			return false;
+		}
+
 		public override void OnSkillChange( SkillName skill, double oldBase )
 		{
-			if ( this.Young && this.SkillsTotal >= 4500 )
+			// Remove Young status if SkillsTotal >= 2500 OR any skill >= 100.0
+			if ( this.Young && ( this.SkillsTotal >= 2500 || HasSkillAtOrAbove100() ) )
 			{
-				Account acc = this.Account as Account;
-
-				if ( acc != null )
-					acc.RemoveYoungStatus( 1019036 ); // You have successfully obtained a respectable skill level, and have outgrown your status as a young player!
+				this.Young = false;
+				
+				if ( this.NetState != null )
+				{
+					this.SendGump( new Server.Gumps.YoungStatusLostGump() );
+				}
 			}
 
 			if (skill != SkillName.Focus)
@@ -6556,9 +6953,9 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			if ( Young )
 			{
 				if ( suffix.Length == 0 )
-					suffix = "(Young)";
+					suffix = "(Iniciante)";
 				else
-					suffix = String.Concat( suffix, " (Young)" );
+					suffix = String.Concat( suffix, " (Iniciante)" );
 			}
 
 
@@ -6598,6 +6995,8 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			return true;
 		}
 
+		// COMMENTED OUT: Special healing system for Young players is disabled
+		/*
 		private DateTime m_LastYoungHeal = DateTime.MinValue;
 
 		public bool CheckYoungHealTime()
@@ -6610,6 +7009,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			return false;
 		}
+		*/
 
 		private static Point3D[] m_TrammelDeathDestinations = new Point3D[]
 			{
@@ -6656,6 +7056,11 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				new Point3D(  268,  624, 15 )
 			};
 
+		/// <summary>
+		/// Fixed teleport location for Young/Iniciante players when they die
+		/// </summary>
+		private static readonly Point3D YOUNG_DEATH_TELEPORT_LOCATION = new Point3D( 6775, 1725, 20 );
+
 		public bool YoungDeathTeleport()
 		{
 			if ( this.Region.IsPartOf( typeof( Jail ) )
@@ -6664,44 +7069,8 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				|| this.Region.IsPartOf( "Ninja cave" ) )
 				return false;
 
-			Point3D loc;
-			Map map;
-
-			DungeonRegion dungeon = (DungeonRegion) this.Region.GetRegion( typeof( DungeonRegion ) );
-			if ( dungeon != null && dungeon.EntranceLocation != Point3D.Zero )
-			{
-				loc = dungeon.EntranceLocation;
-				map = dungeon.EntranceMap;
-			}
-			else
-			{
-				loc = this.Location;
-				map = this.Map;
-			}
-
-			Point3D[] list;
-
-			list = m_TrammelDeathDestinations;
-
-			Point3D dest = Point3D.Zero;
-			int sqDistance = int.MaxValue;
-
-			for ( int i = 0; i < list.Length; i++ )
-			{
-				Point3D curDest = list[i];
-
-				int width = loc.X - curDest.X;
-				int height = loc.Y - curDest.Y;
-				int curSqDistance = width * width + height * height;
-
-				if ( curSqDistance < sqDistance )
-				{
-					dest = curDest;
-					sqDistance = curSqDistance;
-				}
-			}
-
-			this.MoveToWorld( dest, map );
+			// Always teleport Young players to the fixed location
+			this.MoveToWorld( YOUNG_DEATH_TELEPORT_LOCATION, this.Map );
 			return true;
 		}
 
@@ -6806,16 +7175,49 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 				public TitleInfo( GenericReader reader )
 				{
-					int version = reader.ReadEncodedInt();
-
-					switch( version )
+					try
 					{
-						case 0:
+						int version = reader.ReadEncodedInt();
+
+						switch( version )
 						{
-							m_Value = reader.ReadEncodedInt();
-							m_LastDecay = reader.ReadDateTime();
-							break;
+							case 0:
+							{
+								m_Value = reader.ReadEncodedInt();
+								try
+								{
+									m_LastDecay = reader.ReadDateTime();
+									// Validate DateTime is within valid range
+									if (m_LastDecay.Ticks < DateTime.MinValue.Ticks || m_LastDecay.Ticks > DateTime.MaxValue.Ticks)
+									{
+										m_LastDecay = DateTime.MinValue;
+									}
+								}
+								catch (ArgumentOutOfRangeException)
+								{
+									// Corrupted DateTime data - use default value
+									m_LastDecay = DateTime.MinValue;
+								}
+								catch (Exception)
+								{
+									// Any other exception reading DateTime - use default value
+									m_LastDecay = DateTime.MinValue;
+								}
+								break;
+							}
 						}
+					}
+					catch (System.IO.EndOfStreamException)
+					{
+						// Stream ended unexpectedly - use default values
+						m_Value = 0;
+						m_LastDecay = DateTime.MinValue;
+					}
+					catch (Exception)
+					{
+						// Any other exception - use default values
+						m_Value = 0;
+						m_LastDecay = DateTime.MinValue;
 					}
 				}
 
@@ -6960,34 +7362,71 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 			public ChampionTitleInfo( GenericReader reader )
 			{
-				int version = reader.ReadEncodedInt();
-
-				switch( version )
+				try
 				{
-					case 0:
+					int version = reader.ReadEncodedInt();
+
+					switch( version )
 					{
-						m_Harrower = reader.ReadEncodedInt();
-
-						int length = reader.ReadEncodedInt();
-						m_Values = new TitleInfo[length];
-
-						for( int i = 0; i < length; i++ )
+						case 0:
 						{
-							m_Values[i] = new TitleInfo( reader );
-						}
+							m_Harrower = reader.ReadEncodedInt();
 
-						if( m_Values.Length != ChampionSpawnInfo.Table.Length )
-						{
-							TitleInfo[] oldValues = m_Values;
-							m_Values = new TitleInfo[ChampionSpawnInfo.Table.Length];
-
-							for( int i = 0; i < m_Values.Length && i < oldValues.Length; i++ )
+							int length = reader.ReadEncodedInt();
+							
+							// Validate length to prevent excessive memory allocation
+							if (length < 0 || length > 1000)
 							{
-								m_Values[i] = oldValues[i];
+								// Corrupted data - use default empty array
+								m_Values = new TitleInfo[ChampionSpawnInfo.Table.Length];
+								break;
 							}
+							
+							m_Values = new TitleInfo[length];
+
+							for( int i = 0; i < length; i++ )
+							{
+								try
+								{
+									m_Values[i] = new TitleInfo( reader );
+								}
+								catch (System.IO.EndOfStreamException)
+								{
+									// Stream ended while reading TitleInfo - use default
+									m_Values[i] = new TitleInfo();
+								}
+								catch (Exception)
+								{
+									// Any other exception - use default
+									m_Values[i] = new TitleInfo();
+								}
+							}
+
+							if( m_Values.Length != ChampionSpawnInfo.Table.Length )
+							{
+								TitleInfo[] oldValues = m_Values;
+								m_Values = new TitleInfo[ChampionSpawnInfo.Table.Length];
+
+								for( int i = 0; i < m_Values.Length && i < oldValues.Length; i++ )
+								{
+									m_Values[i] = oldValues[i];
+								}
+							}
+							break;
 						}
-						break;
 					}
+				}
+				catch (System.IO.EndOfStreamException)
+				{
+					// Stream ended unexpectedly - initialize with default values
+					m_Harrower = 0;
+					m_Values = new TitleInfo[ChampionSpawnInfo.Table.Length];
+				}
+				catch (Exception)
+				{
+					// Any other exception - initialize with default values
+					m_Harrower = 0;
+					m_Values = new TitleInfo[ChampionSpawnInfo.Table.Length];
 				}
 			}
 
@@ -7194,6 +7633,8 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 
 		public void AutoStablePets()
 		{
+			// Pets no longer auto-stable on logout - they stay in the world
+			// Only handle summoned pets that are on different maps (delete them)
 			if ( Core.SE && AllFollowers.Count > 0 )
 			{
 				for ( int i = m_AllFollowers.Count - 1; i >= 0; --i )
@@ -7203,6 +7644,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 					if (pet == null || pet.ControlMaster == null || pet.IsHitchStabled)
                         continue;
 
+					// Only delete summoned pets on different maps
 					if (pet.Summoned)
 					{
 						if (pet.Map != Map)
@@ -7213,76 +7655,43 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 						continue;
 					}
 
-					if ( (pet is IMount && ((IMount)pet).Rider != null ) || (this.Mounted && this.Mount == pet) )
-						continue;
-
-					if ( (pet is PackLlama || pet is PackHorse || pet is Beetle || pet is HordeMinionFamiliar) && (pet.Backpack != null && pet.Backpack.Items.Count > 0) )
-						continue;
-
-					pet.ControlTarget = null;
-					pet.ControlOrder = OrderType.Stay;
-					pet.Internalize();
-
-					pet.SetControlMaster( null );
-					pet.SummonMaster = null;
-
-					pet.IsStabled = true;
-
-					//pet.Loyalty = BaseCreature.MaxLoyalty; // Wonderfully happy
-
-					Stabled.Add( pet );
-					m_AutoStabled.Add( pet );
+					// All other pets stay in the world where they are
+					// They can be killed, abandoned, etc. while owner is offline
 				}
 			}
 		}
 
 		public void ClaimAutoStabledPets()
 		{
+			// Pets no longer teleport to owner on login - they stay where they are
+			// Clear any remaining auto-stabled entries (from old system or manual stabling)
 			if ( !Core.SE || m_AutoStabled.Count <= 0 )
 				return;
 
-			if ( !Alive )
-			{
-				SendLocalizedMessage( 1076251 ); // Your pet was unable to join you while you are a ghost.  Please re-login once you have ressurected to claim your pets.
-				return;
-			}
-
+			// Clear the auto-stabled list without teleporting pets
+			// Pets that are alive will remain at their current location in the world
 			for ( int i = m_AutoStabled.Count - 1; i >= 0; --i )
 			{
 				BaseCreature pet = m_AutoStabled[i] as BaseCreature;
 
-				if ( pet == null || pet.Deleted )
-				{
-					pet.IsStabled = false;
+				if ( pet == null )
+					continue;
 
+				if ( pet.Deleted )
+				{
 					if ( Stabled.Contains( pet ) )
 						Stabled.Remove( pet );
-
 					continue;
 				}
 
-				if ( (Followers + pet.ControlSlots) <= FollowersMax )
+				// If pet is still alive and in the world, leave it where it is
+				// Just clear the stabled flag if it was auto-stabled
+				if ( pet.Map != null && pet.Map != Map.Internal )
 				{
-					pet.SetControlMaster( this );
-
-					if ( pet.Summoned )
-						pet.SummonMaster = this;
-
-					pet.ControlTarget = this;
-					pet.ControlOrder = OrderType.Follow;
-
-					pet.MoveToWorld( Location, Map );
-
 					pet.IsStabled = false;
-
-					//pet.Loyalty = BaseCreature.MaxLoyalty; // Wonderfully Happy
 
 					if ( Stabled.Contains( pet ) )
 						Stabled.Remove( pet );
-				}
-				else
-				{
-					SendLocalizedMessage( 1049612, pet.Name ); // ~1_NAME~ remained in the stables because you have too many followers.
 				}
 			}
 
@@ -7290,3 +7699,4 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 		}
 	}
 }
+

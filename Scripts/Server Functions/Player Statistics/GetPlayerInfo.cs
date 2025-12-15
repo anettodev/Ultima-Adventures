@@ -770,40 +770,48 @@ namespace Server.Misc
 			return difficulty;
 		}
 
-		public static int GetResurrectCost( Mobile m )
+	public static int GetResurrectCost( Mobile m )
+	{
+		// Young players get free resurrection
+		if (m is PlayerMobile && ((PlayerMobile)m).Young)
 		{
-			int fame = (int)((double)m.Fame / 3);
-				if ( fame > 5000){ fame = 5000; }
-			int karma = (int)((double)Math.Abs(m.Karma) / 3);
-				if ( karma > 5000){ karma = 5000; }
-
-			int skills = (int)((double)m.Skills.Total / 3);
-				if ( skills > 25000){ skills = 25000; }		
-
-			int stats = m.RawStr + m.RawDex + m.RawInt;
-				if ( stats > 250){ stats = 250; }
-				stats = 50 * stats;					
-
-			int level = (int)( ( fame + karma + skills + stats ) / 1000 );
-				level = (int)( ( level - 10 ) * 1.12 );
-
-			if ( level < 1 ){ level = 1; }
-			if ( level > 150 ){ level = 150; }
-
-			level = ( level * 100 );
-
-			if ( m.Skills.Total <= 5000 ){ level = 0; }
-			if ( ( m.RawStr + m.RawDex + m.RawInt ) <= 100 ){ level = 0; }
-
-			if (m is PlayerMobile)
-			{
-				if (((PlayerMobile)m).Profession == 1 ){ level = (int)(level * 1.25); }
-				if ( !((PlayerMobile)m).Avatar) {level = (int)(level * 2);}
-			
-			}
-
-			return level;
+			return 0;
 		}
+
+		int fame = (int)((double)m.Fame / 3);
+			if ( fame > 5000){ fame = 5000; }
+		int karma = (int)((double)Math.Abs(m.Karma) / 3);
+			if ( karma > 5000){ karma = 5000; }
+
+		int skills = (int)((double)m.Skills.Total / 3);
+			if ( skills > 25000){ skills = 25000; }		
+
+		int stats = m.RawStr + m.RawDex + m.RawInt;
+			if ( stats > 250){ stats = 250; }
+			stats = 50 * stats;					
+
+		int level = (int)( ( fame + karma + skills + stats ) / 1000 );
+			level = (int)( ( level - 10 ) * 1.12 );
+
+		if ( level < 1 ){ level = 1; }
+		if ( level > 150 ){ level = 150; }
+
+		level = ( level * 100 );
+
+		if (m is PlayerMobile)
+		{
+			if (((PlayerMobile)m).Profession == 1 ){ level = (int)(level * 1.25); }
+			if ( !((PlayerMobile)m).Avatar) {level = (int)(level * 2);}
+		}
+
+		// Minimum cost is 300 gold (matching debt system)
+		if (level < 300)
+		{
+			level = 300;
+		}
+
+		return level;
+	}
 
 		public static string GetTodaysDate()
 		{
