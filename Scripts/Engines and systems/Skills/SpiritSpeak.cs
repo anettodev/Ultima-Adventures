@@ -235,7 +235,7 @@ namespace Server.SkillHandlers
 
 			public override int GetMana()
 			{
-				return 0;
+				return 0; // Mana cost disabled
 			}
 
 			public override bool ConsumeReagents()
@@ -284,29 +284,87 @@ namespace Server.SkillHandlers
 
 				FindNearbyCorpse( out toChannel, out toDestroy );
 
-				int min, max, mana;
-				string message;
-
-				GetHealingParameters( toChannel, toDestroy, out min, out max, out mana, out message );
-
-				if ( !ValidateCasterState( mana ) )
-				{
-					FinishSequence();
-					return;
-				}
+				// No mana cost validation needed (disabled)
+				// if ( !ValidateCasterState( mana ) )
+				// {
+				// 	FinishSequence();
+				// 	return;
+				// }
 
 				Caster.CheckSkill( SkillName.SpiritSpeak, SpiritSpeakConstants.SKILL_GAIN_MIN, SpiritSpeakConstants.SKILL_GAIN_MAX );
 
-				if ( !CheckSuccess() )
+				double skillValue = Caster.Skills[SkillName.SpiritSpeak].Value;
+
+				// Check if we can activate CanHearGhosts (requires 50.0+ skill)
+				bool canActivateGhostHearing = skillValue >= SpiritSpeakConstants.MIN_SKILL_TO_HEAR_GHOSTS;
+
+				// Calculate success chance for CanHearGhosts: 30% at 50.0, +10% per 10 skill points
+				bool ghostHearingSuccess = false;
+				if ( canActivateGhostHearing )
 				{
-					Caster.SendLocalizedMessage( 502443 ); // You fail your attempt at contacting the netherworld.
-					FinishSequence();
-					return;
+					double successChance = SpiritSpeakConstants.BASE_SUCCESS_CHANCE;
+					if ( skillValue >= 120.0 )
+					{
+						successChance = 1.0; // 100% at 120.0+
+					}
+					else if ( skillValue >= 110.0 )
+					{
+						successChance = 0.90; // 90% at 110.0-119.9
+					}
+					else
+					{
+						double skillBonus = skillValue - SpiritSpeakConstants.MIN_SKILL_TO_HEAR_GHOSTS;
+						successChance += (skillBonus / 10.0) * SpiritSpeakConstants.SUCCESS_CHANCE_PER_10_SKILL;
+						if ( successChance > 1.0 )
+							successChance = 1.0;
+					}
+
+					ghostHearingSuccess = Utility.RandomDouble() <= successChance;
 				}
 
-				ProcessCorpseTarget( toChannel, toDestroy );
-				ApplyHealing( min, max, mana, message );
-				ApplyVisualEffects();
+				// Check success for corpse/bone interaction (visual only, no healing/balance)
+				bool corpseInteractionSuccess = CheckSuccess();
+
+				// Process CanHearGhosts activation if successful
+				if ( ghostHearingSuccess && !Caster.CanHearGhosts )
+				{
+					// Calculate duration: 10s at 50.0, 60s at 100.0+ (linear)
+					double durationSeconds = SpiritSpeakConstants.MIN_DURATION_SECONDS;
+					if ( skillValue >= 100.0 )
+					{
+						durationSeconds = SpiritSpeakConstants.MAX_DURATION_SECONDS;
+					}
+					else
+					{
+						double skillRange = skillValue - SpiritSpeakConstants.MIN_SKILL_TO_HEAR_GHOSTS;
+						double durationRange = SpiritSpeakConstants.MAX_DURATION_SECONDS - SpiritSpeakConstants.MIN_DURATION_SECONDS;
+						double skillRangeMax = 100.0 - SpiritSpeakConstants.MIN_SKILL_TO_HEAR_GHOSTS;
+						durationSeconds = SpiritSpeakConstants.MIN_DURATION_SECONDS + (skillRange / skillRangeMax) * durationRange;
+					}
+
+					SpiritSpeakTimer timer = new SpiritSpeakTimer( Caster, TimeSpan.FromSeconds( durationSeconds ) );
+					timer.Start();
+					Caster.CanHearGhosts = true;
+
+					// Start particle effect timer
+					GhostHearingParticleTimer particleTimer = new GhostHearingParticleTimer( Caster );
+					particleTimer.Start();
+					m_ParticleTimers[Caster] = particleTimer;
+
+					// Send success message with duration
+					Caster.SendMessage( string.Format( SpiritSpeakStringConstants.MSG_CAN_HEAR_GHOSTS, (int)durationSeconds ) );
+				}
+
+				// Process corpse/bone interaction (visual only, no healing/balance/mana cost)
+				if ( corpseInteractionSuccess )
+				{
+					ProcessCorpseTargetVisualOnly( toChannel, toDestroy );
+					ApplyVisualEffects();
+				}
+				else
+				{
+					Caster.SendLocalizedMessage( 502443 ); // You fail your attempt at contacting the netherworld.
+				}
 
 				FinishSequence();
 			}
@@ -427,6 +485,24 @@ namespace Server.SkillHandlers
 						SpiritSpeakConstants.SOULBOUND_BALANCE_BONES_MAX,
 						SpiritSpeakConstants.NON_SOULBOUND_BALANCE_BONES_MIN,
 						SpiritSpeakConstants.NON_SOULBOUND_BALANCE_BONES_MAX );
+				}
+			}
+
+			/// <summary>
+			/// Processes corpse/bone interaction for visual effects only (no balance/healing/mana cost)
+			/// </summary>
+			private void ProcessCorpseTargetVisualOnly( Corpse toChannel, CorpseItem toDestroy )
+			{
+				if ( toChannel != null )
+				{
+					toChannel.Channeled = true;
+					toChannel.Hue = SpiritSpeakConstants.CHANNELED_CORPSE_HUE;
+					// Balance system disabled - no ApplyBalanceEffect call
+				}
+				else if ( toDestroy != null )
+				{
+					toDestroy.Delete();
+					// Balance system disabled - no ApplyBalanceEffectRandom call
 				}
 			}
 
