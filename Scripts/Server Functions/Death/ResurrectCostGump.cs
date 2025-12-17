@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Server;
 using Server.Items;
 using Server.Misc;
@@ -9,366 +7,333 @@ using Server.Mobiles;
 
 namespace Server.Gumps
 {
-	public class ResurrectCostGump : Gump
-	{
-		private int m_Price;
-		private int m_Healer;
-		private int m_Bank;
-		private int m_ResurrectType;
+    /// <summary>
+    /// Gump displayed to players for resurrection with cost options
+    /// </summary>
+    public class ResurrectCostGump : Gump
+    {
+        #region Fields
 
-		public ResurrectCostGump( Mobile owner, int healer ) : base( 150, 50 )
-		{
+        private int m_Price;
+        private int m_Healer;
+        private int m_Bank;
+        private int m_ResurrectType;
 
-			if ( !(owner is PlayerMobile) )
-				return;
+        #endregion
 
-			if ( ((PlayerMobile)owner).SoulBound )
-			{
-				((PlayerMobile)owner).ResetPlayer( owner );
-				owner.CloseGump( typeof( ResurrectCostGump ) );
-				return;
-			}
+        #region Constructors
 
-			m_Healer = healer;
-			m_Price = GetPlayerInfo.GetResurrectCost( owner );
-			m_Bank = Banker.GetBalance( owner );
-			m_ResurrectType = 0;
+        /// <summary>
+        /// Initializes a new instance of ResurrectCostGump
+        /// </summary>
+        /// <param name="owner">The mobile to show the gump to</param>
+        /// <param name="healer">The healer type</param>
+        public ResurrectCostGump(Mobile owner, int healer) : base(ResurrectionGumpConstants.GUMP_POS_X_COST, ResurrectionGumpConstants.GUMP_POS_Y_COST)
+        {
+            if (!(owner is PlayerMobile))
+                return;
 
-			string sText = "";
+            PlayerMobile player = (PlayerMobile)owner;
 
-			double penalty;
-			
-			int karma = Math.Abs(owner.Karma);
-			if ( karma < 5000)
-				karma = 5000;
-			
-			if (owner.Karma >= 0)
-				penalty = (((double)AetherGlobe.BalanceLevel / 100000.0) * ( ((double)karma / 15000))) /1.5 ; // range of 0.0 to 0.66
-			else
-				penalty =  (( (100000-(double)AetherGlobe.BalanceLevel) / 100000.0) * ( ((double)karma / 15000))) /1.5;
-
-			if (penalty < 0.1)
-				penalty = 0.1;
-
-			string c1 = String.Format("{0:0.0}", penalty);
-			string c2 = "5";
-			if ( !((PlayerMobile)owner).Avatar)
-				c2  = "10";
-
-			string loss = "";
-
-            string f0 = "Atualmente você tem ouro suficiente no banco para fazer uma oferenda ao curandeiro. Você deseja prestar homenagem ao curandeiro pela sua vida de volta?";
-            string f1 = "<br/>Se fizer isso, você sofrerá uma perda de " + c2 + "% de perda de sua fama e karma.";
-			string f2 = "Você também perderá " + c1 + "% de algumas habilidades aleatórias.";
-            string f3 = "Atualmente você não tem ouro suficiente no banco para oferecer uma oferenda ao curandeiro. Você deseja implorar ao curador pela sua vida de volta agora, sem prestar homenagem?";
-			string f4 = "Felizmente para você, o santuário não precisa de ouro para trazê-lo de volta à vida. Você deseja implorar aos deuses por sua vida de volta agora?";
-            string f5 = "Você também perderá " + c1 + "% de suas estatísticas e habilidades aleatórias.";
-
-            if (((PlayerMobile)owner).Avatar)
-				loss = " " + f1 + " " + f2;
-			else
-				loss = " " + f1;
-
-            if ( m_Price > 0 )
-			{
-				if ( m_Price > m_Bank )
-				{
-					c1 = String.Format("{0:0.0}", (penalty * 3));
-					
-					if ( !((PlayerMobile)owner).Avatar)
-					{
-						if ((owner.RawStr + owner.RawDex + owner.RawInt) < 125)
-							c2 = "20";
-						else
-							c2 = "40";
-					}
-					else 
-						c2 = "10";		
-					
-					/*if ( (owner.RawStr + owner.RawDex + owner.RawInt) < 125 )
-					{
-						if ( !((PlayerMobile)owner).Avatar )
-							sText = "You currently do not have enough gold in the bank to provide an offering to the healer. Do you wish to plead to the healer for your life back now, without providing tribute? If you do, you will suffer a " + c2 + "% loss to your fame and karma.";
-						else	
-							sText = "You currently do not have enough gold in the bank to provide an offering to the healer. Do you wish to plead to the healer for your life back now, without providing tribute? If you do, you will suffer a " + c2 + "% loss to your fame and karma. You will not loose any stats or skills because of your weak status.";
-						m_ResurrectType = 1;
-					}*/
-
-					/*else */
-					if ( m_Healer < 2 )
-					{
-						if (!((PlayerMobile)owner).Avatar)
-							sText = f3 + " " + f1;
-						else
-							sText = f3 + " " + f1 + " " + f5;
-						m_ResurrectType = 1;
-					}
-					else
-					{
-						m_ResurrectType = 1;
-						
-						if (m_Healer == 2)
-						{
-							if ( !((PlayerMobile)owner).Avatar)
-							{
-								if ((owner.RawStr + owner.RawDex + owner.RawInt) < 125)
-									c2 = "20";
-								else
-									c2 = "40";
-							}
-							else
-								c2 = "20";
-							c1 = String.Format("{0:0.0}", (penalty));
-							
-							if ( !((PlayerMobile)owner).Avatar )
-								sText = f4 + " " + f1;
-							else
-								sText = f4 + " " + f1 + " " + f5;
-
-							m_ResurrectType = 3;
-						}
-												
-						else if ( m_Healer == 3 )
-                        {// Azrael
-                            if ( !((PlayerMobile)owner).Avatar)
-								sText = f3 + " " + f1; 
-							else
-								sText = f3 + " " + f1 + " " + f5;
-                            m_ResurrectType = 1;
-						}
-						else if ( m_Healer == 4 )
-                        { //Reaper
-                            if ( !((PlayerMobile)owner).Avatar)
-								sText = sText = f3 + " " + f1;
-							else
-								sText = f3 + " " + f1 + " " + f5;
-							m_ResurrectType = 1;
-						}
-						else if ( m_Healer == 5 )
-                        { //goddess of the sea
-                            if (!((PlayerMobile)owner).Avatar)
-                                sText = sText = f3 + " " + f1;
-                            else
-                                sText = f3 + " " + f1 + " " + f5;
-                            m_ResurrectType = 1;
-						}
-					}
-				}
-				
-				else //they have enough gold
-				{
-					
-					if ( !((PlayerMobile)owner).Avatar)
-					{
-						if ((owner.RawStr + owner.RawDex + owner.RawInt) < 125)
-							c2 = "10";
-						else
-							c2 = "20";
-					}
-					
-					/*if ( (owner.RawStr + owner.RawDex + owner.RawInt) < 125 )
-					{
-						if ( !((PlayerMobile)owner).Avatar)
-						sText = "You currently have enough gold in the bank to provide an offering to the healer. Do you wish to offer the tribute to the healer for your life back? If you do, you will suffer a " + c2 + "% loss to your fame and karma. You will not loose any stats or skills because of your weak status.";
-					}
-					
-					else */if ( m_Healer < 2 )
-					{
-						sText = f0 + loss;
-						m_ResurrectType = 2;
-					}
-					else
-					{
-						if (m_Healer == 2)
-						{
-							if ( !((PlayerMobile)owner).Avatar)
-							{
-								if ((owner.RawStr + owner.RawDex + owner.RawInt) < 125)
-									c2 = "20";
-								else
-									c2 = "40";
-							}
-							else
-								c2 = "10";
-							
-							c1 = String.Format("{0:0.0}", (penalty));
-							sText = f4 + " " + f1 + " " + f5;
-                            m_ResurrectType = 3;
-						}
-						else if ( m_Healer == 3 )
-						{
-							sText = "Azrael ainda não está pronto para receber sua alma e atualmente você tem ouro suficiente no banco para fazer uma oferenda a ele. Você deseja prestar homenagem a Azrael pela sua vida de volta?" + loss;
-						m_ResurrectType = 2;
-						}
-						else if ( m_Healer == 4 )
-						{
-							sText = "Embora o Ceifador ficasse feliz em levar sua alma, ele acha que seu tempo chegou ao fim muito cedo. Atualmente você tem ouro suficiente no banco para fazer uma oferenda ao Reaper. Você deseja prestar-lhe uma homenagem pela sua vida de volta?" + loss;
-						m_ResurrectType = 2;
-						}
-						else if ( m_Healer == 5 )
-						{
-							sText = "Atualmente você tem ouro suficiente no banco para fazer uma oferenda à deusa do mar. Você deseja homenagear Anfitrite pela sua vida de volta?" + loss;
-						m_ResurrectType = 2;
-						}
-					}
-					
-				}
-			}
-			else
-			{
-				if ( m_Healer < 2 )
-				{
-					sText = "Você deseja que o curandeiro o traga de volta à vida?";
-				}
-				else
-				{
-					sText = "Você deseja que os deuses o devolvam à vida?";
-
-					if ( m_Healer == 3 )
-					{
-						sText = "Você deseja que Azrael o traga de volta à vida?";
-					}
-					else if ( m_Healer == 4 )
-					{
-						sText = "Você deseja que o Reaper o traga de volta à vida?";
-					}
-					else if ( m_Healer == 5 )
-					{
-						sText = "Você deseja que Anfitrite o traga de volta à vida?";
-					}
-				}
-			}
-
-			string sGrave = "VOLTAR À VIDA";
-			switch ( Utility.RandomMinMax( 0, 3 ) )
-			{
-				case 0:	sGrave = "SUA VIDA DE VOLTA";break;
-				case 1:	sGrave = "SUA RESSURREIÇÃO";break;
-				case 2:	sGrave = "VOLTAR À VIDA";break;
-				case 3:	sGrave = "RETORNO DOS MORTOS";break;
-			}
-
-            this.Closable=true;
-			this.Disposable=true;
-			this.Dragable=true;
-			this.Resizable=false;
-
-            double bankGoldKK = m_Bank;
-            bool useKNotation = false;
-            bool useKKNotation = false;
-            if (bankGoldKK > 1000)
+            // Handle SoulBound players
+            if (player.SoulBound)
             {
-                if (bankGoldKK > 1000000)
-                {
-                    useKKNotation = true;
-                    bankGoldKK /= (1000 * 1000); // kks
-                }
-                else
-                {
-                    useKNotation = true;
-                    bankGoldKK /= 1000;
-                }
-
-                bankGoldKK = Math.Round(bankGoldKK, 2);
+                player.ResetPlayer(owner);
+                owner.CloseGump(typeof(ResurrectCostGump));
+                return;
             }
+
+            m_Healer = healer;
+            m_Price = GetPlayerInfo.GetResurrectCost(owner);
+            m_Bank = Banker.GetBalance(owner);
+            m_ResurrectType = ResurrectionGumpConstants.RESURRECT_TYPE_NONE;
+
+            // Calculate penalty
+            double penalty = ResurrectionGumpHelper.CalculatePenaltyForResurrectCost(owner.Karma);
+
+            // Build message
+            string sText = ResurrectionGumpHelper.BuildResurrectCostMessage(player, healer, m_Price, m_Bank, penalty, out m_ResurrectType);
+
+            // Get random grave message
+            string sGrave = ResurrectionGumpHelper.GetRandomGraveMessageCost();
+
+            // Setup gump properties
+            this.Closable = true;
+            this.Disposable = true;
+            this.Dragable = true;
+            this.Resizable = false;
+
+            // Format bank gold
+            string formattedBankGold;
+            bool useKNotation;
+            bool useKKNotation;
+            ResurrectionGumpHelper.FormatBankGold(m_Bank, out formattedBankGold, out useKNotation, out useKKNotation);
 
             AddPage(0);
 
-			AddImage(0, 0, 154);
-			AddImage(300, 201, 154);
-			AddImage(0, 201, 154);
-			AddImage(300, 0, 154);
-			AddImage(298, 199, 129);
-			AddImage(2, 199, 129);
-			AddImage(298, 2, 129);
-			AddImage(2, 2, 129);
-			AddImage(7, 6, 145);
-			AddImage(8, 257, 142);
-			AddImage(253, 285, 144);
-			AddImage(171, 47, 132);
-			AddImage(379, 8, 134);
-			AddImage(167, 7, 156);
-			AddImage(209, 11, 156);
-			AddImage(189, 10, 156);
-			AddImage(170, 44, 159);
+            // Add gump layout (images)
+            AddResurrectionGumpLayout();
 
-			AddButton(101, 365, 4023, 4023, 1, GumpButtonType.Reply, 0);
-            AddHtml(101 + 30, 365 + 2, 477, 22, @"<BODY><BASEFONT Color=#5eff00><BIG> Ressuscite-me </BIG></BASEFONT></BODY>", false, false);
+            // Add buttons
+            AddButton(101, 365, 4023, 4023, 1, GumpButtonType.Reply, 0);
+            AddHtml(101 + ResurrectionGumpConstants.BUTTON_LABEL_OFFSET, 365 + 2, 477, 22, 
+                @"<BODY><BASEFONT Color=#5eff00><BIG> " + ResurrectionGumpStringConstants.BUTTON_RESURRECT_ME + " </BIG></BASEFONT></BODY>", false, false);
             AddButton(307, 365, 4020, 4020, 2, GumpButtonType.Reply, 0);
-            AddHtml(307 + 30, 365 + 2, 477, 22, @"<BODY><BASEFONT Color=#FF0000><BIG> Não </BIG></BASEFONT></BODY>", false, false);
+            AddHtml(307 + ResurrectionGumpConstants.BUTTON_LABEL_OFFSET, 365 + 2, 477, 22, 
+                @"<BODY><BASEFONT Color=#FF0000><BIG> " + ResurrectionGumpStringConstants.BUTTON_NO + " </BIG></BASEFONT></BODY>", false, false);
 
-            if ( m_Price > 0 && m_Healer != 2 )
-			{
-				AddHtml( 101, 271, 190, 22, @"<BODY><BASEFONT Color=#FCFF00><BIG>Tributo</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-				AddHtml( 307, 271, 196, 22, @"<BODY><BASEFONT Color=#ffffff><BIG>" + String.Format("{0} Moeda(s) de Ouro", m_Price ) + "</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+            // Add tribute and bank gold labels (always show, except for shrine)
+            if (m_Healer != ResurrectionGumpConstants.HEALER_TYPE_SHRINE)
+            {
+                AddHtml(101, 291, 190, 22, 
+                    @"<BODY><BASEFONT Color=#FCFF00><BIG>" + ResurrectionGumpStringConstants.LABEL_TRIBUTE + "</BIG></BASEFONT></BODY>", false, false);
+                AddHtml(307, 291, 196, 22, 
+                    @"<BODY><BASEFONT Color=#ffffff><BIG>" + string.Format(ResurrectionGumpStringConstants.FORMAT_GOLD_AMOUNT, m_Price) + "</BIG></BASEFONT></BODY>", false, false);
 
-				AddHtml( 101, 305, 190, 22, @"<BODY><BASEFONT Color=#FCFF00><BIG>Dinheiro no banco</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+                AddHtml(101, 325, 190, 22, 
+                    @"<BODY><BASEFONT Color=#FCFF00><BIG>" + ResurrectionGumpStringConstants.LABEL_BANK_GOLD + "</BIG></BASEFONT></BODY>", false, false);
+                
                 if (useKNotation)
-                    AddHtml(307, 305, 196, 22, @"<BODY><BASEFONT Color=#ffffff><BIG>" + bankGoldKK.ToString() + "k Moeda(s) de Ouro</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+                {
+                    AddHtml(307, 325, 196, 22, 
+                        @"<BODY><BASEFONT Color=#ffffff><BIG>" + string.Format(ResurrectionGumpStringConstants.FORMAT_GOLD_K, formattedBankGold) + "</BIG></BASEFONT></BODY>", false, false);
+                }
                 else if (useKKNotation)
-                    AddHtml(307, 305, 196, 22, @"<BODY><BASEFONT Color=#ffffff><BIG>" + bankGoldKK.ToString() + "kk Moeda(s) de Ouro</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+                {
+                    AddHtml(307, 325, 196, 22, 
+                        @"<BODY><BASEFONT Color=#ffffff><BIG>" + string.Format(ResurrectionGumpStringConstants.FORMAT_GOLD_KK, formattedBankGold) + "</BIG></BASEFONT></BODY>", false, false);
+                }
                 else
-                    AddHtml(307, 305, 156, 22, @"<BODY><BASEFONT Color=#ffffff><BIG>" + String.Format("{0} Gold", m_Bank) + " Moeda(s) de Ouro</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-                //AddHtml( 307, 305, 116, 22, @"<BODY><BASEFONT Color=#FCFF00><BIG>" + String.Format("{0} Gold", m_Bank ) + "</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-			}
-
-			AddHtml( 177, 90, 400, 22, @"<BODY><BASEFONT Color=#fff700><BIG><CENTER>" + sGrave + "</CENTER></BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-
-			AddHtml( 100, 155, 477, 123, @"<BODY><BASEFONT Color=#ffffff><BIG>" + sText + "</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-		}
-
-		public override void OnResponse( NetState state, RelayInfo info )
-		{
-			Mobile from = state.Mobile;
-
-			from.CloseGump( typeof( ResurrectCostGump ) );
-
-			if( info.ButtonID == 1 )
-			{
-				if( from.Map == null || !from.Map.CanFit( from.Location, 16, false, false ) )
-				{
-                    from.SendMessage(55, "Você não pode ser ressuscitado aqui!");
-					return;
-				}
-
-				if ( m_ResurrectType == 2  )
-				{
-					if (from is PlayerMobile)
-					{
-						if ( AetherGlobe.EvilChamp != from && AetherGlobe.GoodChamp != from )
-						{
-							Banker.Withdraw( from, m_Price );
-							from.SendLocalizedMessage( 1060398, m_Price.ToString() ); // ~1_AMOUNT~ gold has been withdrawn from your bank box.
-							from.SendLocalizedMessage( 1060022, Banker.GetBalance( from ).ToString() ); // You have ~1_AMOUNT~ gold in cash remaining in your bank box.
-						}
-						Server.Misc.Death.Penalty( from, false );
-					}
-				}
-				else if ( m_ResurrectType == 1 )
-				{
-					Server.Misc.Death.Penalty( from, true );
-				}
-				else if ( m_ResurrectType == 3 )
-				{
-					Server.Misc.Death.Penalty( from, false, true);
-				}
-
-				from.PlaySound( 0x214 );
-				from.FixedEffect( 0x376A, 10, 16 );
-
-				from.Resurrect();
-
-				from.Hits = from.HitsMax;
-				from.Stam = from.StamMax;
-				from.Mana = from.ManaMax;
-				if (from.Criminal)
-					from.Criminal = false;
-				from.Hidden = true;
-			}
-			else
-			{
-                from.SendMessage(55, "Você decide permanecer no reino espiritual.");
+                {
+                    AddHtml(307, 325, 156, 22, 
+                        @"<BODY><BASEFONT Color=#ffffff><BIG>" + string.Format(ResurrectionGumpStringConstants.FORMAT_GOLD_AMOUNT, m_Bank) + "</BIG></BASEFONT></BODY>", false, false);
+                }
             }
-		}
-	}
+
+            // Add grave message and main text
+            AddHtml(177, 90, 400, 22, 
+                @"<BODY><BASEFONT Color=#fff700><BIG><CENTER>" + sGrave + "</CENTER></BIG></BASEFONT></BODY>", false, false);
+            AddHtml(100, 155, 477, 123, 
+                @"<BODY><BASEFONT Color=#ffffff><BIG>" + sText + "</BIG></BASEFONT></BODY>", false, false);
+        }
+
+        #endregion
+
+        #region Gump Layout
+
+        /// <summary>
+        /// Adds the standard resurrection gump layout (images)
+        /// </summary>
+        private void AddResurrectionGumpLayout()
+        {
+            AddImage(0, 0, 154);
+            AddImage(300, 201, 154);
+            AddImage(0, 201, 154);
+            AddImage(300, 0, 154);
+            AddImage(298, 199, 129);
+            AddImage(2, 199, 129);
+            AddImage(298, 2, 129);
+            AddImage(2, 2, 129);
+            AddImage(7, 6, 145);
+            AddImage(8, 257, 142);
+            AddImage(253, 285, 144);
+            AddImage(171, 47, 132);
+            AddImage(379, 8, 134);
+            AddImage(167, 7, 156);
+            AddImage(209, 11, 156);
+            AddImage(189, 10, 156);
+            AddImage(170, 44, 159);
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Handles gump response
+        /// </summary>
+        /// <param name="state">Network state</param>
+        /// <param name="info">Relay information</param>
+        public override void OnResponse(NetState state, RelayInfo info)
+        {
+            Mobile from = state.Mobile;
+
+            from.CloseGump(typeof(ResurrectCostGump));
+
+            // Handle cancellation (No button or closed via X button)
+            if (info.ButtonID == 0 || info.ButtonID == 2)
+            {
+                if (info.ButtonID == 2) // No button
+                {
+                    from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, ResurrectionGumpStringConstants.MSG_REMAIN_SPIRITUAL_REALM);
+                }
+                
+                // Record cancellation time to prevent immediate re-showing (applies to both No button and X button close)
+                Server.Mobiles.BaseHealer.RecordGumpCancellation(from);
+                
+                return;
+            }
+
+            if (info.ButtonID == 1) // Yes/Resurrect button
+            {
+                // Check if can fit at location
+                if (from.Map == null || !from.Map.CanFit(from.Location, ResurrectionGumpConstants.MAP_FIT_CHECK_SIZE, false, false))
+                {
+                    from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, ResurrectionGumpStringConstants.MSG_CANNOT_RESURRECT_HERE);
+                    return;
+                }
+
+                PlayerMobile player = from as PlayerMobile;
+                bool hasEnoughGold = m_Bank >= m_Price;
+
+                // IMPORTANT: If player has enough gold for current resurrection, stop any active delay timer
+                // and ensure immediate resurrection with no delay and no new debit
+                if (player != null && hasEnoughGold && ResurrectionGumpHelper.HasActiveResurrectionDelay(player))
+                {
+                    ResurrectionGumpHelper.StopResurrectionDelay(player);
+                }
+
+                // Case 1: Player does NOT have enough money for resurrection (less than 300gp)
+                if (!hasEnoughGold)
+                {
+                    // Player chose to resurrect without payment
+                    if (m_ResurrectType == ResurrectionGumpConstants.RESURRECT_TYPE_NO_GOLD || m_ResurrectType == ResurrectionGumpConstants.RESURRECT_TYPE_SHRINE)
+                    {
+                        // Check if player already has an active delay timer
+                        if (player != null && ResurrectionGumpHelper.HasActiveResurrectionDelay(player))
+                        {
+                            // Timer is already running - don't start a new one
+                            return;
+                        }
+
+                        // ALWAYS apply delay timer when player has no money and chooses to resurrect without payment
+                        // Delay is based on NEW debit count (current debits + 1) since Penalty will add a new debit
+                        if (player != null)
+                        {
+                            // Calculate delay based on NEW debit count (current + 1)
+                            int newDebitCount = player.ResurrectionDebits + 1;
+                            int requiredDelay = ResurrectionGumpHelper.CalculateResurrectionDelay(newDebitCount);
+                            
+                            // Start the delay timer system (particles, freeze, periodic checks)
+                            ResurrectionGumpHelper.StartResurrectionDelay(player, requiredDelay);
+                            
+                            // Return - player will be resurrected when timer expires
+                            // The timer will call Penalty and Resurrect when delay completes
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Player doesn't have enough gold and can't resurrect without payment
+                        from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, ResurrectionGumpStringConstants.MSG_REMAIN_SPIRITUAL_REALM);
+                        return;
+                    }
+                }
+                // Case 2: Player HAS enough money (at least 300gp for current resurrection)
+                // IMPORTANT: Immediate resurrection, NO delay, NO new debit, old debits remain if not paid
+                else
+                {
+                    // Ensure no delay timer is active (safety check)
+                    if (player != null && ResurrectionGumpHelper.HasActiveResurrectionDelay(player))
+                    {
+                        ResurrectionGumpHelper.StopResurrectionDelay(player);
+                    }
+
+                    // Player chose to resurrect with payment
+                    if (m_ResurrectType == ResurrectionGumpConstants.RESURRECT_TYPE_WITH_GOLD)
+                    {
+                        if (player != null && AetherGlobe.EvilChamp != player && AetherGlobe.GoodChamp != player)
+                        {
+                            // Calculate total cost: (debts * 300) + (new ress 300)
+                            int totalDebt = ResurrectionGumpHelper.CalculateDebtGold(player.ResurrectionDebits);
+                            int totalCost = m_Price + totalDebt;
+                            int bankBalance = Banker.GetBalance(from);
+                            
+                            // Payment logic: Pay resurrection + as many full debts as possible (partial debt payment allowed)
+                            int actualPayment = 0;
+                            int debtsPaid = 0;
+                            
+                            if (bankBalance >= totalCost)
+                            {
+                                // Can pay all debts + resurrection
+                                actualPayment = totalCost;
+                                debtsPaid = player.ResurrectionDebits;
+                                player.ResurrectionDebits = 0;
+                            }
+                            else if (bankBalance >= m_Price)
+                            {
+                                // Pay resurrection cost first, then pay as many full debts as possible
+                                int remainingAfterRes = bankBalance - m_Price;
+                                
+                                // Calculate how many full debts can be paid (each debt = 300gp)
+                                debtsPaid = remainingAfterRes / ResurrectionGumpConstants.DEBT_GOLD_PER_DEBIT;
+                                
+                                // Total payment = resurrection + debts paid
+                                actualPayment = m_Price + (debtsPaid * ResurrectionGumpConstants.DEBT_GOLD_PER_DEBIT);
+                                
+                                // Update remaining debits
+                                player.ResurrectionDebits = Math.Max(0, player.ResurrectionDebits - debtsPaid);
+                                
+                            }
+                            else
+                            {
+                                // Not enough even for resurrection (shouldn't happen since hasEnoughGold is true, but safety check)
+                                from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, 
+                                    "VocÃª nÃ£o tem dinheiro suficiente no banco.");
+                                return;
+                            }
+
+                            // Withdraw payment
+                            Banker.Withdraw(from, actualPayment);
+                            from.SendLocalizedMessage(1060398, actualPayment.ToString()); // ~1_AMOUNT~ gold has been withdrawn from your bank box.
+                            from.SendLocalizedMessage(1060022, Banker.GetBalance(from).ToString()); // You have ~1_AMOUNT~ gold in cash remaining in your bank box.
+
+                            if (debtsPaid > 0)
+                            {
+                                from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, 
+                                    string.Format(ResurrectionGumpStringConstants.MSG_DEBTS_PAID_FORMAT, debtsPaid * ResurrectionGumpConstants.DEBT_GOLD_PER_DEBIT));
+                            }
+
+                            if (player.ResurrectionDebits > 0)
+                            {
+                                from.SendMessage(ResurrectionGumpConstants.MSG_COLOR_WARNING, 
+                                    string.Format(ResurrectionGumpStringConstants.MSG_DEBTS_REMAINING_FORMAT, 
+                                        player.ResurrectionDebits, ResurrectionGumpHelper.CalculateDebtGold(player.ResurrectionDebits)));
+                            }
+
+                            // Healer says ludic message
+                            from.PublicOverheadMessage(Server.Network.MessageType.Regular, 0x3B2, false, 
+                                ResurrectionGumpStringConstants.MSG_COMEBACK_FROM_DEAD);
+                        }
+
+                        // NO new debit when paying - Penalty called with false
+                        Server.Misc.Death.Penalty(from, false);
+                    }
+                    else if (m_ResurrectType == ResurrectionGumpConstants.RESURRECT_TYPE_SHRINE)
+                    {
+                        // Shrine resurrection (free)
+                        Server.Misc.Death.Penalty(from, false, true);
+                    }
+                    else
+                    {
+                        // Free resurrection (price = 0)
+                        Server.Misc.Death.Penalty(from, false);
+                    }
+
+                    // IMMEDIATE resurrection - no delay, no timer
+                    from.Resurrect();
+                    bool hasDebits = (player != null && player.ResurrectionDebits > 0);
+                    ResurrectionGumpHelper.ApplyResurrectionEffects(from, hasDebits);
+                }
+
+                // Clear criminal flag if set
+                if (from.Criminal)
+                {
+                    from.Criminal = false;
+                }
+            }
+        }
+
+        #endregion
+    }
 }

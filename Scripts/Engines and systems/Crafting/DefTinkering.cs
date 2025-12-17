@@ -61,6 +61,10 @@ namespace Server.Engines.Craft
 			     itemName == "kit de remoção de armadilha de facção" ) // faction trap removal kit
 				return TinkeringConstants.CHANCE_AT_MIN_SPECIAL;
 
+			// Eternal Key (Chave Eterna) has 20% chance at minimum skill (90.0)
+			if ( item.ItemType == typeof( Server.Items.EternalKey ) )
+				return 0.20;
+
 			return TinkeringConstants.CHANCE_AT_MIN_STANDARD;
 		}
 
@@ -705,6 +709,14 @@ namespace Server.Engines.Craft
 				TinkeringConstants.SKILL_MIN_KEY_RING, TinkeringConstants.SKILL_MAX_KEY_RING, typeof( IronIngot ),
 				TinkeringConstants.MSG_IRON_INGOTS, TinkeringConstants.RESOURCE_IRON_KEY_RING,
 				TinkeringConstants.MSG_INSUFFICIENT_INGOTS );
+
+			// Eternal Key (Chave Eterna) - Requires 90+ Tinkering and Magery, uses special resources
+			// Success chance: 20% at 90.0 skill, +0.5% per skill point, capped at 35% at 120.0 skill
+			int eternalKeyIndex = AddCraft( typeof( EternalKey ), TinkeringConstants.MSG_GROUP_MISC, "Chave Eterna",
+				90.0, 120.0, typeof( PlatinumIngot ), TinkeringConstants.MSG_METAL_PLATINUM, 10, TinkeringConstants.MSG_INSUFFICIENT_INGOTS );
+			AddSkill( eternalKeyIndex, SkillName.Magery, 90.0, 120.0 );
+			AddRes( eternalKeyIndex, typeof( GoldIngot ), TinkeringConstants.MSG_METAL_GOLD, 4, TinkeringConstants.MSG_INSUFFICIENT_INGOTS );
+			AddRes( eternalKeyIndex, typeof( ArcaneGem ), TinkeringConstants.MSG_ARCANE_GEM, 1, TinkeringConstants.MSG_INSUFFICIENT_RESOURCES );
 
 			AddCraft( typeof( Globe ), TinkeringConstants.MSG_GROUP_MISC, TinkeringConstants.MSG_GLOBE,
 				TinkeringConstants.SKILL_MIN_GLOBE, TinkeringConstants.SKILL_MAX_GLOBE, typeof( IronIngot ),

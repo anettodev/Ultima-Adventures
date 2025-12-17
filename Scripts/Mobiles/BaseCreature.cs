@@ -243,6 +243,7 @@ namespace Server.Mobiles
 	private bool		m_bIsWildSummon = false;  // Wild summons attack anyone, including summoner
 	private DateTime	m_SummonEnd;
 	private int			m_iControlSlots;
+	private bool		m_IsVendorBought = false;  // Was this creature purchased from an NPC vendor?
 
 		private bool		m_bBardProvoked = false;
 		private bool		m_bBardPacified = false;
@@ -449,6 +450,17 @@ namespace Server.Mobiles
 		{
 			get{ return m_IsPrisoner; }
 			set{ m_IsPrisoner = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets whether this creature was purchased from an NPC vendor
+		/// Vendor-bought creatures do not grant Animal Lore skill gain
+		/// </summary>
+		[CommandProperty( AccessLevel.GameMaster )]
+		public bool IsVendorBought
+		{
+			get{ return m_IsVendorBought; }
+			set{ m_IsVendorBought = value; }
 		}
 
 		protected DateTime SummonEnd
@@ -5600,7 +5612,7 @@ namespace Server.Mobiles
 		{
 			base.Serialize( writer );
 
-			writer.Write( (int) 31 ); // version, stable date tracking
+			writer.Write( (int) 32 ); // version, vendor-bought flag
 			writer.Write( (int)m_CurrentAI );
 			writer.Write( (int)m_DefaultAI );
 
@@ -5776,6 +5788,9 @@ namespace Server.Mobiles
 			//31 - Stable date tracking
 			writer.Write(m_IsStabled);
 			writer.Write(m_StabledDate);
+
+			//32 - Vendor-bought flag
+			writer.Write(m_IsVendorBought);
 
 
         }
@@ -6070,6 +6085,11 @@ namespace Server.Mobiles
 			{
 				m_IsStabled = reader.ReadBool();
 				m_StabledDate = reader.ReadDateTime();
+			}
+
+			if (version >= 32)
+			{
+				m_IsVendorBought = reader.ReadBool();
 			}
 
             if ( deleteTime > TimeSpan.Zero || LastOwner != null && !Controlled && !IsStabled )

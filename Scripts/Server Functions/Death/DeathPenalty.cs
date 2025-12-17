@@ -1,169 +1,336 @@
 using Server;
-using Server.Mobiles;
 using Server.Items;
+using Server.Mobiles;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-
 
 namespace Server.Misc
 {
-    class Death
+    /// <summary>
+    /// Handles death penalties for players on resurrection.
+    /// Applies fame/karma loss based on player type and resurrection method.
+    /// Stat and skill loss are currently disabled.
+    /// </summary>
+    public static class Death
     {
-		public static void Penalty( Mobile from, bool allPenalty )
-        { 
-			Penalty(from, allPenalty, false);
-		}
+        #region Public Methods
 
-		public static void Penalty( Mobile from, bool allPenalty, bool ankh )
+        /// <summary>
+        /// Applies death penalty to player (without ankh flag)
+        /// </summary>
+        /// <param name="from">The mobile to apply penalty to</param>
+        /// <param name="allPenalty">True if player insta-ressed or doesn't have gold</param>
+        public static void Penalty(Mobile from, bool allPenalty)
         {
-			if ( !(from is PlayerMobile) || from == null)
-				return;
+            Penalty(from, allPenalty, false);
+        }
 
-				if ( ((PlayerMobile)from).SoulBound )
-				{
-					((PlayerMobile)from).ResetPlayer( from );
-					return;
-				}
+        /// <summary>
+        /// Applies death penalty to player with full options
+        /// </summary>
+        /// <param name="from">The mobile to apply penalty to</param>
+        /// <param name="allPenalty">True if player insta-ressed or doesn't have gold</param>
+        /// <param name="ankh">True if resurrected via ankh (less/no gold paid)</param>
+        public static void Penalty(Mobile from, bool allPenalty, bool ankh)
+        {
+            // Validate and cast player
+            PlayerMobile player = ValidatePlayer(from);
+            if (player == null)
+                return;
 
-				if (AdventuresFunctions.IsInMidland(from))
-					return;
+            // Skip penalty for SoulBound or Midland players
+            if (ShouldSkipPenalty(player))
+                return;
 
-				double val1 = 0.05; // karma loss
-				
-				if ( !((PlayerMobile)from).Avatar )
-					val1 *= 2; // normal mode players now 10%
-				
-				double val2 = 0; // skill loss
+            // Calculate penalty rates
+            double karmaLossRate = CalculateKarmaLossRate(player, allPenalty, ankh);
+            double balanceEffect = CalculateBalanceEffect(player, allPenalty);
 
-				double val3 = 0.05; // balance effect 
-				
-				int karma = Math.Abs(from.Karma);
-				if ( karma < 1000)
-					karma = 1000; // sets minimum value for balance effect
+            // Apply fame and karma loss
+            ApplyFameLoss(player, karmaLossRate);
+            ApplyKarmaLoss(player, karmaLossRate);
 
-				if (from.Karma >= 0) // how much skill is lost is based on the balance for unrestricted players
-					val2 = ( (100 - ( ( ((double)AetherGlobe.BalanceLevel / 100000.0) * ( ((double)karma / 15000) ) ) / 1.5)  ) / 100 ) ; // ranges from .9947 to .999999
-				else 
-					val2 = ( (100 - ( ( ((double)(100000-AetherGlobe.BalanceLevel) / 100000.0) * ( ((double)karma / 15000) ) )  / 1.5) ) / 100 ) ;
-				
-				if (val2 >= 0.999) // sanity check to make sure skills are not INCREASED if above goes wrong and to set minimum 0.1 skill loss
-					val2 = 0.999;
+            // Increment resurrection debits if player didn't pay (allPenalty = true)
+            if (allPenalty)
+            {
+                player.ResurrectionDebits++;
+            }
 
-				if ( allPenalty ) // they either insta-ressed or don't have gold, etc
-				{
-					if ( !((PlayerMobile)from).Avatar )
-						val1 *= 4; // max fame/karma is now 40% for them
-					else 
-						val1 *= 2;// max fame/karma is now 10% for them
-					
-					val2 = 1-((1-val2)*3); // skill loss changed to max .9847 (1.5% loss)
+            // Check for exemptions and send appropriate messages
+            ExemptionType exemptionType;
+            if (IsExemptFromPenalty(player, out exemptionType))
+            {
+                SendExemptionMessage(player, exemptionType, balanceEffect);
+                return;
+            }
 
-					val3 *= 3; // max 15%
-				}
-				else if ( !((PlayerMobile)from).Avatar )
-					val1 *= 2; // penalty for easymode players just doubles here to 20%
-					
-				if ( (from.RawStr + from.RawDex + from.RawInt) < 125  )
-				{
-					val2 = 1.0; // no skill loss
-					val1 /= 2; // half fame/karma loss
-				}
-				
-				if (ankh )
-				{
-					val1 *= 2; // fame/karma can now range from 10% to 80% loss, ankh doubles it because less/no gold
-				}	
+            // Send penalty message
+            player.SendMessage(DeathPenaltyConstants.MSG_COLOR_WARNING, DeathPenaltyStringConstants.MSG_RESURRECTION_WEAKER);
+        }
 
-				if (val1 < 0.05) // sanity check
-					val1 = 0.05;
-				
-				if( from.Fame > 0 ) // FAME LOSS
-				{
-					int amount = (int)((double)from.Fame * val1);
-					if ( from.Fame - amount < 0 ){ amount = from.Fame; }
-					if ( from.Fame < 1 ){ from.Fame = 0; }
-					Misc.Titles.AwardFame( from, -amount, true );
-				}
+        #endregion
 
-					int amounts = (int)((double)from.Karma * val1);
-					if ( from.Karma > 0 && (from.Karma - amounts) < 0 ){ amounts = from.Karma; }
-					else if ( from.Karma < 0 && (from.Karma - amounts) > 0 ){ amounts = from.Karma; }
-					if ( from.Karma -1 == 0 || from.Karma +1 == 0){ from.Karma = 0; }
-					Misc.Titles.AwardKarma( from, -amounts, true );
+        #region Validation Methods
 
+        /// <summary>
+        /// Validates that the mobile is a PlayerMobile
+        /// </summary>
+        /// <param name="from">The mobile to validate</param>
+        /// <returns>PlayerMobile instance or null if invalid</returns>
+        private static PlayerMobile ValidatePlayer(Mobile from)
+        {
+            if (from is PlayerMobile)
+            {
+                return (PlayerMobile)from;
+            }
+            return null;
+        }
 
-				if (  AetherGlobe.EvilChamp == from || AetherGlobe.GoodChamp == from || (from.RawStr + from.RawDex + from.RawInt) < 125 || !((PlayerMobile)from).Avatar)
-				{
-					if ((from.RawStr + from.RawDex + from.RawInt) < 125 && ((PlayerMobile)from).Avatar && (AetherGlobe.EvilChamp != from || AetherGlobe.GoodChamp != from) )
-						from.SendMessage("Você teria perdido habilidades aqui se não fosse tão fraco.");
-					else if ( (AetherGlobe.EvilChamp == from || AetherGlobe.GoodChamp == from ) && ((PlayerMobile)from).Avatar )
-					{
-						from.SendMessage("Sua influência no equilíbrio supera os perigos da morte!");
-						double lost = (double)((PlayerMobile)from).BalanceEffect * val3;
-						((PlayerMobile)from).BalanceEffect -= (int)lost;
-						from.SendMessage("Mas sua influência foi reduzida por " + (int)lost + " da sua morte prematura.");
-					}
-					else if ( !((PlayerMobile)from).Avatar)
-						from.SendMessage(55, "Você evita qualquer penalidade grave por sua morte, pois suas ações não influenciam o equilíbrio da força.");
-					return;
-				}
+        /// <summary>
+        /// Checks if penalty should be skipped (SoulBound or Midland)
+        /// </summary>
+        /// <param name="player">The player to check</param>
+        /// <returns>True if penalty should be skipped</returns>
+        private static bool ShouldSkipPenalty(PlayerMobile player)
+        {
+            if (player.SoulBound)
+            {
+                player.ResetPlayer(player);
+                return true;
+            }
 
-				double loss = val2;
+            if (AdventuresFunctions.IsInMidland(player))
+                return true;
 
-				if( from.RawStr * loss > 10 )
-				{
-					if (allPenalty)
-						from.RawStr = (int)(from.RawStr * loss);
-					else if ( Utility.RandomDouble() < 0.33 )
-						from.RawStr = (int)(from.RawStr * loss);
-				}
-				if ( from.RawStr < 10 ){ from.RawStr = 10; }
-				
-				if( from.RawInt * loss > 10 )
-				{
-					if (allPenalty)
-						from.RawInt = (int)(from.RawInt * loss);
-					else if ( Utility.RandomDouble() < 0.33 )
-						from.RawInt = (int)(from.RawInt * loss);
-				}					
-				if ( from.RawInt < 10 ){ from.RawInt = 10; }
-			
-				if( from.RawDex * loss > 10 )
-				{
-					if (allPenalty)
-						from.RawDex = (int)(from.RawDex * loss);
-					else if ( Utility.RandomDouble() < 0.33 )				
-						from.RawDex = (int)(from.RawDex * loss);
-				}					
-				if ( from.RawDex < 10 ){ from.RawDex = 10; }
-						
-				if ( allPenalty  )
-				{
-					for( int s = 0; s < from.Skills.Length; s++ )
-					{
-						if( Utility.RandomDouble() > 0.35 && (from.Skills[s].Base * loss) > 35 )
-							from.Skills[s].Base *= loss;
-	
-					}	
-					from.SendMessage(55, "Seu corpo revive... mas muito mais fraco.");
-				}
-				else 
-				{
-					for( int s = 0; s < from.Skills.Length; s++ )
-					{
-						if (Utility.RandomDouble() > 0.65)
-						{
-							if (from.Karma >= 0 && (from.Skills[s].Base * loss > 35) && (Utility.RandomDouble() < (((double)AetherGlobe.BalanceLevel / 200000.0)) * ( 1+ ((double)from.Karma / 15000)))) 
-								from.Skills[s].Base *= loss;
-							else if ( (from.Skills[s].Base * loss > 35) && (Utility.RandomDouble() < (((100000-(double)AetherGlobe.BalanceLevel) / 200000.0)) * ( 1+ ((double)Math.Abs(from.Karma) / 15000))))
-								from.Skills[s].Base *= loss;
-						}
-					}	
-					from.SendMessage(55, "Seu corpo revive... mas um pouco mais fraco.");
-				}
-						
-			
-		}
-	}
+            return false;
+        }
+
+        /// <summary>
+        /// Checks if player is exempt from penalties
+        /// </summary>
+        /// <param name="player">The player to check</param>
+        /// <param name="exemptionType">Output parameter indicating exemption type</param>
+        /// <returns>True if player is exempt</returns>
+        private static bool IsExemptFromPenalty(PlayerMobile player, out ExemptionType exemptionType)
+        {
+            exemptionType = ExemptionType.None;
+
+            // Check if player is a champion
+            if (AetherGlobe.EvilChamp == player || AetherGlobe.GoodChamp == player)
+            {
+                if (player.Avatar)
+                {
+                    exemptionType = ExemptionType.Champ;
+                    return true;
+                }
+            }
+
+            // Check if player is weak (total stats < 125)
+            int totalStats = GetTotalStats(player);
+            if (totalStats < DeathPenaltyConstants.TOTAL_STATS_EXEMPTION_THRESHOLD)
+            {
+                if (player.Avatar && (AetherGlobe.EvilChamp != player && AetherGlobe.GoodChamp != player))
+                {
+                    exemptionType = ExemptionType.Weak;
+                    return true;
+                }
+            }
+
+            // Check if player is non-avatar
+            if (!player.Avatar)
+            {
+                exemptionType = ExemptionType.NonAvatar;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the total of all stats (Str + Dex + Int)
+        /// </summary>
+        /// <param name="from">The mobile to calculate stats for</param>
+        /// <returns>Total stat value</returns>
+        private static int GetTotalStats(Mobile from)
+        {
+            return from.RawStr + from.RawDex + from.RawInt;
+        }
+
+        #endregion
+
+        #region Calculation Methods
+
+        /// <summary>
+        /// Calculates the karma/fame loss rate based on player type and resurrection method
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="allPenalty">True if insta-ress or no gold</param>
+        /// <param name="ankh">True if resurrected via ankh</param>
+        /// <returns>Loss rate multiplier (0.05 to 0.80)</returns>
+        private static double CalculateKarmaLossRate(PlayerMobile player, bool allPenalty, bool ankh)
+        {
+            double lossRate = DeathPenaltyConstants.BASE_KARMA_LOSS_RATE;
+
+            // Apply normal player multiplier
+            if (!player.Avatar)
+            {
+                lossRate *= DeathPenaltyConstants.NORMAL_PLAYER_MULTIPLIER;
+            }
+
+            // Apply allPenalty multiplier
+            if (allPenalty)
+            {
+                if (!player.Avatar)
+                {
+                    lossRate *= DeathPenaltyConstants.NORMAL_PLAYER_ALL_PENALTY_MULTIPLIER;
+                }
+                else
+                {
+                    lossRate *= DeathPenaltyConstants.AVATAR_ALL_PENALTY_MULTIPLIER;
+                }
+            }
+            else if (!player.Avatar)
+            {
+                // Normal players get double penalty even without allPenalty
+                lossRate *= DeathPenaltyConstants.NORMAL_PLAYER_MULTIPLIER;
+            }
+
+            // Apply weak player reduction (half loss if total stats < 125)
+            int totalStats = GetTotalStats(player);
+            if (totalStats < DeathPenaltyConstants.TOTAL_STATS_EXEMPTION_THRESHOLD)
+            {
+                lossRate /= DeathPenaltyConstants.NORMAL_PLAYER_MULTIPLIER;
+            }
+
+            // Apply ankh multiplier
+            if (ankh)
+            {
+                lossRate *= DeathPenaltyConstants.ANKH_MULTIPLIER;
+            }
+
+            // Apply minimum cap
+            if (lossRate < DeathPenaltyConstants.MIN_KARMA_LOSS_RATE)
+            {
+                lossRate = DeathPenaltyConstants.MIN_KARMA_LOSS_RATE;
+            }
+
+            return lossRate;
+        }
+
+        /// <summary>
+        /// Calculates the balance effect rate (currently unused but kept for future reference)
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="allPenalty">True if insta-ress or no gold</param>
+        /// <returns>Balance effect rate</returns>
+        private static double CalculateBalanceEffect(PlayerMobile player, bool allPenalty)
+        {
+            double balanceEffect = DeathPenaltyConstants.BASE_BALANCE_EFFECT;
+
+            if (allPenalty)
+            {
+                balanceEffect *= DeathPenaltyConstants.BALANCE_EFFECT_MULTIPLIER;
+            }
+
+            return balanceEffect;
+        }
+
+        /// <summary>
+        /// Applies fame loss to the player
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="lossRate">The loss rate multiplier</param>
+        private static void ApplyFameLoss(PlayerMobile player, double lossRate)
+        {
+            if (player.Fame > 0)
+            {
+                int amount = (int)((double)player.Fame * lossRate);
+                if (player.Fame - amount < 0)
+                {
+                    amount = player.Fame;
+                }
+                if (player.Fame < 1)
+                {
+                    player.Fame = 0;
+                }
+                Misc.Titles.AwardFame(player, -amount, true);
+            }
+        }
+
+        /// <summary>
+        /// Applies karma loss to the player
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="lossRate">The loss rate multiplier</param>
+        private static void ApplyKarmaLoss(PlayerMobile player, double lossRate)
+        {
+            int amount = (int)((double)player.Karma * lossRate);
+            
+            // Handle positive karma
+            if (player.Karma > 0 && (player.Karma - amount) < 0)
+            {
+                amount = player.Karma;
+            }
+            // Handle negative karma
+            else if (player.Karma < 0 && (player.Karma - amount) > 0)
+            {
+                amount = player.Karma;
+            }
+            
+            // Zero out karma if it's very close to zero
+            if (player.Karma - 1 == 0 || player.Karma + 1 == 0)
+            {
+                player.Karma = 0;
+            }
+            
+            Misc.Titles.AwardKarma(player, -amount, true);
+        }
+
+        #endregion
+
+        #region Message Methods
+
+        /// <summary>
+        /// Sends appropriate exemption message based on exemption type
+        /// </summary>
+        /// <param name="player">The player</param>
+        /// <param name="exemptionType">The type of exemption</param>
+        /// <param name="balanceEffect">The balance effect rate (for champ players)</param>
+        private static void SendExemptionMessage(PlayerMobile player, ExemptionType exemptionType, double balanceEffect)
+        {
+            switch (exemptionType)
+            {
+                case ExemptionType.Weak:
+                    player.SendMessage(DeathPenaltyStringConstants.MSG_WEAK_PLAYER_EXEMPTION);
+                    break;
+
+                case ExemptionType.Champ:
+                    player.SendMessage(DeathPenaltyStringConstants.MSG_CHAMP_EXEMPTION);
+                    double lost = (double)player.BalanceEffect * balanceEffect;
+                    player.BalanceEffect -= (int)lost;
+                    player.SendMessage(string.Format(DeathPenaltyStringConstants.MSG_BALANCE_EFFECT_REDUCED_FORMAT, (int)lost));
+                    break;
+
+                case ExemptionType.NonAvatar:
+                    player.SendMessage(DeathPenaltyConstants.MSG_COLOR_WARNING, DeathPenaltyStringConstants.MSG_NON_AVATAR_EXEMPTION);
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region Nested Types
+
+        /// <summary>
+        /// Types of exemptions from death penalties
+        /// </summary>
+        private enum ExemptionType
+        {
+            None,
+            Weak,        // Total stats < 125
+            Champ,       // EvilChamp or GoodChamp
+            NonAvatar    // Non-avatar player
+        }
+
+        #endregion
+    }
 }

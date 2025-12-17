@@ -28,9 +28,9 @@ namespace Server.Gumps
 			AddImage(184, 10, 156);
 			AddButton(100, 200, 4005, 4005, 2, GumpButtonType.Reply, 0);
 			AddButton(308, 200, 4020, 4020, 1, GumpButtonType.Reply, 0);
-			AddHtml( 97, 152, 322, 20, @"<BODY><BASEFONT Color=#FCFF00><BIG>Are you sure you want to release them?</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-			AddHtml( 137, 200, 58, 20, @"<BODY><BASEFONT Color=#FFA200><BIG>Yes</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-			AddHtml( 346, 200, 58, 20, @"<BODY><BASEFONT Color=#FFA200><BIG>No</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			AddHtml( 97, 152, 322, 20, @"<BODY><BASEFONT Color=#FCFF00><BIG>Tem certeza que deseja libertar este animal?</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			AddHtml( 137, 200, 58, 20, @"<BODY><BASEFONT Color=#FFA200><BIG>Sim</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			AddHtml( 346, 200, 58, 20, @"<BODY><BASEFONT Color=#FFA200><BIG>Não</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			AddImage(278, 20, 156);
 			AddImage(296, 21, 156);
 		}
@@ -41,11 +41,17 @@ namespace Server.Gumps
 			{
 				if ( !m_Pet.Deleted && m_Pet.Controlled && m_From == m_Pet.ControlMaster && m_From.CheckAlive() /*&& m_Pet.CheckControlChance( m_From )*/ )
 				{
-					if ( m_Pet.Map == m_From.Map && m_Pet.InRange( m_From, 14 ) )
+					// Prevent releasing mounted followers
+					if ( m_Pet is IMount && ((IMount)m_Pet).Rider != null )
 					{
-						m_Pet.ControlTarget = null;
-						m_Pet.ControlOrder = OrderType.Release;
+						m_From.PublicOverheadMessage( Server.Network.MessageType.Emote, 0x3B2, false, "*Isso não é uma boa ideia.*" );
+						return;
 					}
+
+					// Allow release regardless of distance (for remote release via [pets] command)
+					// The pet must still be controlled by the player and not deleted
+					m_Pet.ControlTarget = null;
+					m_Pet.ControlOrder = OrderType.Release;
 				}
 			}
 		}

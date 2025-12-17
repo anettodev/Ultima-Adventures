@@ -78,7 +78,7 @@ namespace Server.Mobiles
 
 		// Player stats
 		private const int AVATAR_STAT_CAP = 250;
-		private const int NORMAL_STAT_CAP = 225;
+		private const int NORMAL_STAT_CAP = 235;
 		private const int MIN_HUNGER_THIRST = 20;
 
 		// Detection ranges
@@ -965,7 +965,12 @@ namespace Server.Mobiles
 			{
 				Actor3.Say("Very well!  Welcome, friend.");
 				CheckCount = 0;
-				PlayCheck = PLAY_CHECK_AVATAR;
+				// Skip Avatar and SoulBound choices - set defaults and go to completion
+				PlayCheck = PLAY_CHECK_COMPLETE;
+				PlayerMobile pm = (PlayerMobile)NewPlayer;
+				pm.Avatar = false;
+				pm.SoulBound = false;
+				NewPlayer.StatCap = NORMAL_STAT_CAP;
 			}
 			else if (PlayCheck == PLAY_CHECK_AVATAR)
 			{

@@ -405,8 +405,8 @@ namespace Server.Gumps
 			/// <param name="from">The player who owns the pet</param>
 			private void ProcessPetForContract(BaseCreature pet, Mobile from)
 			{
-				// Use tier-based reward system
-				int reward = PetValidationHelper.CalculateTierBasedReward(m_Entry.Tier);
+				// Use dynamic reward system (pet value + 15-35% bonus)
+				int reward = PetValidationHelper.CalculateDynamicContractReward(pet, from);
 				m_Entry.Reward += reward;
 				m_Entry.AmountTamed += 1;
 

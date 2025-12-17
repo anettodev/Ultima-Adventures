@@ -1511,7 +1511,7 @@ namespace Server
 		{
 			get
 			{
-				return false; // final
+				return (Movable && Visible); // final
 			}
 		}
 

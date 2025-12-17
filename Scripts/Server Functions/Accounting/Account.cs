@@ -19,7 +19,9 @@ namespace Server.Accounting
 {
 	public class Account : IAccount, IComparable, IComparable<Account>
 	{
-		public static readonly TimeSpan YoungDuration = TimeSpan.FromHours( 40.0 );
+		// Changed from game time to character creation time (8 days)
+		// Kept for reference, but now using character CreationTime instead
+		public static readonly TimeSpan YoungDuration = TimeSpan.FromDays( 8.0 );
 
 		public static readonly TimeSpan InactiveDuration = TimeSpan.FromDays( 180.0 );
 
@@ -685,12 +687,40 @@ namespace Server.Accounting
 			if ( acc == null )
 				return;
 
-			if ( m.Young && acc.Young )
+			// Check Young status based on character creation time (8 days)
+			if ( m.Young )
 			{
-				TimeSpan ts = YoungDuration - acc.TotalGameTime;
-				int hours = Math.Max( (int) ts.TotalHours, 0 );
-
-				m.SendAsciiMessage( "You will enjoy the benefits and relatively safe status of a young player for {0} more hour{1}.", hours, hours != 1 ? "s" : "" );
+				// Safety check: if CreationTime is not set, treat as new character
+				DateTime creationTime = m.CreationTime;
+				if (creationTime == DateTime.MinValue)
+				{
+					creationTime = DateTime.UtcNow;
+					m.CreationTime = creationTime;
+				}
+				TimeSpan timeSinceCreation = DateTime.UtcNow - creationTime;
+				TimeSpan remaining = YoungDuration - timeSinceCreation;
+				
+				if ( remaining <= TimeSpan.Zero )
+				{
+					// Time expired, remove Young status
+					m.Young = false;
+					if ( m.NetState != null )
+					{
+						m.SendGump( new Server.Gumps.YoungStatusLostGump() );
+					}
+				}
+				else
+				{
+					// Show informational gump about Young status
+					if ( m.NetState != null )
+					{
+						m.SendGump( new Server.Gumps.YoungLoginInfoGump() );
+					}
+					
+					// Show remaining days
+					int days = Math.Max( (int) remaining.TotalDays, 0 );
+					m.SendAsciiMessage( "Você ainda possuirá do status de Iniciante por mais {0} dia{1}.", days, days != 1 ? "s" : "" );
+				}
 			}
 		}
 
@@ -708,10 +738,12 @@ namespace Server.Accounting
 
 					if ( m.NetState != null )
 					{
+						// Show informational gump about losing Iniciante status
+						m.SendGump( new Server.Gumps.YoungStatusLostGump() );
+						
+						// Optional message for manual renouncement (when message > 0)
 						if ( message > 0 )
 							m.SendLocalizedMessage( message );
-
-						m.SendLocalizedMessage( 1019039 ); // You are no longer considered a young player of Ultima Online, and are no longer subject to the limitations and benefits of being in that caste.
 					}
 				}
 			}
@@ -719,8 +751,34 @@ namespace Server.Accounting
 
 		public void CheckYoung()
 		{
-			if ( TotalGameTime >= YoungDuration )
-				RemoveYoungStatus( 1019038 ); // You are old enough to be considered an adult, and have outgrown your status as a young player!
+			// Check each character's creation time individually
+			for ( int i = 0; i < m_Mobiles.Length; i++ )
+			{
+				PlayerMobile m = m_Mobiles[i] as PlayerMobile;
+
+				if ( m != null && m.Young )
+				{
+					// Safety check: if CreationTime is not set, treat as new character
+					DateTime creationTime = m.CreationTime;
+					if (creationTime == DateTime.MinValue)
+					{
+						creationTime = DateTime.UtcNow;
+						m.CreationTime = creationTime;
+					}
+					// Check if 8 days have passed since character creation
+					if ( DateTime.UtcNow - creationTime >= YoungDuration )
+					{
+						// Remove Young status for this character only
+						m.Young = false;
+						
+						if ( m.NetState != null )
+						{
+							// Send informational gump
+							m.SendGump( new Server.Gumps.YoungStatusLostGump() );
+						}
+					}
+				}
+			}
 		}
 
 		private class YoungTimer : Timer
@@ -728,7 +786,7 @@ namespace Server.Accounting
 			private Account m_Account;
 
 			public YoungTimer( Account account )
-				: base( TimeSpan.FromMinutes( 1.0 ), TimeSpan.FromMinutes( 1.0 ) )
+				: base( TimeSpan.FromHours( 1.0 ), TimeSpan.FromHours( 1.0 ) )
 			{
 				m_Account = account;
 

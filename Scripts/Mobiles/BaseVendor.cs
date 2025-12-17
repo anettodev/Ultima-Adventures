@@ -336,15 +336,17 @@ namespace Server.Mobiles
 				//SetSkill(SkillName.Healing, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
 				//SetSkill(SkillName.Parry, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
 
-				SetSkill(SkillName.Anatomy, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Camping, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.DetectHidden, BaseVendorConstants.DETECT_HIDDEN_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Magery, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.MagicResist, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
-				SetSkill(SkillName.Wrestling, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Anatomy, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Camping, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.DetectHidden, BaseVendorConstants.DETECT_HIDDEN_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Magery, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.MagicResist, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Tactics, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Wrestling, BaseVendorConstants.SKILL_MIN, BaseVendorConstants.SKILL_MAX);
+			SetSkill(SkillName.Focus, 35.0, 35.0);
+			SetSkill(SkillName.Tracking, 35.0, 35.0);
 
-				m_pricesadjusted = false;
+			m_pricesadjusted = false;
 				m_sellingpriceadjusted = false;
 		}
 
@@ -2706,9 +2708,11 @@ namespace Server.Mobiles
 
 				if ( m is BaseCreature )
 				{
-					( (BaseCreature)m ).SetControlMaster( buyer );
-					( (BaseCreature)m ).Tamable = true;
-					( (BaseCreature)m ).MinTameSkill = 29.1;
+					BaseCreature bc = (BaseCreature)m;
+					bc.SetControlMaster( buyer );
+					bc.Tamable = true;
+					bc.MinTameSkill = 29.1;
+					bc.IsVendorBought = true; // Mark as vendor-bought to prevent Animal Lore skill gain
 				}
 
 				for ( int i = 1; i < amount; ++i )
@@ -2722,9 +2726,11 @@ namespace Server.Mobiles
 
 						if ( m is BaseCreature )
 						{
-							( (BaseCreature)m ).SetControlMaster( buyer );
-							( (BaseCreature)m ).Tamable = true;
-							( (BaseCreature)m ).MinTameSkill = 29.1;
+							BaseCreature bc = (BaseCreature)m;
+							bc.SetControlMaster( buyer );
+							bc.Tamable = true;
+							bc.MinTameSkill = 29.1;
+							bc.IsVendorBought = true; // Mark as vendor-bought to prevent Animal Lore skill gain
 						}
 					}
 				}

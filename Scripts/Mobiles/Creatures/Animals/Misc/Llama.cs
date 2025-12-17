@@ -9,7 +9,6 @@ namespace Server.Mobiles
 		[Constructable]
 		public Llama() : base( AIType.AI_Animal, FightMode.Aggressor, 10, 1, 0.2, 0.4 )
 		{
-			Name = "a llama";
 			Body = 0xDC;
 			BaseSoundID = 0x3F3;
 
@@ -38,6 +37,24 @@ namespace Server.Mobiles
 			Tamable = true;
 			ControlSlots = 1;
 			MinTameSkill = 35.1;
+
+			Hue = Utility.RandomList( 0, 1072, 1129, 952 );
+
+			switch ( Hue )
+			{
+				case 952:
+					Name = "Lhama Negra";
+					break;
+				case 1072:
+					Name = "Lhama Branca";
+					break;
+				case 1129:
+					Name = "Lhama Castanha";
+					break;
+				default:
+					Name = "Lhama";
+					break;
+			}
 		}
 
 		public override int Meat{ get{ return 1; } }

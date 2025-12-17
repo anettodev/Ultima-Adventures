@@ -158,10 +158,11 @@ namespace Server.Items
 			{
 				m.SendMessage( "The gate does not seem to let you enter." );
 			}
-			else if ( m_TargetMap == Map.Felucca && m is PlayerMobile && ((PlayerMobile)m).Young )
-			{
-				m.SendLocalizedMessage( 1049543 ); // You decide against traveling to Felucca while you are still young.
-			}
+			// COMMENTED OUT: Young players can now travel to Felucca
+			// else if ( m_TargetMap == Map.Felucca && m is PlayerMobile && ((PlayerMobile)m).Young )
+			// {
+			//	m.SendLocalizedMessage( 1049543 ); // You decide against traveling to Felucca while you are still young.
+			// }
 			else if ( m.Spell != null )
 			{
 				m.SendLocalizedMessage( 1049616 ); // You are too busy to do that at the moment.

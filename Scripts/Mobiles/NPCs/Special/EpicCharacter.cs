@@ -124,7 +124,9 @@ namespace Server.Mobiles
 
 		public virtual void OfferHeal( PlayerMobile m )
 		{
-			if ( m.CheckYoungHealTime() )
+			// COMMENTED OUT: CheckYoungHealTime is disabled
+			// if ( m.CheckYoungHealTime() )
+			if ( true ) // Always allow healing now
 			{
 				Say( "You look as though you have some wounds." );
 				m.PlaySound( 0x1F2 );

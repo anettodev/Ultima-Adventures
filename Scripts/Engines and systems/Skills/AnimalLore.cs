@@ -45,9 +45,29 @@ namespace Server.SkillHandlers
 				{
 					from.SendLocalizedMessage( 500329 ); // That's not an animal!
 				}
+				else if ( targeted is BaseVendor || targeted is BaseNPC )
+				{
+					// Prevent using Animal Lore on human NPCs (vendors, NPCs)
+					from.SendLocalizedMessage( 500329 ); // That's not an animal!
+				}
 				else if ( targeted is BaseCreature )
 				{
 					BaseCreature c = (BaseCreature)targeted;
+					
+					// Prevent using Animal Lore on non-tamable creatures (orcs, skeletons, monsters, etc.)
+					// Animal Lore should only work on actual animals (tamable creatures)
+					if ( !c.Tamable )
+					{
+						from.SendLocalizedMessage( 500329 ); // That's not an animal!
+						return;
+					}
+					
+					// Additional check: prevent using Animal Lore on human body types (human NPCs)
+					if ( c.Body == 0x190 || c.Body == 0x191 )
+					{
+						from.SendLocalizedMessage( 500329 ); // That's not an animal!
+						return;
+					}
 
 					SlayerEntry skipTypeA = SlayerGroup.GetEntryByName( SlayerName.SlimyScourge );
 					SlayerEntry skipTypeB = SlayerGroup.GetEntryByName( SlayerName.ElementalBan );
@@ -60,27 +80,54 @@ namespace Server.SkillHandlers
 					{
 						if ( !skipTypeA.Slays( c ) && !skipTypeB.Slays( c ) && !skipTypeC.Slays( c ) && !skipTypeD.Slays( c ) && !skipTypeE.Slays( c ) && !skipTypeF.Slays( c ) )
 						{
+							// Check if player's own pet - no skill gain
 							if ( c.ControlMaster == from )
 							{
+								from.SendMessage( 0x3FF, AnimalTamingStringConstants.MSG_ANIMAL_LORE_OWN_PET );
 								from.CloseGump( typeof( AnimalLoreGump ) );
 								from.SendGump( new AnimalLoreGump( c, 0 ) );
 							}
-							else if ( (!c.Controlled || !c.Tamable) && from.Skills[SkillName.AnimalLore].Value < 100.0 )
+							// Check if vendor-bought creature - no skill gain (even if owned by another player)
+							else if ( c.IsVendorBought )
 							{
-								from.SendLocalizedMessage( 1049674 ); // At your skill level, you can only lore tamed creatures.
-							}
-							else if ( !c.Tamable && from.Skills[SkillName.AnimalLore].Value < 110.0 )
-							{
-								from.SendLocalizedMessage( 1049675 ); // At your skill level, you can only lore tamed or tameable creatures.
-							}
-							else if ( !from.CheckTargetSkill( SkillName.AnimalLore, c, 0.0, 120.0 ) )
-							{
-								from.SendLocalizedMessage( 500334 ); // You can't think of anything you know offhand.
+								from.SendMessage( 0x3FF, AnimalTamingStringConstants.MSG_ANIMAL_LORE_VENDOR_BOUGHT );
+								from.CloseGump( typeof( AnimalLoreGump ) );
+								from.SendGump( new AnimalLoreGump( c, 0 ) );
 							}
 							else
 							{
-								from.CloseGump( typeof( AnimalLoreGump ) );
-								from.SendGump( new AnimalLoreGump( c, 0 ) );
+								// Track skill before check for success message
+								double skillBefore = from.Skills[SkillName.AnimalLore].Base;
+								
+								// Perform skill check - allows skill gain for wild/untamed creatures
+								// All creatures can be attempted regardless of skill level
+								if ( !from.CheckTargetSkill( SkillName.AnimalLore, c, 0.0, 120.0 ) )
+								{
+									// Player doesn't know enough about this animal
+									from.SendMessage( 0x3B2, AnimalTamingStringConstants.MSG_ANIMAL_LORE_INSUFFICIENT_KNOWLEDGE );
+								}
+								else
+								{
+									from.CloseGump( typeof( AnimalLoreGump ) );
+									from.SendGump( new AnimalLoreGump( c, 0 ) );
+									
+									// Always show learning message when skill check succeeds
+									from.SendMessage( 0x3FF, AnimalTamingStringConstants.MSG_ANIMAL_LORE_LEARNED );
+									
+									// Show skill gain message if skill actually increased
+									double skillAfter = from.Skills[SkillName.AnimalLore].Base;
+									if ( skillAfter > skillBefore )
+									{
+										// Calculate percentage gained (based on skill cap of 100.0)
+										double skillGained = skillAfter - skillBefore;
+										double skillCap = from.Skills[SkillName.AnimalLore].Cap;
+										double percentageGained = (skillGained / skillCap) * 100.0;
+										
+										// Format to 1 decimal place
+										string percentageText = percentageGained.ToString("F1");
+										from.SendMessage( 0x3FF, string.Format( AnimalTamingStringConstants.MSG_ANIMAL_LORE_SKILL_GAIN_FORMAT, percentageText ) );
+									}
+								}
 							}
 						}
 						else

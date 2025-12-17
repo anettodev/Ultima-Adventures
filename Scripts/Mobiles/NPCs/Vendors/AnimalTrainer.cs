@@ -117,7 +117,7 @@ namespace Server.Mobiles
 		// Property Values
 		private const string NPC_TITLE = "o treinador de animais";
 		private const string NPC_TITLE_SPECIAL = "o Domador de Feras";
-		private const double SPECIAL_SPAWN_CHANCE = 0.20; // 20% chance to be special variant
+		private const double SPECIAL_SPAWN_CHANCE = 0.30; // 30% chance to be special variant
 		private const string GUMP_TITLE_ANIMAL_COMPANIONS = "Companheiros Animais";
 		private const string SPEECH_CATEGORY_PETS = "Animais de Estimação";
 		private const string PET_LANGUAGE_MOUNT = "montaria";
@@ -301,7 +301,7 @@ namespace Server.Mobiles
 
 		/// <summary>
 		/// Constructs a new AnimalTrainer NPC with default skills and properties
-		/// 80% chance to be regular "o treinador de animais", 20% chance to be special "Domador de Feras"
+		/// 70% chance to be regular "o treinador de animais", 30% chance to be special "Domador de Feras"
 		/// </summary>
 		[Constructable]
 		public AnimalTrainer() : base( NPC_TITLE )
@@ -326,6 +326,8 @@ namespace Server.Mobiles
 		/// </summary>
 		public override void InitSBInfo()
 		{
+			// Add all animal-containing lists first (to group all animals together)
+			// Region-specific trainers (animals only)
 			if ( Server.Misc.Worlds.GetMyWorld( this.Map, this.Location, this.X, this.Y ) == REGION_SERPENT_ISLAND )
 			{
 				m_SBInfos.Add( new SBGargoyleAnimalTrainer() );
@@ -346,15 +348,22 @@ namespace Server.Mobiles
 			{
 				m_SBInfos.Add( new SBHumanAnimalTrainer() );
 			}
-			m_SBInfos.Add( new SBAnimalTrainer() ); 
-			m_SBInfos.Add( new SBBuyArtifacts() );
-
-			// Add special buy/sell lists for special variant (to be defined in StoreSalesList.cs)
+			
+			// Main animal trainer list (animals only - equipment moved to separate class)
+			m_SBInfos.Add( new SBAnimalTrainer() );
+			
+			// Special variant (animals first, then equipment - organized in InternalBuyInfo)
+			// Added after SBAnimalTrainer so its animals appear right after regular animals
 			if ( m_IsSpecialTrainer )
 			{
-				// TODO: Add SBSpecialAnimalTrainer when defined in StoreSalesList.cs
-				// m_SBInfos.Add( new SBSpecialAnimalTrainer() );
+				m_SBInfos.Add( new SBSpecialAnimalTrainer() );
 			}
+			
+			// Regular equipment (appears after all animals, including special variant animals)
+			m_SBInfos.Add( new SBAnimalTrainerEquipment() );
+			
+			// Artifacts and other non-animal items last
+			m_SBInfos.Add( new SBBuyArtifacts() );
 		}
 
 		public override VendorShoeType ShoeType
@@ -369,32 +378,55 @@ namespace Server.Mobiles
 
 		public override void InitOutfit()
 		{
-			base.InitOutfit();
-
 			if ( m_IsSpecialTrainer )
 			{
 				// Special variant uses different clothing/equipment
 				// More rugged/wild appearance for "Domador de Feras"
-				AddItem( new Robe( Utility.RandomList( 0x455, 0x4B6, 0x4B7 ) ) ); // Darker robe colors
+				
+				// Add base outfit first (shoes, pants, hair)
+				base.InitOutfit();
+				
+				// Remove the shirt that base.InitOutfit() added (robes replace shirts)
+				Item shirt = FindItemOnLayer( Layer.InnerTorso );
+				if ( shirt != null )
+					shirt.Delete();
+				
+				// Add darker robe colors on OuterTorso layer
+				Robe robe = new Robe( Utility.RandomList( 0x455, 0x4B6, 0x4B7 ) );
+				robe.Layer = Layer.OuterTorso;
+				AddItem( robe );
+				
+				// Add weapon
 				AddItem( Utility.RandomBool() ? (Item)new WarHammer() : (Item)new Bardiche() );
 				
-				// Add one of three random hats
+				// Remove any existing hat first (BaseHat already sets Layer.Helm in constructor)
+				Item existingHat = FindItemOnLayer( Layer.Helm );
+				if ( existingHat != null )
+					existingHat.Delete();
+				
+				// Add one of three random hats (BaseHat constructor already sets Layer.Helm)
+				BaseHat hat = null;
 				switch ( Utility.Random( 3 ) )
 				{
 					case 0:
-						AddItem( new TallStrawHat() );
+						hat = new TallStrawHat();
 						break;
 					case 1:
-						AddItem( new StrawHat() );
+						hat = new StrawHat();
 						break;
 					case 2:
-						AddItem( new WideBrimHat() );
+						hat = new WideBrimHat();
 						break;
+				}
+				if ( hat != null )
+				{
+					AddItem( hat );
 				}
 			}
 			else
 			{
 				// Regular variant uses standard equipment
+				base.InitOutfit();
 				AddItem( Utility.RandomBool() ? (Item)new QuarterStaff() : (Item)new ShepherdsCrook() );
 			}
 		}
@@ -506,6 +538,20 @@ namespace Server.Mobiles
 				AddImage(380, 8, GUMP_IMAGE_BUTTON_BG);
 
 				AddHtml( GUMP_HEADER_X, GUMP_HEADER_Y, GUMP_HEADER_WIDTH, GUMP_HEADER_HEIGHT, @"<BODY><BASEFONT Color=#FBFBFB><BIG>ANIMAIS PERDIDOS</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+
+				// Add total followers label (lost / total)
+				if ( from is PlayerMobile )
+				{
+					PlayerMobile pm = (PlayerMobile)from;
+					pm.UpdateFollowers();
+					int totalFollowers = pm.AllFollowers.Count;
+					int lostPetsCount = lostPets.Count;
+					string totalLabel = string.Format( "<BODY><BASEFONT Color=#00FFFF><SMALL>Total de {0} / {1} seguidor{2}</SMALL></BASEFONT></BODY>", 
+						lostPetsCount,
+						totalFollowers, 
+						totalFollowers != 1 ? "es" : "" );
+					AddHtml( GUMP_PET_NAME_X - 50, GUMP_HEADER_Y + 15, GUMP_PET_NAME_WIDTH + 50, 20, totalLabel, (bool)false, (bool)false);
+				}
 
 				// Add cost information
 				AddHtml( GUMP_PET_NAME_X - 50, GUMP_HEADER_Y + 30, GUMP_PET_NAME_WIDTH + 50, 20, @"<BODY><BASEFONT Color=#00FFFF><SMALL>Custo: 1.000 moedas de ouro por animal</SMALL></BASEFONT></BODY>", (bool)false, (bool)false);
@@ -1344,6 +1390,26 @@ namespace Server.Mobiles
 			}
 		}
 
+		/// <summary>
+		/// Context menu entry for appraising pets
+		/// </summary>
+		public class AppraiseEntry : ContextMenuEntry
+		{
+			private AnimalTrainer m_Trainer;
+			private Mobile m_From;
+
+			public AppraiseEntry( AnimalTrainer trainer, Mobile from ) : base( 3006096, 12 )
+			{
+				m_Trainer = trainer;
+				m_From = from;
+			}
+
+			public override void OnClick()
+			{
+				m_Trainer.BeginAppraise( m_From );
+			}
+		}
+
 
 
 
@@ -1417,6 +1483,7 @@ namespace Server.Mobiles
 				}
 
 				list.Add( new FindLostPetsEntry( this, from ) );
+				list.Add( new AppraiseEntry( this, from ) );
 				list.Add( new SpeechGumpEntryAnimals( from, this ) ); 
             	//list.Add( new RidingGumpEntry( from, this ) );
 

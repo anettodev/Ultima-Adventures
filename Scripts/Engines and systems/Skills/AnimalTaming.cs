@@ -1,5 +1,5 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using Server;
 using Server.Targeting;
 using Server.Network;
@@ -12,20 +12,34 @@ namespace Server.SkillHandlers
 {
 	public class AnimalTaming
 	{
-		private static Hashtable m_BeingTamed = new Hashtable();
+		#region Fields
 
-		public static void Initialize()
-		{
-			SkillInfo.Table[(int)SkillName.AnimalTaming].Callback = new SkillUseCallback( OnUse );
-		}
+		private static Dictionary<BaseCreature, Mobile> m_BeingTamed = new Dictionary<BaseCreature, Mobile>();
 
 		private static bool m_DisableMessage;
+
+		#endregion
+
+		#region Properties
 
 		public static bool DisableMessage
 		{
 			get{ return m_DisableMessage; }
 			set{ m_DisableMessage = value; }
 		}
+
+		#endregion
+
+		#region Initialization
+
+		public static void Initialize()
+		{
+			SkillInfo.Table[(int)SkillName.AnimalTaming].Callback = new SkillUseCallback( OnUse );
+		}
+
+		#endregion
+
+		#region Core Logic
 
 		public static TimeSpan OnUse( Mobile m )
 		{
@@ -37,7 +51,7 @@ namespace Server.SkillHandlers
 			if ( !m_DisableMessage )
 				m.SendLocalizedMessage( 502789 ); // Tame which animal?
 
-			return TimeSpan.FromHours( 6.0 );
+			return TimeSpan.FromHours( AnimalTamingConstants.COOLDOWN_HOURS );
 		}
 
 		public static bool CheckMastery( Mobile tamer, BaseCreature creature )
@@ -53,32 +67,40 @@ namespace Server.SkillHandlers
 			return false;
 		}
 
+		#endregion
+
+		#region Validation Methods
+
 		public static bool MustBeSubdued( BaseCreature bc )
 		{
             if (bc.Owners.Count > 0) { return false; } //Checks to see if the animal has been tamed before
-			return bc.SubdueBeforeTame && (bc.Hits > (bc.HitsMax / 10));
+			return bc.SubdueBeforeTame && (bc.Hits > (bc.HitsMax / AnimalTamingConstants.SUBDUE_THRESHOLD_DIVISOR));
 		}
+
+		#endregion
+
+		#region Scaling Methods
 
 		public static void ScaleStats( BaseCreature bc, double scalar )
 		{
 			if ( bc.RawStr > 0 )
-				bc.RawStr = (int)Math.Max( 1, bc.RawStr * scalar );
+				bc.RawStr = (int)Math.Max( AnimalTamingConstants.MIN_STAT_VALUE, bc.RawStr * scalar );
 
 			if ( bc.RawDex > 0 )
-				bc.RawDex = (int)Math.Max( 1, bc.RawDex * scalar );
+				bc.RawDex = (int)Math.Max( AnimalTamingConstants.MIN_STAT_VALUE, bc.RawDex * scalar );
 
 			if ( bc.RawInt > 0 )
-				bc.RawInt = (int)Math.Max( 1, bc.RawInt * scalar );
+				bc.RawInt = (int)Math.Max( AnimalTamingConstants.MIN_STAT_VALUE, bc.RawInt * scalar );
 
 			if ( bc.HitsMaxSeed > 0 )
 			{
-				bc.HitsMaxSeed = (int)Math.Max( 1, bc.HitsMaxSeed * scalar );
+				bc.HitsMaxSeed = (int)Math.Max( AnimalTamingConstants.MIN_STAT_VALUE, bc.HitsMaxSeed * scalar );
 				bc.Hits = bc.Hits;
 				}
 
 			if ( bc.StamMaxSeed > 0 )
 			{
-				bc.StamMaxSeed = (int)Math.Max( 1, bc.StamMaxSeed * scalar );
+				bc.StamMaxSeed = (int)Math.Max( AnimalTamingConstants.MIN_STAT_VALUE, bc.StamMaxSeed * scalar );
 				bc.Stam = bc.Stam;
 			}
 		}
@@ -94,7 +116,7 @@ namespace Server.SkillHandlers
 			{
 				bc.Skills[i].Base *= scalar;
 
-				bc.Skills[i].Cap = Math.Max( 100.0, bc.Skills[i].Cap * capScalar );
+				bc.Skills[i].Cap = Math.Max( AnimalTamingConstants.MIN_SKILL_CAP, bc.Skills[i].Cap * capScalar );
 
 				if ( bc.Skills[i].Base > bc.Skills[i].Cap )
 				{
@@ -103,24 +125,109 @@ namespace Server.SkillHandlers
 			}
 		}
 
+		#endregion
+
+		#region Calculation Helpers
+
 		/// <summary>
 		/// Calculates the taming range based on AnimalTaming skill
-		/// Base: 4 tiles, +1 per 10 points after 80, max 12 tiles
+		/// Base: 4 tiles, +1 per 10 points after 80, max 10 tiles
 		/// </summary>
 		private static int GetTamingRange(Mobile tamer)
 		{
 			double tamingSkill = tamer.Skills[SkillName.AnimalTaming].Value;
 			
-			if (tamingSkill < 80.0)
-				return 4; // Base range
+			if (tamingSkill < AnimalTamingConstants.RANGE_SKILL_THRESHOLD)
+				return AnimalTamingConstants.BASE_TAMING_RANGE;
 			
-			// After 80: +1 tile per 10 skill points
-			int bonusTiles = (int)((tamingSkill - 80.0) / 10.0);
-			int range = 4 + bonusTiles;
+			// After threshold: +1 tile per skill points divisor
+			int bonusTiles = (int)((tamingSkill - AnimalTamingConstants.RANGE_SKILL_THRESHOLD) / AnimalTamingConstants.RANGE_BONUS_DIVISOR);
+			int range = AnimalTamingConstants.BASE_TAMING_RANGE + bonusTiles;
 			
-			// Cap at 12 tiles
-			return Math.Min(range, 12);
+			// Cap at maximum range
+			return Math.Min(range, AnimalTamingConstants.MAX_TAMING_RANGE);
 		}
+
+		/// <summary>
+		/// Determines which tier a creature belongs to based on its MinTameSkill
+		/// </summary>
+		/// <param name="minTameSkill">The creature's minimum taming skill requirement</param>
+		/// <returns>Tier number (1-7)</returns>
+		private static int GetCreatureTier(double minTameSkill)
+		{
+			if (minTameSkill <= AnimalTamingConstants.TIER_1_MAX)
+				return 1;
+			else if (minTameSkill <= AnimalTamingConstants.TIER_2_MAX)
+				return 2;
+			else if (minTameSkill <= AnimalTamingConstants.TIER_3_MAX)
+				return 3;
+			else if (minTameSkill <= AnimalTamingConstants.TIER_4_MAX)
+				return 4;
+			else if (minTameSkill <= AnimalTamingConstants.TIER_5_MAX)
+				return 5;
+			else if (minTameSkill <= AnimalTamingConstants.TIER_6_MAX)
+				return 6;
+			else
+				return 7;
+		}
+
+		/// <summary>
+		/// Determines which tier a player's skill falls into
+		/// </summary>
+		/// <param name="playerSkill">The player's Animal Taming skill value</param>
+		/// <returns>Tier number (1-7)</returns>
+		private static int GetPlayerTier(double playerSkill)
+		{
+			if (playerSkill <= AnimalTamingConstants.TIER_1_MAX)
+				return 1;
+			else if (playerSkill <= AnimalTamingConstants.TIER_2_MAX)
+				return 2;
+			else if (playerSkill <= AnimalTamingConstants.TIER_3_MAX)
+				return 3;
+			else if (playerSkill <= AnimalTamingConstants.TIER_4_MAX)
+				return 4;
+			else if (playerSkill <= AnimalTamingConstants.TIER_5_MAX)
+				return 5;
+			else if (playerSkill <= AnimalTamingConstants.TIER_6_MAX)
+				return 6;
+			else
+				return 7;
+		}
+
+		/// <summary>
+		/// Calculates skill gain reduction factor based on tier difference (cumulative/multiplicative)
+		/// Returns reduction factor (0.0 = no reduction, 1.0 = 100% reduction/no gain)
+		/// Example: Tier 3 -> Tier 1 = 40% reduction, then 40% of remaining = 36% remaining (64% total reduction)
+		/// </summary>
+		/// <param name="playerSkill">The player's Animal Taming skill</param>
+		/// <param name="creatureMinSkill">The creature's MinTameSkill</param>
+		/// <returns>Reduction factor (0.0 to 1.0) and tier difference</returns>
+		private static double GetTierReductionFactor(double playerSkill, double creatureMinSkill, out int tierDifference)
+		{
+			int playerTier = GetPlayerTier(playerSkill);
+			int creatureTier = GetCreatureTier(creatureMinSkill);
+			
+			tierDifference = playerTier - creatureTier;
+			
+			// If creature tier >= player tier, no reduction
+			if (tierDifference <= 0)
+				return 0.0;
+			
+			// Calculate cumulative reduction: 40% reduction per tier (multiplicative)
+			// Each tier below reduces by 40%, so remaining is 60% per tier
+			// Tier 3 -> Tier 2: 60% remaining (40% reduction)
+			// Tier 3 -> Tier 1: 60% * 60% = 36% remaining (64% reduction)
+			double remainingFactor = 1.0 - AnimalTamingConstants.TIER_REDUCTION_PER_LEVEL; // 0.6 (60% remaining)
+			double cumulativeRemaining = Math.Pow(remainingFactor, tierDifference);
+			double reduction = 1.0 - cumulativeRemaining;
+			
+			// Cap at 100% (no gain if too many tiers below)
+			return Math.Min(reduction, 1.0);
+		}
+
+		#endregion
+
+		#region Nested Classes
 
 		private class InternalTarget : Target
 		{
@@ -146,13 +253,113 @@ namespace Server.SkillHandlers
 				}
 			}
 
+			/// <summary>
+			/// Validates if the creature can be tamed
+			/// </summary>
+			/// <param name="from">The tamer</param>
+			/// <param name="creature">The creature to tame</param>
+			/// <returns>True if valid, false otherwise</returns>
+			private bool ValidateCanTame(Mobile from, BaseCreature creature)
+			{
+				if ( !creature.Tamable )
+				{
+					creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 1049655, from.NetState ); // That creature cannot be tamed.
+					return false;
+				}
+
+				if ( creature.Controlled )
+				{
+					creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502804, from.NetState ); // That animal looks tame already.
+					return false;
+				}
+
+				if ( from.Followers + creature.ControlSlots > from.FollowersMax )
+				{
+					from.SendLocalizedMessage( 1049611 ); // You have too many followers to tame that creature.
+					return false;
+				}
+
+				if ( creature.Owners.Count >= BaseCreature.MaxOwners && !creature.Owners.Contains( from ) )
+				{
+					creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 1005615, from.NetState ); // This animal has had too many owners and is too upset for you to tame.
+					return false;
+				}
+
+				if ( MustBeSubdued( creature ) )
+				{
+					creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 1054025, from.NetState ); // You must subdue this creature before you can tame it!
+					return false;
+				}
+
+				return true;
+			}
+
+			/// <summary>
+			/// Validates if the tamer has sufficient skill to attempt taming
+			/// </summary>
+			/// <param name="from">The tamer</param>
+			/// <param name="creature">The creature to tame</param>
+			/// <returns>True if has sufficient skill, false otherwise</returns>
+			private bool ValidateHasSkill(Mobile from, BaseCreature creature)
+			{
+				return CheckMastery( from, creature ) || from.Skills[SkillName.AnimalTaming].Value >= creature.MinTameSkill;
+			}
+
+			/// <summary>
+			/// Displays difficulty message based on skill difference
+			/// </summary>
+			/// <param name="from">The tamer</param>
+			/// <param name="creature">The creature to tame</param>
+			private void DisplayDifficultyMessage(Mobile from, BaseCreature creature)
+			{
+				double diff = creature.MinTameSkill - from.Skills[SkillName.AnimalTaming].Value;
+				
+				if (diff <= AnimalTamingConstants.DIFF_THRESHOLD_ALMOST)
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_DIFF_ALMOST );
+				else if (diff <= AnimalTamingConstants.DIFF_THRESHOLD_CLOSE)
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_DIFF_CLOSE );
+				else if (diff <= AnimalTamingConstants.DIFF_THRESHOLD_EFFORT)
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_DIFF_EFFORT );
+				else if (diff <= AnimalTamingConstants.DIFF_THRESHOLD_LONG)
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_DIFF_LONG );
+				else if (diff > AnimalTamingConstants.DIFF_THRESHOLD_DIFFICULT)
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_DIFF_DIFFICULT );
+			}
+
+			/// <summary>
+			/// Handles creature anger when taming attempt fails
+			/// </summary>
+			/// <param name="from">The tamer</param>
+			/// <param name="creature">The creature that became angry</param>
+			private void HandleAnger(Mobile from, BaseCreature creature)
+			{
+				creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502805, from.NetState ); // You seem to anger the beast!
+				creature.PlaySound( creature.GetAngerSound() );
+				creature.Direction = creature.GetDirectionTo( from );
+
+				if( creature.BardPacified && Utility.RandomDouble() > AnimalTamingConstants.BARD_PACIFY_CHANCE)
+				{
+					Timer.DelayCall( TimeSpan.FromSeconds( AnimalTamingConstants.RESET_PACIFY_DELAY_SECONDS ), new TimerStateCallback( ResetPacify ), creature );
+				}
+				else
+				{
+					creature.BardEndTime = DateTime.UtcNow;
+				}
+
+				creature.BardPacified = false;
+				creature.Move( creature.Direction );
+
+				if ( from is PlayerMobile )
+					creature.Combatant = from;
+			}
+
 			protected override void OnTarget( Mobile from, object targeted )
 			{
 				from.RevealingAction();
 
 				if (from.Blessed)
 				{
-					from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "You are unable to do this in this state."  ) );
+					from.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, AnimalTamingStringConstants.MSG_BLESSED_STATE );
 					return;
 				}
 				if ( targeted is Mobile )
@@ -161,98 +368,47 @@ namespace Server.SkillHandlers
 					{
 						BaseCreature creature = (BaseCreature)targeted;
 
-						if ( !creature.Tamable )
+						// Validate creature can be tamed
+						if ( !ValidateCanTame( from, creature ) )
+							return;
+
+						// Validate tamer has sufficient skill
+						if ( !ValidateHasSkill( from, creature ) )
 						{
-							creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1049655, from.NetState ); // That creature cannot be tamed.
+							creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502806, from.NetState ); // You have no chance of taming this creature.
+							DisplayDifficultyMessage( from, creature );
+							return;
 						}
-						else if ( creature.Controlled )
+
+						// Check if already being tamed
+						if ( m_BeingTamed.ContainsKey( creature ) )
 						{
-							creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502804, from.NetState ); // That animal looks tame already.
+							creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502802, from.NetState ); // Someone else is already taming this.
+							return;
 						}
-						//else if ( from.Female && !creature.AllowFemaleTamer )
-						//{
-						//	creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1049653, from.NetState ); // That creature can only be tamed by males.
-						//}
-						//else if ( !from.Female && !creature.AllowMaleTamer )
-						//{
-						//	creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1049652, from.NetState ); // That creature can only be tamed by females.
-						//}
-						else if ( from.Followers + creature.ControlSlots > from.FollowersMax )
+
+						// Check for anger
+						double angerodds = creature.MinTameSkill / (from.Skills[SkillName.AnimalTaming].Value * AnimalTamingConstants.ANGER_SKILL_MULTIPLIER);
+
+						if ( creature.CanAngerOnTame && angerodds >= Utility.RandomDouble() && from.AccessLevel == AccessLevel.Player )
 						{
-							from.SendLocalizedMessage( 1049611 ); // You have too many followers to tame that creature.
+							HandleAnger( from, creature );
+							return;
 						}
-						else if ( creature.Owners.Count >= BaseCreature.MaxOwners && !creature.Owners.Contains( from ) )
-						{
-							creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1005615, from.NetState ); // This animal has had too many owners and is too upset for you to tame.
-						}
-						else if ( MustBeSubdued( creature ) )
-						{
-							creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1054025, from.NetState ); // You must subdue this creature before you can tame it!
-						}
-						else if ( CheckMastery( from, creature ) || from.Skills[SkillName.AnimalTaming].Value >= creature.MinTameSkill )
-						{
 
-							double angerodds = creature.MinTameSkill / from.Skills[SkillName.AnimalTaming].Value; // final
+						// Start taming process
+						m_BeingTamed[creature] = from;
 
-							if ( m_BeingTamed.Contains( targeted ) )
-							{
-								creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502802, from.NetState ); // Someone else is already taming this.
-							}
-							else if ( creature.CanAngerOnTame && angerodds >= Utility.RandomDouble() && from.AccessLevel == AccessLevel.Player) // final
-							{
-								creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502805, from.NetState ); // You seem to anger the beast!
-								creature.PlaySound( creature.GetAngerSound() );
-								creature.Direction = creature.GetDirectionTo( from );
+						from.LocalOverheadMessage( MessageType.Emote, AnimalTamingConstants.MSG_COLOR_EMOTE, 1010597 ); // You start to tame the creature.
+						from.NonlocalOverheadMessage( MessageType.Emote, AnimalTamingConstants.MSG_COLOR_EMOTE, 1010598 ); // *begins taming a creature.*
 
-								if( creature.BardPacified && Utility.RandomDouble() > .24)
-								{
-									Timer.DelayCall( TimeSpan.FromSeconds( 2.0 ), new TimerStateCallback( ResetPacify ), creature );
-								}
-								else
-								{
-									creature.BardEndTime = DateTime.UtcNow;
-								}
-		
-								creature.BardPacified = false;
+						new InternalTimer( from, creature, GetTamingAttemptCount(from) ).Start();
 
-								creature.Move( creature.Direction );
-
-								if ( from is PlayerMobile )
-									creature.Combatant = from;
-							}
-							else
-							{
-								m_BeingTamed[targeted] = from;
-
-								from.LocalOverheadMessage( MessageType.Emote, 0x59, 1010597 ); // You start to tame the creature.
-								from.NonlocalOverheadMessage( MessageType.Emote, 0x59, 1010598 ); // *begins taming a creature.*
-
-								new InternalTimer( from, creature, Utility.Random( 4, 6 ) ).Start();
-
-								m_SetSkillTime = false;
-							}
-						}
-						else
-						{
-							creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502806, from.NetState ); // You have no chance of taming this creature.
-							
-							double diff = creature.MinTameSkill - from.Skills[SkillName.AnimalTaming].Value  ;
-							if (diff <= 0.5)
-								from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "you can almost grasp this creature's habits"  ) );
-							else if (diff <= 2.5)					
-								from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "you are close to being able to tame this"  ) );
-							else if (diff <= 5)					
-								from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "you will be able to tame this with more effort"  ) );
-							else if (diff <= 10)					
-								from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "you have a long ways to go before you can tame that"  ) );
-							else if (diff > 15)					
-								from.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, string.Format ( "this creature is much too difficult for you now"  ) );
-
-						}
+						m_SetSkillTime = false;
 					}
 					else
 					{
-						((Mobile)targeted).PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502469, from.NetState ); // That being cannot be tamed.
+						((Mobile)targeted).PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502469, from.NetState ); // That being cannot be tamed.
 					}
 				}
 				else
@@ -262,23 +418,73 @@ namespace Server.SkillHandlers
 			}
 
 			/// <summary>
-			/// Calculates the taming timer interval based on AnimalTaming skill
-			/// Base: 3 seconds, -1 second per 10 points after 80, minimum 6 seconds
+			/// Calculates the taming timer interval
+			/// Always 5 seconds
 			/// </summary>
 			private static TimeSpan GetTamingTimerInterval(Mobile tamer)
 			{
-				double tamingSkill = tamer.Skills[SkillName.AnimalTaming].Value;
-				
-				if (tamingSkill < 80.0)
-					return TimeSpan.FromSeconds(3.0); // Base interval
-				
-				// After 80: -1 second per 10 skill points
-				int reductionSeconds = (int)((tamingSkill - 80.0) / 10.0);
-				int intervalSeconds = 3 - reductionSeconds;
-				
-				// Minimum 6 seconds (to avoid conflict with base of 3 seconds)
-				return TimeSpan.FromSeconds(Math.Max(intervalSeconds, 6));
+				return TimeSpan.FromSeconds(AnimalTamingConstants.TIMER_INTERVAL_SECONDS);
 			}
+
+		/// <summary>
+		/// Attempt range data structure for lookup table
+		/// </summary>
+		private struct AttemptRange
+		{
+			public double SkillThreshold;
+			public int MinAttempts;
+			public int MaxAttempts;
+			public bool IsFixed;
+
+			public AttemptRange(double threshold, int minAttempts, int maxAttempts, bool isFixed)
+			{
+				SkillThreshold = threshold;
+				MinAttempts = minAttempts;
+				MaxAttempts = maxAttempts;
+				IsFixed = isFixed;
+			}
+		}
+
+		/// <summary>
+		/// Lookup table for taming attempt ranges based on skill level
+		/// Ordered from highest to lowest skill threshold
+		/// </summary>
+		private static readonly AttemptRange[] s_AttemptRanges = new AttemptRange[]
+		{
+			new AttemptRange(AnimalTamingConstants.SKILL_THRESHOLD_120, AnimalTamingConstants.ATTEMPTS_120_PLUS, AnimalTamingConstants.ATTEMPTS_120_PLUS, true),
+			new AttemptRange(AnimalTamingConstants.SKILL_THRESHOLD_110, AnimalTamingConstants.ATTEMPTS_MIN_110, AnimalTamingConstants.ATTEMPTS_MAX_110, false),
+			new AttemptRange(AnimalTamingConstants.SKILL_THRESHOLD_100, AnimalTamingConstants.ATTEMPTS_MIN_100, AnimalTamingConstants.ATTEMPTS_MAX_100, false),
+			new AttemptRange(AnimalTamingConstants.SKILL_THRESHOLD_90, AnimalTamingConstants.ATTEMPTS_MIN_90, AnimalTamingConstants.ATTEMPTS_MAX_90, false),
+			new AttemptRange(AnimalTamingConstants.SKILL_THRESHOLD_80, AnimalTamingConstants.ATTEMPTS_MIN_80, AnimalTamingConstants.ATTEMPTS_MAX_80, false),
+			new AttemptRange(0.0, AnimalTamingConstants.ATTEMPTS_MIN_BELOW_80, AnimalTamingConstants.ATTEMPTS_MAX_BELOW_80, false)
+		};
+
+		/// <summary>
+		/// Calculates the number of taming attempts based on skill level
+		/// Returns random value within skill-based range
+		/// Minimum 1 attempt (5 seconds), maximum 6 attempts (30 seconds)
+		/// </summary>
+		private static int GetTamingAttemptCount(Mobile tamer)
+		{
+			double tamingSkill = tamer.Skills[SkillName.AnimalTaming].Value;
+
+			// Look up the appropriate attempt range based on skill level
+			for (int i = 0; i < s_AttemptRanges.Length; i++)
+			{
+				AttemptRange range = s_AttemptRanges[i];
+
+				if (tamingSkill >= range.SkillThreshold)
+				{
+					if (range.IsFixed)
+						return range.MinAttempts;
+					else
+						return Utility.RandomMinMax(range.MinAttempts, range.MaxAttempts);
+				}
+			}
+
+			// Fallback to lowest range (should never reach here)
+			return Utility.RandomMinMax(AnimalTamingConstants.ATTEMPTS_MIN_BELOW_80, AnimalTamingConstants.ATTEMPTS_MAX_BELOW_80);
+		}
 
 			private class InternalTimer : Timer
 			{
@@ -298,7 +504,214 @@ namespace Server.SkillHandlers
 					m_Paralyzed = creature.Paralyzed;
 					m_StartTime = DateTime.UtcNow;
 					m_TamingRange = GetTamingRange(tamer);
-					Priority = TimerPriority.TwoFiftyMS;
+					Priority = AnimalTamingConstants.TIMER_PRIORITY;
+				}
+
+				/// <summary>
+				/// Stops the taming attempt and displays an error message
+				/// </summary>
+				/// <param name="messageId">Localized message ID to display</param>
+				private void StopTamingAttempt(int messageId)
+				{
+					m_BeingTamed.Remove( m_Creature );
+					m_Tamer.NextSkillTime = Core.TickCount;
+					m_Creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, messageId, m_Tamer.NetState );
+					Stop();
+				}
+
+				/// <summary>
+				/// Checks for skill gain in AnimalTaming and AnimalLore
+				/// Applies tier-based reduction for lower tier creatures
+				/// Shows success message when gaining skill from same tier or higher creatures
+				/// </summary>
+				/// <param name="minSkill">Minimum skill value for skill check</param>
+				/// <param name="alreadyOwned">Whether the creature is already owned by tamer</param>
+				private void CheckSkillGain(double minSkill, bool alreadyOwned)
+				{
+					if ( !alreadyOwned ) // Passively check animal lore for gain // Final added taming too!
+					{
+						double playerSkill = m_Tamer.Skills[SkillName.AnimalTaming].Value;
+						
+						// Calculate tier reduction factor
+						int tierDifference;
+						double reductionFactor = GetTierReductionFactor(playerSkill, minSkill, out tierDifference);
+						
+						// If 100% reduction, no skill gain
+						if (reductionFactor >= 1.0)
+						{
+							return;
+						}
+						
+						// Show feedback if taming lower tier creature
+						if (reductionFactor > 0.0)
+						{
+							int reductionPercentage = (int)(reductionFactor * 100);
+							m_Tamer.SendMessage(AnimalTamingConstants.MSG_COLOR_WARNING, string.Format(AnimalTamingStringConstants.MSG_TIER_REDUCED_GAIN_FORMAT, reductionPercentage));
+						}
+						
+						// Calculate skill check range with reduction applied
+						// Reduction makes the range narrower (more challenging), reducing gain chance
+						double rangeReduction = reductionFactor;
+						double effectiveRange = AnimalTamingConstants.SKILL_CHECK_RANGE * (1.0 - rangeReduction);
+						
+						double minCheck = minSkill - effectiveRange;
+						double maxCheck = minSkill + effectiveRange;
+						
+						// Ensure minCheck doesn't go below 0
+						if (minCheck < 0.0)
+						{
+							double adjustment = 0.0 - minCheck;
+							minCheck = 0.0;
+							maxCheck += adjustment;
+						}
+						
+						// Track skill before check for success message (only for same tier or higher)
+						double skillBefore = 0.0;
+						bool shouldShowSuccessMessage = (tierDifference <= 0);
+						
+						if (shouldShowSuccessMessage)
+						{
+							skillBefore = m_Tamer.Skills[SkillName.AnimalTaming].Base;
+						}
+						
+						switch ( Utility.Random( AnimalTamingConstants.SKILL_CHECK_RANDOM ) )
+						{
+							case 0: m_Tamer.CheckTargetSkill( SkillName.AnimalTaming, m_Creature, minCheck, maxCheck ); break;
+							case 1: break;
+						}
+						m_Tamer.CheckTargetSkill( SkillName.AnimalLore, m_Creature, minCheck, maxCheck ); //+++
+						
+						// Show success message if skill increased (same tier or higher only)
+						if (shouldShowSuccessMessage)
+						{
+							double skillAfter = m_Tamer.Skills[SkillName.AnimalTaming].Base;
+							if (skillAfter > skillBefore)
+							{
+								// Calculate percentage gained (based on skill cap of 100.0)
+								double skillGained = skillAfter - skillBefore;
+								double skillCap = m_Tamer.Skills[SkillName.AnimalTaming].Cap;
+								double percentageGained = (skillGained / skillCap) * 100.0;
+								
+								// Format to 1 decimal place
+								string percentageText = percentageGained.ToString("F1");
+								m_Tamer.SendMessage(AnimalTamingConstants.MSG_COLOR_SUCCESS, string.Format(AnimalTamingStringConstants.MSG_TIER_SKILL_GAIN_FORMAT, percentageText));
+							}
+						}
+					}
+				}
+
+				/// <summary>
+				/// Generates and displays generic taming speech (localized messages)
+				/// </summary>
+				private void GenerateGenericSpeech()
+				{
+					switch ( Utility.Random( AnimalTamingConstants.SPEECH_TYPE_COUNT ) )
+					{
+						case 0: m_Tamer.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, Utility.Random( 502790, 4 ) ); break;
+						case 1: m_Tamer.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, Utility.Random( 1005608, 6 ) ); break;
+						case 2: m_Tamer.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, Utility.Random( 1010593, 4 ) ); break;
+					}
+				}
+
+				/// <summary>
+				/// Generates evil karma speech based on random selection
+				/// </summary>
+				/// <returns>Evil karma speech string</returns>
+				private string GenerateEvilSpeech()
+				{
+					switch ( Utility.Random( AnimalTamingConstants.SPEECH_COUNT ) )
+					{
+						case 0: return AnimalTamingStringConstants.SPEECH_EVIL_0;
+						case 1: return AnimalTamingStringConstants.SPEECH_EVIL_1;
+						case 2: return AnimalTamingStringConstants.SPEECH_EVIL_2;
+						case 3: return AnimalTamingStringConstants.SPEECH_EVIL_3;
+						case 4: return AnimalTamingStringConstants.SPEECH_EVIL_4;
+						case 5: return AnimalTamingStringConstants.SPEECH_EVIL_5;
+						case 6: return AnimalTamingStringConstants.SPEECH_EVIL_6;
+						case 7: return AnimalTamingStringConstants.SPEECH_EVIL_7;
+						case 8: return AnimalTamingStringConstants.SPEECH_EVIL_8;
+						case 9: return AnimalTamingStringConstants.SPEECH_EVIL_9;
+						case 10: return AnimalTamingStringConstants.SPEECH_EVIL_10;
+						case 11: return string.Format(AnimalTamingStringConstants.SPEECH_EVIL_11_FORMAT, m_Tamer.Name);
+						case 12: return string.Format(AnimalTamingStringConstants.SPEECH_EVIL_12_FORMAT, m_Creature.GetType().Name);
+						default: return AnimalTamingStringConstants.SPEECH_EVIL_0;
+					}
+				}
+
+				/// <summary>
+				/// Generates good karma speech based on random selection
+				/// </summary>
+				/// <returns>Good karma speech string</returns>
+				private string GenerateGoodSpeech()
+				{
+					switch ( Utility.Random( AnimalTamingConstants.SPEECH_COUNT ) )
+					{
+						case 0: return AnimalTamingStringConstants.SPEECH_GOOD_0;
+						case 1: return AnimalTamingStringConstants.SPEECH_GOOD_1;
+						case 2: return AnimalTamingStringConstants.SPEECH_GOOD_2;
+						case 3: return AnimalTamingStringConstants.SPEECH_GOOD_3;
+						case 4: return AnimalTamingStringConstants.SPEECH_GOOD_4;
+						case 5: return AnimalTamingStringConstants.SPEECH_GOOD_5;
+						case 6: return AnimalTamingStringConstants.SPEECH_GOOD_6;
+						case 7: return AnimalTamingStringConstants.SPEECH_GOOD_7;
+						case 8: return AnimalTamingStringConstants.SPEECH_GOOD_8;
+						case 9: return AnimalTamingStringConstants.SPEECH_GOOD_9;
+						case 10: return AnimalTamingStringConstants.SPEECH_GOOD_10;
+						case 11: return AnimalTamingStringConstants.SPEECH_GOOD_11;
+						case 12: return string.Format(AnimalTamingStringConstants.SPEECH_GOOD_12_FORMAT, m_Tamer.Name);
+						default: return AnimalTamingStringConstants.SPEECH_GOOD_0;
+					}
+				}
+
+				/// <summary>
+				/// Garbles speech when tamer is drunk
+				/// </summary>
+				/// <param name="speech">Original speech to garble</param>
+				/// <returns>Garbled speech string</returns>
+				private string GarbleDrunkSpeech(string speech)
+				{
+					string[] said = speech.Split(' ');
+					string garbled = "";
+
+					for( int i = 0; i < said.Length; i++ )
+					{
+						if (Utility.RandomDouble() > AnimalTamingConstants.DRUNK_SPEECH_CHANCE)
+						{
+							switch (Utility.Random(AnimalTamingConstants.DRUNK_SPEECH_COUNT))
+							{
+								case 0: garbled += AnimalTamingStringConstants.DRUNK_CODE_0 + " "; break;
+								case 1: garbled += AnimalTamingStringConstants.DRUNK_CODE_1 + " "; break;
+								case 2: garbled += AnimalTamingStringConstants.DRUNK_CODE_2 + " "; break;
+								case 3: garbled += AnimalTamingStringConstants.DRUNK_CODE_3 + " "; break;
+								case 4: garbled += AnimalTamingStringConstants.DRUNK_CODE_4 + " "; break;
+								case 5: garbled += AnimalTamingStringConstants.DRUNK_CODE_5 + " "; break;
+								case 6: garbled += AnimalTamingStringConstants.DRUNK_CODE_6 + " "; break;
+							}
+						}
+						else
+							garbled += said[Utility.Random(said.Length)] + " ";
+					}
+
+					return garbled;
+				}
+
+				/// <summary>
+				/// Generates and displays karma-based taming speech
+				/// </summary>
+				private void GenerateKarmaSpeech()
+				{
+					string speech = "";
+
+					if (m_Tamer.Karma < AnimalTamingConstants.KARMA_THRESHOLD)
+						speech = GenerateEvilSpeech();
+					else
+						speech = GenerateGoodSpeech();
+
+					// Apply drunk garbling if applicable
+					if (m_Tamer is PlayerMobile && ((PlayerMobile)m_Tamer).BAC > 0 && Utility.RandomDouble() < ((double)((PlayerMobile)m_Tamer).BAC / AnimalTamingConstants.BAC_DIVISOR))
+						speech = GarbleDrunkSpeech(speech);
+
+					m_Tamer.PublicOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, false, speech );
 				}
 
 				protected override void OnTick()
@@ -311,164 +724,50 @@ namespace Server.SkillHandlers
 					// Use dynamic range based on tamer's skill
 					if ( !m_Tamer.InRange( m_Creature, m_TamingRange ) )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502795, m_Tamer.NetState ); // You are too far away to continue taming.
-						Stop();
+						StopTamingAttempt( 502795 ); // You are too far away to continue taming.
 					}
 					else if ( !m_Tamer.CheckAlive() )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502796, m_Tamer.NetState ); // You are dead, and cannot continue taming.
-						Stop();
+						StopTamingAttempt( 502796 ); // You are dead, and cannot continue taming.
 					}
 					else if ( !m_Tamer.CanSee( m_Creature ) || !m_Tamer.InLOS( m_Creature ) || !CanPath() )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1049654, m_Tamer.NetState ); // You do not have a clear path to the animal you are taming, and must cease your attempt.
-						Stop();
+						StopTamingAttempt( 1049654 ); // You do not have a clear path to the animal you are taming, and must cease your attempt.
 					}
 					else if ( !m_Creature.Tamable )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1049655, m_Tamer.NetState ); // That creature cannot be tamed.
-						Stop();
+						StopTamingAttempt( 1049655 ); // That creature cannot be tamed.
 					}
 					else if ( m_Creature.Controlled )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502804, m_Tamer.NetState ); // That animal looks tame already.
-						Stop();
+						StopTamingAttempt( 502804 ); // That animal looks tame already.
 					}
 					else if ( m_Creature.Owners.Count >= BaseCreature.MaxOwners && !m_Creature.Owners.Contains( m_Tamer ) )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1005615, m_Tamer.NetState ); // This animal has had too many owners and is too upset for you to tame.
-						Stop();
+						StopTamingAttempt( 1005615 ); // This animal has had too many owners and is too upset for you to tame.
 					}
 					else if ( MustBeSubdued( m_Creature ) )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 1054025, m_Tamer.NetState ); // You must subdue this creature before you can tame it!
-						Stop();
+						StopTamingAttempt( 1054025 ); // You must subdue this creature before you can tame it!
 					}
 					else if ( de != null && de.LastDamage > m_StartTime )
 					{
-						m_BeingTamed.Remove( m_Creature );
-						m_Tamer.NextSkillTime = Core.TickCount;
-						m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502794, m_Tamer.NetState ); // The animal is too angry to continue taming.
-						Stop();
+						StopTamingAttempt( 502794 ); // The animal is too angry to continue taming.
 					}
 					else if ( m_Count < m_MaxCount )
 					{
 						m_Tamer.RevealingAction();
 		
-						if (Utility.RandomDouble() < 0.85)	
+						if (Utility.RandomDouble() < AnimalTamingConstants.SPEECH_CHANCE)	
 						{
-							switch ( Utility.Random( 3 ) )
-							{
-								case 0: m_Tamer.PublicOverheadMessage( MessageType.Regular, 0x3B2, Utility.Random( 502790, 4 ) ); break;
-								case 1: m_Tamer.PublicOverheadMessage( MessageType.Regular, 0x3B2, Utility.Random( 1005608, 6 ) ); break;
-								case 2: m_Tamer.PublicOverheadMessage( MessageType.Regular, 0x3B2, Utility.Random( 1010593, 4 ) ); break;
-							}
+							GenerateGenericSpeech();
 						}
 						else 
 						{
-							string speech = "";
-							if (m_Tamer.Karma < 0)
-							{
-								switch ( Utility.Random( 13 ) )
-								{
-									case 0: speech = "Come here, you little mongrel."; break;
-									case 1: speech = "Come on, tame already." ; break;
-									case 2: speech = "Consider yourself lucky I don't hit TAB..."; break;
-									case 3: speech = "I'm just going to rename you and kill you."; break;
-									case 4: speech = "I bet the broker will pay well for you."; break;
-									case 5: speech = "Come... kill my enemies and make me rich."; break;
-									case 6: speech = "I'm too lazy to kill enemies myself, I need you to do it for me see?"; break;
-									case 7: speech = "I was just joking when I asked you to travel with me."; break;
-									case 8: speech = "If you don't give me a gain you'll pay."; break;
-									case 9: speech = "If you don't tame now I'll starve you for making me wait."; break;
-									case 10: speech = "You might be worth more in hides and meat."; break;
-									case 11: speech = "My name's " + m_Tamer.Name + " and I'm your daddy."; break;
-									case 12: speech = "You're the weakest example of " + m_BeingTamed + " I've ever seen."; break;
-									
-								}
-							}
-							else
-							{
-								switch ( Utility.Random( 13 ) )
-								{
-									case 0: speech =  "Take your time!  I want you to trust me."; break;
-									case 1: speech = "I will find you a nice home to live in."; break;
-									case 2: speech = "What a beautiful creature you are!"; break;
-									case 3: speech = "Can you make that cute noise again?"; break;
-									case 4: speech = "I will care for you and grow with you."; break;
-									case 5: speech = "Together we will explore marvelous places!"; break;
-									case 6: speech = "You and me, sitting on a tree... wait what?"; break;
-									case 7: speech = "I bet your fur is soft... can I touch it?"; break;
-									case 8: speech = "Consider coming with me, friend."; break;
-									case 9: speech = "Out of all the creatures around me, I picked you my friend."; break;
-									case 10: speech = "I will train you to become a better creature."; break;
-									case 11: speech = "Oooh that's cute, you just licked your privates."; break;
-									case 12: speech = "Hey there buddy, I'm " + m_Tamer.Name + " and I think you're really cute."; break;
-									
-								}
-							}
-							
-							
-												
-							if (m_Tamer is PlayerMobile && ((PlayerMobile)m_Tamer).BAC > 0 && Utility.RandomDouble() < ((double)((PlayerMobile)m_Tamer).BAC/200)) //is drunk!
-							{
-								// lets have fun
-								string[] said = speech.Split(' ');
-								speech = "";
-
-								for( int i = 0; i < said.Length; i++ )
-								{
-									if (Utility.RandomDouble() > 0.85)
-									{
-										string junk = "";
-										switch (Utility.Random(7))
-										{
-											case 0: speech += "ssmbb" + " "; break; //Sticks Stones May Break Bones
-											case 1: speech += "bwchm" + " "; break; //But words can't hurt me
-											case 2: speech += "umgat" + " "; break; //Unless my giant angry tames
-											case 3: speech += "mmcfi" + " "; break; //Mistake my commands for insults
-											case 4: speech += "taemg" + " "; break; //turn and eat my gear
-											case 5: speech += "aqkmb" + " "; break; //and quickly kill me before
-											case 6: speech += "istmh" + " "; break; //I stop their mangy hides
-										}
-									}
-									else
-										speech += said[Utility.Random(said.Length)]+ " ";
-								}
-							}
-							
-							m_Tamer.PublicOverheadMessage( MessageType.Regular, 0x3B2, false, speech );
-							
-							//m_BeingTamed.Remove( m_Creature );
-							//m_Tamer.NextSkillTime = Core.TickCount;
-							//Stop();
-							//return;
-								
+							GenerateKarmaSpeech();
 						}
 
-						if ( !alreadyOwned ) // Passively check animal lore for gain // FInal added taming too!
-						{
-							switch ( Utility.Random( 2 ) )
-							{
-								case 0: m_Tamer.CheckTargetSkill( SkillName.AnimalTaming, m_Creature, m_Creature.MinTameSkill - 25, m_Creature.MinTameSkill + 25 ); break;
-								case 1: break;
-							}
-							m_Tamer.CheckTargetSkill( SkillName.AnimalLore, m_Creature, m_Creature.MinTameSkill - 25, m_Creature.MinTameSkill + 25 ); //+++
-						}
+						CheckSkillGain( m_Creature.MinTameSkill, alreadyOwned );
 
 						if ( m_Creature.Paralyzed )
 							m_Paralyzed = true;
@@ -479,36 +778,28 @@ namespace Server.SkillHandlers
 						m_Tamer.NextSkillTime = Core.TickCount;
 						m_BeingTamed.Remove( m_Creature );
 
-						double minSkill = m_Creature.MinTameSkill + (m_Creature.Owners.Count * 6.0);
+						double minSkill = m_Creature.MinTameSkill + (m_Creature.Owners.Count * AnimalTamingConstants.OWNER_PENALTY_PER_OWNER);
 
-						if ( minSkill > 24.9 && CheckMastery( m_Tamer, m_Creature ) )
-							minSkill = 0; // 50% at 0.0?
+						if ( minSkill > AnimalTamingConstants.MASTERY_SKILL_THRESHOLD && CheckMastery( m_Tamer, m_Creature ) )
+							minSkill = AnimalTamingConstants.MASTERY_SKILL_OVERRIDE;
 
 						if ( m_Creature.Paralyzed )
 							m_Paralyzed = true;
 
-						if ( !alreadyOwned ) // Passively check animal lore for gain // FInal added taming too!
-						{
-							switch ( Utility.Random( 2 ) )
-							{
-								case 0: m_Tamer.CheckTargetSkill( SkillName.AnimalTaming, m_Creature, minSkill - 25, minSkill + 25 ); break;
-								case 1: break;
-							}
-							m_Tamer.CheckTargetSkill( SkillName.AnimalLore, m_Creature, minSkill - 25, minSkill + 25); //+++
-						}
+						CheckSkillGain( minSkill, alreadyOwned );
 
 
-						if ( CheckMastery( m_Tamer, m_Creature ) || alreadyOwned || m_Tamer.CheckTargetSkill( SkillName.AnimalTaming, m_Creature, minSkill - 25.0, minSkill + 25.0 ) )
+						if ( CheckMastery( m_Tamer, m_Creature ) || alreadyOwned || m_Tamer.CheckTargetSkill( SkillName.AnimalTaming, m_Creature, minSkill - AnimalTamingConstants.SKILL_CHECK_RANGE, minSkill + AnimalTamingConstants.SKILL_CHECK_RANGE ) )
 						{
-							if ( m_Creature.Owners.Count == 0 ) // First tame
+							if ( m_Creature.Owners.Count == AnimalTamingConstants.FIRST_OWNER_COUNT ) // First tame
 							{
 								if ( m_Paralyzed )
-									ScaleSkills( m_Creature, 0.65 ); // 86% of original skills if they were paralyzed during the taming
+									ScaleSkills( m_Creature, AnimalTamingConstants.PARALYZED_SKILL_SCALAR );
 								else
-									ScaleSkills( m_Creature, 0.80 ); // 90% of original skills
+									ScaleSkills( m_Creature, AnimalTamingConstants.NORMAL_SKILL_SCALAR );
 
 								if ( m_Creature.StatLossAfterTame )
-									ScaleStats( m_Creature, 0.50 );
+									ScaleStats( m_Creature, AnimalTamingConstants.STAT_LOSS_SCALAR );
 							}
 
 							if ( alreadyOwned )
@@ -525,11 +816,11 @@ namespace Server.SkillHandlers
 							{
 								if ( m_Creature.Title.Contains("*Enraged*") || m_Creature.Title.Contains("*Righteous*") )
 								{
-									m_Creature.RawStr /= 2;
-									m_Creature.RawDex /= 2;
-									m_Creature.RawInt /= 2;
-									m_Creature.Hue = -1;
-									m_Creature.HitsMaxSeed /= 2;
+									m_Creature.RawStr /= AnimalTamingConstants.ENRAGED_STAT_DIVISOR;
+									m_Creature.RawDex /= AnimalTamingConstants.ENRAGED_STAT_DIVISOR;
+									m_Creature.RawInt /= AnimalTamingConstants.ENRAGED_STAT_DIVISOR;
+									m_Creature.Hue = AnimalTamingConstants.ENRAGED_HUE;
+									m_Creature.HitsMaxSeed /= AnimalTamingConstants.ENRAGED_STAT_DIVISOR;
 									m_Creature.Hits = m_Creature.HitsMaxSeed;
 									m_Creature.AIFullSpeedActive = false;
 								}
@@ -544,15 +835,15 @@ namespace Server.SkillHandlers
 							
 							m_Creature.SetControlMaster( m_Tamer );
 
-							m_Creature.RangeHome = -1;
-							m_Creature.Home = new Point3D(0, 0, 0);
+							m_Creature.RangeHome = AnimalTamingConstants.DEFAULT_RANGE_HOME;
+							m_Creature.Home = AnimalTamingConstants.DEFAULT_HOME;
 
 							m_Creature.IsBonded = false;
 
 						}
 						else
 						{
-							m_Creature.PrivateOverheadMessage( MessageType.Regular, 0x3B2, 502798, m_Tamer.NetState ); // You fail to tame the creature.
+							m_Creature.PrivateOverheadMessage( MessageType.Regular, AnimalTamingConstants.MSG_COLOR_ERROR, 502798, m_Tamer.NetState ); // You fail to tame the creature.
 						}
 					}
 				}
@@ -572,5 +863,6 @@ namespace Server.SkillHandlers
 				}
 			}
 		}
+		#endregion
 	}
 }

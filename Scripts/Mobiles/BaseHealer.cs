@@ -107,8 +107,52 @@ namespace Server.Mobiles
 		private DateTime m_NextResurrect;
 		private static TimeSpan ResurrectDelay = TimeSpan.FromSeconds( 2.0 );
 
+		// Track when players cancel the resurrection gump to prevent immediate re-showing
+		private static Dictionary<Mobile, DateTime> m_GumpCancellationTimes = new Dictionary<Mobile, DateTime>();
+		private static TimeSpan GumpCancellationDelay = TimeSpan.FromSeconds( 3.0 );
+
+		/// <summary>
+		/// Records when a player cancels the resurrection gump
+		/// </summary>
+		public static void RecordGumpCancellation( Mobile m )
+		{
+			if ( m != null )
+			{
+				m_GumpCancellationTimes[m] = DateTime.UtcNow;
+			}
+		}
+
+		/// <summary>
+		/// Checks if enough time has passed since the player last cancelled the gump
+		/// </summary>
+		public static bool CanShowResurrectionGump( Mobile m )
+		{
+			if ( m == null )
+				return false;
+
+			if ( !m_GumpCancellationTimes.ContainsKey( m ) )
+				return true; // Never cancelled, can show
+
+			DateTime cancellationTime = m_GumpCancellationTimes[m];
+			TimeSpan timeSinceCancellation = DateTime.UtcNow - cancellationTime;
+
+			// Remove old entries to prevent memory leak
+			if ( timeSinceCancellation > TimeSpan.FromMinutes( 5.0 ) )
+			{
+				m_GumpCancellationTimes.Remove( m );
+				return true;
+			}
+
+			// Can show if 3 seconds have passed
+			return timeSinceCancellation >= GumpCancellationDelay;
+		}
+
 		public virtual void OfferResurrection( Mobile m )
 		{
+			// Check if player recently cancelled the gump
+			if ( !CanShowResurrectionGump( m ) )
+				return;
+
 			Direction = GetDirectionTo( m );
 
 			m.PlaySound( 0x214 );
@@ -122,19 +166,20 @@ namespace Server.Mobiles
 		{
 			Direction = GetDirectionTo( m );
 
-			if ( m.CheckYoungHealTime() )
-			{
+			// COMMENTED OUT: CheckYoungHealTime is disabled - healers now always offer healing
+			// if ( m.CheckYoungHealTime() )
+			// {
 				Say( 501229 ); // You look like you need some healing my child.
 
 				m.PlaySound( 0x1F2 );
 				m.FixedEffect( 0x376A, 9, 32 );
 
 				m.Hits = m.HitsMax;
-			}
-			else
-			{
-				Say( 501228 ); // I can do no more for you at this time.
-			}
+			// }
+			// else
+			// {
+			//	Say( 501228 ); // I can do no more for you at this time.
+			// }
 		}
 
 		public override void OnMovement( Mobile m, Point3D oldLocation )

@@ -100,7 +100,8 @@ namespace Server.Items
 
 		public static readonly TimeSpan MonsterLootRightSacrifice = TimeSpan.FromMinutes( 2.0 );
 
-		public static readonly TimeSpan InstancedCorpseTime = TimeSpan.FromMinutes( 3.0 );
+		public static readonly TimeSpan InstancedCorpseTime = TimeSpan.FromMinutes( 1.0 );
+		public static readonly TimeSpan MonsterLootProtectionTime = TimeSpan.FromMinutes( 1.0 );
 
 		[CommandProperty( AccessLevel.GameMaster )]
 		public virtual bool InstancedCorpse 
@@ -149,25 +150,18 @@ namespace Server.Items
 
 		public override bool IsChildVisibleTo( Mobile m, Item child )
 		{
-			if ( !m.Player || m.AccessLevel > AccessLevel.Player )   //Staff and creatures not subject to instancing.
-				return true;
-
-			if ( m_InstancedItems != null )
-			{
-				InstancedItemInfo info;
-
-				if ( m_InstancedItems.TryGetValue( child, out info ) && (InstancedCorpse || info.Perpetual) )
-				{
-					return info.IsOwner( m );   //IsOwner checks Party stuff.
-				}
-			}
-
+			// Everyone sees all items - no instancing restrictions
 			return true;
 		}
 
 		private void AssignInstancedLoot()
 		{
-			if ( m_Aggressors.Count == 0 || this.Items.Count == 0 )
+			// Skip instancing if no items or no aggressors (but still allow splitting if aggressors exist)
+			if ( this.Items.Count == 0 )
+				return;
+			
+			// If no aggressors, skip splitting but items are still visible to everyone
+			if ( m_Aggressors.Count == 0 )
 				return;
 
 			if ( m_InstancedItems == null )
@@ -379,16 +373,20 @@ namespace Server.Items
 			GumpID = 0x2A73;
 			DropSound = 0x48;
 			Hue = 0;
+			Movable = false; // Bones cannot be moved by players
 			ProcessDelta();
 
 			SetFlag( CorpseFlag.NoBones, true );
 			SetFlag( CorpseFlag.IsBones, true );
 
-			BeginDecay( m_BoneDecayTime );
+			// Squire bones decay in 20 minutes, all others in 10 minutes
+			TimeSpan boneDecayTime = ( m_Owner is Squire ) ? m_SquireBoneDecayTime : m_BoneDecayTime;
+			BeginDecay( boneDecayTime );
 		}
 
-		private static TimeSpan m_DefaultDecayTime = TimeSpan.FromMinutes( 15.0 );
-		private static TimeSpan m_BoneDecayTime = TimeSpan.FromMinutes( 113.0 );
+		private static TimeSpan m_DefaultDecayTime = TimeSpan.FromMinutes( 10.0 );
+		private static TimeSpan m_BoneDecayTime = TimeSpan.FromMinutes( 10.0 );
+		private static TimeSpan m_SquireBoneDecayTime = TimeSpan.FromMinutes( 20.0 );
 
 		private Timer m_DecayTimer;
 		private DateTime m_DecayTime;
@@ -410,6 +408,30 @@ namespace Server.Items
 			m_DecayTimer = new InternalTimer( this, delay );
 			m_DecayTimer.Start();
 			
+		}
+
+		public override void OnDelete()
+		{
+			// Drop all items to the ground before deleting the corpse
+			Point3D loc = GetWorldLocation();
+			Map map = Map;
+
+			if ( map != null && map != Map.Internal )
+			{
+				List<Item> items = new List<Item>( Items );
+
+				for ( int i = 0; i < items.Count; i++ )
+				{
+					Item item = items[i];
+					if ( item != null && !item.Deleted )
+					{
+						item.SetLastMoved();
+						item.MoveToWorld( loc, map );
+					}
+				}
+			}
+
+			base.OnDelete();
 		}
 
 		public override void OnAfterDelete()
@@ -443,7 +465,7 @@ namespace Server.Items
 		{
 			private Corpse m_Corpse;
 
-			public Internalloot( Corpse c ) : base( TimeSpan.FromMinutes( 10 ) )
+			public Internalloot( Corpse c ) : base( TimeSpan.FromMinutes( 1 ) )
 			{
 				m_Corpse = c;
 				Priority = TimerPriority.FiveSeconds;
@@ -586,15 +608,15 @@ namespace Server.Items
 			GumpID = 0x9;
 
 			if (owner is PlayerMobile)
-				m_lootable = false;
+				m_lootable = true;
 
+			// Corpses and bones cannot be moved by players - only staff can move them
+			// The VerifyMove and OnDragLift overrides enforce this restriction
+			Movable = false;
 			if (owner is PlayerMobile)
 			{
-				Movable = true;
 				Weight = 1;
 			}
-			else
-				Movable = false;
 			
 			Hue = owner.Hue;
 			Direction = owner.Direction;
@@ -621,13 +643,22 @@ namespace Server.Items
 			m_Looters = new List<Mobile>();
 			m_EquipItems = equipItems;
 
-			m_Aggressors = new List<Mobile>( owner.Aggressors.Count + owner.Aggressed.Count );
-			//bool addToAggressors = !( owner is BaseCreature );
-
+			// Populate aggressors list for NPCs/Monsters only (BaseCreature)
+			// Player corpses don't use aggressors list for looting restrictions
 			bool isBaseCreature = (owner is BaseCreature);
+			
+			if ( isBaseCreature )
+			{
+				m_Aggressors = new List<Mobile>( owner.Aggressors.Count + owner.Aggressed.Count );
+			}
+			else
+			{
+				m_Aggressors = new List<Mobile>();
+			}
 
 			TimeSpan lastTime = TimeSpan.MaxValue;
 
+			// Determine killer from combat history and populate aggressors for NPCs/Monsters
 			for ( int i = 0; i < owner.Aggressors.Count; ++i )
 			{
 				AggressorInfo info = owner.Aggressors[i];
@@ -638,7 +669,8 @@ namespace Server.Items
 					lastTime = (DateTime.UtcNow - info.LastCombatTime);
 				}
 
-				if ( !isBaseCreature && !info.CriminalAggression )
+				// Only add to aggressors list for NPCs/Monsters
+				if ( isBaseCreature && !info.CriminalAggression )
 					m_Aggressors.Add( info.Attacker );
 			}
 
@@ -652,10 +684,12 @@ namespace Server.Items
 					lastTime = (DateTime.UtcNow - info.LastCombatTime);
 				}
 
-				if ( !isBaseCreature )
+				// Only add to aggressors list for NPCs/Monsters
+				if ( isBaseCreature )
 					m_Aggressors.Add( info.Defender );
 			}
 
+			// Populate aggressors for BaseCreature (NPCs/Monsters) with damage dealers
 			if ( isBaseCreature )
 			{
 				BaseCreature bc = (BaseCreature)owner;
@@ -674,13 +708,11 @@ namespace Server.Items
 				}
 			}
 
-			if ( !(owner is PlayerMobile) ) // final - players bones shall not disapear!
-			{
-				if (owner is Squire)
-					BeginDecay( (TimeSpan.FromMinutes( 30 )) );
-				else
-					BeginDecay( m_DefaultDecayTime );
-			}
+			// All corpses decay: Corpse → Bones → Deleted
+			if (owner is Squire)
+				BeginDecay( TimeSpan.FromMinutes( 10.0 ) );
+			else
+				BeginDecay( m_DefaultDecayTime );
 
 			
 
@@ -957,22 +989,56 @@ namespace Server.Items
 			}
 		}
 
+		/// <summary>
+		/// Checks if 1 minute has passed since the corpse was created (for NPC/Monster loot protection)
+		/// </summary>
+		private bool IsMonsterLootProtectionExpired()
+		{
+			return ( DateTime.UtcNow >= (m_TimeOfDeath + MonsterLootProtectionTime) );
+		}
+
+		/// <summary>
+		/// Checks if the mobile is in the aggressors list
+		/// </summary>
+		private bool IsInAggressorsList( Mobile from )
+		{
+			return ( m_Aggressors != null && m_Aggressors.Contains( from ) );
+		}
+
 		public bool IsCriminalAction( Mobile from )
 		{
 			if ( from == m_Owner || from.AccessLevel >= AccessLevel.GameMaster )
 				return false;
 
-			Party p = Party.Get( m_Owner );
-
-			if ( p != null && p.Contains( from ) )
+			// Handle NPC/Monster corpses differently
+			if ( m_Owner == null || !m_Owner.Player )
 			{
-				PartyMemberInfo pmi = p[m_Owner];
+				// For NPCs/Monsters: Aggressors can always loot (never criminal)
+				if ( IsInAggressorsList( from ) )
+					return false;
 
-				if ( pmi != null && pmi.CanLoot )
+				// For NPCs/Monsters: Non-aggressors are ALWAYS criminal (regardless of time)
+				// Within 1 minute: Cannot loot (blocked in CanLoot)
+				// After 1 minute: Can loot but it's criminal
+				return true;
+			}
+
+			// Player corpses: Party members can always loot (ignore CanLoot setting)
+			Party p = Party.Get( m_Owner );
+			if ( p != null && p.Contains( from ) )
+				return false;
+
+			// Player corpses: Guild/Clan members can always loot
+			Guild fromGuild = from.Guild as Guild;
+			if ( m_Guild != null && fromGuild != null )
+			{
+				if ( m_Guild == fromGuild || m_Guild.IsAlly( fromGuild ) )
 					return false;
 			}
 
-			return ( NotorietyHandlers.CorpseNotoriety( from, this ) == Notoriety.Innocent );
+			// For player corpses: looting is ALWAYS a criminal action (unless owner/party/guild)
+			// Instant lootable but always criminal
+			return true;
 		}
 
 		public override bool CheckItemUse( Mobile from, Item item )
@@ -993,19 +1059,44 @@ namespace Server.Items
 
 			return CanLoot( from,item );
 		}
+
+		/// <summary>
+		/// Prevents players from moving corpses and bones. Only staff can move them.
+		/// </summary>
+		public override bool VerifyMove( Mobile from )
+		{
+			// Staff can always move corpses and bones
+			if ( from.AccessLevel >= AccessLevel.GameMaster )
+				return base.VerifyMove( from );
+
+			// Players cannot move corpses or bones
+			return false;
+		}
+
+		/// <summary>
+		/// Prevents players from lifting corpses and bones. Only staff can lift them.
+		/// </summary>
+		public override bool OnDragLift( Mobile from )
+		{
+			// Staff can always lift corpses and bones
+			if ( from.AccessLevel >= AccessLevel.GameMaster )
+				return base.OnDragLift( from );
+
+			// Players cannot lift corpses or bones
+			return false;
+		}
+
 		public override void OnItemRemoved( Item item )
 		{
-				int carrying = this.GetTotal( TotalType.Items );
-
-				if (carrying == 0 && m_Owner is PlayerMobile)
-				{
-						Item corpseitem = new CorpseItem();
-						corpseitem.Name = "the bones of " + this.Name;
-						corpseitem.MoveToWorld( this.Location, this.Map );
-						this.Delete();
-						return;
-				}
 			base.OnItemRemoved(item);
+
+			// For player corpses: Transform to bones when all items are removed
+			int carrying = this.GetTotal( TotalType.Items );
+
+			if (carrying == 0 && m_Owner is PlayerMobile && !GetFlag( CorpseFlag.IsBones ))
+			{
+				TurnToBones();
+			}
 		}
 		public override void OnItemUsed( Mobile from, Item item )
 		{
@@ -1098,6 +1189,19 @@ namespace Server.Items
 
 		public bool CanLoot( Mobile from, Item item )
 		{
+			// For NPC/Monster corpses: Check 1-minute protection period
+			if ( m_Owner == null || !m_Owner.Player )
+			{
+				// Within 1 minute: Only aggressors can loot
+				if ( !IsMonsterLootProtectionExpired() )
+				{
+					if ( !IsInAggressorsList( from ) )
+						return false; // Non-aggressors cannot loot within protection period
+				}
+				// After 1 minute: Everyone can loot
+			}
+
+			// Check criminal action and map restrictions
 			if ( !IsCriminalAction( from ) )
 				return true;
 
@@ -1114,7 +1218,13 @@ namespace Server.Items
 			if ( !CanLoot( from, item ) )
 			{
 				if ( m_Owner == null || !m_Owner.Player )
-					from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
+				{
+					// Check if it's within protection period
+					if ( !IsMonsterLootProtectionExpired() && !IsInAggressorsList( from ) )
+						from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
+					else
+						from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
+				}
 				else
 					from.SendLocalizedMessage( 1010049 ); // You may not loot this corpse.
 
@@ -1122,10 +1232,11 @@ namespace Server.Items
 			}
 			else if ( IsCriminalAction( from ) )
 			{
-				if ( m_Owner == null || !m_Owner.Player )
-					from.SendLocalizedMessage( 1005036 ); // Looting this monster corpse will be a criminal act!
-				else
+				// Show criminal warning for player corpses or NPC/Monster corpses (non-aggressors within protection period)
+				if ( m_Owner != null && m_Owner.Player )
 					from.SendLocalizedMessage( 1005038 ); // Looting this corpse will be a criminal act!
+				else if ( m_Owner == null || !m_Owner.Player )
+					from.SendLocalizedMessage( 1005036 ); // Looting this monster corpse will be a criminal act!
 			}
 
 			return true;
@@ -1229,11 +1340,15 @@ namespace Server.Items
 
 					SetFlag( CorpseFlag.Carved, true );
 
+					// Self-loot: 10% chance to create tombstone (with 1-hour cooldown)
 					if (DateTime.UtcNow > (((PlayerMobile)from).TombstDelay + TimeSpan.FromHours(1)))
 					{
-						Item tomb = new TombStone( m_Owner, m_Killer);
-						tomb.MoveToWorld( from.Location, from.Map );
-						((PlayerMobile)from).TombstDelay = DateTime.UtcNow;
+						if (Utility.RandomDouble() < 0.10) // 10% chance
+						{
+							Item tomb = new TombStone( m_Owner, m_Killer);
+							tomb.MoveToWorld( from.Location, from.Map );
+							((PlayerMobile)from).TombstDelay = DateTime.UtcNow;
+						}
 					}
 
 					if ( gathered && !didntFit )
@@ -1241,17 +1356,19 @@ namespace Server.Items
 						from.PlaySound( 0x3E3 );
 						from.SendLocalizedMessage( 1062471 ); // You quickly gather all of your belongings.
 
-						if (DateTime.UtcNow > (((PlayerMobile)from).TombstDelay + TimeSpan.FromHours(1)))
-						{
-							Item corpseitem = new CorpseItem();
-							corpseitem.Name = "the bones of " + this.Name;
-							corpseitem.MoveToWorld( this.Location, this.Map );
-						}
-
 						base.OnDoubleClick( from );
 						from.SendSound( 0x48, from.Location );
 						Server.Items.CharacterDatabase.LootContainer( from, this );
-						this.Delete();
+						
+						// Transform to bones when all items are removed (instead of deleting)
+						if ( !GetFlag( CorpseFlag.IsBones ) )
+						{
+							TurnToBones();
+						}
+						else
+						{
+							this.Delete();
+						}
 						return;
 					}
 
@@ -1261,44 +1378,34 @@ namespace Server.Items
 
 				#endregion 
 
-				if ( !GetFlag( CorpseFlag.Carved ) && ItemID == 0x2006 && m_Owner is PlayerMobile)
-				{
-					SetFlag( CorpseFlag.Carved, true );
-					
-					if ( (from.RawStr + from.RawDex + from.RawInt) > 125 || ((from.RawStr + from.RawDex + from.RawInt) < 125 && Utility.RandomDouble() > 0.66))
-					{
-						Item tomb = new TombStone( m_Owner, m_Killer);
-						tomb.MoveToWorld( from.Location, from.Map );
-					}
-
-					ProcessDelta();
-					SendRemovePacket();
-					ItemID = Utility.Random( 0xECA, 9 ); // bone graphic
-					GumpID = 0x2A73;
-					DropSound = 0x48;
-					Hue = 0;
-					Weight = 0.1; // final, so we can bury our bodies
-					ProcessDelta();
-
-				}
-
+				// Check if corpse should transform to bones (all items removed)
 				int carrying = this.GetTotal( TotalType.Items );
 
-				if (carrying == 0 && m_Owner is PlayerMobile)
+				if (carrying == 0 && m_Owner is PlayerMobile && !GetFlag( CorpseFlag.IsBones ))
 				{
-
-						from.PlaySound( 0x3E3 );
-						Item corpseitem = new CorpseItem();
-						corpseitem.Name = "the bones of " + this.Name;
-						corpseitem.MoveToWorld( this.Location, this.Map );
-						from.SendSound( 0x48, from.Location );
-						Server.Items.CharacterDatabase.LootContainer( from, this );
-						this.Delete();
-						return;
+					from.PlaySound( 0x3E3 );
+					from.SendSound( 0x48, from.Location );
+					Server.Items.CharacterDatabase.LootContainer( from, this );
+					TurnToBones();
+					return;
 				}
 
 				if ( !CheckLoot( from, null ) )
 					return;
+
+				// Aggressors opening player corpse: 5% chance to create tombstone (with 1-hour cooldown, only players)
+				if ( m_Owner is PlayerMobile && from is PlayerMobile && from != m_Owner && m_Aggressors != null && m_Aggressors.Contains( from ))
+				{
+					if (DateTime.UtcNow > (((PlayerMobile)from).TombstDelay + TimeSpan.FromHours(1)))
+					{
+						if (Utility.RandomDouble() < 0.05) // 5% chance
+						{
+							Item tomb = new TombStone( m_Owner, m_Killer);
+							tomb.MoveToWorld( from.Location, from.Map );
+							((PlayerMobile)from).TombstDelay = DateTime.UtcNow;
+						}
+					}
+				}
 
 				base.OnDoubleClick( from );
 				from.SendSound( 0x48, from.Location );
@@ -1413,15 +1520,7 @@ namespace Server.Items
 			if (Utility.RandomBool())
 				from.RevealingAction(); //bloody work
 
-			if ( IsCriminalAction( from ) && this.Map != null && (this.Map.Rules & MapRules.HarmfulRestrictions) != 0 )
-			{
-				if ( m_Owner == null || !m_Owner.Player )
-					from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
-				else
-					from.SendLocalizedMessage( 1010049 ); // You may not loot this corpse.
-
-				return;
-			}
+			// Carving is always allowed, but will be marked as criminal action below
 
 			Mobile dead = m_Owner;
 
@@ -1432,6 +1531,47 @@ namespace Server.Items
 			if ( GetFlag( CorpseFlag.Carved ) || dead == null )
 			{
 				from.SendLocalizedMessage( 500485 ); // You see nothing useful to carve from the corpse.
+			}
+			else if ( dead is PlayerMobile && ItemID == 0x2006 )
+			{
+				// Carving a player corpse
+				new Blood( 0x122D ).MoveToWorld( Location, Map );
+
+				Corpse bodyBag = (Corpse)this;
+				string playerName = dead.Name;
+
+				// 50% chance for TastyHeart, 50% chance for Head
+				if ( Utility.RandomBool() )
+				{
+					// Create TastyHeart with PT-BR name format
+					TastyHeart heart = new TastyHeart( null );
+					heart.Heart_Name = "o coração de " + playerName;
+					heart.Name = heart.Heart_Name;
+					bodyBag.AddCarvedItem( heart, from );
+				}
+				else
+				{
+					// Create Head with PT-BR name format
+					Head head = new Head( playerName );
+					head.Name = "a cabeça de " + playerName;
+					if ( m_Killer != null )
+						head.m_killer = m_Killer;
+					bodyBag.AddCarvedItem( head, from );
+				}
+
+				// Carving ANY corpse is ALWAYS a criminal action
+				from.CriminalAction( true );
+				Misc.Titles.AwardKarma( from, -50, true );
+
+				SetFlag( CorpseFlag.Carved, true );
+
+				ProcessDelta();
+				SendRemovePacket();
+				ItemID = Utility.Random( 0xECA, 9 ); // bone graphic
+				GumpID = 0x2A73;
+				DropSound = 0x48;
+				Hue = 0;
+				ProcessDelta();
 			}
 			else if ( ((Body)Amount).IsHuman && ItemID == 0x2006 && ( // DON'T WANT TO CARVE ORKS AND ELVES
 				dead is EvilMage ||		dead is EvilMageLord || 		dead is Brigand || 			dead is Executioner || 
@@ -1458,45 +1598,38 @@ namespace Server.Items
 
 				string myWork = "";
 
-				bool CriminalCarve = true;
-
 				if ( m_CorpseName != null && m_CorpseName != "" )
 				{
-					if ( m_CorpseName.Contains(" the assassin") ){ myWork = "Assassin"; 	dead.Name = (dead.Name).Replace(" the assassin", "");	CriminalCarve = false; }
-					else if ( m_CorpseName.Contains(" the thief") ){ myWork = "Thief"; 		dead.Name = (dead.Name).Replace(" the thief", "");		CriminalCarve = false; }
-					else if ( m_CorpseName.Contains(" the pirate") ){ myWork = "Pirate"; 	dead.Name = (dead.Name).Replace(" the pirate", "");		CriminalCarve = false; }
-					else if ( m_CorpseName.Contains(" the bandit") ){ myWork = "Bandit"; 	dead.Name = (dead.Name).Replace(" the bandit", "");		CriminalCarve = false; }
-					else if ( m_CorpseName.Contains(" the brigand") ){ myWork = "Brigand"; 	dead.Name = (dead.Name).Replace(" the brigand", "");	CriminalCarve = false; }
-					else if ( m_CorpseName.Contains(" an evil mage") ){ myWork = "Mage"; 	dead.Name = (dead.Name).Replace(" the evil mage", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" an evil bard") ){ myWork = "Bard"; 	dead.Name = (dead.Name).Replace(" the evil bard", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a magelord") ){ myWork = "MageLord"; 	dead.Name = (dead.Name).Replace(" the magelord", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a corrupted monk") ){ myWork = "Monk"; 	dead.Name = (dead.Name).Replace(" the corrupted monk", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" an executioner") ){ myWork = "Executioner"; 	dead.Name = (dead.Name).Replace(" the executioner", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a berserker") ){ myWork = "Warrior"; 	dead.Name = (dead.Name).Replace(" the berserker", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a black knight") ){ myWork = "Knight"; 	dead.Name = (dead.Name).Replace(" the black knight", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a cultist") ){ myWork = "Cultist"; 	dead.Name = (dead.Name).Replace(" the cultist", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" an archmage") ){ myWork = "MageLord"; 	dead.Name = (dead.Name).Replace(" the archmage", ""); CriminalCarve = false;}
-					else if ( m_CorpseName.Contains(" a golem controller") ){ myWork = "Controller"; 	dead.Name = (dead.Name).Replace(" the golem Controller", ""); CriminalCarve = false;}
+					if ( m_CorpseName.Contains(" the assassin") ){ myWork = "Assassin"; 	dead.Name = (dead.Name).Replace(" the assassin", ""); }
+					else if ( m_CorpseName.Contains(" the thief") ){ myWork = "Thief"; 		dead.Name = (dead.Name).Replace(" the thief", ""); }
+					else if ( m_CorpseName.Contains(" the pirate") ){ myWork = "Pirate"; 	dead.Name = (dead.Name).Replace(" the pirate", ""); }
+					else if ( m_CorpseName.Contains(" the bandit") ){ myWork = "Bandit"; 	dead.Name = (dead.Name).Replace(" the bandit", ""); }
+					else if ( m_CorpseName.Contains(" the brigand") ){ myWork = "Brigand"; 	dead.Name = (dead.Name).Replace(" the brigand", ""); }
+					else if ( m_CorpseName.Contains(" an evil mage") ){ myWork = "Mage"; 	dead.Name = (dead.Name).Replace(" the evil mage", ""); }
+					else if ( m_CorpseName.Contains(" an evil bard") ){ myWork = "Bard"; 	dead.Name = (dead.Name).Replace(" the evil bard", ""); }
+					else if ( m_CorpseName.Contains(" a magelord") ){ myWork = "MageLord"; 	dead.Name = (dead.Name).Replace(" the magelord", ""); }
+					else if ( m_CorpseName.Contains(" a corrupted monk") ){ myWork = "Monk"; 	dead.Name = (dead.Name).Replace(" the corrupted monk", ""); }
+					else if ( m_CorpseName.Contains(" an executioner") ){ myWork = "Executioner"; 	dead.Name = (dead.Name).Replace(" the executioner", ""); }
+					else if ( m_CorpseName.Contains(" a berserker") ){ myWork = "Warrior"; 	dead.Name = (dead.Name).Replace(" the berserker", ""); }
+					else if ( m_CorpseName.Contains(" a black knight") ){ myWork = "Knight"; 	dead.Name = (dead.Name).Replace(" the black knight", ""); }
+					else if ( m_CorpseName.Contains(" a cultist") ){ myWork = "Cultist"; 	dead.Name = (dead.Name).Replace(" the cultist", ""); }
+					else if ( m_CorpseName.Contains(" an archmage") ){ myWork = "MageLord"; 	dead.Name = (dead.Name).Replace(" the archmage", ""); }
+					else if ( m_CorpseName.Contains(" a golem controller") ){ myWork = "Controller"; 	dead.Name = (dead.Name).Replace(" the golem Controller", ""); }
 					string cname = m_CorpseName;
 					LoggingFunctions.LogCarve( from, cname );
 				}
 
 				if ( dead is BaseRed )
 				{
-				    CriminalCarve = false;
 					if (dead is SpawnRed || dead is SpawnRedMage)
 						myWork = "Mounted Player Killer";
 					else 
 						myWork = "Player Killer";
 				}
 
-				if ( CriminalCarve == true )
-				{
-					if ( IsCriminalAction( from ) )
-						from.CriminalAction( true );
-
-					Misc.Titles.AwardKarma( from, -50, true );
-				}
+				// Carving ANY corpse is ALWAYS a criminal action (regardless of owner/party/guild)
+				from.CriminalAction( true );
+				Misc.Titles.AwardKarma( from, -50, true );
 
 				Head head = new Head( dead.Name );
 

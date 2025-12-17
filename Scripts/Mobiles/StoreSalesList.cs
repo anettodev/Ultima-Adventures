@@ -1981,20 +1981,24 @@ namespace Server.Mobiles
 			/// </summary>
 			public InternalBuyInfo()
 			{
-				// Animals (always available)
+				// Animals only (equipment moved to SBAnimalTrainerEquipment)
 				// Horse (random 3 types - Horse class randomizes appearance)
 				Add(new AnimalBuyInfo(1, "Equinos", typeof(Horse), 550, StoreSalesListConstants.QTY_ANIMALS, 204, StoreSalesListConstants.HUE_DEFAULT));
 				Add(new AnimalBuyInfo(1, typeof(PackHorse), StoreSalesListConstants.PRICE_PACK_HORSE, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_PACK_HORSE, StoreSalesListConstants.HUE_DEFAULT));
 				Add(new AnimalBuyInfo(1, typeof(Rat), 30, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RAT, StoreSalesListConstants.HUE_DEFAULT));
-				Add(new AnimalBuyInfo(1, typeof(Dog), 55, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
-				Add(new AnimalBuyInfo(1, typeof(Cat), 47, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
+				// Dog - 50% chance to be available
+				if (Utility.RandomBool())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Dog), 55, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_DOG, StoreSalesListConstants.HUE_DEFAULT));
+				}
+				// Cat - 50% chance to be available
+				if (Utility.RandomBool())
+				{
+					Add(new AnimalBuyInfo(1, typeof(Cat), 47, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_CAT, StoreSalesListConstants.HUE_DEFAULT));
+				}
 				Add(new AnimalBuyInfo(1, typeof(Rabbit), 38, StoreSalesListConstants.QTY_ANIMALS, StoreSalesListConstants.ITEMID_RABBIT, StoreSalesListConstants.HUE_DEFAULT));
-				
-				// Equipment and supplies
-				Add(new GenericBuyInfo(typeof(HitchingPost), 9000, Utility.Random(2, 6), StoreSalesListConstants.ITEMID_HITCHING_POST, StoreSalesListConstants.HUE_DEFAULT));
-				Add(new GenericBuyInfo(typeof(TamingBODBook), 600, Utility.Random(3, 7), StoreSalesListConstants.ITEMID_TAMING_BOD_BOOK, StoreSalesListConstants.HUE_DEFAULT));
-				Add(new GenericBuyInfo(typeof(PetTrainer), StoreSalesListConstants.PRICE_PET_TRAINER, Utility.Random(3, 7), StoreSalesListConstants.ITEMID_PET_TRAINER, StoreSalesListConstants.HUE_DEFAULT));
-				Add(new GenericBuyInfo(typeof(PetBondDeed), 1800, 8, 0x14F0, 1759));
+				// PetTrainer moved to SBSpecialAnimalTrainer - only available from special variant with fixed stock of 8
+				// PetBondDeed moved to SBSpecialAnimalTrainer - only available from special variant
 			}
 		}
 
@@ -2161,6 +2165,244 @@ namespace Server.Mobiles
 			{
 			}
 		}
+	}
+	/// <summary>
+	/// Shop info for Special Animal Trainer vendor ("Domador de Feras").
+	/// Sells exclusive items: PetBondDeed, PetTrainer (always 8 stock), and RidableLlamas.
+	/// </summary>
+	public class SBSpecialAnimalTrainer : SBInfo
+	{
+		#region Fields
+
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBSpecialAnimalTrainer class.
+		/// </summary>
+		public SBSpecialAnimalTrainer()
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo>
+		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo()
+			{
+				// Animals first (to group with other animal lists)
+				// RidableLlamas - random 4-8 in stock, 500 gold each
+				int llamaCount = Utility.RandomMinMax(4, 8); // Random between 4 and 8
+				Add(new AnimalBuyInfo(1, typeof(RidableLlama), 500, llamaCount, 0xDC, StoreSalesListConstants.HUE_DEFAULT));
+				
+				// Equipment and supplies (after animals)
+				// PetBondDeed - exclusive to special variant
+				Add(new GenericBuyInfo(typeof(PetBondDeed), 1800, 8, 0x14F0, 1759));
+				
+				// PetTrainer - always 8 in stock (not random)
+				Add(new GenericBuyInfo(typeof(PetTrainer), StoreSalesListConstants.PRICE_PET_TRAINER, 8, StoreSalesListConstants.ITEMID_PET_TRAINER, StoreSalesListConstants.HUE_DEFAULT));
+				
+				// IvoryTusk - random 1-5 in stock, 430 gold each
+				Add(new GenericBuyInfo(typeof(IvoryTusk), 430, Utility.RandomMinMax(1, 5), 0x0313, StoreSalesListConstants.HUE_DEFAULT));
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// No special sell items for now
+			}
+		}
+
+		#endregion
+	}
+	/// <summary>
+	/// Shop info for regular Animal Trainer equipment (separated from animals for ordering).
+	/// Contains HitchingPost only (TamingBODBook moved to SBAnimalBroker).
+	/// </summary>
+	public class SBAnimalTrainerEquipment : SBInfo
+	{
+		#region Fields
+
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBAnimalTrainerEquipment class.
+		/// </summary>
+		public SBAnimalTrainerEquipment()
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo>
+		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo()
+			{
+				// Equipment and supplies (appears after all animals from all lists)
+				Add(new GenericBuyInfo(typeof(HitchingPost), 9000, Utility.Random(2, 6), StoreSalesListConstants.ITEMID_HITCHING_POST, StoreSalesListConstants.HUE_DEFAULT));
+				// TamingBODBook moved to SBAnimalBroker - only available from AnimalTrainerLord (animal broker)
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// No sell items
+			}
+		}
+
+		#endregion
+	}
+	/// <summary>
+	/// Shop info for Animal Broker (AnimalTrainerLord).
+	/// Sells TamingBODBook exclusively.
+	/// </summary>
+	public class SBAnimalBroker : SBInfo
+	{
+		#region Fields
+
+		private List<GenericBuyInfo> m_BuyInfo = new InternalBuyInfo();
+		private IShopSellInfo m_SellInfo = new InternalSellInfo();
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		/// Initializes a new instance of the SBAnimalBroker class.
+		/// </summary>
+		public SBAnimalBroker()
+		{
+		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the sell information for this vendor.
+		/// </summary>
+		public override IShopSellInfo SellInfo { get { return m_SellInfo; } }
+
+		/// <summary>
+		/// Gets the buy information for this vendor.
+		/// </summary>
+		public override List<GenericBuyInfo> BuyInfo { get { return m_BuyInfo; } }
+
+		#endregion
+
+		#region InternalBuyInfo
+
+		/// <summary>
+		/// Internal class for buy item definitions.
+		/// </summary>
+		public class InternalBuyInfo : List<GenericBuyInfo>
+		{
+			/// <summary>
+			/// Initializes the buy item list.
+			/// </summary>
+			public InternalBuyInfo()
+			{
+				// TamingBODBook - exclusive to Animal Broker (AnimalTrainerLord)
+				Add(new GenericBuyInfo(typeof(TamingBODBook), 600, Utility.Random(3, 7), StoreSalesListConstants.ITEMID_TAMING_BOD_BOOK, StoreSalesListConstants.HUE_DEFAULT));
+			}
+		}
+
+		#endregion
+
+		#region InternalSellInfo
+
+		/// <summary>
+		/// Internal class for sell item definitions.
+		/// </summary>
+		public class InternalSellInfo : GenericSellInfo
+		{
+			/// <summary>
+			/// Initializes the sell item list.
+			/// </summary>
+			public InternalSellInfo()
+			{
+				// No sell items
+			}
+		}
+
+		#endregion
 	}
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public class SBArchitect : SBInfo

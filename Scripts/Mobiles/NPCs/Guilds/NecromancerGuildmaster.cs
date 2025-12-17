@@ -63,6 +63,10 @@ namespace Server.Mobiles
 
 		public virtual void OfferResurrection( Mobile m )
 		{
+			// Check if player recently cancelled the gump
+			if ( !BaseHealer.CanShowResurrectionGump( m ) )
+				return;
+
 			Direction = GetDirectionTo( m );
 
 			m.PlaySound( 0x214 );
@@ -76,19 +80,20 @@ namespace Server.Mobiles
 		{
 			Direction = GetDirectionTo( m );
 
-			if ( m.CheckYoungHealTime() )
-			{
+			// COMMENTED OUT: CheckYoungHealTime is disabled - always allow healing
+			// if ( m.CheckYoungHealTime() )
+			// {
 				Say( "You look like you need soe healing dark one." );
 
 				m.PlaySound( 0x1F2 );
 				m.FixedEffect( 0x376A, 9, 32 );
 
 				m.Hits = m.HitsMax;
-			}
-			else
-			{
-				Say( 501228 ); // I can do no more for you at this time.
-			}
+			// }
+			// else
+			// {
+			//	Say( 501228 ); // I can do no more for you at this time.
+			// }
 		}
 
 		public override void OnMovement( Mobile m, Point3D oldLocation )

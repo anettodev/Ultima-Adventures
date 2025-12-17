@@ -33,12 +33,25 @@ namespace Server.SkillHandlers
 				if ( from == targeted )
 				{
 					from.LocalOverheadMessage( MessageType.Regular, 0x3B2, 500324 ); // You know yourself quite well enough already.
+					return;
 				}
-				else if ( targeted is BaseVendor && ((BaseVendor)targeted).IsInvulnerable )
+				
+				// Anatomy should only work on non-tamable creatures (humans, monsters, NPCs, vendors)
+				// This is the opposite of Animal Lore, which only works on tamable creatures (animals)
+				if ( targeted is BaseCreature )
 				{
-					((BaseVendor)targeted).PrivateOverheadMessage( MessageType.Regular, 0x3B2, 500326, from.NetState ); // That can not be inspected.
+					BaseCreature c = (BaseCreature)targeted;
+					
+					// Anatomy should only work on non-tamable creatures (humans, monsters, NPCs)
+					// This is the opposite of Animal Lore, which only works on tamable creatures
+					if ( c.Tamable )
+					{
+						from.LocalOverheadMessage( MessageType.Regular, 0x3B2, 500323 ); // Only living things have anatomies! (reusing message for animals)
+						return;
+					}
 				}
-				else if ( targeted is Mobile )
+				
+				if ( targeted is Mobile )
 				{
 					Mobile targ = (Mobile)targeted;
 

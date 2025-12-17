@@ -11,7 +11,7 @@ namespace Server.Commands
 		public static void Initialize()
 		{
 			CommandSystem.Register( "SetDecay", AccessLevel.Administrator, new CommandEventHandler( SetDecay_OnCommand ) );	
-			Item.DefaultDecayTime = TimeSpan.FromMinutes( MyServerSettings.decayrate() ); // 
+			Item.DefaultDecayTime = TimeSpan.FromMinutes( MyServerSettings.decayrate() ); 
 
 		}
 
@@ -25,7 +25,7 @@ namespace Server.Commands
 				{
 					int minutes = Convert.ToInt32(e.Arguments[0]);
 
-					Item.DefaultDecayTime = TimeSpan.FromHours(minutes);
+					Item.DefaultDecayTime = TimeSpan.FromMinutes(minutes);
 				}
 				catch {}
 			}
