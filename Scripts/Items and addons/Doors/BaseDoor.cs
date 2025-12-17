@@ -597,10 +597,8 @@ namespace Server.Items
 
         public override void OnDoubleClickDead( Mobile from )
         {
-			if ( from.AccessLevel == AccessLevel.Player && (/*!from.InLOS( this ) || */!from.InRange( GetWorldLocation(), 2 )) )
-				from.LocalOverheadMessage( MessageType.Regular, 0x3B2, 1019045 ); // I can't reach that.
-			else
-				Use( from );
+			// Ghosts cannot open doors - use default behavior
+			base.OnDoubleClickDead( from ); // I am dead and cannot do that.
         }
 
 		public BaseDoor( int closedID, int openedID, int openedSound, int closedSound, Point3D offset ) : base( closedID )
