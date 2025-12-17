@@ -4212,7 +4212,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 			if ( Alive )
 				return false;
 
-			if ( Core.ML && Skills[SkillName.SpiritSpeak].Value >= 100.0 )
+			if ( Core.ML && Skills[SkillName.SpiritSpeak].Value >= 120.0 )
 				return false;
 
 			if ( Core.AOS )
@@ -4221,7 +4221,7 @@ A little mouse catches sight of you and flees into a small hole in the ground.*/
 				{
 					Mobile m = hears[i];
 
-					if ( m != this && m.Skills[SkillName.SpiritSpeak].Value >= 100.0 )
+					if ( m != this && m.Skills[SkillName.SpiritSpeak].Value >= 120.0 )
 						return false;
 				}
 			}

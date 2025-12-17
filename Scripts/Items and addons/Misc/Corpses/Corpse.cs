@@ -374,6 +374,14 @@ namespace Server.Items
 			DropSound = 0x48;
 			Hue = 0;
 			Movable = false; // Bones cannot be moved by players
+			
+			// Update name to PT-BR bones format for player corpses
+			if ( m_Owner is PlayerMobile && this.Name.StartsWith( "corpo de " ) )
+			{
+				string playerName = this.Name.Substring( 9 ); // Remove "corpo de " prefix
+				this.Name = "restos de " + playerName;
+			}
+			
 			ProcessDelta();
 
 			SetFlag( CorpseFlag.NoBones, true );
@@ -620,7 +628,16 @@ namespace Server.Items
 			
 			Hue = owner.Hue;
 			Direction = owner.Direction;
-			Name = owner.Name;
+			
+			// Set PT-BR name for player corpses
+			if ( owner is PlayerMobile )
+			{
+				Name = "corpo de " + owner.Name;
+			}
+			else
+			{
+				Name = owner.Name;
+			}
 
 			m_Owner = owner;
 
@@ -1221,12 +1238,12 @@ namespace Server.Items
 				{
 					// Check if it's within protection period
 					if ( !IsMonsterLootProtectionExpired() && !IsInAggressorsList( from ) )
-						from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
+						from.SendMessage( "Você não ganhou o direito de saquear esta criatura!" );
 					else
-						from.SendLocalizedMessage( 1005035 ); // You did not earn the right to loot this creature!
+						from.SendMessage( "Você não ganhou o direito de saquear esta criatura!" );
 				}
 				else
-					from.SendLocalizedMessage( 1010049 ); // You may not loot this corpse.
+					from.SendMessage( "Você não pode saquear este corpo." );
 
 				return false;
 			}
@@ -1234,9 +1251,9 @@ namespace Server.Items
 			{
 				// Show criminal warning for player corpses or NPC/Monster corpses (non-aggressors within protection period)
 				if ( m_Owner != null && m_Owner.Player )
-					from.SendLocalizedMessage( 1005038 ); // Looting this corpse will be a criminal act!
+					from.SendMessage( "Saquejar este corpo será um ato criminoso!" );
 				else if ( m_Owner == null || !m_Owner.Player )
-					from.SendLocalizedMessage( 1005036 ); // Looting this monster corpse will be a criminal act!
+					from.SendMessage( "Saquejar este corpo de monstro será um ato criminoso!" );
 			}
 
 			return true;
@@ -1268,13 +1285,13 @@ namespace Server.Items
 							if ( player.PlaceInBackpack( sk ) )
 							{
 								obj.CorpseWithSkull = null;
-								player.SendLocalizedMessage( 1050022 ); // For your valor in combating the devourer, you have been awarded a golden skull.
+								player.SendMessage( "Por sua bravura ao combater o devorador, você foi premiado com uma caveira dourada." );
 								qs.Complete();
 							}
 							else
 							{
 								sk.Delete();
-								player.SendLocalizedMessage( 1050023 ); // You find a golden skull, but your backpack is too full to carry it.
+								player.SendMessage( "Você encontra uma caveira dourada, mas sua mochila está muito cheia para carregá-la." );
 							}
 						}
 					}
@@ -1354,7 +1371,7 @@ namespace Server.Items
 					if ( gathered && !didntFit )
 					{
 						from.PlaySound( 0x3E3 );
-						from.SendLocalizedMessage( 1062471 ); // You quickly gather all of your belongings.
+						from.SendMessage( "Você rapidamente recolhe todos os seus pertences." );
 
 						base.OnDoubleClick( from );
 						from.SendSound( 0x48, from.Location );
@@ -1373,7 +1390,7 @@ namespace Server.Items
 					}
 
 					if ( gathered && didntFit )
-						from.SendLocalizedMessage( 1062472 ); // You gather some of your belongings. The rest remain on the corpse.
+						from.SendMessage( "Você recolhe alguns de seus pertences. O resto permanece no corpo." );
 				}
 
 				#endregion 
@@ -1422,7 +1439,7 @@ namespace Server.Items
 		{
 			if ( from.Blessed && from != m_Owner )
 			{
-				from.SendMessage( "You cannot look through the corpse while in this state." );
+				from.SendMessage( "Você não pode examinar o corpo enquanto estiver neste estado." );
 			}
 			else
 			{
@@ -1435,7 +1452,7 @@ namespace Server.Items
 				{
 					if ( m_Owner is PlayerMobile && from.AccessLevel == AccessLevel.Player && from != m_Owner && !m_lootable && !GetFlag( CorpseFlag.Carved ) )
 					{
-						from.SendMessage( "The owner of this body may still come back." );
+						from.SendMessage( "O dono deste corpo ainda pode voltar." );
 
 						if ( m_LootTimer == null )
 						{
@@ -1457,9 +1474,11 @@ namespace Server.Items
 				if (Weight == 0 && m_Owner is PlayerMobile && GetFlag( CorpseFlag.Carved ))
 				{
 					Item corpseitem = new CorpseItem();
-					corpseitem.Name = "The bones of " + this.Name;
+					// Extract player name from "corpo de [Name]" or use owner name directly
+					string playerName = m_Owner != null ? m_Owner.Name : (this.Name.StartsWith("corpo de ") ? this.Name.Substring(9) : this.Name);
+					corpseitem.Name = "restos de " + playerName;
 					corpseitem.MoveToWorld( this.Location, this.Map );
-					from.SendMessage("The bones crumble.");
+					from.SendMessage("Os ossos se desfazem.");
 					this.Delete();
 					return;
 				}
@@ -1480,12 +1499,17 @@ namespace Server.Items
 			{
 				if ( m_CorpseName != null )
 					list.Add( m_CorpseName );
+				else if ( m_Owner is PlayerMobile )
+					list.Add( this.Name ); // "corpo de [PlayerName]" in PT-BR
 				else
-					list.Add( 1046414, this.Name ); // the remains of ~1_NAME~
+					list.Add( "corpo de " + this.Name ); // PT-BR hard-coded string for NPCs
 			}
 			else // Bone form
 			{
-				list.Add( 1046414, this.Name ); // the remains of ~1_NAME~
+				if ( m_Owner is PlayerMobile )
+					list.Add( this.Name ); // "restos de [PlayerName]" in PT-BR
+				else
+					list.Add( "restos de " + this.Name ); // PT-BR hard-coded string for NPCs
 			}
 		}
 
@@ -1506,12 +1530,17 @@ namespace Server.Items
 			{
 				if ( m_CorpseName != null )
 					from.Send( new AsciiMessage( Serial, ItemID, MessageType.Label, hue, 3, "", m_CorpseName ) );
+				else if ( m_Owner is PlayerMobile )
+					from.Send( new AsciiMessage( Serial, ItemID, MessageType.Label, hue, 3, "", this.Name ) ); // "corpo de [PlayerName]" in PT-BR
 				else
-					from.Send( new MessageLocalized( Serial, ItemID, MessageType.Label, hue, 3, 1046414, "", Name ) );
+					from.Send( new AsciiMessage( Serial, ItemID, MessageType.Label, hue, 3, "", "corpo de " + this.Name ) ); // PT-BR hard-coded string for NPCs
 			}
 			else // Bone form
 			{
-				from.Send( new MessageLocalized( Serial, ItemID, MessageType.Label, hue, 3, 1046414, "", Name ) );
+				if ( m_Owner is PlayerMobile )
+					from.Send( new AsciiMessage( Serial, ItemID, MessageType.Label, hue, 3, "", this.Name ) ); // "restos de [PlayerName]" in PT-BR
+				else
+					from.Send( new AsciiMessage( Serial, ItemID, MessageType.Label, hue, 3, "", "restos de " + this.Name ) ); // PT-BR hard-coded string for NPCs
 			}
 		}
 
