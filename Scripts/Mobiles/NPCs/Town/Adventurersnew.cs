@@ -2,159 +2,144 @@ using System;
 using Server;
 using Server.Items;
 
-
 namespace Server.Mobiles
 {
-	public class AdventurerEast : Citizens
+	/// <summary>
+	/// Base class for adventurer NPCs that face different directions.
+	/// Contains common logic for all adventurer types.
+	/// </summary>
+	public abstract class AdventurerBase : Citizens
 	{
-		[Constructable]
-		public AdventurerEast() : base( )
+		/// <summary>
+		/// Initializes a new instance of the AdventurerBase class with the specified direction.
+		/// </summary>
+		/// <param name="direction">The direction the adventurer should face</param>
+		protected AdventurerBase(Direction direction) : base()
 		{
-			Direction = Direction.East;
+			Direction = direction;
 		}
 
-
-		public AdventurerEast( Serial serial ) : base( serial )
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		protected AdventurerBase(Serial serial) : base(serial)
 		{
 		}
 
+		/// <summary>
+		/// Removes weapons and armor from the adventurer after spawning.
+		/// </summary>
+		protected void RemoveAdventurerEquipment()
+		{
+			Item oneHanded = this.FindItemOnLayer(Layer.OneHanded);
+			if (oneHanded != null)
+			{
+				oneHanded.Delete();
+			}
 
+			Item twoHanded = this.FindItemOnLayer(Layer.TwoHanded);
+			if (twoHanded != null)
+			{
+				twoHanded.Delete();
+			}
+
+			Item helm = this.FindItemOnLayer(Layer.Helm);
+			if (helm != null)
+			{
+				if (helm is BaseArmor)
+				{
+					helm.Delete();
+				}
+			}
+		}
+
+		/// <summary>
+		/// Called after the adventurer spawns. Removes equipment and applies transformations.
+		/// </summary>
 		public override void OnAfterSpawn()
 		{
 			base.OnAfterSpawn();
-			if ( this.FindItemOnLayer( Layer.OneHanded ) != null ) { this.FindItemOnLayer( Layer.OneHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.TwoHanded ) != null ) { this.FindItemOnLayer( Layer.TwoHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.Helm ) != null ) { if ( this.FindItemOnLayer( Layer.Helm ) is BaseArmor ){ this.FindItemOnLayer( Layer.Helm ).Delete(); } }
-			Server.Misc.MorphingTime.CheckNecromancer( this );
-			Server.Items.EssenceBase.ColorCitizen( this );
+			RemoveAdventurerEquipment();
+			Server.Misc.MorphingTime.CheckNecromancer(this);
+			Server.Items.EssenceBase.ColorCitizen(this);
 		}
 
-
-		public override void Serialize( GenericWriter writer )
+		/// <summary>
+		/// Serializes the adventurer data
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
 		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
+			base.Serialize(writer);
+			writer.Write((int)0); // version
 		}
 
-
-		public override void Deserialize( GenericReader reader )
+		/// <summary>
+		/// Deserializes the adventurer data
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
 		{
-			base.Deserialize( reader );
+			base.Deserialize(reader);
 			int version = reader.ReadInt();
 		}
 	}
-	public class AdventurerWest : Citizens
+
+	/// <summary>
+	/// Adventurer NPC facing East direction
+	/// </summary>
+	public class AdventurerEast : AdventurerBase
 	{
 		[Constructable]
-		public AdventurerWest() : base( )
-		{
-			Direction = Direction.West;
-		}
-
-
-		public AdventurerWest( Serial serial ) : base( serial )
+		public AdventurerEast() : base(Direction.East)
 		{
 		}
 
-
-		public override void OnAfterSpawn()
+		public AdventurerEast(Serial serial) : base(serial)
 		{
-			base.OnAfterSpawn();
-			if ( this.FindItemOnLayer( Layer.OneHanded ) != null ) { this.FindItemOnLayer( Layer.OneHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.TwoHanded ) != null ) { this.FindItemOnLayer( Layer.TwoHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.Helm ) != null ) { if ( this.FindItemOnLayer( Layer.Helm ) is BaseArmor ){ this.FindItemOnLayer( Layer.Helm ).Delete(); } }
-			Server.Misc.MorphingTime.CheckNecromancer( this );
-			Server.Items.EssenceBase.ColorCitizen( this );
-		}
-
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
-		}
-
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
 		}
 	}
-	public class AdventurerSouth : Citizens
+
+	/// <summary>
+	/// Adventurer NPC facing West direction
+	/// </summary>
+	public class AdventurerWest : AdventurerBase
 	{
 		[Constructable]
-		public AdventurerSouth() : base( )
-		{
-			Direction = Direction.South;
-		}
-
-
-		public AdventurerSouth( Serial serial ) : base( serial )
+		public AdventurerWest() : base(Direction.West)
 		{
 		}
 
-
-		public override void OnAfterSpawn()
+		public AdventurerWest(Serial serial) : base(serial)
 		{
-			base.OnAfterSpawn();
-			if ( this.FindItemOnLayer( Layer.OneHanded ) != null ) { this.FindItemOnLayer( Layer.OneHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.TwoHanded ) != null ) { this.FindItemOnLayer( Layer.TwoHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.Helm ) != null ) { if ( this.FindItemOnLayer( Layer.Helm ) is BaseArmor ){ this.FindItemOnLayer( Layer.Helm ).Delete(); } }
-			Server.Misc.MorphingTime.CheckNecromancer( this );
-			Server.Items.EssenceBase.ColorCitizen( this );
-		}
-
-
-		public override void Serialize( GenericWriter writer )
-		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
-		}
-
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
 		}
 	}
-	public class AdventurerNorth : Citizens
+
+	/// <summary>
+	/// Adventurer NPC facing South direction
+	/// </summary>
+	public class AdventurerSouth : AdventurerBase
 	{
 		[Constructable]
-		public AdventurerNorth() : base( )
-		{
-			Direction = Direction.North;
-		}
-
-
-		public AdventurerNorth( Serial serial ) : base( serial )
+		public AdventurerSouth() : base(Direction.South)
 		{
 		}
 
-
-		public override void OnAfterSpawn()
+		public AdventurerSouth(Serial serial) : base(serial)
 		{
-			base.OnAfterSpawn();
-			if ( this.FindItemOnLayer( Layer.OneHanded ) != null ) { this.FindItemOnLayer( Layer.OneHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.TwoHanded ) != null ) { this.FindItemOnLayer( Layer.TwoHanded ).Delete(); }
-			if ( this.FindItemOnLayer( Layer.Helm ) != null ) { if ( this.FindItemOnLayer( Layer.Helm ) is BaseArmor ){ this.FindItemOnLayer( Layer.Helm ).Delete(); } }
-			Server.Misc.MorphingTime.CheckNecromancer( this );
-			Server.Items.EssenceBase.ColorCitizen( this );
+		}
+	}
+
+	/// <summary>
+	/// Adventurer NPC facing North direction
+	/// </summary>
+	public class AdventurerNorth : AdventurerBase
+	{
+		[Constructable]
+		public AdventurerNorth() : base(Direction.North)
+		{
 		}
 
-
-		public override void Serialize( GenericWriter writer )
+		public AdventurerNorth(Serial serial) : base(serial)
 		{
-			base.Serialize( writer );
-			writer.Write( (int) 0 ); // version
-		}
-
-
-		public override void Deserialize( GenericReader reader )
-		{
-			base.Deserialize( reader );
-			int version = reader.ReadInt();
 		}
 	}
 }

@@ -54,21 +54,21 @@ namespace Server.Mobiles
 		{
 			if ( Female = Utility.RandomBool() ) 
 			{ 
-				Body = 401; 
+				Body = CitizensConstants.BODY_FEMALE; 
 				Name = NameList.RandomName( "female" );
 			}
 			else 
 			{ 
-				Body = 400; 			
+				Body = CitizensConstants.BODY_MALE; 			
 				Name = NameList.RandomName( "male" ); 
-				FacialHairItemID = Utility.RandomList( 0, 0, 8254, 8255, 8256, 8257, 8267, 8268, 8269 );
+				FacialHairItemID = Utility.RandomList( CitizensConstants.FACIAL_HAIR_IDS );
 			}
 
 			switch ( Utility.Random( 3 ) )
 			{
-				case 0: Server.Misc.IntelligentAction.DressUpWizards( this ); 				CitizenType = 1;	break;
-				case 1: Server.Misc.IntelligentAction.DressUpFighters( this, "", false, 0 );	CitizenType = 2;	break;
-				case 2: Server.Misc.IntelligentAction.DressUpRogues( this, "", false, 0, "" );		CitizenType = 3;	break;
+				case 0: Server.Misc.IntelligentAction.DressUpWizards( this ); 				CitizenType = CitizensConstants.CITIZEN_TYPE_WIZARD;	break;
+				case 1: Server.Misc.IntelligentAction.DressUpFighters( this, "", false, 0 );	CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 2: Server.Misc.IntelligentAction.DressUpRogues( this, "", false, 0, "" );		CitizenType = CitizensConstants.CITIZEN_TYPE_ROGUE;	break;
 			}
 
 			CitizenCost = 0;
@@ -85,41 +85,58 @@ namespace Server.Mobiles
 			AI = AIType.AI_Citizen;
 			FightMode = FightMode.None;
 
-			SetStr( 386, 400 );
-			SetDex( 151, 165 );
-			SetInt( 161, 175 );
+			SetStr( CitizensConstants.STAT_STR_MIN, CitizensConstants.STAT_STR_MAX );
+			SetDex( CitizensConstants.STAT_DEX_MIN, CitizensConstants.STAT_DEX_MAX );
+			SetInt( CitizensConstants.STAT_INT_MIN, CitizensConstants.STAT_INT_MAX );
 
-			SetHits( 300, 400 );
+			SetHits( CitizensConstants.HITS_MIN, CitizensConstants.HITS_MAX );
 
-			SetDamage( 8, 10 );
+			SetDamage( CitizensConstants.DAMAGE_MIN, CitizensConstants.DAMAGE_MAX );
 
-			SetDamageType( ResistanceType.Physical, 100 );
+			SetDamageType( ResistanceType.Physical, CitizensConstants.DAMAGE_TYPE_PHYSICAL );
 
-			SetResistance( ResistanceType.Physical, 35, 45 );
-			SetResistance( ResistanceType.Fire, 25, 30 );
-			SetResistance( ResistanceType.Cold, 25, 30 );
-			SetResistance( ResistanceType.Poison, 10, 20 );
-			SetResistance( ResistanceType.Energy, 10, 20 );
+			SetResistance( ResistanceType.Physical, CitizensConstants.RESIST_PHYSICAL_MIN, CitizensConstants.RESIST_PHYSICAL_MAX );
+			SetResistance( ResistanceType.Fire, CitizensConstants.RESIST_FIRE_MIN, CitizensConstants.RESIST_FIRE_MAX );
+			SetResistance( ResistanceType.Cold, CitizensConstants.RESIST_COLD_MIN, CitizensConstants.RESIST_COLD_MAX );
+			SetResistance( ResistanceType.Poison, CitizensConstants.RESIST_POISON_MIN, CitizensConstants.RESIST_POISON_MAX );
+			SetResistance( ResistanceType.Energy, CitizensConstants.RESIST_ENERGY_MIN, CitizensConstants.RESIST_ENERGY_MAX );
 
-			SetSkill( SkillName.DetectHidden, 60.0, 82.5 );
-			SetSkill( SkillName.Anatomy, 60.0, 82.5 );
-			SetSkill( SkillName.Poisoning, 60.0, 82.5 );
-			SetSkill( SkillName.MagicResist, 60.0, 82.5 );
-			SetSkill( SkillName.Tactics, 60.0, 82.5 );
-			SetSkill( SkillName.Wrestling, 60.0, 82.5 );
-			SetSkill( SkillName.Swords, 60.0, 82.5 );
-			SetSkill( SkillName.Fencing, 60.0, 82.5 );
-			SetSkill( SkillName.Macing, 60.0, 82.5 );
+			SetSkill( SkillName.DetectHidden, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Anatomy, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Poisoning, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.MagicResist, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Tactics, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Wrestling, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Swords, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Fencing, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
+			SetSkill( SkillName.Macing, CitizensConstants.SKILL_MIN, CitizensConstants.SKILL_MAX );
 
 			Fame = 0;
 			Karma = 0;
-			VirtualArmor = 30;
+			VirtualArmor = CitizensConstants.VIRTUAL_ARMOR;
 
 			int HairColor = Utility.RandomHairHue();
 			HairHue = HairColor;
 			FacialHairHue = HairColor;
 
 			if ( this is HouseVisitor && Backpack != null ){ Backpack.Delete(); }
+		}
+
+		/// <summary>
+		/// Checks if an item ID is a metal weapon that should be colored
+		/// </summary>
+		/// <param name="itemID">The item ID to check</param>
+		/// <returns>True if the item is a metal weapon</returns>
+		private bool IsMetalWeapon(int itemID)
+		{
+			foreach (int metalWeaponID in CitizensConstants.METAL_WEAPON_IDS)
+			{
+				if (itemID == metalWeaponID)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		public void SetupCitizen()
@@ -135,7 +152,7 @@ namespace Server.Mobiles
 			{
 				Item myOneHand = this.FindItemOnLayer( Layer.OneHanded );
 
-				if ( myOneHand.ItemID == 0x26BC || myOneHand.ItemID == 0x26C6 || myOneHand.ItemID == 0x269D || myOneHand.ItemID == 0x269E || myOneHand.ItemID == 0xDF2 || myOneHand.ItemID == 0xDF3 || myOneHand.ItemID == 0xDF4 || myOneHand.ItemID == 0xDF5 )
+				if ( IsMetalWeapon( myOneHand.ItemID ) )
 				{
 					Server.Misc.MaterialInfo.ColorMetal( myOneHand, 0 );
 				}
@@ -149,7 +166,7 @@ namespace Server.Mobiles
 			{
 				Item myTwoHand = this.FindItemOnLayer( Layer.TwoHanded );
 
-				if ( myTwoHand.ItemID == 0x26BC || myTwoHand.ItemID == 0x26C6 || myTwoHand.ItemID == 0x269D || myTwoHand.ItemID == 0x269E || myTwoHand.ItemID == 0xDF2 || myTwoHand.ItemID == 0xDF3 || myTwoHand.ItemID == 0xDF4 || myTwoHand.ItemID == 0xDF5 )
+				if ( IsMetalWeapon( myTwoHand.ItemID ) )
 				{
 					Server.Misc.MaterialInfo.ColorMetal( myTwoHand, 0 );
 				}
@@ -160,63 +177,63 @@ namespace Server.Mobiles
 			}
 
 			string dungeon = QuestCharacters.SomePlace( "tavern" );
-				if ( Utility.RandomMinMax( 1, 3 ) == 1 ){ dungeon = RandomThings.MadeUpDungeon(); }
+				if ( Utility.RandomMinMax( CitizensConstants.RANDOM_DUNGEON_MIN, CitizensConstants.RANDOM_DUNGEON_MAX ) == CitizensConstants.RANDOM_DUNGEON_THRESHOLD ){ dungeon = RandomThings.MadeUpDungeon(); }
 
 			string Clues = QuestCharacters.SomePlace( "tavern" );
-				if ( Utility.RandomMinMax( 1, 3 ) == 1 ){ Clues = RandomThings.MadeUpDungeon(); }
+				if ( Utility.RandomMinMax( CitizensConstants.RANDOM_DUNGEON_MIN, CitizensConstants.RANDOM_DUNGEON_MAX ) == CitizensConstants.RANDOM_DUNGEON_THRESHOLD ){ Clues = RandomThings.MadeUpDungeon(); }
 
 			string city = RandomThings.GetRandomCity();
-				if ( Utility.RandomMinMax( 1, 3 ) == 1 ){ city = RandomThings.MadeUpCity(); }
+				if ( Utility.RandomMinMax( CitizensConstants.RANDOM_DUNGEON_MIN, CitizensConstants.RANDOM_DUNGEON_MAX ) == CitizensConstants.RANDOM_DUNGEON_THRESHOLD ){ city = RandomThings.MadeUpCity(); }
 
 			string adventurer = Server.Misc.TavernPatrons.Adventurer();
 
-			int relic = Utility.RandomMinMax( 1, 59 );
+			int relic = Utility.RandomMinMax( CitizensConstants.RELIC_MIN, CitizensConstants.RELIC_MAX );
 			string item = Server.Items.SomeRandomNote.GetSpecialItem( relic, 1 );
 				item = "the '" + cultInfo.ToTitleCase(item) + "'";
 
 			string locale = Server.Items.SomeRandomNote.GetSpecialItem( relic, 0 );
 
-			if ( Utility.RandomMinMax( 1, 3 ) > 1 )
+			if ( Utility.RandomMinMax( CitizensConstants.RANDOM_DUNGEON_MIN, CitizensConstants.RANDOM_DUNGEON_MAX ) > CitizensConstants.RANDOM_DUNGEON_THRESHOLD )
 			{
 				item = QuestCharacters.QuestItems( true );
 				locale = dungeon;
 			}
 
-			string preface = "I found";
+			string preface = CitizensStringConstants.PREFACE_FOUND;
 
-			int topic = Utility.RandomMinMax( 0, 40 );
-				if ( this is HouseVisitor ){ topic = 100; }
+			int topic = Utility.RandomMinMax( CitizensConstants.TOPIC_MIN, CitizensConstants.TOPIC_MAX );
+				if ( this is HouseVisitor ){ topic = CitizensConstants.TOPIC_HOUSE_VISITOR; }
 
 			switch ( topic )
 			{
-				case 0:	CitizenRumor = "I heard that " + item + " can be obtained in " + locale + "."; break;
-				case 1:	CitizenRumor = "I heard something about " + item + " and " + locale + "."; break;
-				case 2:	CitizenRumor = "Someone told me that " + locale + " is where you would look for " + item + "."; break;
-				case 3:	CitizenRumor = "I heard many tales of adventurers going to " + locale + " and seeing " + item + "."; break;
-				case 4:	CitizenRumor = QuestCharacters.RandomWords() + " was in the tavern talking about " + item + " and " + locale + "."; break;
-				case 5:	CitizenRumor = "I was talking with the local " + RandomThings.GetRandomJob() + ", and they mentioned " + item + " and " + locale + "."; break;
-				case 6:	CitizenRumor = "I met with " + QuestCharacters.RandomWords() + " and they told me to bring back " + item + " from " + locale + "."; break;
-				case 7:	CitizenRumor = "I heard that " + item + " can be found in " + locale + "."; break;
-				case 8:	CitizenRumor = "Someone from " + RandomThings.GetRandomCity() + " died in " + locale + " searching for " + item + "."; break;
+				case 0:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_1_FORMAT, item, locale ); break;
+				case 1:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_2_FORMAT, item, locale ); break;
+				case 2:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_3_FORMAT, locale, item ); break;
+				case 3:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_4_FORMAT, locale, item ); break;
+				case 4:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_5_FORMAT, QuestCharacters.RandomWords(), item, locale ); break;
+				case 5:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_6_FORMAT, RandomThings.GetRandomJob(), item, locale ); break;
+				case 6:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_7_FORMAT, QuestCharacters.RandomWords(), item, locale ); break;
+				case 7:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_8_FORMAT, item, locale ); break;
+				case 8:	CitizenRumor = string.Format( CitizensStringConstants.RUMOR_TEMPLATE_9_FORMAT, RandomThings.GetRandomCity(), locale, item ); break;
 				case 9:	CitizenRumor = Server.Misc.TavernPatrons.GetRareLocation( this, true, false );		break;
 			}
 
-			switch( Utility.RandomMinMax( 0, 13 ) )
+			switch( Utility.RandomMinMax( CitizensConstants.PREFACE_MIN, CitizensConstants.PREFACE_MAX ) )
 			{
-				case 0: preface = "I found"; 											break;
-				case 1: preface = "I heard rumours about"; 								break;
-				case 2: preface = "I heard a story about"; 								break;
-				case 3: preface = "I overheard someone tell of"; 						break;
-				case 4: preface = "Some " + adventurer + " found"; 						break;
-				case 5: preface = "Some " + adventurer + " heard rumours about"; 		break;
-				case 6: preface = "Some " + adventurer + " heard a story about"; 		break;
-				case 7: preface = "Some " + adventurer + " overheard another tell of"; 	break;
-				case 8: preface = "Some " + adventurer + " is spreading rumors about"; 	break;
-				case 9: preface = "Some " + adventurer + " is telling tales about"; 	break;
-				case 10: preface = "We found"; 											break;
-				case 11: preface = "We heard rumours about"; 							break;
-				case 12: preface = "We heard a story about"; 							break;
-				case 13: preface = "We overheard someone tell of"; 						break;
+				case 0: preface = CitizensStringConstants.PREFACE_FOUND; 											break;
+				case 1: preface = CitizensStringConstants.PREFACE_HEARD_RUMOURS; 								break;
+				case 2: preface = CitizensStringConstants.PREFACE_HEARD_STORY; 								break;
+				case 3: preface = CitizensStringConstants.PREFACE_OVERHEARD; 						break;
+				case 4: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_FOUND_FORMAT, adventurer ); 						break;
+				case 5: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_HEARD_RUMOURS_FORMAT, adventurer ); 		break;
+				case 6: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_HEARD_STORY_FORMAT, adventurer ); 		break;
+				case 7: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_OVERHEARD_FORMAT, adventurer ); 	break;
+				case 8: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_SPREADING_FORMAT, adventurer ); 	break;
+				case 9: preface = string.Format( CitizensStringConstants.PREFACE_ADVENTURER_TELLING_TALES_FORMAT, adventurer ); 	break;
+				case 10: preface = CitizensStringConstants.PREFACE_WE_FOUND; 											break;
+				case 11: preface = CitizensStringConstants.PREFACE_WE_HEARD_RUMOURS; 							break;
+				case 12: preface = CitizensStringConstants.PREFACE_WE_HEARD_STORY; 							break;
+				case 13: preface = CitizensStringConstants.PREFACE_WE_OVERHEARD; 						break;
 			}
 
 			if ( CitizenRumor == null ){ CitizenRumor = preface + " " + Server.Misc.TavernPatrons.CommonTalk( "", city, dungeon, this, adventurer, true ) + "."; }
@@ -225,166 +242,173 @@ namespace Server.Mobiles
 			{
 			CitizenService = 0;
 			}
-			else if ( CitizenType == 1 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD )
 			{
-				if ( Utility.RandomMinMax( 1, 10 ) == 1 ){ CitizenService = Utility.RandomMinMax( 1, 8 ); }
+				if ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.WIZARD_SERVICE_CHANCE ) == CitizensConstants.WIZARD_SERVICE_THRESHOLD ){ CitizenService = Utility.RandomMinMax( CitizensConstants.CITIZEN_SERVICE_REPAIR, CitizensConstants.CITIZEN_SERVICE_WAND ); }
 			}
-			else if ( CitizenType == 4 ) // SMITH
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_SMITH )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 1;		CitizenType = 2;	break;
-					case 2: CitizenService = 2;		CitizenType = 2;	break;
-					case 3: CitizenService = 20;	CitizenType = 20;	break;
-					case 4: CitizenService = 20;	CitizenType = 20;	break;
-					case 5: CitizenService = 20;	CitizenType = 20;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 5 ) // LUMBERJACK
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_LUMBERJACK )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 3;		CitizenType = 2;	break;
-					case 2: CitizenService = 4;		CitizenType = 2;	break;
-					case 3: CitizenService = 21;	CitizenType = 21;	break;
-					case 4: CitizenService = 21;	CitizenType = 21;	break;
-					case 5: CitizenService = 21;	CitizenType = 21;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 6 ) // LEATHER
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_LEATHER )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 2;		CitizenType = 22;	break;
-					case 2: CitizenService = 2;		CitizenType = 22;	break;
-					case 3: CitizenService = 22;	CitizenType = 22;	break;
-					case 4: CitizenService = 22;	CitizenType = 22;	break;
-					case 5: CitizenService = 22;	CitizenType = 22;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 7 ) // MINER
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_MINER )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 1;		CitizenType = 2;	break;
-					case 2: CitizenService = 2;		CitizenType = 2;	break;
-					case 3: CitizenService = 23;	CitizenType = 23;	break;
-					case 4: CitizenService = 23;	CitizenType = 23;	break;
-					case 5: CitizenService = 23;	CitizenType = 23;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 8 ) // SMELTER
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_SMELTER )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 1;		CitizenType = 2;	break;
-					case 2: CitizenService = 2;		CitizenType = 2;	break;
-					case 3: CitizenService = 20;	CitizenType = 20;	break;
-					case 4: CitizenService = 20;	CitizenType = 20;	break;
-					case 5: CitizenService = 23;	CitizenType = 23;	break;
-					case 6: CitizenService = 23;	CitizenType = 23;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+					case 6: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 9 ) // ALCHEMIST
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ALCHEMIST )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 24;	CitizenType = 24;	break;
-					case 2: CitizenService = 24;	CitizenType = 24;	break;
-					case 3: CitizenService = 25;	CitizenType = 25;	break;
-					case 4: CitizenService = 25;	CitizenType = 25;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
 				}
 			}
-			else if ( CitizenType == 10 ) // COOK
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_COOK )
 			{
 				CitizenService = 0;
 				CitizenType = 0;
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 26;	CitizenType = 26;	break;
-					case 2: CitizenService = 26;	CitizenType = 26;	break;
-					case 3: CitizenService = 26;	CitizenType = 26;	break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
 				}
 			}
 			else
 			{
-				switch ( Utility.RandomMinMax( 1, 50 ) )
+				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
 				{
-					case 1: CitizenService = 1;		break;
-					case 2: CitizenService = 2;		break;
-					case 3: CitizenService = 3;		break;
-					case 4: CitizenService = 4;		break;
-					case 5: CitizenService = 5;		break;
+					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		break;
+					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		break;
+					case 3: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		break;
+					case 4: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		break;
+					case 5: CitizenService = CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM;		break;
 				}
 			}
 
 			string phrase = "";
 
-			int initPhrase = Utility.RandomMinMax( 0, 6 );
-				if ( this is TavernPatronNorth || this is TavernPatronSouth || this is TavernPatronEast || this is TavernPatronWest ){ initPhrase = Utility.RandomMinMax( 0, 4 ); }
+			int initPhrase = Utility.RandomMinMax( CitizensConstants.INIT_PHRASE_MIN, CitizensConstants.INIT_PHRASE_MAX );
+				if ( this is TavernPatronNorth || this is TavernPatronSouth || this is TavernPatronEast || this is TavernPatronWest ){ initPhrase = Utility.RandomMinMax( CitizensConstants.INIT_PHRASE_MIN, CitizensConstants.INIT_PHRASE_MAX_TAVERN ); }
 
 			switch ( initPhrase )
 			{
-				case 0:	phrase = "Greetings, Z~Z~Z~Z~Z."; break;
-				case 1:	phrase = "Hail, Z~Z~Z~Z~Z."; break;
-				case 2:	phrase = "Good day to you, Z~Z~Z~Z~Z."; break;
-				case 3:	phrase = "Hello, Z~Z~Z~Z~Z."; break;
-				case 4:	phrase = "We are just here to rest after exploring " + dungeon + "."; break;
-				case 5:	phrase = "This is the first time I have been to Y~Y~Y~Y~Y."; break;
-				case 6:	phrase = "Hail, Z~Z~Z~Z~Z. Welcome to Y~Y~Y~Y~Y."; break;
+				case 0:	phrase = CitizensStringConstants.GREETING_1; break;
+				case 1:	phrase = CitizensStringConstants.GREETING_2; break;
+				case 2:	phrase = CitizensStringConstants.GREETING_3; break;
+				case 3:	phrase = CitizensStringConstants.GREETING_4; break;
+				case 4:	phrase = string.Format( CitizensStringConstants.GREETING_5_FORMAT, dungeon ); break;
+				case 5:	phrase = CitizensStringConstants.GREETING_6_FORMAT; break;
+				case 6:	phrase = CitizensStringConstants.GREETING_7; break;
 			}
 
-			if ( CitizenService == 1 )
+			if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR )
 			{
-				if ( CitizenType == 1 ){ CitizenPhrase = phrase + " I can recharge any wands you may have with you, but only up to a certain amount. If you want my help, then simply hand me your wand so I can perform the ritual needed."; }
-				else if ( CitizenType == 2 ){ CitizenPhrase = phrase + " I am quite a skilled blacksmith, so if you need any metal armor repaired I can do it for you for 7,500 gold. Just hand me the armor and I will see what I can do."; }
-				else { CitizenPhrase = phrase + " If you need a chest or box unlocked, I can help you with that. Just hand me the container and I will see what I can do. I promise to give it back."; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD ){ CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_WAND_RECHARGE; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER ){ CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_BLACKSMITH_ARMOR; }
+				else { CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_UNLOCK; }
 			}
-			else if ( CitizenService == 2 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_2 )
 			{
-				if ( CitizenType == 2 ){ CitizenPhrase = phrase + " I am quite a skilled blacksmith, so if you need any metal weapons repaired I can do it for you for 7,500 gold. Just hand me the weapon and I will see what I can do."; }
-				else { CitizenPhrase = phrase + " I am quite a skilled leather worker, so if you need any leather item repaired I can do it for you for 7,500 gold. Just hand me the item and I will see what I can do."; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER ){ CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_BLACKSMITH_WEAPON; }
+				else { CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_LEATHER_WORKER; }
 			}
-			else if ( CitizenService == 3 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON )
 			{
-				if ( CitizenType == 2 ){ CitizenPhrase = phrase + " I am quite a skilled wood worker, so if you need any wooden weapons repaired I can do it for you for 7,500 gold. Just hand me the weapon and I will see what I can do."; }
-				else { CitizenPhrase = phrase + " I am quite a skilled wood worker, so if you need any wooden weapons repaired I can do it for you for 7,500 gold. Just hand me the weapon and I will see what I can do."; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER ){ CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_WOOD_WORKER_WEAPON; }
+				else { CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_WOOD_WORKER_WEAPON; }
 			}
-			else if ( CitizenService == 4 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR )
 			{
-				if ( CitizenType == 2 ){ CitizenPhrase = phrase + " I am quite a skilled wood worker, so if you need any wooden armor repaired I can do it for you for 7,500 gold. Just hand me the armor and I will see what I can do."; }
-				else { CitizenPhrase = phrase + " I am quite a skilled wood worker, so if you need any wooden armor repaired I can do it for you for 7,500 gold. Just hand me the armor and I will see what I can do."; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER ){ CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_WOOD_WORKER_ARMOR; }
+				else { CitizenPhrase = phrase + " " + CitizensStringConstants.SERVICE_WOOD_WORKER_ARMOR; }
 			}
-			else if ( CitizenService == 5 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM )
 			{
-				string aty1 = "a magic item"; if (Utility.RandomBool() ){ aty1 = "an enchanted item"; } else if (Utility.RandomBool() ){ aty1 = "a special item"; }
-				string aty2 = "found"; if (Utility.RandomBool() ){ aty2 = "discovered"; }
-				string aty3 = "willing to part with"; if (Utility.RandomBool() ){ aty3 = "willing to trade"; } else if (Utility.RandomBool() ){ aty3 = "willing to sell"; }
+				string aty1 = CitizensStringConstants.ITEM_DESC_MAGIC; 
+				if (Utility.RandomBool() ){ aty1 = CitizensStringConstants.ITEM_DESC_ENCHANTED; } 
+				else if (Utility.RandomBool() ){ aty1 = CitizensStringConstants.ITEM_DESC_SPECIAL; }
+				
+				string aty2 = CitizensStringConstants.ACTION_FOUND; 
+				if (Utility.RandomBool() ){ aty2 = CitizensStringConstants.ACTION_DISCOVERED; }
+				
+				string aty3 = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ aty3 = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ aty3 = CitizensStringConstants.WILLING_SELL; }
 
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + aty1 + " I " + aty2 + " while exploring " + Clues + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I won " + aty1 + " from a card game in " + city + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + aty1 + " I " + aty2 + " on the remains of some " + adventurer + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + aty1 + " I " + aty2 + " from a chest in " + Clues + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + aty1 + " I " + aty2 + " on a beast I killed in " + Clues + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + aty1 + " I " + aty2 + " on some " + adventurer + " in " + Clues + " that I am " + aty3 + " for G~G~G~G~G gold."; break;
+					case 0:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_1_FORMAT, aty1, aty2, Clues, aty3 ); break;
+					case 1:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_2_FORMAT, aty1, city, aty3 ); break;
+					case 2:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_3_FORMAT, aty1, aty2, adventurer, aty3 ); break;
+					case 3:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_4_FORMAT, aty1, aty2, Clues, aty3 ); break;
+					case 4:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_5_FORMAT, aty1, aty2, Clues, aty3 ); break;
+					case 5:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MAGIC_ITEM_SALE_6_FORMAT, aty1, aty2, adventurer, Clues, aty3 ); break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the item if you wish. If you want to trade, then hand me the gold and I will give you the item.";
+				CitizenPhrase = CitizenPhrase + " " + CitizensStringConstants.MAGIC_ITEM_SALE_CLOSING;
 			}
-			else if ( CitizenType == 20 && CitizenService == 20 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_METAL_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_METAL_VENDOR )
 			{
 				dungeon = RandomThings.MadeUpDungeon();
 				city = RandomThings.MadeUpCity();
@@ -424,34 +448,40 @@ namespace Server.Mobiles
 				crate.Weight = crate.CrateQty * 0.1;
 				CitizenCost = crate.CrateQty * cost;
 
-				string dug = "smelted";
+				string dug = CitizensStringConstants.ACTION_SMELTED;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	dug = "mined"; break;
-					case 1:	dug = "smelted"; break;
-					case 2:	dug = "forged"; break;
-					case 3:	dug = "dug up"; break;
-					case 4:	dug = "excavated"; break;
-					case 5:	dug = "formed"; break;
+					case 0:	dug = CitizensStringConstants.ACTION_MINED; break;
+					case 1:	dug = CitizensStringConstants.ACTION_SMELTED; break;
+					case 2:	dug = CitizensStringConstants.ACTION_FORGED; break;
+					case 3:	dug = CitizensStringConstants.ACTION_DUG_UP; break;
+					case 4:	dug = CitizensStringConstants.ACTION_EXCAVATED; break;
+					case 5:	dug = CitizensStringConstants.ACTION_FORMED; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
-				string cave = "cave"; if (Utility.RandomBool() ){ cave = "mine"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
+				string cave = CitizensStringConstants.LOCATION_CAVE; 
+				if (Utility.RandomBool() ){ cave = CitizensStringConstants.LOCATION_MINE; }
 
+				string location = dungeon;
+				string locationPreposition = CitizensStringConstants.LOCATION_NEAR;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " near " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " outside of " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " by " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " by " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ingots I " + dug + " in a " + cave + " outside of " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 1: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+					case 2: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 3: location = city; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 4: location = city; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 5: location = city; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the ingots if you wish. If you want to trade, then hand me the gold and I will give you the ingots.";
+				CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_PHRASE_FORMAT, crate.CrateQty, metal, "ingots", dug, cave, locationPreposition, location, sell );
+				CitizenPhrase = CitizenPhrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_CLOSING_FORMAT, "ingots" );
 
 				PackItem( crate );
 			}
-			else if ( CitizenType == 21 && CitizenService == 21 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR )
 			{
 				bool isLogs = Utility.RandomBool();
 
@@ -520,31 +550,37 @@ namespace Server.Mobiles
 					CitizenCost = crate.CrateQty * cost;
 				}
 
-				string chop = "chopped";
+				string chop = CitizensStringConstants.ACTION_CHOPPED;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	chop = "chopped"; break;
-					case 1:	chop = "cut"; break;
-					case 2:	chop = "logged"; break;
+					case 0:	chop = CitizensStringConstants.ACTION_CHOPPED; break;
+					case 1:	chop = CitizensStringConstants.ACTION_CUT; break;
+					case 2:	chop = CitizensStringConstants.ACTION_LOGGED; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
-				string forest = "woods"; if (Utility.RandomBool() ){ forest = "forest"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
+				string forest = CitizensStringConstants.LOCATION_WOODS; 
+				if (Utility.RandomBool() ){ forest = CitizensStringConstants.LOCATION_FOREST; }
 
+				string location = dungeon;
+				string locationPreposition = CitizensStringConstants.LOCATION_NEAR;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " near " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " outside of " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " by " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " by " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + amount + " " + wood + " " + contents + " I " + chop + " in the " + forest + " outside of " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 1: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+					case 2: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 3: location = city; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 4: location = city; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 5: location = city; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the " + contents + " if you wish. If you want to trade, then hand me the gold and I will give you the " + contents + ".";
+				CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_PHRASE_FORMAT, amount, wood, contents, chop, forest, locationPreposition, location, sell );
+				CitizenPhrase = CitizenPhrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_CLOSING_FORMAT, contents );
 
 				PackItem( box );
 			}
-			else if ( CitizenType == 22 && CitizenService == 22 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR )
 			{
 				dungeon = RandomThings.MadeUpDungeon();
 				city = RandomThings.MadeUpCity();
@@ -582,30 +618,35 @@ namespace Server.Mobiles
 				crate.Weight = crate.CrateQty * 0.1;
 				CitizenCost = crate.CrateQty * cost;
 
-				string carve = "skinned";
+				string carve = CitizensStringConstants.ACTION_SKINNED;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	carve = "skinned"; break;
-					case 1:	carve = "tanned"; break;
-					case 2:	carve = "gathered"; break;
+					case 0:	carve = CitizensStringConstants.ACTION_SKINNED; break;
+					case 1:	carve = CitizensStringConstants.ACTION_TANNED; break;
+					case 2:	carve = CitizensStringConstants.ACTION_GATHERED; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
 
+				string location = dungeon;
+				string locationPreposition = CitizensStringConstants.LOCATION_NEAR;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " near " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " outside of " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " by " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " by " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + flesh + " leather I " + carve + " outside of " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 1: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+					case 2: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 3: location = city; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 4: location = city; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 5: location = city; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the leather if you wish. If you want to trade, then hand me the gold and I will give you the leather.";
+				CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_PHRASE_FORMAT, crate.CrateQty, flesh, "leather", carve, "", locationPreposition, location, sell );
+				CitizenPhrase = CitizenPhrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_CLOSING_FORMAT, "leather" );
 
 				PackItem( crate );
 			}
-			else if ( CitizenType == 23 && CitizenService == 23 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ORE_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_ORE_VENDOR )
 			{
 				dungeon = RandomThings.MadeUpDungeon();
 				city = RandomThings.MadeUpCity();
@@ -645,31 +686,37 @@ namespace Server.Mobiles
 				crate.Weight = crate.CrateQty * 0.1;
 				CitizenCost = crate.CrateQty * cost;
 
-				string dug = "mined";
+				string dug = CitizensStringConstants.ACTION_MINED;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	dug = "mined"; break;
-					case 1:	dug = "dug up"; break;
-					case 2:	dug = "excavated"; break;
+					case 0:	dug = CitizensStringConstants.ACTION_MINED; break;
+					case 1:	dug = CitizensStringConstants.ACTION_DUG_UP; break;
+					case 2:	dug = CitizensStringConstants.ACTION_EXCAVATED; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
-				string cave = "cave"; if (Utility.RandomBool() ){ cave = "mine"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
+				string cave = CitizensStringConstants.LOCATION_CAVE; 
+				if (Utility.RandomBool() ){ cave = CitizensStringConstants.LOCATION_MINE; }
 
+				string location = dungeon;
+				string locationPreposition = CitizensStringConstants.LOCATION_NEAR;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " near " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " outside of " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " by " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " by " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + metal + " ore I " + dug + " in a " + cave + " outside of " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 1: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+					case 2: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 3: location = city; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+					case 4: location = city; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+					case 5: location = city; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the ore if you wish. If you want to trade, then hand me the gold and I will give you the ore.";
+				CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_PHRASE_FORMAT, crate.CrateQty, metal, "ore", dug, cave, locationPreposition, location, sell );
+				CitizenPhrase = CitizenPhrase + " " + string.Format( CitizensStringConstants.MATERIAL_VENDOR_CLOSING_FORMAT, "ore" );
 
 				PackItem( crate );
 			}
-			else if ( CitizenType == 24 && CitizenService == 24 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR )
 			{
 				dungeon = RandomThings.MadeUpDungeon();
 				city = RandomThings.MadeUpCity();
@@ -715,37 +762,39 @@ namespace Server.Mobiles
 				crate.Weight = crate.CrateQty * 0.1;
 				CitizenCost = crate.CrateQty * 5;
 
-				string bought = "bought";
+				string bought = CitizensStringConstants.ACTION_BOUGHT;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	bought = "acquired"; break;
-					case 1:	bought = "purchased"; break;
-					case 2:	bought = "bought"; break;
+					case 0:	bought = CitizensStringConstants.ACTION_ACQUIRED; break;
+					case 1:	bought = CitizensStringConstants.ACTION_PURCHASED; break;
+					case 2:	bought = CitizensStringConstants.ACTION_BOUGHT; break;
 				}
-				string found = "found";
+				string found = CitizensStringConstants.ACTION_FOUND_REAGENT;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	found = "found"; break;
-					case 1:	found = "discovered"; break;
-					case 2:	found = "came upon"; break;
+					case 0:	found = CitizensStringConstants.ACTION_FOUND_REAGENT; break;
+					case 1:	found = CitizensStringConstants.ACTION_DISCOVERED_REAGENT; break;
+					case 2:	found = CitizensStringConstants.ACTION_CAME_UPON; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
 
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + found + " in " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + found + " deep within " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + found + " somewhere in " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + bought + " in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + bought + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + reagent + " I " + bought + " somewhere in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_FOUND_FORMAT, crate.CrateQty, reagent, found, dungeon, sell ); break;
+					case 1:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_FOUND_DEEP_FORMAT, crate.CrateQty, reagent, found, dungeon, sell ); break;
+					case 2:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_FOUND_SOMEWHERE_FORMAT, crate.CrateQty, reagent, found, dungeon, sell ); break;
+					case 3:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_BOUGHT_CITY_FORMAT, crate.CrateQty, reagent, bought, city, sell ); break;
+					case 4:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_BOUGHT_NEAR_FORMAT, crate.CrateQty, reagent, bought, city, sell ); break;
+					case 5:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.REAGENT_VENDOR_BOUGHT_SOMEWHERE_FORMAT, crate.CrateQty, reagent, bought, city, sell ); break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the reagents if you wish. If you want to trade, then hand me the gold and I will give you the reagents.";
+				CitizenPhrase = CitizenPhrase + " " + CitizensStringConstants.REAGENT_VENDOR_CLOSING;
 
 				PackItem( crate );
 			}
-			else if ( CitizenType == 25 && CitizenService == 25 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_POTION_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_POTION_VENDOR )
 			{
 				dungeon = RandomThings.MadeUpDungeon();
 				city = RandomThings.MadeUpCity();
@@ -805,109 +854,111 @@ namespace Server.Mobiles
 				crate.Weight = crate.CrateQty * 0.1;
 				CitizenCost = crate.CrateQty * coins;
 
-				string bought = "bought";
+				string bought = CitizensStringConstants.ACTION_BOUGHT;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	bought = "acquired"; break;
-					case 1:	bought = "purchased"; break;
-					case 2:	bought = "bought"; break;
-					case 3:	bought = "brewed"; break;
-					case 4:	bought = "concocted"; break;
-					case 5:	bought = "prepared"; break;
+					case 0:	bought = CitizensStringConstants.ACTION_ACQUIRED; break;
+					case 1:	bought = CitizensStringConstants.ACTION_PURCHASED; break;
+					case 2:	bought = CitizensStringConstants.ACTION_BOUGHT; break;
+					case 3:	bought = CitizensStringConstants.ACTION_BREWED; break;
+					case 4:	bought = CitizensStringConstants.ACTION_CONCOCTED; break;
+					case 5:	bought = CitizensStringConstants.ACTION_PREPARED; break;
 				}
-				string found = "found";
+				string found = CitizensStringConstants.ACTION_FOUND;
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	found = "found"; break;
-					case 1:	found = "discovered"; break;
-					case 2:	found = "came upon"; break;
+					case 0:	found = CitizensStringConstants.ACTION_FOUND; break;
+					case 1:	found = CitizensStringConstants.ACTION_DISCOVERED; break;
+					case 2:	found = CitizensStringConstants.ACTION_CAME_UPON; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
 
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + found + " in " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + found + " deep within " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + found + " somewhere in " + dungeon + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 3:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + bought + " in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 4:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + bought + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 5:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + potion + " I " + bought + " somewhere in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_FOUND_FORMAT, crate.CrateQty, potion, found, dungeon, sell ); break;
+					case 1:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_FOUND_DEEP_FORMAT, crate.CrateQty, potion, found, dungeon, sell ); break;
+					case 2:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_FOUND_SOMEWHERE_FORMAT, crate.CrateQty, potion, found, dungeon, sell ); break;
+					case 3:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_BOUGHT_CITY_FORMAT, crate.CrateQty, potion, bought, city, sell ); break;
+					case 4:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_BOUGHT_NEAR_FORMAT, crate.CrateQty, potion, bought, city, sell ); break;
+					case 5:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.POTION_VENDOR_BOUGHT_SOMEWHERE_FORMAT, crate.CrateQty, potion, bought, city, sell ); break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the potions if you wish. If you want to trade, then hand me the gold and I will give you the potions.";
+				CitizenPhrase = CitizenPhrase + " " + CitizensStringConstants.POTION_VENDOR_CLOSING;
 
 				PackItem( crate );
 			}
 
-			if ( CitizenType == 1 && CitizenService == 2 ){ PackItem( new reagents_magic_jar1() ); CitizenCost = Utility.RandomMinMax( 70, 150 )*10; }
-			else if ( CitizenType == 1 && CitizenService == 3 ){ PackItem( new reagents_magic_jar2() ); CitizenCost = Utility.RandomMinMax( 50, 90 )*10; }
-			else if ( CitizenType == 1 && CitizenService == 4 ){ PackItem( new reagents_magic_jar3() ); CitizenCost = Utility.RandomMinMax( 180, 300 )*10; }
-			else if ( CitizenType == 1 && CitizenService == 6 )
+			if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_1 ){ PackItem( new reagents_magic_jar1() ); CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_REAGENT_JAR_1_MIN, CitizensConstants.COST_REAGENT_JAR_1_MAX )*10; }
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_2 ){ PackItem( new reagents_magic_jar2() ); CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_REAGENT_JAR_2_MIN, CitizensConstants.COST_REAGENT_JAR_2_MAX )*10; }
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_3 ){ PackItem( new reagents_magic_jar3() ); CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_REAGENT_JAR_3_MIN, CitizensConstants.COST_REAGENT_JAR_3_MAX )*10; }
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_BOOK )
 			{
 				if ( Utility.RandomBool() )
 				{
 					if ( Utility.RandomBool() )
 					{
 						Spellbook tome = new MySpellbook();
-						CitizenCost = Utility.RandomMinMax( ((tome.SpellCount+1)*500), ((tome.SpellCount+1)*800) );
+						CitizenCost = Utility.RandomMinMax( ((tome.SpellCount+1)*CitizensConstants.COST_SPELLBOOK_MULT_MIN), ((tome.SpellCount+1)*CitizensConstants.COST_SPELLBOOK_MULT_MAX) );
 						PackItem( tome ); 
 					}
 					else
 					{
 						Spellbook tome = new MyNecromancerSpellbook();
-						CitizenCost = Utility.RandomMinMax( ((tome.SpellCount+1)*800), ((tome.SpellCount+1)*1000) );
+						CitizenCost = Utility.RandomMinMax( ((tome.SpellCount+1)*CitizensConstants.COST_NECRO_SPELLBOOK_MULT_MIN), ((tome.SpellCount+1)*CitizensConstants.COST_NECRO_SPELLBOOK_MULT_MAX) );
 						PackItem( tome ); 
 					}
 				}
 				else
 				{
-					PackItem( new Runebook() ); CitizenCost = Utility.RandomMinMax( 150, 230 )*10;
+					PackItem( new Runebook() ); CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_RUNEBOOK_MIN, CitizensConstants.COST_RUNEBOOK_MAX )*10;
 				}
 			}
-			else if ( CitizenType == 1 && CitizenService == 7 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_SCROLL )
 			{
 				Item scroll = Server.Items.DungeonLoot.RandomHighLevelScroll();
 
 				int mult = 1;
 
-				if ( scroll is PainSpikeScroll || scroll is EvilOmenScroll || scroll is WraithFormScroll || scroll is ArchCureScroll || scroll is ArchProtectionScroll || scroll is CurseScroll || scroll is FireFieldScroll || scroll is GreaterHealScroll || scroll is LightningScroll || scroll is ManaDrainScroll || scroll is RecallScroll ){ mult = 10; }
+				if ( scroll is PainSpikeScroll || scroll is EvilOmenScroll || scroll is WraithFormScroll || scroll is ArchCureScroll || scroll is ArchProtectionScroll || scroll is CurseScroll || scroll is FireFieldScroll || scroll is GreaterHealScroll || scroll is LightningScroll || scroll is ManaDrainScroll || scroll is RecallScroll ){ mult = CitizensConstants.SCROLL_MULT_TIER_1; }
 
-				else if ( scroll is MindRotScroll || scroll is SummonFamiliarScroll || scroll is HorrificBeastScroll || scroll is AnimateDeadScroll || scroll is BladeSpiritsScroll || scroll is DispelFieldScroll || scroll is IncognitoScroll || scroll is MagicReflectScroll || scroll is MindBlastScroll || scroll is ParalyzeScroll || scroll is PoisonFieldScroll || scroll is SummonCreatureScroll ){ mult = 20; }
+				else if ( scroll is MindRotScroll || scroll is SummonFamiliarScroll || scroll is HorrificBeastScroll || scroll is AnimateDeadScroll || scroll is BladeSpiritsScroll || scroll is DispelFieldScroll || scroll is IncognitoScroll || scroll is MagicReflectScroll || scroll is MindBlastScroll || scroll is ParalyzeScroll || scroll is PoisonFieldScroll || scroll is SummonCreatureScroll ){ mult = CitizensConstants.SCROLL_MULT_TIER_2; }
 
-				else if ( scroll is DispelScroll || scroll is EnergyBoltScroll || scroll is ExplosionScroll || scroll is InvisibilityScroll || scroll is MarkScroll || scroll is MassCurseScroll || scroll is ParalyzeFieldScroll || scroll is RevealScroll ){ mult = 40; }
+				else if ( scroll is DispelScroll || scroll is EnergyBoltScroll || scroll is ExplosionScroll || scroll is InvisibilityScroll || scroll is MarkScroll || scroll is MassCurseScroll || scroll is ParalyzeFieldScroll || scroll is RevealScroll ){ mult = CitizensConstants.SCROLL_MULT_TIER_3; }
 
-				else if ( scroll is PoisonStrikeScroll || scroll is WitherScroll || scroll is StrangleScroll || scroll is LichFormScroll || scroll is ChainLightningScroll || scroll is EnergyFieldScroll || scroll is FlamestrikeScroll || scroll is GateTravelScroll || scroll is ManaVampireScroll || scroll is MassDispelScroll || scroll is MeteorSwarmScroll || scroll is PolymorphScroll ){ mult = 60; }
+				else if ( scroll is PoisonStrikeScroll || scroll is WitherScroll || scroll is StrangleScroll || scroll is LichFormScroll || scroll is ChainLightningScroll || scroll is EnergyFieldScroll || scroll is FlamestrikeScroll || scroll is GateTravelScroll || scroll is ManaVampireScroll || scroll is MassDispelScroll || scroll is MeteorSwarmScroll || scroll is PolymorphScroll ){ mult = CitizensConstants.SCROLL_MULT_TIER_4; }
 
-				else if ( scroll is ExorcismScroll || scroll is VampiricEmbraceScroll || scroll is VengefulSpiritScroll || scroll is EarthquakeScroll || scroll is EnergyVortexScroll || scroll is ResurrectionScroll || scroll is SummonAirElementalScroll || scroll is SummonDaemonScroll || scroll is SummonEarthElementalScroll || scroll is SummonFireElementalScroll || scroll is  SummonWaterElementalScroll ){ mult = 80; }
+				else if ( scroll is ExorcismScroll || scroll is VampiricEmbraceScroll || scroll is VengefulSpiritScroll || scroll is EarthquakeScroll || scroll is EnergyVortexScroll || scroll is ResurrectionScroll || scroll is SummonAirElementalScroll || scroll is SummonDaemonScroll || scroll is SummonEarthElementalScroll || scroll is SummonFireElementalScroll || scroll is  SummonWaterElementalScroll ){ mult = CitizensConstants.SCROLL_MULT_TIER_5; }
 
 				PackItem( scroll );
-				CitizenCost = Utility.RandomMinMax( 8, 12 )*mult;
+				CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_SCROLL_BASE_MIN, CitizensConstants.COST_SCROLL_BASE_MAX )*mult;
 			}
-			else if ( CitizenType == 1 && CitizenService == 8 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && CitizenService == CitizensConstants.CITIZEN_SERVICE_WAND )
 			{
 				Item wand = Loot.RandomWand();
 				Server.Misc.MaterialInfo.ColorMetal( wand, 0 );
 				string wandOwner = Server.LootPackEntry.MagicWandOwner() + " ";
 				wand.Name = wandOwner + wand.Name;
 				BaseWeapon bw = (BaseWeapon)wand;
-				if ( bw.IntRequirement == 10 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*5; }
-				else if ( bw.IntRequirement == 15 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*10; }
-				else if ( bw.IntRequirement == 20 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*15; }
-				else if ( bw.IntRequirement == 25 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*20; }
-				else if ( bw.IntRequirement == 30 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*25; }
-				else if ( bw.IntRequirement == 35 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*30; }
-				else if ( bw.IntRequirement == 40 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*35; }
-				else if ( bw.IntRequirement == 45 ) { CitizenCost = Utility.RandomMinMax( 20, 60 )*40; }
+				if ( bw.IntRequirement == 10 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_10; }
+				else if ( bw.IntRequirement == 15 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_15; }
+				else if ( bw.IntRequirement == 20 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_20; }
+				else if ( bw.IntRequirement == 25 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_25; }
+				else if ( bw.IntRequirement == 30 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_30; }
+				else if ( bw.IntRequirement == 35 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_35; }
+				else if ( bw.IntRequirement == 40 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_40; }
+				else if ( bw.IntRequirement == 45 ) { CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_WAND_BASE_MIN, CitizensConstants.COST_WAND_BASE_MAX )*CitizensConstants.COST_WAND_MULT_45; }
 				PackItem( wand );
 			}
-			else if ( CitizenService == 5 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM )
 			{
-				int val = Utility.RandomMinMax( 25, 100 );
-				int props = 5 + Utility.RandomMinMax( 0, 5 );
-				int luck = Utility.RandomMinMax( 0, 200 );
-				int chance = Utility.RandomMinMax( 1, 100 );
+				int val = Utility.RandomMinMax( CitizensConstants.ITEM_VALUE_MIN, CitizensConstants.ITEM_VALUE_MAX );
+				int props = CitizensConstants.ITEM_PROPERTIES_MIN + Utility.RandomMinMax( 0, CitizensConstants.ITEM_PROPERTIES_MAX - CitizensConstants.ITEM_PROPERTIES_MIN );
+				int luck = Utility.RandomMinMax( CitizensConstants.ITEM_LUCK_MIN, CitizensConstants.ITEM_LUCK_MAX );
+				int chance = Utility.RandomMinMax( CitizensConstants.ITEM_CHANCE_MIN, CitizensConstants.ITEM_CHANCE_MAX );
 
-				if ( chance < 80 )
+				if ( chance < CitizensConstants.ITEM_CHANCE_THRESHOLD_REGULAR )
 				{
 					Item arty = Loot.RandomArmorOrShieldOrWeaponOrJewelryOrClothing();
 					if ( arty is BaseWeapon ){ BaseRunicTool.ApplyAttributesTo( (BaseWeapon)arty, false, luck, props, val, val ); }
@@ -918,9 +969,9 @@ namespace Server.Mobiles
 					arty.Name = LootPackEntry.MagicItemName( arty, this, Region.Find( this.Location, this.Map ) );
 					arty.Name = cultInfo.ToTitleCase(arty.Name);
 					PackItem( arty );
-					CitizenCost = (val+props+luck)*20;
+					CitizenCost = (val+props+luck)*CitizensConstants.ITEM_COST_MULTIPLIER;
 				}
-				else if ( chance < 90 )
+				else if ( chance < CitizensConstants.ITEM_CHANCE_THRESHOLD_CLOTHING )
 				{
 					Item arty = Loot.RandomClothing();
 					Server.Misc.MorphingTime.ChangeMaterialType( arty, this );
@@ -929,9 +980,9 @@ namespace Server.Mobiles
 					arty.Name = LootPackEntry.MagicItemName( arty, this, Region.Find( this.Location, this.Map ) );
 					arty.Name = cultInfo.ToTitleCase(arty.Name);
 					PackItem( arty );
-					CitizenCost = (val+props+luck)*20;
+					CitizenCost = (val+props+luck)*CitizensConstants.ITEM_COST_MULTIPLIER;
 				}
-				else if ( chance < 95 )
+				else if ( chance < CitizensConstants.ITEM_CHANCE_THRESHOLD_INSTRUMENT )
 				{
 					Item arty = Loot.RandomInstrument();
 					Server.Misc.MorphingTime.ChangeMaterialType( arty, this );
@@ -943,107 +994,103 @@ namespace Server.Mobiles
 
 					switch ( instr.Resource )
 					{
-						case CraftResource.AshTree: cHue = MaterialInfo.GetMaterialColor( "ash", "", 0 ); cUse = 20; break;
-						case CraftResource.EbonyTree: cHue = MaterialInfo.GetMaterialColor( "ebony", "", 0 ); cUse = 60; break;
-                        case CraftResource.ElvenTree: cHue = MaterialInfo.GetMaterialColor("elven", "", 0); cUse = 80; break;
-                        /*case CraftResource.MahoganyTree: cHue = MaterialInfo.GetMaterialColor( "mahogany", "", 0 ); cUse = 120; break;
-						case CraftResource.DriftwoodTree: cHue = MaterialInfo.GetMaterialColor( "driftwood", "", 0 ); cUse = 120; break;
-						case CraftResource.OakTree: cHue = MaterialInfo.GetMaterialColor( "oak", "", 0 ); cUse = 140; break;
-						case CraftResource.PineTree: cHue = MaterialInfo.GetMaterialColor( "pine", "", 0 ); cUse = 160; break;
-						case CraftResource.GhostTree: cHue = MaterialInfo.GetMaterialColor( "ghostwood", "", 0 ); cUse = 160; break;*/
-                        case CraftResource.CherryTree: cHue = MaterialInfo.GetMaterialColor("cherry", "", 0); cUse = 100; break;
-                        case CraftResource.RosewoodTree: cHue = MaterialInfo.GetMaterialColor( "rosewood", "", 0 ); cUse = 120; break;
-                        case CraftResource.GoldenOakTree: cHue = MaterialInfo.GetMaterialColor("golden oak", "", 0); cUse = 140; break;
-                        case CraftResource.HickoryTree: cHue = MaterialInfo.GetMaterialColor("hickory", "", 0); cUse = 180; break;
-                        /*case CraftResource.WalnutTree: cHue = MaterialInfo.GetMaterialColor( "walnut", "", 0 ); cUse = 200; break;
-                        case CraftResource.PetrifiedTree: cHue = MaterialInfo.GetMaterialColor( "petrified", "", 0 ); cUse = 250; break;*/
-
+						case CraftResource.AshTree: cHue = MaterialInfo.GetMaterialColor( "ash", "", 0 ); cUse = CitizensConstants.INSTRUMENT_USES_ASH; break;
+						case CraftResource.EbonyTree: cHue = MaterialInfo.GetMaterialColor( "ebony", "", 0 ); cUse = CitizensConstants.INSTRUMENT_USES_EBONY; break;
+                        case CraftResource.ElvenTree: cHue = MaterialInfo.GetMaterialColor("elven", "", 0); cUse = CitizensConstants.INSTRUMENT_USES_ELVEN; break;
+                        case CraftResource.CherryTree: cHue = MaterialInfo.GetMaterialColor("cherry", "", 0); cUse = CitizensConstants.INSTRUMENT_USES_CHERRY; break;
+                        case CraftResource.RosewoodTree: cHue = MaterialInfo.GetMaterialColor( "rosewood", "", 0 ); cUse = CitizensConstants.INSTRUMENT_USES_ROSEWOOD; break;
+                        case CraftResource.GoldenOakTree: cHue = MaterialInfo.GetMaterialColor("golden oak", "", 0); cUse = CitizensConstants.INSTRUMENT_USES_GOLDEN_OAK; break;
+                        case CraftResource.HickoryTree: cHue = MaterialInfo.GetMaterialColor("hickory", "", 0); cUse = CitizensConstants.INSTRUMENT_USES_HICKORY; break;
                     }
 
 					instr.UsesRemaining = instr.UsesRemaining + cUse;
 					if ( cHue > 0 ){ arty.Hue = cHue; }
-					else if ( Utility.RandomMinMax( 1, 4 ) == 1 ){ arty.Hue = Server.Misc.RandomThings.GetRandomColor(0); }
+					else if ( Utility.RandomMinMax( CitizensConstants.INSTRUMENT_HUE_THRESHOLD, CitizensConstants.INSTRUMENT_HUE_CHANCE ) == CitizensConstants.INSTRUMENT_HUE_THRESHOLD ){ arty.Hue = Server.Misc.RandomThings.GetRandomColor(0); }
 					instr.Quality = InstrumentQuality.Regular;
-					if ( Utility.RandomMinMax( 1, 4 ) == 1 ){ instr.Quality = InstrumentQuality.Exceptional; }
-					if ( Utility.RandomMinMax( 1, 4 ) == 1 ){ instr.Slayer = slayer; }
+					if ( Utility.RandomMinMax( CitizensConstants.INSTRUMENT_QUALITY_THRESHOLD, CitizensConstants.INSTRUMENT_QUALITY_CHANCE ) == CitizensConstants.INSTRUMENT_QUALITY_THRESHOLD ){ instr.Quality = InstrumentQuality.Exceptional; }
+					if ( Utility.RandomMinMax( CitizensConstants.INSTRUMENT_SLAYER_THRESHOLD, CitizensConstants.INSTRUMENT_SLAYER_CHANCE ) == CitizensConstants.INSTRUMENT_SLAYER_THRESHOLD ){ instr.Slayer = slayer; }
 
 					BaseRunicTool.ApplyAttributesTo( (BaseInstrument)arty, false, luck, props, val, val );
 					arty.Movable = false;
 					arty.Name = LootPackEntry.MagicItemName( arty, this, Region.Find( this.Location, this.Map ) );
 					arty.Name = cultInfo.ToTitleCase(arty.Name);
 					PackItem( arty );
-					CitizenCost = (val+props+luck)*20;
+					CitizenCost = (val+props+luck)*CitizensConstants.ITEM_COST_MULTIPLIER;
 				}
 				else
 				{
 					Item arty = Loot.RandomArty();
 					arty.Movable = false;
 					PackItem( arty );
-					CitizenCost = Utility.RandomMinMax( 250, 750 )*10;
+					CitizenCost = Utility.RandomMinMax( CitizensConstants.COST_ARTY_MIN, CitizensConstants.COST_ARTY_MAX )*10;
 				}
 			}
-			else if ( CitizenType == 26 && CitizenService == 26 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR && CitizenService == CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR )
 			{
 				city = RandomThings.MadeUpCity();
 
 				CrateOfFood crate = new CrateOfFood();
 
 				string food = "meat";
-				int eat = 0x508C;
+				int eat = CitizensConstants.ITEM_ID_FOOD_LAMB_LEG;
 				int cost = 0;
 
-				switch ( Utility.RandomMinMax( 0, 3 ) )
+				switch ( Utility.RandomMinMax( 0, CitizensConstants.FOOD_MAX_INDEX ) )
 				{
-					case 0:	cost = 6;	eat = 0x508B; food = "cooked fish steaks"; break;
-					case 1:	cost = 8;	eat = 0x508C; food = "cooked lamb legs"; break;
-					case 2:	cost = 7;	eat = 0x508D; food = "cooked ribs"; break;
-					case 3:	cost = 6;	eat = 0x50BA; food = "baked bread"; break;
+					case 0:	cost = CitizensConstants.COST_FOOD_FISH_STEAK;	eat = CitizensConstants.ITEM_ID_FOOD_FISH_STEAK; food = "cooked fish steaks"; break;
+					case 1:	cost = CitizensConstants.COST_FOOD_LAMB_LEG;	eat = CitizensConstants.ITEM_ID_FOOD_LAMB_LEG; food = "cooked lamb legs"; break;
+					case 2:	cost = CitizensConstants.COST_FOOD_RIBS;	eat = CitizensConstants.ITEM_ID_FOOD_RIBS; food = "cooked ribs"; break;
+					case 3:	cost = CitizensConstants.COST_FOOD_BREAD;	eat = CitizensConstants.ITEM_ID_FOOD_BREAD; food = "baked bread"; break;
 				}
 
-				crate.CrateQty = Utility.RandomMinMax( 50, 150 );
+				crate.CrateQty = Utility.RandomMinMax( CitizensConstants.FOOD_QTY_MIN, CitizensConstants.FOOD_QTY_MAX );
 				crate.CrateItem = food;
 				crate.ItemID = eat;
 				crate.Name = "crate of " + food + "";
-				crate.Weight = crate.CrateQty * 0.1;
+				crate.Weight = crate.CrateQty * CitizensConstants.CRATE_WEIGHT_MULTIPLIER;
 				CitizenCost = crate.CrateQty * cost;
 
-				string bought = "bought";
+				string bought = CitizensStringConstants.ACTION_BOUGHT;
 				switch ( Utility.RandomMinMax( 0, 5 ) )
 				{
-					case 0:	bought = "acquired"; break;
-					case 1:	bought = "purchased"; break;
-					case 2:	bought = "bought"; break;
-					case 3:	bought = "cooked"; break;
-					case 4:	bought = "baked"; break;
-					case 5:	bought = "prepared"; break;
+					case 0:	bought = CitizensStringConstants.ACTION_ACQUIRED; break;
+					case 1:	bought = CitizensStringConstants.ACTION_PURCHASED; break;
+					case 2:	bought = CitizensStringConstants.ACTION_BOUGHT; break;
+					case 3:	bought = CitizensStringConstants.ACTION_COOKED; break;
+					case 4:	bought = CitizensStringConstants.ACTION_BAKED; break;
+					case 5:	bought = CitizensStringConstants.ACTION_PREPARED; break;
 				}
 
-				string sell = "willing to part with"; if (Utility.RandomBool() ){ sell = "willing to trade"; } else if (Utility.RandomBool() ){ sell = "willing to sell"; }
+				string sell = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ sell = CitizensStringConstants.WILLING_SELL; }
 
 				switch ( Utility.RandomMinMax( 0, 2 ) )
 				{
-					case 0:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + food + " I " + bought + " in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 1:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + food + " I " + bought + " near " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
-					case 2:	CitizenPhrase = phrase + " I have " + crate.CrateQty + " " + food + " I " + bought + " somewhere in " + city + " that I am " + sell + " for G~G~G~G~G gold."; break;
+					case 0:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.FOOD_VENDOR_PHRASE_FORMAT, crate.CrateQty, food, bought, city, sell ); break;
+					case 1:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.FOOD_VENDOR_PHRASE_NEAR_FORMAT, crate.CrateQty, food, bought, city, sell ); break;
+					case 2:	CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.FOOD_VENDOR_PHRASE_SOMEWHERE_FORMAT, crate.CrateQty, food, bought, city, sell ); break;
 				}
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the " + food + " if you wish. If you want to trade, then hand me the gold and I will give you the " + food + ".";
+				CitizenPhrase = CitizenPhrase + " " + string.Format( CitizensStringConstants.FOOD_VENDOR_CLOSING_FORMAT, food );
 
 				PackItem( crate );
 			}
 
-			if ( CitizenType == 1 && ( CitizenService == 2 || CitizenService == 3 || CitizenService == 4 || CitizenService == 6 || CitizenService == 7 || CitizenService == 8 ) )
+			if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_1 || CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_2 || CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_3 || CitizenService == CitizensConstants.CITIZEN_SERVICE_BOOK || CitizenService == CitizensConstants.CITIZEN_SERVICE_SCROLL || CitizenService == CitizensConstants.CITIZEN_SERVICE_WAND ) )
 			{
-				string aty1 = "a jar of wizard reagents";
-					if ( CitizenService == 3 ){ aty1 = "a jar of necromancer reagents"; }
-					else if ( CitizenService == 4 ){ aty1 = "a jar of alchemical reagents"; }
-					else if ( CitizenService == 6 ){ aty1 = "a book"; }
-					else if ( CitizenService == 7 ){ aty1 = "a scroll"; }
-					else if ( CitizenService == 8 ){ aty1 = "a wand"; }
+				string aty1 = CitizensStringConstants.WIZARD_ITEM_JAR_WIZARD;
+					if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_2 ){ aty1 = CitizensStringConstants.WIZARD_ITEM_JAR_NECRO; }
+					else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_3 ){ aty1 = CitizensStringConstants.WIZARD_ITEM_JAR_ALCHEMICAL; }
+					else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_BOOK ){ aty1 = CitizensStringConstants.WIZARD_ITEM_BOOK; }
+					else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_SCROLL ){ aty1 = CitizensStringConstants.WIZARD_ITEM_SCROLL; }
+					else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_WAND ){ aty1 = CitizensStringConstants.WIZARD_ITEM_WAND; }
 
-				string aty3 = "willing to part with"; if (Utility.RandomBool() ){ aty3 = "willing to trade"; } else if (Utility.RandomBool() ){ aty3 = "willing to sell"; }
+				string aty3 = CitizensStringConstants.WILLING_PART_WITH; 
+				if (Utility.RandomBool() ){ aty3 = CitizensStringConstants.WILLING_TRADE; } 
+				else if (Utility.RandomBool() ){ aty3 = CitizensStringConstants.WILLING_SELL; }
 
-				CitizenPhrase = phrase + " I have " + aty1 + " that I am " + aty3 + " for G~G~G~G~G gold.";
-				CitizenPhrase = CitizenPhrase + " You can look in my backpack to examine the item if you wish. If you want to trade, then hand me the gold and I will give you the item.";
+				CitizenPhrase = phrase + " " + string.Format( CitizensStringConstants.WIZARD_ITEM_SALE_FORMAT, aty1, aty3 );
+				CitizenPhrase = CitizenPhrase + " " + CitizensStringConstants.WIZARD_ITEM_SALE_CLOSING;
 			}
 
 			string holding = "";
@@ -1058,8 +1105,8 @@ namespace Server.Mobiles
 			}
 
 			if ( holding != "" ){ CitizenPhrase = CitizenPhrase + "<br><br>" + holding; } 
-			else if ( CitizenService == 5 ){ CitizenPhrase = null; }
-			else if ( ( CitizenService >= 2 && CitizenService <= 8 ) && CitizenType == 1 ){ CitizenPhrase = null; }
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM ){ CitizenPhrase = null; }
+			else if ( ( CitizenService >= CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_1 && CitizenService <= CitizensConstants.CITIZEN_SERVICE_WAND ) && CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD ){ CitizenPhrase = null; }
 		}
 
 		public override void OnMovement( Mobile m, Point3D oldLocation )
@@ -1067,11 +1114,11 @@ namespace Server.Mobiles
 			if ( !(this is HouseVisitor) )
 			{
 			Region reg = Region.Find( this.Location, this.Map );
-			if ( DateTime.UtcNow >= m_NextTalk && InRange( m, 30 ) )
+			if ( DateTime.UtcNow >= m_NextTalk && InRange( m, CitizensConstants.TALK_RANGE ) )
 			{
 				if ( Utility.RandomBool() ){ TavernPatrons.GetChatter( this ); }
 				Server.Misc.MaterialInfo.IsNoHairHat( 0, this );
-				m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( 15, 45 ) ));
+				m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( CitizensConstants.TALK_DELAY_MIN, CitizensConstants.TALK_DELAY_MAX ) ));
 			}
 		}
 		}
@@ -1081,6 +1128,27 @@ namespace Server.Mobiles
 		{ 
 			base.GetContextMenuEntries( from, list ); 
 			list.Add( new SpeechGumpEntry( from, this ) ); 
+		}
+
+		/// <summary>
+		/// Gets wand charges based on IntRequirement
+		/// </summary>
+		/// <param name="intRequirement">The intelligence requirement of the wand</param>
+		/// <returns>The number of charges the wand should have</returns>
+		private int GetWandCharges(int intRequirement)
+		{
+			switch (intRequirement)
+			{
+				case 10: return CitizensConstants.WAND_CHARGES_10;
+				case 15: return CitizensConstants.WAND_CHARGES_15;
+				case 20: return CitizensConstants.WAND_CHARGES_20;
+				case 25: return CitizensConstants.WAND_CHARGES_25;
+				case 30: return CitizensConstants.WAND_CHARGES_30;
+				case 35: return CitizensConstants.WAND_CHARGES_35;
+				case 40: return CitizensConstants.WAND_CHARGES_40;
+				case 45: return CitizensConstants.WAND_CHARGES_45;
+				default: return 0;
+			}
 		} 
 
 		public class SpeechGumpEntry : ContextMenuEntry
@@ -1088,7 +1156,7 @@ namespace Server.Mobiles
 			private Mobile m_Mobile;
 			private Mobile m_Giver;
 			
-			public SpeechGumpEntry( Mobile from, Mobile giver ) : base( 6146, 3 )
+			public SpeechGumpEntry( Mobile from, Mobile giver ) : base( CitizensConstants.CONTEXT_MENU_ID, CitizensConstants.CONTEXT_MENU_RANGE )
 			{
 				m_Mobile = from;
 				m_Giver = giver;
@@ -1116,14 +1184,14 @@ namespace Server.Mobiles
 
 					if ( speak != "" )
 					{
-						m_Mobile.PlaySound( 0x5B6 );
+						m_Mobile.PlaySound( CitizensConstants.SOUND_SPEECH );
 						m_Giver.Say( speak );
 					}
 					else if ( citizen.CitizenService == 0 )
 					{
 						speak = citizen.CitizenRumor;
-						if ( speak.Contains("Z~Z~Z~Z~Z") ){ speak = speak.Replace("Z~Z~Z~Z~Z", m_Mobile.Name); }
-						if ( speak.Contains("Y~Y~Y~Y~Y") ){ speak = speak.Replace("Y~Y~Y~Y~Y", m_Mobile.Region.Name); }
+						if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME, m_Mobile.Name); }
+						if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_REGION_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_REGION_NAME, m_Mobile.Region.Name); }
 						m_Giver.Say( speak );
 					}
 					else
@@ -1138,10 +1206,10 @@ namespace Server.Mobiles
 
 		public override bool OnBeforeDeath()
 		{
-			Say("In Vas Mani");
+			Say(CitizensStringConstants.DEATH_SPELL);
 			this.Hits = this.HitsMax;
-			this.FixedParticles( 0x376A, 9, 32, 5030, EffectLayer.Waist );
-			this.PlaySound( 0x202 );
+			this.FixedParticles( CitizensConstants.EFFECT_PARTICLE, CitizensConstants.EFFECT_SPEED, CitizensConstants.EFFECT_DURATION, CitizensConstants.EFFECT_ITEM_ID, EffectLayer.Waist );
+			this.PlaySound( CitizensConstants.SOUND_DEATH );
 			return false;
 		}
 
@@ -1177,7 +1245,7 @@ namespace Server.Mobiles
 					String reg = Worlds.GetMyWorld( item.Map, item.Location, item.X, item.Y );
 					if (reg != null && AdventuresFunctions.RegionIsInfected( reg ) )
 					{
-						foreach ( Mobile m in item.GetMobilesInRange( 20 ) )
+						foreach ( Mobile m in item.GetMobilesInRange( CitizensConstants.INFECTED_REGION_CHECK_RANGE ) )
 						{
 							if (m is BaseCreature)
 							{
@@ -1203,13 +1271,13 @@ namespace Server.Mobiles
 			Region reg = Region.Find( spot.Location, spot.Map );
 
 			int total = 0;
-			int mod = 2;
+			int mod = CitizensConstants.CITIZEN_POS_MOD_NO_MOUNT;
 
 			bool mount = false;
 
 			if (!( reg.IsPartOf( "Anchor Rock Docks" ) || reg.IsPartOf( "Kraken Reef Docks" ) || reg.IsPartOf( "Savage Sea Docks" ) || reg.IsPartOf( "Serpent Sail Docks" ) || reg.IsPartOf( "the Forgotten Lighthouse" ) ))
 			{
-				if ( Utility.RandomBool() ){ mount = true; mod = 3; }
+				if ( Utility.RandomBool() ){ mount = true; mod = CitizensConstants.CITIZEN_POS_MOD_MOUNT; }
 			}
 
 
@@ -1600,7 +1668,7 @@ namespace Server.Mobiles
 			Server.Misc.MorphingTime.CheckNecromancer( this );
 
 
-			if ( this.Home.X > 0 && this.Home.Y > 0 && ( Math.Abs( this.X-this.Home.X ) > 2 || Math.Abs( this.Y-this.Home.Y ) > 2 || Math.Abs( this.Z-this.Home.Z ) > 2 ) )
+			if ( this.Home.X > 0 && this.Home.Y > 0 && ( Math.Abs( this.X-this.Home.X ) > CitizensConstants.HOME_POSITION_TOLERANCE || Math.Abs( this.Y-this.Home.Y ) > CitizensConstants.HOME_POSITION_TOLERANCE || Math.Abs( this.Z-this.Home.Z ) > CitizensConstants.HOME_POSITION_TOLERANCE ) )
 			{
 				this.Location = this.Home;
 				//Effects.SendLocationParticles( EffectItem.Create( this.Location, this.Map, EffectItem.DefaultDuration ), 0x3728, 8, 20, 5042 );
@@ -1620,7 +1688,7 @@ namespace Server.Mobiles
 			private Mobile c_Citizen;
 			private Mobile c_Player;
 
-			public CitizenGump( Mobile citizen, Mobile player ) : base( 25, 25 )
+			public CitizenGump( Mobile citizen, Mobile player ) : base( CitizensConstants.GUMP_X, CitizensConstants.GUMP_Y )
 			{
 				c_Citizen = citizen;
 				Citizens b_Citizen = (Citizens)citizen;
@@ -1632,21 +1700,21 @@ namespace Server.Mobiles
 				this.Resizable=false;
 
 				string speak = b_Citizen.CitizenPhrase;
-				if ( speak.Contains("Z~Z~Z~Z~Z") ){ speak = speak.Replace("Z~Z~Z~Z~Z", c_Player.Name); }
-				if ( speak.Contains("Y~Y~Y~Y~Y") ){ speak = speak.Replace("Y~Y~Y~Y~Y", c_Player.Region.Name); }
-				if ( speak.Contains("G~G~G~G~G") ){ speak = speak.Replace("G~G~G~G~G", (b_Citizen.CitizenCost).ToString()); }
+				if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME, c_Player.Name); }
+				if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_REGION_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_REGION_NAME, c_Player.Region.Name); }
+				if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_GOLD_AMOUNT) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_GOLD_AMOUNT, (b_Citizen.CitizenCost).ToString()); }
 
 				AddPage(0);
-				AddImage(0, 0, 153);
-				AddImage(269, 0, 153);
-				AddImage(2, 2, 163);
-				AddImage(271, 2, 163);
-				AddImage(6, 6, 145);
-				AddImage(167, 7, 140);
-				AddImage(244, 7, 140);
-				AddImage(530, 9, 143);
+				AddImage(0, 0, CitizensConstants.GUMP_IMAGE_1);
+				AddImage(269, 0, CitizensConstants.GUMP_IMAGE_1);
+				AddImage(2, 2, CitizensConstants.GUMP_IMAGE_2);
+				AddImage(271, 2, CitizensConstants.GUMP_IMAGE_2);
+				AddImage(6, 6, CitizensConstants.GUMP_IMAGE_3);
+				AddImage(167, 7, CitizensConstants.GUMP_IMAGE_4);
+				AddImage(244, 7, CitizensConstants.GUMP_IMAGE_4);
+				AddImage(530, 9, CitizensConstants.GUMP_IMAGE_5);
 
-				AddHtml( 177, 45, 371, 204, @"<BODY><BASEFONT Color=#FFA200><BIG>" + speak + "</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+				AddHtml( CitizensConstants.GUMP_HTML_X, CitizensConstants.GUMP_HTML_Y, CitizensConstants.GUMP_HTML_WIDTH, CitizensConstants.GUMP_HTML_HEIGHT, @"<BODY><BASEFONT Color=#" + CitizensConstants.GUMP_HTML_COLOR.ToString("X") + "><BIG>" + speak + "</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			}
 		}
 
@@ -1672,8 +1740,8 @@ namespace Server.Mobiles
 				if ( CitizenCost > 0 && CitizenCost == dropped.Amount )
 				{
 					dropped.Delete();
-					sound = 0x2E6;
-					say = "That is a fair trade.";
+					sound = CitizensConstants.SOUND_TRADE_SUCCESS;
+					say = CitizensStringConstants.SUCCESS_FAIR_TRADE;
 					Item give = null;
 					List<Item> belongings = new List<Item>();
 					foreach( Item i in this.Backpack.Items )
@@ -1686,42 +1754,33 @@ namespace Server.Mobiles
 					CitizenService = 0;
 				}
 			}
-			else if ( CitizenType == 1 )
+			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD )
 			{
-				if ( CitizenType == 1 && dropped is BaseMagicStaff )
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && dropped is BaseMagicStaff )
 				{
                     BaseMagicStaff ba = (BaseMagicStaff)dropped;
                     BaseWeapon bw = (BaseWeapon)dropped;
 
-					int myCharges = 0;
+					int myCharges = GetWandCharges(bw.IntRequirement);
 
-					if ( bw.IntRequirement == 10 ) { myCharges = 30; }
-					else if ( bw.IntRequirement == 15 ) { myCharges = 23; }
-					else if ( bw.IntRequirement == 20 ) { myCharges = 18; }
-					else if ( bw.IntRequirement == 25 ) { myCharges = 15; }
-					else if ( bw.IntRequirement == 30 ) { myCharges = 12; }
-					else if ( bw.IntRequirement == 35 ) { myCharges = 9; }
-					else if ( bw.IntRequirement == 40 ) { myCharges = 6; }
-					else if ( bw.IntRequirement == 45 ) { myCharges = 3; }
-
-					if ( bw.IntRequirement < 1 ){ say = "That does not need to be recharged."; }
+					if ( bw.IntRequirement < 1 ){ say = CitizensStringConstants.ERROR_WAND_NO_RECHARGE; }
                     else if ( ba.Charges <= myCharges )
                     {
-                        say = "Your wand is charged.";
-                        sound = 0x5C1;
+                        say = CitizensStringConstants.SUCCESS_WAND_CHARGED;
+                        sound = CitizensConstants.SOUND_WAND_CHARGE;
 						ba.Charges = myCharges;
                     }
-                    else { say = "That wand has too many charges already."; }
+                    else { say = CitizensStringConstants.ERROR_WAND_TOO_MANY_CHARGES; }
 				}
 			}
-			else if ( CitizenService == 1 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR )
 			{
-				if ( CitizenType == 2 && isArmor && isMetal ){ fixArmor = true; sound = 0x541; }
-				else if ( CitizenType == 3 && dropped is LockableContainer )
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isArmor && isMetal ){ fixArmor = true; sound = CitizensConstants.SOUND_REPAIR; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && dropped is LockableContainer )
 				{
 					LockableContainer box = (LockableContainer)dropped;
-					say = "I unlocked it for you.";
-					sound = 0x241;
+					say = CitizensStringConstants.SUCCESS_UNLOCKED;
+					sound = CitizensConstants.SOUND_UNLOCK;
 					box.Locked = false;
 					box.TrapPower = 0;
 					box.TrapLevel = 0;
@@ -1731,46 +1790,46 @@ namespace Server.Mobiles
 					box.TrapType = TrapType.None;
 				}
 			}
-			else if ( CitizenService == 2 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_2 )
 			{
-				if ( CitizenType == 2 && isWeapon && isMetal ){ fixWeapon = true; sound = 0x541; }
-				else if ( CitizenType == 3 && isArmor && isLeather ){ fixArmor = true; sound = 0x248; }
-				else if ( CitizenType == 3 && isWeapon && isLeather ){ fixWeapon = true; sound = 0x248; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isWeapon && isMetal ){ fixWeapon = true; sound = CitizensConstants.SOUND_REPAIR; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isArmor && isLeather ){ fixArmor = true; sound = CitizensConstants.SOUND_LEATHER_REPAIR; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isWeapon && isLeather ){ fixWeapon = true; sound = CitizensConstants.SOUND_LEATHER_REPAIR; }
 			}
-			else if ( CitizenService == 3 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON )
 			{
-				if ( CitizenType == 2 && isWeapon && isWood ){ fixWeapon = true; sound = 0x23D; }
-				else if ( CitizenType == 3 && isWeapon && isWood ){ fixWeapon = true; sound = 0x23D; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isWeapon && isWood ){ fixWeapon = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isWeapon && isWood ){ fixWeapon = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
 			}
-			else if ( CitizenService == 4 )
+			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR )
 			{
-				if ( CitizenType == 2 && isArmor && isWood ){ fixArmor = true; sound = 0x23D; }
-				else if ( CitizenType == 3 && isArmor && isWood ){ fixArmor = true; sound = 0x23D; }
+				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isArmor && isWood ){ fixArmor = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
+				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isArmor && isWood ){ fixArmor = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
 			}
 
 			Container bank = from.FindBankNoCreate();
-			if ( fixArmor && dropped is BaseArmor && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), 7500 ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), 7500 ) ) ) )
+			if ( fixArmor && dropped is BaseArmor && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) ) )
 			{
-				say = "This is repaired and ready for battle.";
+				say = CitizensStringConstants.SUCCESS_ARMOR_REPAIRED;
 				BaseArmor ba = (BaseArmor)dropped;
-				if (ba.MaxHitPoints > 10)
-					ba.MaxHitPoints -= Utility.RandomMinMax(5, 10);
+				if (ba.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
+					ba.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
 				else
-					ba.MaxHitPoints -= 1;
+					ba.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
 				ba.HitPoints = ba.MaxHitPoints;
 			}
-			else if ( fixWeapon && dropped is BaseWeapon && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), 7500 ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), 7500 ) ) ) )
+			else if ( fixWeapon && dropped is BaseWeapon && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) ) )
 			{
-				say = "This is repaired and is ready for battle.";
+				say = CitizensStringConstants.SUCCESS_WEAPON_REPAIRED;
 				BaseWeapon bw = (BaseWeapon)dropped;
-				if (bw.MaxHitPoints > 10)
-					bw.MaxHitPoints -= Utility.RandomMinMax(5, 10);
+				if (bw.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
+					bw.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
 				else
-					bw.MaxHitPoints -= 1;
+					bw.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
 				bw.HitPoints = bw.MaxHitPoints;
 			}
 			else 
-				say = "Look friend, it doesn't look like you have enough gold in your pack or bank... ";
+				say = CitizensStringConstants.ERROR_NOT_ENOUGH_GOLD;
 
 			SayTo(from, say);
 			if ( sound > 0 ){ from.PlaySound( sound ); }
