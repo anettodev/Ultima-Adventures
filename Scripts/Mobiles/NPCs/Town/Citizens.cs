@@ -19,8 +19,14 @@ using System.Globalization;
 
 namespace Server.Mobiles
 {
+	/// <summary>
+	/// Citizens NPC class - Represents various types of citizen NPCs that provide services,
+	/// sell items, and interact with players in towns and cities.
+	/// </summary>
 	public class Citizens : BaseCreature
 	{
+		#region Properties and Fields
+
 		public override bool PlayerRangeSensitive { get { return true; } }
 
 		public int CitizenService;
@@ -49,6 +55,14 @@ namespace Server.Mobiles
 		public DateTime m_NextTalk;
 		public DateTime NextTalk{ get{ return m_NextTalk; } set{ m_NextTalk = value; } }
 
+		#endregion
+
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the Citizens class.
+		/// Sets up appearance, stats, skills, and calls SetupCitizen to configure services.
+		/// </summary>
 		[Constructable]
 		public Citizens() : base( AIType.AI_Citizen, FightMode.None, 10, 1, 0.2, 0.4 )
 		{
@@ -122,6 +136,10 @@ namespace Server.Mobiles
 			if ( this is HouseVisitor && Backpack != null ){ Backpack.Delete(); }
 		}
 
+		#endregion
+
+		#region Helper Methods
+
 		/// <summary>
 		/// Checks if an item ID is a metal weapon that should be colored
 		/// </summary>
@@ -139,6 +157,285 @@ namespace Server.Mobiles
 			return false;
 		}
 
+		/// <summary>
+		/// Gets wand charges based on IntRequirement
+		/// </summary>
+		/// <param name="intRequirement">The intelligence requirement of the wand</param>
+		/// <returns>The number of charges the wand should have</returns>
+		private int GetWandCharges(int intRequirement)
+		{
+			switch (intRequirement)
+			{
+				case 10: return CitizensConstants.WAND_CHARGES_10;
+				case 15: return CitizensConstants.WAND_CHARGES_15;
+				case 20: return CitizensConstants.WAND_CHARGES_20;
+				case 25: return CitizensConstants.WAND_CHARGES_25;
+				case 30: return CitizensConstants.WAND_CHARGES_30;
+				case 35: return CitizensConstants.WAND_CHARGES_35;
+				case 40: return CitizensConstants.WAND_CHARGES_40;
+				case 45: return CitizensConstants.WAND_CHARGES_45;
+				default: return 0;
+			}
+		}
+
+		#endregion
+
+		#region Service Setup Helpers
+
+		/// <summary>
+		/// Sets up service for a wizard citizen.
+		/// </summary>
+		private void SetupWizardService()
+		{
+			if ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.WIZARD_SERVICE_CHANCE ) == CitizensConstants.WIZARD_SERVICE_THRESHOLD )
+			{
+				CitizenService = Utility.RandomMinMax( CitizensConstants.CITIZEN_SERVICE_REPAIR, CitizensConstants.CITIZEN_SERVICE_WAND );
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a smith citizen.
+		/// </summary>
+		private void SetupSmithService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a lumberjack citizen.
+		/// </summary>
+		private void SetupLumberjackService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a leather worker citizen.
+		/// </summary>
+		private void SetupLeatherService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a miner citizen.
+		/// </summary>
+		private void SetupMinerService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a smelter citizen.
+		/// </summary>
+		private void SetupSmelterService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+				case 6: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for an alchemist citizen.
+		/// </summary>
+		private void SetupAlchemistService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a cook citizen.
+		/// </summary>
+		private void SetupCookService()
+		{
+			CitizenService = 0;
+			CitizenType = 0;
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
+			}
+		}
+
+		/// <summary>
+		/// Sets up service for a default citizen (fighter or rogue).
+		/// </summary>
+		private void SetupDefaultService()
+		{
+			switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
+			{
+				case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		break;
+				case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		break;
+				case 3: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		break;
+				case 4: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		break;
+				case 5: CitizenService = CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM;		break;
+			}
+		}
+
+		#endregion
+
+		#region Crate Creation Helpers
+
+		/// <summary>
+		/// Generates a material vendor phrase based on the crate details and location.
+		/// </summary>
+		/// <param name="phrase">The initial greeting phrase</param>
+		/// <param name="quantity">The quantity of items in the crate</param>
+		/// <param name="materialName">The name of the material</param>
+		/// <param name="itemType">The type of item (e.g., "ingots", "boards", "leather")</param>
+		/// <param name="actionVerb">The action verb (e.g., "mined", "chopped", "skinned")</param>
+		/// <param name="locationType">The location type (e.g., "cave", "forest")</param>
+		/// <param name="dungeon">The dungeon name</param>
+		/// <param name="city">The city name</param>
+		/// <returns>The complete material vendor phrase</returns>
+		private string GenerateMaterialVendorPhrase(string phrase, int quantity, string materialName, string itemType, string actionVerb, string locationType, string dungeon, string city)
+		{
+			string sell = CitizensStringConstants.WILLING_PART_WITH;
+			if (Utility.RandomBool())
+			{
+				sell = CitizensStringConstants.WILLING_TRADE;
+			}
+			else if (Utility.RandomBool())
+			{
+				sell = CitizensStringConstants.WILLING_SELL;
+			}
+
+			string location = dungeon;
+			string locationPreposition = CitizensStringConstants.LOCATION_NEAR;
+			switch (Utility.RandomMinMax(0, 5))
+			{
+				case 0: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+				case 1: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+				case 2: location = dungeon; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+				case 3: location = city; locationPreposition = CitizensStringConstants.LOCATION_NEAR; break;
+				case 4: location = city; locationPreposition = CitizensStringConstants.LOCATION_BY; break;
+				case 5: location = city; locationPreposition = CitizensStringConstants.LOCATION_OUTSIDE; break;
+			}
+
+			string fullPhrase = phrase + " " + string.Format(CitizensStringConstants.MATERIAL_VENDOR_PHRASE_FORMAT, quantity, materialName, itemType, actionVerb, locationType, locationPreposition, location, sell);
+			fullPhrase = fullPhrase + " " + string.Format(CitizensStringConstants.MATERIAL_VENDOR_CLOSING_FORMAT, itemType);
+			return fullPhrase;
+		}
+
+		/// <summary>
+		/// Configures a material crate with quantity, cost, and properties.
+		/// </summary>
+		/// <param name="crate">The crate to configure</param>
+		/// <param name="materialName">The name of the material</param>
+		/// <param name="itemID">The item ID for the crate</param>
+		/// <param name="hue">The hue for the crate</param>
+		/// <param name="baseQty">The base quantity</param>
+		/// <param name="cost">The cost per item</param>
+		/// <param name="itemType">The type of item (e.g., "ingots", "boards")</param>
+		private void ConfigureMaterialCrate(Item crate, string materialName, int itemID, int hue, int baseQty, int cost, string itemType)
+		{
+			if (crate is CrateOfMetal)
+			{
+				CrateOfMetal metalCrate = (CrateOfMetal)crate;
+				metalCrate.CrateQty = Utility.RandomMinMax(baseQty * 5, baseQty * 15);
+				metalCrate.CrateItem = materialName;
+				metalCrate.Hue = hue;
+				metalCrate.ItemID = itemID;
+				metalCrate.Name = "crate of " + materialName + " " + itemType;
+				metalCrate.Weight = metalCrate.CrateQty * CitizensConstants.CRATE_WEIGHT_MULTIPLIER;
+				CitizenCost = metalCrate.CrateQty * cost;
+			}
+			else if (crate is CrateOfWood)
+			{
+				CrateOfWood woodCrate = (CrateOfWood)crate;
+				woodCrate.CrateQty = Utility.RandomMinMax(baseQty * 5, baseQty * 15);
+				woodCrate.CrateItem = materialName;
+				woodCrate.Hue = hue;
+				woodCrate.ItemID = itemID;
+				woodCrate.Name = "crate of " + materialName + " " + itemType;
+				woodCrate.Weight = woodCrate.CrateQty * CitizensConstants.CRATE_WEIGHT_MULTIPLIER;
+				CitizenCost = woodCrate.CrateQty * cost;
+			}
+			else if (crate is CrateOfLeather)
+			{
+				CrateOfLeather leatherCrate = (CrateOfLeather)crate;
+				leatherCrate.CrateQty = Utility.RandomMinMax(baseQty * 5, baseQty * 15);
+				leatherCrate.CrateItem = materialName;
+				leatherCrate.Hue = hue;
+				leatherCrate.ItemID = itemID;
+				leatherCrate.Name = "crate of " + materialName + " " + itemType;
+				leatherCrate.Weight = leatherCrate.CrateQty * CitizensConstants.CRATE_WEIGHT_MULTIPLIER;
+				CitizenCost = leatherCrate.CrateQty * cost;
+			}
+			else if (crate is CrateOfOre)
+			{
+				CrateOfOre oreCrate = (CrateOfOre)crate;
+				oreCrate.CrateQty = Utility.RandomMinMax(baseQty * 5, baseQty * 15);
+				oreCrate.CrateItem = materialName;
+				oreCrate.Hue = hue;
+				oreCrate.ItemID = itemID;
+				oreCrate.Name = "crate of " + materialName + " " + itemType;
+				oreCrate.Weight = oreCrate.CrateQty * CitizensConstants.CRATE_WEIGHT_MULTIPLIER;
+				CitizenCost = oreCrate.CrateQty * cost;
+			}
+		}
+
+		#endregion
+
+		#region Setup Methods
+
+		/// <summary>
+		/// Sets up the citizen's equipment, services, phrases, and inventory.
+		/// This is the main configuration method called during construction.
+		/// </summary>
 		public void SetupCitizen()
 		{
 			TextInfo cultInfo = new CultureInfo("en-US", false).TextInfo;
@@ -240,111 +537,43 @@ namespace Server.Mobiles
 
 			if ( this is HouseVisitor )
 			{
-			CitizenService = 0;
+				CitizenService = 0;
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD )
 			{
-				if ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.WIZARD_SERVICE_CHANCE ) == CitizensConstants.WIZARD_SERVICE_THRESHOLD ){ CitizenService = Utility.RandomMinMax( CitizensConstants.CITIZEN_SERVICE_REPAIR, CitizensConstants.CITIZEN_SERVICE_WAND ); }
+				SetupWizardService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_SMITH )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
-				}
+				SetupSmithService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_LUMBERJACK )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_WOOD_VENDOR;	break;
-				}
+				SetupLumberjackService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_LEATHER )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_LEATHER_VENDOR;	break;
-				}
+				SetupLeatherService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_MINER )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
-				}
+				SetupMinerService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_SMELTER )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		CitizenType = CitizensConstants.CITIZEN_TYPE_FIGHTER;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_METAL_VENDOR;	break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
-					case 6: CitizenService = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_ORE_VENDOR;	break;
-				}
+				SetupSmelterService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ALCHEMIST )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_REAGENT_VENDOR;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_POTION_VENDOR;	break;
-				}
+				SetupAlchemistService();
 			}
 			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_COOK )
 			{
-				CitizenService = 0;
-				CitizenType = 0;
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	CitizenType = CitizensConstants.CITIZEN_TYPE_FOOD_VENDOR;	break;
-				}
+				SetupCookService();
 			}
 			else
 			{
-				switch ( Utility.RandomMinMax( CitizensConstants.SPECIAL_TYPE_RANDOM_MIN, CitizensConstants.SPECIAL_TYPE_RANDOM_MAX ) )
-				{
-					case 1: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR;		break;
-					case 2: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_2;		break;
-					case 3: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON;		break;
-					case 4: CitizenService = CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR;		break;
-					case 5: CitizenService = CitizensConstants.CITIZEN_SERVICE_MAGIC_ITEM;		break;
-				}
+				SetupDefaultService();
 			}
 
 			string phrase = "";
@@ -1109,6 +1338,16 @@ namespace Server.Mobiles
 			else if ( ( CitizenService >= CitizensConstants.CITIZEN_SERVICE_REAGENT_JAR_1 && CitizenService <= CitizensConstants.CITIZEN_SERVICE_WAND ) && CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD ){ CitizenPhrase = null; }
 		}
 
+		#endregion
+
+		#region Override Methods
+
+		/// <summary>
+		/// Called when a mobile moves within range of this citizen.
+		/// Triggers random chatter if conditions are met.
+		/// </summary>
+		/// <param name="m">The mobile that moved</param>
+		/// <param name="oldLocation">The previous location of the mobile</param>
 		public override void OnMovement( Mobile m, Point3D oldLocation )
 		{
 			if ( !(this is HouseVisitor) )
@@ -1123,7 +1362,12 @@ namespace Server.Mobiles
 		}
 		}
 
-		///////////////////////////////////////////////////////////////////////////
+		/// <summary>
+		/// Gets the context menu entries for this citizen.
+		/// Adds a speech gump entry to allow players to interact.
+		/// </summary>
+		/// <param name="from">The mobile requesting the context menu</param>
+		/// <param name="list">The list to add context menu entries to</param>
 		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
 		{ 
 			base.GetContextMenuEntries( from, list ); 
@@ -1131,27 +1375,10 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
-		/// Gets wand charges based on IntRequirement
+		/// Called before the citizen dies. Prevents death and plays a spell effect.
 		/// </summary>
-		/// <param name="intRequirement">The intelligence requirement of the wand</param>
-		/// <returns>The number of charges the wand should have</returns>
-		private int GetWandCharges(int intRequirement)
-		{
-			switch (intRequirement)
-			{
-				case 10: return CitizensConstants.WAND_CHARGES_10;
-				case 15: return CitizensConstants.WAND_CHARGES_15;
-				case 20: return CitizensConstants.WAND_CHARGES_20;
-				case 25: return CitizensConstants.WAND_CHARGES_25;
-				case 30: return CitizensConstants.WAND_CHARGES_30;
-				case 35: return CitizensConstants.WAND_CHARGES_35;
-				case 40: return CitizensConstants.WAND_CHARGES_40;
-				case 45: return CitizensConstants.WAND_CHARGES_45;
-				default: return 0;
-			}
-		} 
-
-		public class SpeechGumpEntry : ContextMenuEntry
+		/// <returns>Always returns false to prevent death</returns>
+		public override bool OnBeforeDeath()
 		{
 			private Mobile m_Mobile;
 			private Mobile m_Giver;
@@ -1213,12 +1440,25 @@ namespace Server.Mobiles
 			return false;
 		}
 
+		/// <summary>
+		/// Determines if a mobile is an enemy of this citizen.
+		/// Citizens are not enemies of any mobile.
+		/// </summary>
+		/// <param name="m">The mobile to check</param>
+		/// <returns>Always returns false - citizens have no enemies</returns>
 		public override bool IsEnemy( Mobile m )
 		{
 			return false;
 		}
 
-		public static void PopulateCities()
+		/// <summary>
+		/// Handles item drag and drop interactions with the citizen.
+		/// Supports wand recharging, item repairs, unlocking containers, and item purchases.
+		/// </summary>
+		/// <param name="from">The mobile dropping the item</param>
+		/// <param name="dropped">The item being dropped</param>
+		/// <returns>Always returns false to prevent default handling</returns>
+		public override bool OnDragDrop( Mobile from, Item dropped )
 		{
 			ArrayList wanderers = new ArrayList();
 			foreach ( Mobile wanderer in World.Mobiles.Values )
@@ -1266,111 +1506,118 @@ namespace Server.Mobiles
 			CreateDragonRiders();
 		}
 
+		/// <summary>
+		/// Checks if a region allows mounts for citizens.
+		/// </summary>
+		/// <param name="reg">The region to check</param>
+		/// <returns>True if mounts are allowed</returns>
+		private static bool RegionAllowsMounts(Region reg)
+		{
+			return !(reg.IsPartOf("Anchor Rock Docks") || reg.IsPartOf("Kraken Reef Docks") || 
+				reg.IsPartOf("Savage Sea Docks") || reg.IsPartOf("Serpent Sail Docks") || 
+				reg.IsPartOf("the Forgotten Lighthouse"));
+		}
+
+		/// <summary>
+		/// Creates a single citizen at the specified position.
+		/// </summary>
+		/// <param name="location">The location to spawn the citizen</param>
+		/// <param name="map">The map to spawn on</param>
+		/// <param name="direction">The direction the citizen should face</param>
+		/// <param name="mount">Whether to mount the citizen</param>
+		/// <param name="controlSlots">The number of control slots for the citizen</param>
+		/// <returns>The created citizen, or null if creation failed</returns>
+		private static Citizens CreateCitizenAtPosition(Point3D location, Map map, Direction direction, bool mount, int controlSlots)
+		{
+			Citizens citizen = new Citizens();
+			if (citizen != null)
+			{
+				citizen.AddItem(new LightCitizen(false));
+				citizen.MoveToWorld(location, map);
+				if (mount)
+				{
+					MountCitizens(citizen, true);
+				}
+				citizen.Direction = direction;
+				((BaseCreature)citizen).ControlSlots = controlSlots;
+				//Effects.SendLocationParticles( EffectItem.Create( citizen.Location, citizen.Map, EffectItem.DefaultDuration ), 0x3728, 10, 10, 2023 );
+				//citizen.PlaySound( 0x1FE );
+				Server.Items.EssenceBase.ColorCitizen(citizen);
+			}
+			return citizen;
+		}
+
+		/// <summary>
+		/// Creates citizens at a specific meeting spot.
+		/// </summary>
+		/// <param name="spot">The meeting spot item where citizens should spawn</param>
 		public static void CreateCitizenss ( Item spot )
 		{
 			Region reg = Region.Find( spot.Location, spot.Map );
 
-			int total = 0;
 			int mod = CitizensConstants.CITIZEN_POS_MOD_NO_MOUNT;
-
 			bool mount = false;
 
-			if (!( reg.IsPartOf( "Anchor Rock Docks" ) || reg.IsPartOf( "Kraken Reef Docks" ) || reg.IsPartOf( "Savage Sea Docks" ) || reg.IsPartOf( "Serpent Sail Docks" ) || reg.IsPartOf( "the Forgotten Lighthouse" ) ))
+			if (RegionAllowsMounts(reg))
 			{
-				if ( Utility.RandomBool() ){ mount = true; mod = CitizensConstants.CITIZEN_POS_MOD_MOUNT; }
-			}
-
-
-			Point3D cit1 = new Point3D( ( spot.X-mod ), ( spot.Y ),   	spot.Z );	Direction dir1 = Direction.East;
-			Point3D cit2 = new Point3D( ( spot.X   ), ( spot.Y-mod ),   spot.Z );	Direction dir2 = Direction.South;
-			Point3D cit3 = new Point3D( ( spot.X+mod ), ( spot.Y ),   	spot.Z );	Direction dir3 = Direction.West;
-			Point3D cit4 = new Point3D( ( spot.X   ), ( spot.Y+mod ),	spot.Z );	Direction dir4 = Direction.North;
-
-
-			Mobile citizen = null;
-
-			if ( Utility.RandomBool() )
-			{
-				citizen = null;
-				total++;
-				while (citizen == null )
+				if (Utility.RandomBool())
 				{
-					citizen = new Citizens();
-					if ( citizen != null )
-					{
-						citizen.AddItem( new LightCitizen( false ) );
-						citizen.MoveToWorld( cit1, spot.Map );
-						if ( mount ){ MountCitizens ( citizen, true ); }
-						citizen.Direction = dir1;
-						((BaseCreature)citizen).ControlSlots = 2;
-						//Effects.SendLocationParticles( EffectItem.Create( citizen.Location, citizen.Map, EffectItem.DefaultDuration ), 0x3728, 10, 10, 2023 );
-						//citizen.PlaySound( 0x1FE );
-						Server.Items.EssenceBase.ColorCitizen( citizen );
-					}
+					mount = true;
+					mod = CitizensConstants.CITIZEN_POS_MOD_MOUNT;
 				}
 			}
-			if ( Utility.RandomMinMax( 1, 3 ) == 1 )
+
+			Point3D cit1 = new Point3D((spot.X - mod), (spot.Y), spot.Z);
+			Point3D cit2 = new Point3D((spot.X), (spot.Y - mod), spot.Z);
+			Point3D cit3 = new Point3D((spot.X + mod), (spot.Y), spot.Z);
+			Point3D cit4 = new Point3D((spot.X), (spot.Y + mod), spot.Z);
+
+			int total = 0;
+
+			// Create first citizen (East)
+			if (Utility.RandomBool())
 			{
-				citizen = null;
-				total++;
-				while (citizen == null )
+				Citizens citizen = CreateCitizenAtPosition(cit1, spot.Map, Direction.East, mount, CitizensConstants.CONTROL_SLOTS_CITIZEN_1);
+				if (citizen != null)
 				{
-					citizen = new Citizens();
-					if ( citizen != null )
-					{
-						citizen.AddItem( new LightCitizen( false ) );
-						citizen.MoveToWorld( cit2, spot.Map );
-						if ( mount ){ MountCitizens ( citizen, true ); }
-						citizen.Direction = dir2;
-						((BaseCreature)citizen).ControlSlots = 3;
-						//Effects.SendLocationParticles( EffectItem.Create( citizen.Location, citizen.Map, EffectItem.DefaultDuration ), 0x3728, 10, 10, 2023 );
-						//citizen.PlaySound( 0x1FE );
-						Server.Items.EssenceBase.ColorCitizen( citizen );
-					}
+					total++;
 				}
 			}
-			if ( Utility.RandomMinMax( 1, 4 ) == 1 || total == 0 )
+
+			// Create second citizen (South)
+			if (Utility.RandomMinMax(1, 3) == 1)
 			{
-				citizen = null;
-				total++;
-				while (citizen == null )
+				Citizens citizen = CreateCitizenAtPosition(cit2, spot.Map, Direction.South, mount, CitizensConstants.CONTROL_SLOTS_CITIZEN_2);
+				if (citizen != null)
 				{
-					citizen = new Citizens();
-					if ( citizen != null )
-					{
-						citizen.AddItem( new LightCitizen( false ) );
-						citizen.MoveToWorld( cit3, spot.Map );
-						if ( mount ){ MountCitizens ( citizen, true ); }
-						citizen.Direction = dir3;
-						((BaseCreature)citizen).ControlSlots = 4;
-						//Effects.SendLocationParticles( EffectItem.Create( citizen.Location, citizen.Map, EffectItem.DefaultDuration ), 0x3728, 10, 10, 2023 );
-						//citizen.PlaySound( 0x1FE );
-						Server.Items.EssenceBase.ColorCitizen( citizen );
-					}
+					total++;
 				}
 			}
-			if ( Utility.RandomMinMax( 1, 4 ) == 1 || total < 2 )
+
+			// Create third citizen (West) - ensure at least one
+			if (Utility.RandomMinMax(1, 4) == 1 || total == 0)
 			{
-				citizen = null;
-				total++;
-				while (citizen == null )
+				Citizens citizen = CreateCitizenAtPosition(cit3, spot.Map, Direction.West, mount, CitizensConstants.CONTROL_SLOTS_CITIZEN_3);
+				if (citizen != null)
 				{
-					citizen = new Citizens();
-					if ( citizen != null )
-					{
-						citizen.AddItem( new LightCitizen( false ) );
-						citizen.MoveToWorld( cit4, spot.Map );
-						if ( mount ){ MountCitizens ( citizen, true ); }
-						citizen.Direction = dir4;
-						((BaseCreature)citizen).ControlSlots = 5;
-						//Effects.SendLocationParticles( EffectItem.Create( citizen.Location, citizen.Map, EffectItem.DefaultDuration ), 0x3728, 10, 10, 2023 );
-						//citizen.PlaySound( 0x1FE );
-						Server.Items.EssenceBase.ColorCitizen( citizen );
-					}
+					total++;
+				}
+			}
+
+			// Create fourth citizen (North) - ensure at least two
+			if (Utility.RandomMinMax(1, 4) == 1 || total < 2)
+			{
+				Citizens citizen = CreateCitizenAtPosition(cit4, spot.Map, Direction.North, mount, CitizensConstants.CONTROL_SLOTS_CITIZEN_4);
+				if (citizen != null)
+				{
+					total++;
 				}
 			}
 		}
 
+		/// <summary>
+		/// Creates dragon riders at various locations.
+		/// </summary>
 		public static void CreateDragonRiders()
 		{
 
@@ -1437,6 +1684,12 @@ namespace Server.Mobiles
 
 		}
 
+		/// <summary>
+		/// Creates a single dragon rider at the specified location.
+		/// </summary>
+		/// <param name="loc">The location to spawn the dragon rider</param>
+		/// <param name="map">The map to spawn on</param>
+		/// <param name="direction">The direction the dragon rider should face</param>
 		public static void CreateDragonRider ( Point3D loc, Map map, Direction direction )
 		{
 			DragonRider citizen = new DragonRider();
@@ -1448,23 +1701,363 @@ namespace Server.Mobiles
 			//citizen.PlaySound( 0x1FE );
 		}
 
+		/// <summary>
+		/// Checks if a citizen should be mounted based on location and type restrictions.
+		/// </summary>
+		/// <param name="m">The citizen mobile to check</param>
+		/// <returns>True if the citizen should be mounted</returns>
+		private static bool ShouldMountCitizen(Mobile m)
+		{
+			if (m is HouseVisitor)
+				return false;
+
+			// Check restricted map coordinates
+			if (m.Map == Map.Trammel && m.X >= 2954 && m.Y >= 893 && m.X <= 3026 && m.Y <= 967)
+				return false; // Castle British
+			if (m.Map == Map.Felucca && m.X >= 1759 && m.Y >= 2195 && m.X <= 1821 && m.Y <= 2241)
+				return false; // Castle of Knowledge
+			if (m.Map == Map.TerMur && m.X >= 309 && m.Y >= 1738 && m.X <= 323 && m.Y <= 1751)
+				return false; // Savaged Empire spot
+			if (m.Map == Map.TerMur && m.X >= 284 && m.Y >= 1642 && m.X <= 298 && m.Y <= 1655)
+				return false; // Savaged Empire spot
+			if (m.Map == Map.TerMur && m.X >= 785 && m.Y >= 896 && m.X <= 805 && m.Y <= 879)
+				return false; // Savaged Empire spot
+			if (m.Map == Map.TerMur && m.X >= 706 && m.Y >= 953 && m.X <= 726 && m.Y <= 963)
+				return false; // Savaged Empire spot
+			if (m.Map == Map.Tokuno && m.X >= 364 && m.Y >= 1027 && m.X <= 415 && m.Y <= 1057)
+				return false; // Cimmerian Castle
+
+			// Check restricted regions
+			if (m.Region.IsPartOf("Kraken Reef Docks") || m.Region.IsPartOf("Anchor Rock Docks") || 
+				m.Region.IsPartOf("Serpent Sail Docks") || m.Region.IsPartOf("Savage Sea Docks") || 
+				m.Region.IsPartOf("the Forgotten Lighthouse"))
+				return false; // Ports
+
+			// Check no-mount regions
+			if (Server.Mobiles.AnimalTrainer.IsNoMountRegion(m.Region) && Server.Misc.MyServerSettings.NoMountsInCertainRegions())
+				return false;
+
+			return true;
+		}
+
+		/// <summary>
+		/// Creates and configures a dragon mount for a DragonRider.
+		/// </summary>
+		/// <param name="m">The DragonRider mobile</param>
+		private static void MountDragonRider(Mobile m)
+		{
+			BaseMount dragon = new RidingDragon();
+			dragon.Body = Utility.RandomList(CitizensConstants.DRAGON_BODY_ID_1, CitizensConstants.DRAGON_BODY_ID_2);
+			dragon.Blessed = true;
+			dragon.Location = m.Location;
+			dragon.OnAfterSpawn();
+			Server.Mobiles.BaseMount.Ride(dragon, m);
+		}
+
+		/// <summary>
+		/// Selects a random mount type for a citizen.
+		/// </summary>
+		/// <param name="m">The citizen mobile</param>
+		/// <returns>The selected mount</returns>
+		private static BaseMount SelectMountType(Mobile m)
+		{
+			BaseMount mount = new Horse();
+			int roll = 0;
+
+			switch (Utility.Random(30))
+			{
+				case 0: mount = SelectBearMount(); break;
+				case 1: mount = SelectReptileMount(); break;
+				case 2: mount = SelectWolfMount(m); break;
+				case 3: mount = SelectCatMount(); break;
+				case 4: mount = SelectOstardMount(); break;
+				case 5: mount = SelectBirdMount(); break;
+				case 6: mount = SelectDrakeMount(); break;
+				case 7: mount = SelectBeetleMount(); break;
+				case 8: mount = SelectRaptorMount(); break;
+				case 9: mount = SelectHorseMount(m); break;
+				case 10: mount = SelectExoticMount(); break;
+				default: mount = new Horse(); break;
+			}
+
+			// Apply special horse colors
+			if (mount is Horse && Utility.RandomMinMax(1, CitizensConstants.SPECIAL_HORSE_CHANCE) == 1)
+			{
+				ApplySpecialHorseColor(mount);
+			}
+
+			return mount;
+		}
+
+		/// <summary>
+		/// Selects a bear-type mount.
+		/// </summary>
+		private static BaseMount SelectBearMount()
+		{
+			switch (Utility.RandomMinMax(1, 10))
+			{
+				case 1: return new CaveBearRiding();
+				case 2: return new DireBear();
+				case 3: return new ElderBlackBearRiding();
+				case 4: return new ElderBrownBearRiding();
+				case 5: return new ElderPolarBearRiding();
+				case 6: return new GreatBear();
+				case 7: return new GrizzlyBearRiding();
+				case 8: return new KodiakBear();
+				case 9: return new SabretoothBearRiding();
+				case 10: return new PandaRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a reptile-type mount.
+		/// </summary>
+		private static BaseMount SelectReptileMount()
+		{
+			switch (Utility.RandomMinMax(1, 4))
+			{
+				case 1: return new BullradonRiding();
+				case 2: return new GorceratopsRiding();
+				case 3: return new GorgonRiding();
+				case 4: return new BasiliskRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a wolf-type mount.
+		/// </summary>
+		private static BaseMount SelectWolfMount(Mobile m)
+		{
+			int roll = Utility.RandomMinMax(1, 4);
+			if (Server.Misc.MorphingTime.CheckNecro(m))
+			{
+				roll = Utility.RandomMinMax(3, 4);
+			}
+
+			switch (roll)
+			{
+				case 1: return new WhiteWolf();
+				case 2: return new WinterWolf();
+				case 3: return new BlackWolf();
+				case 4:
+					Server.Misc.MorphingTime.TurnToNecromancer(m);
+					return new DemonDog();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a cat-type mount.
+		/// </summary>
+		private static BaseMount SelectCatMount()
+		{
+			switch (Utility.RandomMinMax(1, 6))
+			{
+				case 1: return new LionRiding();
+				case 2: return new SnowLion();
+				case 3: return new TigerRiding();
+				case 4: return new WhiteTigerRiding();
+				case 5: return new PredatorHellCatRiding();
+				case 6: return new SabretoothTigerRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects an ostard-type mount.
+		/// </summary>
+		private static BaseMount SelectOstardMount()
+		{
+			switch (Utility.RandomMinMax(1, 4))
+			{
+				case 1: return new DesertOstard();
+				case 2: return new ForestOstard();
+				case 3: return new FrenziedOstard();
+				case 4: return new SnowOstard();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a bird-type mount.
+		/// </summary>
+		private static BaseMount SelectBirdMount()
+		{
+			switch (Utility.RandomMinMax(1, 5))
+			{
+				case 1: return new GiantHawk();
+				case 2: return new GiantRaven();
+				case 3: return new Roc();
+				case 4: return new Phoenix();
+				case 5: return new AxeBeakRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a drake-type mount.
+		/// </summary>
+		private static BaseMount SelectDrakeMount()
+		{
+			switch (Utility.RandomMinMax(1, 4))
+			{
+				case 1: return new SwampDrakeRiding();
+				case 2: return new Wyverns();
+				case 3: return new Teradactyl();
+				case 4:
+					BaseMount gemDragon = new GemDragon();
+					gemDragon.Hue = 0;
+					gemDragon.ItemID = Utility.RandomMinMax(CitizensConstants.GEM_DRAGON_ITEM_ID_1, CitizensConstants.GEM_DRAGON_ITEM_ID_2);
+					return gemDragon;
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a beetle-type mount.
+		/// </summary>
+		private static BaseMount SelectBeetleMount()
+		{
+			switch (Utility.RandomMinMax(1, 6))
+			{
+				case 1: return new Beetle();
+				case 2: return new FireBeetle();
+				case 3: return new GlowBeetleRiding();
+				case 4: return new PoisonBeetleRiding();
+				case 5: return new TigerBeetleRiding();
+				case 6: return new WaterBeetleRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a raptor-type mount.
+		/// </summary>
+		private static BaseMount SelectRaptorMount()
+		{
+			switch (Utility.RandomMinMax(1, 5))
+			{
+				case 1: return new RaptorRiding();
+				case 2: return new RavenousRiding();
+				case 3:
+					BaseMount raptor = new RaptorRiding();
+					raptor.Body = CitizensConstants.RAPTOR_BODY_ID_1;
+					raptor.ItemID = CitizensConstants.RAPTOR_BODY_ID_1;
+					return raptor;
+				case 4:
+					BaseMount raptor2 = new RaptorRiding();
+					raptor2.Body = CitizensConstants.RAPTOR_BODY_ID_2;
+					raptor2.ItemID = CitizensConstants.RAPTOR_BODY_ID_2;
+					return raptor2;
+				case 5:
+					BaseMount raptor3 = new RaptorRiding();
+					raptor3.Body = CitizensConstants.RAPTOR_BODY_ID_3;
+					raptor3.ItemID = CitizensConstants.RAPTOR_BODY_ID_3;
+					return raptor3;
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects a horse-type mount (including special horses).
+		/// </summary>
+		private static BaseMount SelectHorseMount(Mobile m)
+		{
+			int roll = Utility.RandomMinMax(0, 8);
+			if (Server.Misc.MorphingTime.CheckNecro(m))
+			{
+				roll = Utility.RandomMinMax(3, 8);
+			}
+
+			switch (roll)
+			{
+				case 0: return new ZebraRiding();
+				case 1: return new Unicorn();
+				case 2: return new IceSteed();
+				case 3: return new FireSteed();
+				case 4: return new Nightmare();
+				case 5: return new AncientNightmareRiding();
+				case 6:
+					Server.Misc.MorphingTime.TurnToNecromancer(m);
+					return new DarkUnicornRiding();
+				case 7:
+					Server.Misc.MorphingTime.TurnToNecromancer(m);
+					return new HellSteed();
+				case 8: return new Dreadhorn();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Selects an exotic-type mount.
+		/// </summary>
+		private static BaseMount SelectExoticMount()
+		{
+			switch (Utility.RandomMinMax(1, 6))
+			{
+				case 1: return new Ramadon();
+				case 2: return new RidableLlama();
+				case 3: return new GriffonRiding();
+				case 4: return new HippogriffRiding();
+				case 5: return new Kirin();
+				case 6: return new ManticoreRiding();
+				default: return new Horse();
+			}
+		}
+
+		/// <summary>
+		/// Applies special material color to a horse mount.
+		/// </summary>
+		/// <param name="mount">The horse mount to color</param>
+		private static void ApplySpecialHorseColor(BaseMount mount)
+		{
+			mount.Body = CitizensConstants.SPECIAL_HORSE_BODY_ID;
+			mount.ItemID = CitizensConstants.SPECIAL_HORSE_ITEM_ID;
+
+			switch (Utility.RandomMinMax(1, CitizensConstants.SPECIAL_HORSE_HUE_COUNT))
+			{
+				case 1: mount.Hue = MaterialInfo.GetMaterialColor("dull copper", "classic", 0); break;
+				case 2: mount.Hue = MaterialInfo.GetMaterialColor("shadow iron", "classic", 0); break;
+				case 3: mount.Hue = MaterialInfo.GetMaterialColor("copper", "classic", 0); break;
+				case 4: mount.Hue = MaterialInfo.GetMaterialColor("bronze", "classic", 0); break;
+				case 5: mount.Hue = MaterialInfo.GetMaterialColor("gold", "classic", 0); break;
+				case 6: mount.Hue = MaterialInfo.GetMaterialColor("agapite", "classic", 0); break;
+				case 7: mount.Hue = MaterialInfo.GetMaterialColor("verite", "classic", 0); break;
+				case 8: mount.Hue = MaterialInfo.GetMaterialColor("valorite", "classic", 0); break;
+				case 9: mount.Hue = MaterialInfo.GetMaterialColor("nepturite", "classic", 0); break;
+				case 10: mount.Hue = MaterialInfo.GetMaterialColor("obsidian", "classic", 0); break;
+				case 11: mount.Hue = MaterialInfo.GetMaterialColor("steel", "classic", 0); break;
+				case 12: mount.Hue = MaterialInfo.GetMaterialColor("brass", "classic", 0); break;
+				case 13: mount.Hue = MaterialInfo.GetMaterialColor("mithril", "classic", 0); break;
+				case 14: mount.Hue = MaterialInfo.GetMaterialColor("xormite", "classic", 0); break;
+				case 15: mount.Hue = MaterialInfo.GetMaterialColor("dwarven", "classic", 0); break;
+				case 16: mount.Hue = MaterialInfo.GetMaterialColor("silver", "classic", 0); break;
+			}
+		}
+
+		/// <summary>
+		/// Mounts citizens on various mounts based on their type and location.
+		/// </summary>
+		/// <param name="m">The citizen mobile to mount</param>
+		/// <param name="includeDragyns">Whether to include dragon mounts</param>
 		public static void MountCitizens ( Mobile m, bool includeDragyns )
 		{
-			if ( m is DragonRider )
+			if (m is DragonRider)
 			{
-				BaseMount dragon = new RidingDragon(); dragon.Body = Utility.RandomList( 59, 61 ); dragon.Blessed = true; dragon.Location = m.Location; dragon.OnAfterSpawn(); Server.Mobiles.BaseMount.Ride( dragon, m );
+				MountDragonRider(m);
+				return;
 			}
-			else if ( m.Map == Map.Trammel && m.X >= 2954 && m.Y >= 893 && m.X <= 3026 && m.Y <= 967 ){ /* DO NOTHING IN CASTLE BRITISH */ }
-			else if ( m.Map == Map.Felucca && m.X >= 1759 && m.Y >= 2195 && m.X <= 1821 && m.Y <= 2241 ){ /* DO NOTHING IN CASTLE OF KNOWLEDGE */ }
-			else if ( m.Map == Map.TerMur && m.X >= 309 && m.Y >= 1738 && m.X <= 323 && m.Y <= 1751 ){ /* DO NOTHING IN THIS SAVAGED EMPIRE SPOT */ }
-			else if ( m.Map == Map.TerMur && m.X >= 284 && m.Y >= 1642 && m.X <= 298 && m.Y <= 1655 ){ /* DO NOTHING IN THIS SAVAGED EMPIRE SPOT */ }
-			else if ( m.Map == Map.TerMur && m.X >= 785 && m.Y >= 896 && m.X <= 805 && m.Y <= 879 ){ /* DO NOTHING IN THIS SAVAGED EMPIRE SPOT */ }
-			else if ( m.Map == Map.TerMur && m.X >= 706 && m.Y >= 953 && m.X <= 726 && m.Y <= 963 ){ /* DO NOTHING IN THIS SAVAGED EMPIRE SPOT */ }
-			else if ( m.Map == Map.Tokuno && m.X >= 364 && m.Y >= 1027 && m.X <= 415 && m.Y <= 1057 ){ /* DO NOTHING IN THE CIMMERIAN CASTLE*/ }
-			else if ( m.Region.IsPartOf( "Kraken Reef Docks" ) || m.Region.IsPartOf( "Anchor Rock Docks" ) || m.Region.IsPartOf( "Serpent Sail Docks" ) || m.Region.IsPartOf( "Savage Sea Docks" ) || m.Region.IsPartOf( "the Forgotten Lighthouse" ) ){ /* DO NOTHING ON THE PORTS */ }
-			else if ( Server.Mobiles.AnimalTrainer.IsNoMountRegion( m.Region ) && Server.Misc.MyServerSettings.NoMountsInCertainRegions() ){ /* DO NOTHING IN NO MOUNT REGIONS */ }
-			//else if ( Server.Misc.MyServerSettings.NoMountBuilding() && Server.Misc.Worlds.InBuilding( m ) ){ /* DO NOTHING IN NO MOUNT REGIONS */ }
-			else if ( !(m is HouseVisitor ) )
+
+			if (!ShouldMountCitizen(m))
+			{
+				return;
+			}
+
+			BaseMount mount = SelectMountType(m);
+			Server.Mobiles.BaseMount.Ride(mount, m);
+		}
 			{
 				BaseMount mount = new Horse();
 
@@ -1628,6 +2221,10 @@ namespace Server.Mobiles
 			}
 		}
 
+		/// <summary>
+		/// Determines if people should be meeting at a location.
+		/// </summary>
+		/// <returns>Randomly returns true or false</returns>
 		public static bool PeopleMeetingHere()
 		{
 			if ( Utility.RandomBool() )
@@ -1636,10 +2233,30 @@ namespace Server.Mobiles
 			return false;
 		}
 
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
 		public Citizens( Serial serial ) : base( serial )
 		{
 		}
 
+		/// <summary>
+		/// Serializes the citizen data
+		/// </summary>
+		/// <param name="writer">The writer to serialize to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
@@ -1662,27 +2279,68 @@ namespace Server.Mobiles
 			CitizenRumor = reader.ReadString();
 		}
 
+		#endregion
+
+		#region Override Methods (Continued)
+
+		/// <summary>
+		/// Called after the citizen spawns. Applies transformations and color effects.
+		/// Also resets position to home if citizen has wandered too far.
+		/// </summary>
 		public override void OnAfterSpawn()
 		{
 			base.OnAfterSpawn();
 			Server.Misc.MorphingTime.CheckNecromancer( this );
-
 
 			if ( this.Home.X > 0 && this.Home.Y > 0 && ( Math.Abs( this.X-this.Home.X ) > CitizensConstants.HOME_POSITION_TOLERANCE || Math.Abs( this.Y-this.Home.Y ) > CitizensConstants.HOME_POSITION_TOLERANCE || Math.Abs( this.Z-this.Home.Z ) > CitizensConstants.HOME_POSITION_TOLERANCE ) )
 			{
 				this.Location = this.Home;
 				//Effects.SendLocationParticles( EffectItem.Create( this.Location, this.Map, EffectItem.DefaultDuration ), 0x3728, 8, 20, 5042 );
 				//Effects.PlaySound( this, this.Map, 0x201 );
-		}
+			}
 		}
 
-
+		/// <summary>
+		/// Called when the citizen's map changes. Applies transformations.
+		/// </summary>
+		/// <param name="oldMap">The previous map</param>
 		protected override void OnMapChange( Map oldMap )
 		{
 			base.OnMapChange( oldMap );
 			Server.Misc.MorphingTime.CheckNecromancer( this );
 		}
 
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Context menu entry for opening the citizen's speech gump.
+		/// </summary>
+		public class SpeechGumpEntry : ContextMenuEntry
+		{
+			private Mobile m_Mobile;
+			private Mobile m_Giver;
+			
+			public SpeechGumpEntry( Mobile from, Mobile giver ) : base( CitizensConstants.CONTEXT_MENU_ID, CitizensConstants.CONTEXT_MENU_RANGE )
+			{
+				m_Mobile = from;
+				m_Giver = giver;
+			}
+
+			public override void OnClick()
+			{
+				Mobile from = m_Mobile;
+				Citizens citizen = (Citizens)m_Giver;
+				from.CloseGump( typeof( CitizenGump ) );
+				from.SendGump( new CitizenGump( citizen, from ) );
+			}
+		}
+
+		/// <summary>
+		/// Gump displayed when interacting with a citizen.
+		/// Shows the citizen's phrase with placeholders replaced.
+		/// </summary>
 		public class CitizenGump : Gump
 		{
 			private Mobile c_Citizen;
@@ -1723,118 +2381,86 @@ namespace Server.Mobiles
 			from.CloseGump( typeof( CitizenGump ) );
 			int sound = 0;
 			string say = "";
-			bool isArmor = false; if ( dropped is BaseArmor ){ isArmor = true; }
-			bool isWeapon = false; if ( dropped is BaseWeapon ){ isWeapon = true; }
-			bool isMetal = false; if ( Server.Misc.MaterialInfo.IsAnyKindOfMetalItem( dropped ) ){ isMetal = true; }
-			bool isWood = false; if ( Server.Misc.MaterialInfo.IsAnyKindOfWoodItem( dropped ) ){ isWood = true; }
-			bool isLeather = false; if ( Server.Misc.MaterialInfo.IsAnyKindOfClothItem( dropped ) ){ isLeather = true; }
-			bool fixArmor = false;
-			bool fixWeapon = false;
 
+			// Handle special item types
 			if ( dropped is Cargo )
 			{
 				Server.Items.Cargo.GiveCargo( (Cargo)dropped, this, from );
-			}
-			else if ( dropped is Gold )
-			{
-				if ( CitizenCost > 0 && CitizenCost == dropped.Amount )
-				{
-					dropped.Delete();
-					sound = CitizensConstants.SOUND_TRADE_SUCCESS;
-					say = CitizensStringConstants.SUCCESS_FAIR_TRADE;
-					Item give = null;
-					List<Item> belongings = new List<Item>();
-					foreach( Item i in this.Backpack.Items )
-					{
-						give = i;
-					}
-					give.Movable = true;
-					give.InvalidateProperties();
-					from.AddToBackpack( give );
-					CitizenService = 0;
-				}
-			}
-			else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD )
-			{
-				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && dropped is BaseMagicStaff )
-				{
-                    BaseMagicStaff ba = (BaseMagicStaff)dropped;
-                    BaseWeapon bw = (BaseWeapon)dropped;
-
-					int myCharges = GetWandCharges(bw.IntRequirement);
-
-					if ( bw.IntRequirement < 1 ){ say = CitizensStringConstants.ERROR_WAND_NO_RECHARGE; }
-                    else if ( ba.Charges <= myCharges )
-                    {
-                        say = CitizensStringConstants.SUCCESS_WAND_CHARGED;
-                        sound = CitizensConstants.SOUND_WAND_CHARGE;
-						ba.Charges = myCharges;
-                    }
-                    else { say = CitizensStringConstants.ERROR_WAND_TOO_MANY_CHARGES; }
-				}
-			}
-			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR )
-			{
-				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isArmor && isMetal ){ fixArmor = true; sound = CitizensConstants.SOUND_REPAIR; }
-				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && dropped is LockableContainer )
-				{
-					LockableContainer box = (LockableContainer)dropped;
-					say = CitizensStringConstants.SUCCESS_UNLOCKED;
-					sound = CitizensConstants.SOUND_UNLOCK;
-					box.Locked = false;
-					box.TrapPower = 0;
-					box.TrapLevel = 0;
-					box.LockLevel = 0;
-					box.MaxLockLevel = 0;
-					box.RequiredSkill = 0;
-					box.TrapType = TrapType.None;
-				}
-			}
-			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_2 )
-			{
-				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isWeapon && isMetal ){ fixWeapon = true; sound = CitizensConstants.SOUND_REPAIR; }
-				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isArmor && isLeather ){ fixArmor = true; sound = CitizensConstants.SOUND_LEATHER_REPAIR; }
-				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isWeapon && isLeather ){ fixWeapon = true; sound = CitizensConstants.SOUND_LEATHER_REPAIR; }
-			}
-			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON )
-			{
-				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isWeapon && isWood ){ fixWeapon = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
-				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isWeapon && isWood ){ fixWeapon = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
-			}
-			else if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR )
-			{
-				if ( CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isArmor && isWood ){ fixArmor = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
-				else if ( CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isArmor && isWood ){ fixArmor = true; sound = CitizensConstants.SOUND_WOOD_REPAIR; }
+				return false;
 			}
 
+			// Handle gold payment for item purchase
+			if ( dropped is Gold )
+			{
+				HandleItemPurchase( from, (Gold)dropped, out say, out sound );
+				SayTo(from, say);
+				if ( sound > 0 ){ from.PlaySound( sound ); }
+				return false;
+			}
+
+			// Handle wand recharging
+			if ( CitizenType == CitizensConstants.CITIZEN_TYPE_WIZARD && dropped is BaseMagicStaff )
+			{
+				HandleWandRecharge( (BaseMagicStaff)dropped, out say, out sound );
+				SayTo(from, say);
+				if ( sound > 0 ){ from.PlaySound( sound ); }
+				return false;
+			}
+
+			// Handle container unlocking
+			if ( CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR && CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && dropped is LockableContainer )
+			{
+				HandleContainerUnlock( (LockableContainer)dropped, out say, out sound );
+				SayTo(from, say);
+				if ( sound > 0 ){ from.PlaySound( sound ); }
+				return false;
+			}
+
+			// Determine item types
+			bool isArmor = dropped is BaseArmor;
+			bool isWeapon = dropped is BaseWeapon;
+			bool isMetal = Server.Misc.MaterialInfo.IsAnyKindOfMetalItem( dropped );
+			bool isWood = Server.Misc.MaterialInfo.IsAnyKindOfWoodItem( dropped );
+			bool isLeather = Server.Misc.MaterialInfo.IsAnyKindOfClothItem( dropped );
+
+			// Determine repair type
+			bool fixArmor = false;
+			bool fixWeapon = false;
+			DetermineRepairType( dropped, isArmor, isWeapon, isMetal, isWood, isLeather, out fixArmor, out fixWeapon, out sound );
+
+			// Handle item repairs
 			Container bank = from.FindBankNoCreate();
-			if ( fixArmor && dropped is BaseArmor && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) ) )
+			if ( fixArmor && dropped is BaseArmor )
 			{
-				say = CitizensStringConstants.SUCCESS_ARMOR_REPAIRED;
-				BaseArmor ba = (BaseArmor)dropped;
-				if (ba.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
-					ba.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
+				if ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) )
+				{
+					say = RepairArmor( (BaseArmor)dropped );
+				}
 				else
-					ba.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
-				ba.HitPoints = ba.MaxHitPoints;
+				{
+					say = CitizensStringConstants.ERROR_NOT_ENOUGH_GOLD;
+					sound = 0;
+				}
 			}
-			else if ( fixWeapon && dropped is BaseWeapon && ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) ) )
+			else if ( fixWeapon && dropped is BaseWeapon )
 			{
-				say = CitizensStringConstants.SUCCESS_WEAPON_REPAIRED;
-				BaseWeapon bw = (BaseWeapon)dropped;
-				if (bw.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
-					bw.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
+				if ( ( from.Backpack != null && from.Backpack.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) || ( bank != null && bank.ConsumeTotal( typeof( Gold ), CitizensConstants.COST_REPAIR ) ) )
+				{
+					say = RepairWeapon( (BaseWeapon)dropped );
+				}
 				else
-					bw.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
-				bw.HitPoints = bw.MaxHitPoints;
+				{
+					say = CitizensStringConstants.ERROR_NOT_ENOUGH_GOLD;
+					sound = 0;
+				}
 			}
-			else 
-				say = CitizensStringConstants.ERROR_NOT_ENOUGH_GOLD;
 
 			SayTo(from, say);
 			if ( sound > 0 ){ from.PlaySound( sound ); }
 
 			return false;
 		}
+
+		#endregion
 	}
 }

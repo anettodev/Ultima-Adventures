@@ -96,6 +96,24 @@ namespace Server.Mobiles
 		public AdventurerEast(Serial serial) : base(serial)
 		{
 		}
+
+		/// <summary>
+		/// Serializes the adventurer data
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write((int)0); // version
+		}
+
+		/// <summary>
+		/// Deserializes the adventurer data
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
 	}
 
 	/// <summary>
@@ -110,6 +128,24 @@ namespace Server.Mobiles
 
 		public AdventurerWest(Serial serial) : base(serial)
 		{
+		}
+
+		/// <summary>
+		/// Serializes the adventurer data
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write((int)0); // version
+		}
+
+		/// <summary>
+		/// Deserializes the adventurer data
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
 		}
 	}
 
@@ -126,6 +162,24 @@ namespace Server.Mobiles
 		public AdventurerSouth(Serial serial) : base(serial)
 		{
 		}
+
+		/// <summary>
+		/// Serializes the adventurer data
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write((int)0); // version
+		}
+
+		/// <summary>
+		/// Deserializes the adventurer data
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
 	}
 
 	/// <summary>
@@ -140,6 +194,24 @@ namespace Server.Mobiles
 
 		public AdventurerNorth(Serial serial) : base(serial)
 		{
+		}
+
+		/// <summary>
+		/// Serializes the adventurer data
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write((int)0); // version
+		}
+
+		/// <summary>
+		/// Deserializes the adventurer data
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
 		}
 	}
 }

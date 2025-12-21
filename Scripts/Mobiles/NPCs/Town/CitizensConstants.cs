@@ -1200,6 +1200,59 @@ namespace Server.Mobiles
 		public const int HOME_POSITION_TOLERANCE = 2;
 
 		#endregion
+
+		#region Mount Constants
+
+		/// <summary>Dragon body ID option 1</summary>
+		public const int DRAGON_BODY_ID_1 = 59;
+
+		/// <summary>Dragon body ID option 2</summary>
+		public const int DRAGON_BODY_ID_2 = 61;
+
+		/// <summary>Special horse chance denominator</summary>
+		public const int SPECIAL_HORSE_CHANCE = 50;
+
+		/// <summary>Special horse body ID</summary>
+		public const int SPECIAL_HORSE_BODY_ID = 587;
+
+		/// <summary>Special horse item ID</summary>
+		public const int SPECIAL_HORSE_ITEM_ID = 587;
+
+		/// <summary>Special horse hue count</summary>
+		public const int SPECIAL_HORSE_HUE_COUNT = 16;
+
+		/// <summary>Gem dragon item ID min</summary>
+		public const int GEM_DRAGON_ITEM_ID_1 = 595;
+
+		/// <summary>Gem dragon item ID max</summary>
+		public const int GEM_DRAGON_ITEM_ID_2 = 596;
+
+		/// <summary>Raptor body ID option 1</summary>
+		public const int RAPTOR_BODY_ID_1 = 116;
+
+		/// <summary>Raptor body ID option 2</summary>
+		public const int RAPTOR_BODY_ID_2 = 117;
+
+		/// <summary>Raptor body ID option 3</summary>
+		public const int RAPTOR_BODY_ID_3 = 219;
+
+		#endregion
+
+		#region Citizen Creation Constants
+
+		/// <summary>Control slots for first citizen</summary>
+		public const int CONTROL_SLOTS_CITIZEN_1 = 2;
+
+		/// <summary>Control slots for second citizen</summary>
+		public const int CONTROL_SLOTS_CITIZEN_2 = 3;
+
+		/// <summary>Control slots for third citizen</summary>
+		public const int CONTROL_SLOTS_CITIZEN_3 = 4;
+
+		/// <summary>Control slots for fourth citizen</summary>
+		public const int CONTROL_SLOTS_CITIZEN_4 = 5;
+
+		#endregion
 	}
 }
 
