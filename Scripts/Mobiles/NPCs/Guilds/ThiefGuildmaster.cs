@@ -52,6 +52,14 @@ namespace Server.Mobiles
 			SetSkill( SkillName.RemoveTrap, ThiefGuildmasterConstants.SKILL_REMOVE_TRAP_MIN, ThiefGuildmasterConstants.SKILL_REMOVE_TRAP_MAX );
 		}
 
+		/// <summary>
+		/// Deserialization constructor for ThiefGuildmaster NPC.
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
+		public ThiefGuildmaster( Serial serial ) : base( serial )
+		{
+		}
+
 		#endregion
 
 		#region Initialization
