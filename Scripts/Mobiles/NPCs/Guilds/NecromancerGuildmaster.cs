@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.NecromancersGuild; } }
 
 		[Constructable]
-		public NecromancerGuildmaster() : base( "black magic" )
+		public NecromancerGuildmaster() : base( NecromancerGuildmasterStringConstants.TITLE_NECROMANCER )
 		{
 			Job = JobFragment.cashual;
 			Karma = Utility.RandomMinMax( 13, -45 );

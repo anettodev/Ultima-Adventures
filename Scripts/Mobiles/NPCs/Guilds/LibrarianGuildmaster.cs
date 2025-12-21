@@ -17,7 +17,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.LibrariansGuild; } }
 
 		[Constructable]
-		public LibrarianGuildmaster() : base( "librarian" )
+		public LibrarianGuildmaster() : base( LibrarianGuildmasterStringConstants.TITLE_LIBRARIAN )
 		{
 			Job = JobFragment.scholar;
 			Karma = Utility.RandomMinMax( 13, -45 );

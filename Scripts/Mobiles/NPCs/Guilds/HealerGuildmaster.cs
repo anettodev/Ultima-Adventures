@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.HealersGuild; } }
 
 		[Constructable]
-		public HealerGuildmaster() : base( "healer" )
+		public HealerGuildmaster() : base( HealerGuildmasterStringConstants.TITLE_HEALER )
 		{
 			Job = JobFragment.healer;
 			Karma = Utility.RandomMinMax( 13, -45 );

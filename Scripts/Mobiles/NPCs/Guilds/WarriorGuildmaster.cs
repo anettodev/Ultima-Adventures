@@ -10,7 +10,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.WarriorsGuild; } }
 
 		[Constructable]
-		public WarriorGuildmaster() : base( "warrior" )
+		public WarriorGuildmaster() : base( WarriorGuildmasterStringConstants.TITLE_WARRIOR )
 		{
 			
 			Job = JobFragment.weaponstrainer;

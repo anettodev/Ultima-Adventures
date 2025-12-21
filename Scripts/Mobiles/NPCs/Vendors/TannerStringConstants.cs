@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		#region NPC Title (Portuguese)
 
 		/// <summary>Title for Tanner NPC in Portuguese</summary>
-		public const string TITLE_TANNER = "o curtidor";
+		public const string TITLE_TANNER = "o coureiro";
 
 		#endregion
 	}

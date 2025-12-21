@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.FishermensGuild; } }
 
 		[Constructable]
-		public FisherGuildmaster() : base( "mariner" )
+		public FisherGuildmaster() : base( FisherGuildmasterStringConstants.TITLE_FISHER )
 		{
 			Job = JobFragment.fisher;
 			Karma = Utility.RandomMinMax( 13, -45 );

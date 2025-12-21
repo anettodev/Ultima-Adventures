@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MerchantsGuild; } }
 
 		[Constructable]
-		public MerchantGuildmaster() : base( "merchant" )
+		public MerchantGuildmaster() : base( MerchantGuildmasterStringConstants.TITLE_MERCHANT )
 		{
 			SetSkill( SkillName.ItemID, 85.0, 100.0 );
 			SetSkill( SkillName.ArmsLore, 85.0, 100.0 );

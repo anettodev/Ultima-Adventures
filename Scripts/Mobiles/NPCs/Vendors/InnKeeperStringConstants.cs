@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		#region NPC Title (Portuguese)
 
 		/// <summary>Title for InnKeeper NPC in Portuguese</summary>
-		public const string TITLE_INN_KEEPER = "o hospedeiro";
+		public const string TITLE_INN_KEEPER = "o hoteleiro";
 
 		#endregion
 	}

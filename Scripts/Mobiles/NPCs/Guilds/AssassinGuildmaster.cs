@@ -16,7 +16,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.AssassinsGuild; } }
 
 		[Constructable]
-		public AssassinGuildmaster() : base( "assassin" )
+		public AssassinGuildmaster() : base( AssassinGuildmasterStringConstants.TITLE_ASSASSIN )
 		{
 			SetSkill( SkillName.DetectHidden, 75.0, 98.0 );
 			SetSkill( SkillName.Hiding, 65.0, 88.0 );

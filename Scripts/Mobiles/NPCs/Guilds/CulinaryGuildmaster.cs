@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.CulinariansGuild; } }
 
 		[Constructable]
-		public CulinaryGuildmaster() : base( "culinary" )
+		public CulinaryGuildmaster() : base( CulinaryGuildmasterStringConstants.TITLE_CULINARY )
 		{
 			Job = JobFragment.cook;
 			Karma = Utility.RandomMinMax( 13, -45 );

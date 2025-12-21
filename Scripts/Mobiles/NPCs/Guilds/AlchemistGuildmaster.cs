@@ -16,7 +16,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.AlchemistsGuild; } }
 
 		[Constructable]
-		public AlchemistGuildmaster() : base( "alchemist" )
+		public AlchemistGuildmaster() : base( AlchemistGuildmasterStringConstants.TITLE_ALCHEMIST )
 		{
 			Job = JobFragment.alchemist;
 			Karma = Utility.RandomMinMax( 13, -45 );

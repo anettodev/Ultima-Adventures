@@ -16,7 +16,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.CartographersGuild; } }
 
 		[Constructable]
-		public CartographersGuildmaster() : base( "cartographer" )
+		public CartographersGuildmaster() : base( CartographersGuildmasterStringConstants.TITLE_CARTOGRAPHER )
 		{
 			Job = JobFragment.mapmaker;
 			Karma = Utility.RandomMinMax( 13, -45 );
