@@ -540,7 +540,7 @@ namespace Server.SkillHandlers
 
 					Container pack = ((Mobile)target).Backpack;
 					
-					double odds = (from.Skills[SkillName.Stealing].Value / ThieveryConstants.STEALING_SKILL_CHECK_MAX) * (1 - ((Math.Abs(((Mobile)target).Fame) / ThieveryConstants.FAME_DIVISOR))) * (1 + (from.RawDex / ThieveryConstants.STEALING_SKILL_CHECK_MAX));
+					double odds = (from.Skills[SkillName.Stealing].Value / ThieveryConstants.STEALING_SKILL_CHECK_MAX) * (1 - ((Math.Abs(((Mobile)target).Fame) / ThieveryConstants.FAME_ODDS_DIVISOR))) * (1 + (from.RawDex / ThieveryConstants.STEALING_SKILL_CHECK_MAX));
 
 					if (odds > 1)
 						odds = ThieveryConstants.PROBABILITY_NEAR_CERTAIN;

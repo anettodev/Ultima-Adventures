@@ -427,8 +427,8 @@ namespace Server.SkillHandlers
 		/// <summary>Minimum hits required for certain checks</summary>
 		public const int MIN_HITS_REQUIRED = 10;
 
-		/// <summary>Fame divisor for stealing odds calculation</summary>
-		public const int FAME_DIVISOR = 30000;
+		/// <summary>Fame divisor for stealing odds calculation (used in probability formula)</summary>
+		public const int FAME_ODDS_DIVISOR = 30000;
 
 		/// <summary>Minimum karma threshold for certain checks</summary>
 		public const int MIN_KARMA_THRESHOLD = 20;
