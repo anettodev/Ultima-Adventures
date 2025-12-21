@@ -7,144 +7,73 @@ on:
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+    deploy:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
 
-      - name: Setup .NET Framework (Mono)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mono-complete mono-devel msbuild
+        - name: Prepare deployment package
+          run: |
+            mkdir -p deploy-package
+            cp -r Scripts deploy-package/
+            cp -r Data deploy-package/ 2>/dev/null || true
+            cp LinuxServer.exe deploy-package/ 2>/dev/null || true
+            cp WindowsServer.exe deploy-package/ 2>/dev/null || true
+            cp *.dll deploy-package/ 2>/dev/null || true
+            cp -r Server deploy-package/ 2>/dev/null || true
+            tar -czf deploy.tar.gz deploy-package/
 
-      - name: Restore dependencies
-        run: |
-          msbuild Scripts/Scripts.csproj /t:Restore /p:Configuration=Release
+        - name: Setup SSH and Deploy
+          env:
+            SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+            VPS_HOST: ${{ secrets.VPS_HOST }}
+            VPS_USER: ${{ secrets.VPS_USERNAME }}
+            VPS_PATH: ${{ secrets.DEPLOY_PATH }}
+          run: |
+            # Setup SSH
+            mkdir -p ~/.ssh
+            echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Build Scripts
-        run: |
-          msbuild Scripts/Scripts.csproj /p:Configuration=Release /v:minimal
+            # Debug - show what we're connecting to
+            echo "Connecting to: $VPS_USER@$VPS_HOST"
+            echo "Deploy path: $VPS_PATH"
 
-      - name: Verify build output
-        run: |
-          ls -la Scripts/bin/Release/
-          if [ ! -f "Scripts/bin/Release/Scripts.dll" ]; then
-            echo "Error: Scripts.dll not found!"
-            exit 1
-          fi
+            # Test connection
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "echo 'Connected successfully'"
 
-      - name: Prepare deployment package
-        run: |
-          mkdir -p deploy-package
-          cp -r Scripts/bin/Release/* deploy-package/
-          cp -r Data deploy-package/ 2>/dev/null || true
-          cp WindowsServer.exe LinuxServer.exe deploy-package/ 2>/dev/null || true
-          tar -czf deploy.tar.gz deploy-package/
+            # Stop server
+            echo "Stopping server..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "pkill -f 'LinuxServer.exe' || true; sleep 5; pkill -9 -f 'LinuxServer.exe' || true; echo 'Server stopped'"
 
-      - name: Setup SSH key
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+            # Backup
+            echo "Creating backup..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && mkdir -p backups && cp -r Scripts backups/\$(date +%Y%m%d_%H%M%S) 2>/dev/null || true"
 
-      - name: Stop server
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PATH: ${{ secrets.VPS_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
-            cd ${{ secrets.VPS_PATH }}
-            # Find and kill server process if running
-            pkill -f "LinuxServer.exe" || true
-            # Wait for graceful shutdown
-            sleep 5
-            # Force kill if still running
-            pkill -9 -f "LinuxServer.exe" || true
-            echo "Server stopped"
-          EOF
+            # Upload
+            echo "Uploading files..."
+            scp -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no deploy.tar.gz "$VPS_USER@$VPS_HOST:$VPS_PATH/"
 
-      - name: Backup current version
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PATH: ${{ secrets.VPS_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
-            cd ${{ secrets.VPS_PATH }}
-            BACKUP_DIR="backups/$(date +%Y%m%d_%H%M%S)"
-            mkdir -p "$BACKUP_DIR"
-            cp -r Scripts/bin/Release/* "$BACKUP_DIR/" 2>/dev/null || true
-            echo "Backup created at $BACKUP_DIR"
-            # Keep only last 5 backups
-            cd backups
-            ls -t | tail -n +6 | xargs -r rm -rf
-          EOF
+            # Extract
+            echo "Extracting files..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && tar -xzf deploy.tar.gz && cp -r deploy-package/* . && rm -rf deploy-package deploy.tar.gz && rm -f Scripts/Output/Scripts.CS.dll Scripts/Output/Scripts.CS.hash 2>/dev/null || true && chmod +x LinuxServer.exe"
 
-      - name: Deploy to VPS
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PATH: ${{ secrets.VPS_PATH }}
-        run: |
-          scp -i ~/.ssh/deploy_key deploy.tar.gz $VPS_USER@$VPS_HOST:${{ secrets.VPS_PATH }}/
+            # Start server
+            echo "Starting server..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && nohup mono LinuxServer.exe > server.log 2>&1 &"
 
-      - name: Extract and setup files
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PATH: ${{ secrets.VPS_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
-            cd ${{ secrets.VPS_PATH }}
-            tar -xzf deploy.tar.gz
-            cp -r deploy-package/* .
-            rm -rf deploy-package deploy.tar.gz
-            chmod +x LinuxServer.exe
-            echo "Deployment files extracted"
-          EOF
+            # Wait and check
+            echo "Waiting for server to start..."
+            sleep 30
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "pgrep -f 'LinuxServer.exe' && echo 'Server is running' && tail -20 $VPS_PATH/server.log || (echo 'Server failed to start' && tail -50 $VPS_PATH/server.log && exit 1)"
 
-      - name: Start server
-        env:
-          VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
-          VPS_PATH: ${{ secrets.VPS_PATH }}
-        run: |
-          ssh -i ~/.ssh/deploy_key $VPS_USER@$VPS_HOST << 'EOF'
-            cd ${{ secrets.VPS_PATH }}
-            # Start server in background with nohup
-            nohup mono LinuxServer.exe > /dev/null 2>&1 &
-            echo "Server started with PID $!"
-            sleep 3
-            # Check if server is running
-            if pgrep -f "LinuxServer.exe" > /dev/null; then
-              echo "Server is running successfully"
-            else
-              echo "Warning: Server may not have started properly"
-              exit 1
-            fi
-          EOF
+            echo "Deployment complete!"
 
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -f ~/.ssh/deploy_key
-          rm -f deploy.tar.gz
-
-      - name: Deployment notification
-        if: success()
-        run: |
-          echo "✅ Deployment completed successfully!"
-          echo "Server: ${{ secrets.VPS_HOST }}"
-          echo "Time: $(date)"
-
-      - name: Deployment failed notification
-        if: failure()
-        run: |
-          echo "❌ Deployment failed!"
-          echo "Please check the logs and server status"
+        - name: Cleanup
+          if: always()
+          run: |
+            rm -f ~/.ssh/deploy_key
+            rm -f deploy.tar.gz
