@@ -36,41 +36,30 @@ jobs:
             mkdir -p ~/.ssh
             echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
             chmod 600 ~/.ssh/deploy_key
-
-            # Debug: verify key format
-            echo "Key file size: $(wc -c < ~/.ssh/deploy_key) bytes"
-            echo "Key starts with: $(head -c 30 ~/.ssh/deploy_key)"
-
-            # Add host to known_hosts
             ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Test SSH connection
-            echo "Testing SSH connection..."
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=10 ${VPS_USER}@${VPS_HOST} "echo 'SSH connection successful'" || {
-              echo "SSH connection failed. Debug info:"
-              ssh -vvv -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=10 ${VPS_USER}@${VPS_HOST} "echo test" 2>&1 | tail -50
-              exit 1
-            }
+            # Test connection and verify path
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=10 ${VPS_USER}@${VPS_HOST} "echo 'SSH OK' && echo 'Path: ${VPS_PATH}' && ls -la ${VPS_PATH} || echo 'Path does not exist'"
 
         - name: Stop server
           run: |
-            ssh -i ~/.ssh/deploy_key ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && pkill -f 'LinuxServer.exe' || true && sleep 5 && pkill -9 -f 'LinuxServer.exe' || true && echo 'Server stopped'"
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && pkill -f 'LinuxServer.exe' || true && sleep 5 && pkill -9 -f 'LinuxServer.exe' || true && echo 'Server stopped'"
 
         - name: Backup current version
           run: |
-            ssh -i ~/.ssh/deploy_key ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && BACKUP_DIR=\"backups/\$(date +%Y%m%d_%H%M%S)\" && mkdir -p \"\$BACKUP_DIR\" && cp -r Scripts \"\$BACKUP_DIR/\" 2>/dev/null || true && echo \"Backup created at \$BACKUP_DIR\" && cd backups && ls -t | tail -n +6 | xargs -r rm -rf"
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && BACKUP_DIR=\"backups/\$(date +%Y%m%d_%H%M%S)\" && mkdir -p \"\$BACKUP_DIR\" && cp -r Scripts \"\$BACKUP_DIR/\" 2>/dev/null || true && echo \"Backup created\" && cd backups && ls -t | tail -n +6 | xargs -r rm -rf"
 
         - name: Deploy to VPS
           run: |
-            scp -i ~/.ssh/deploy_key deploy.tar.gz ${VPS_USER}@${VPS_HOST}:${VPS_PATH}/
+            scp -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no deploy.tar.gz ${VPS_USER}@${VPS_HOST}:${VPS_PATH}/
 
         - name: Extract and setup files
           run: |
-            ssh -i ~/.ssh/deploy_key ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && tar -xzf deploy.tar.gz && cp -r deploy-package/* . && rm -rf deploy-package deploy.tar.gz && rm -f Scripts/Output/Scripts.CS.dll Scripts/Output/Scripts.CS.hash 2>/dev/null || true && chmod +x LinuxServer.exe && echo 'Deployment files extracted'"
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && tar -xzf deploy.tar.gz && cp -r deploy-package/* . && rm -rf deploy-package deploy.tar.gz && rm -f Scripts/Output/Scripts.CS.dll Scripts/Output/Scripts.CS.hash 2>/dev/null || true && chmod +x LinuxServer.exe && echo 'Files extracted'"
 
         - name: Start server
           run: |
-            ssh -i ~/.ssh/deploy_key ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && nohup mono LinuxServer.exe > server.log 2>&1 & echo \"Server started with PID \$!\" && sleep 30 && if pgrep -f 'LinuxServer.exe' > /dev/null; then echo 'Server is running successfully' && tail -20 server.log; else echo 'Warning: Server may not have started properly' && tail -50 server.log && exit 1; fi"
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && nohup mono LinuxServer.exe > server.log 2>&1 & sleep 30 && if pgrep -f 'LinuxServer.exe' > /dev/null; then echo 'Server running' && tail -20 server.log; else echo 'Server failed' && tail -50 server.log && exit 1; fi"
 
         - name: Cleanup
           if: always()
@@ -82,11 +71,8 @@ jobs:
           if: success()
           run: |
             echo "Deployment completed successfully!"
-            echo "Server: ${VPS_HOST}"
-            echo "Time: $(date)"
 
         - name: Deployment failed notification
           if: failure()
           run: |
             echo "Deployment failed!"
-            echo "Please check the logs and server status"
