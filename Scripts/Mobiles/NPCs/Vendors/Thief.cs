@@ -53,6 +53,14 @@ namespace Server.Mobiles
 			SetSkill( SkillName.Stealth, ThiefConstants.SKILL_STEALTH_MIN, ThiefConstants.SKILL_STEALTH_MAX );
 		}
 
+		/// <summary>
+		/// Deserialization constructor for Thief NPC.
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
+		public Thief( Serial serial ) : base( serial )
+		{
+		}
+
 		#endregion
 
 		#region Initialization
