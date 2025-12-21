@@ -458,31 +458,9 @@ namespace Server.Misc
 
 		#endregion
 
-		#region Private Skill Title Helpers
+	#region Private Skill Title Helpers
 
-		private static Skill GetHighestSkill( Mobile m )
-		{
-			int points = 0;
-
-			Spellbook book = Spellbook.FindMystic( m );
-			if ( book is MysticSpellbook )
-			{
-				MysticSpellbook tome = (MysticSpellbook)book;
-				if ( tome.owner == m )
-				{
-					points++;
-				}
-			}
-
-			if ( Server.Spells.Mystic.MysticSpell.MonkNotIllegal( m ) ){ points++; }
-
-			if ( points > 1 )
-				return true;
-
-			return false;
-		}
-
-		public static bool isFromSpace( Mobile m )
+	public static bool isFromSpace( Mobile m )
 		{
 			if ( m.Skills.Cap >= PlayerInfoConstants.SKILLS_CAP_SPACE )
 				return true;
