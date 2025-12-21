@@ -1255,34 +1255,56 @@ namespace Server.Misc
 
 		#region Player Type Detection Methods
 
-		public static bool isMonk ( Mobile m )
+	public static string GetNPCGuild( Mobile m )
+	{
+		string GuildTitle = "";
+
+		if ( m is PlayerMobile )
 		{
-			string GuildTitle = "";
+			PlayerMobile pm = (PlayerMobile)m;
 
-			if ( m is PlayerMobile )
+			if ( pm.Profession == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 			{
-				PlayerMobile pm = (PlayerMobile)m;
-
-				if ( pm.Profession == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
-				{
-					GuildTitle = PlayerInfoStringConstants.GUILD_NPC_FUGITIVE;
-				}
-				else if ( pm.NpcGuild != NpcGuild.None )
-				{
-					GuildNPCTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
-				}
+				GuildTitle = PlayerInfoStringConstants.GUILD_NPC_FUGITIVE;
 			}
-			else if ( m is BaseVendor )
+			else if ( pm.NpcGuild != NpcGuild.None )
 			{
-				BaseVendor pm = (BaseVendor)m;
-
-				if ( pm.NpcGuild != NpcGuild.None )
-				{
-					GuildVendorTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
-				}
+				GuildNPCTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
 			}
-			return GuildTitle;
 		}
+		else if ( m is BaseVendor )
+		{
+			BaseVendor pm = (BaseVendor)m;
+
+			if ( pm.NpcGuild != NpcGuild.None )
+			{
+				GuildVendorTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
+			}
+		}
+		return GuildTitle;
+	}
+
+	public static bool isMonk ( Mobile m )
+	{
+		int points = 0;
+
+		Spellbook book = Spellbook.FindMystic( m );
+		if ( book is MysticSpellbook )
+		{
+			MysticSpellbook tome = (MysticSpellbook)book;
+			if ( tome.owner == m )
+			{
+				points++;
+			}
+		}
+
+		if ( Server.Spells.Mystic.MysticSpell.MonkNotIllegal( m ) ){ points++; }
+
+		if ( points > 1 )
+			return true;
+
+		return false;
+	}
 
 		public static string GetStatusGuild( Mobile m )
 		{
