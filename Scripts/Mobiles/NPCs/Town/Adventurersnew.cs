@@ -22,7 +22,8 @@ namespace Server.Mobiles
 		/// <summary>
 		/// Deserialization constructor
 		/// </summary>
-		protected AdventurerBase(Serial serial) : base(serial)
+		/// <param name="serial">The serialization reader</param>
+		public AdventurerBase(Serial serial) : base(serial)
 		{
 		}
 
