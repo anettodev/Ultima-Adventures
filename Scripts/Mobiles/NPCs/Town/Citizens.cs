@@ -1399,6 +1399,14 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
+		/// Populates cities with citizens at meeting spots.
+		/// </summary>
+		public static void PopulateCities()
+		{
+			RefreshCitizenPopulation();
+		}
+
+		/// <summary>
 		/// Refreshes the citizen population by clearing existing wanderers and creating new citizens at meeting spots.
 		/// This is called when a MeetingSpots item is dropped on a citizen.
 		/// </summary>
@@ -2082,6 +2090,191 @@ namespace Server.Mobiles
 		{
 			base.OnMapChange( oldMap );
 			Server.Misc.MorphingTime.CheckNecromancer( this );
+		}
+
+		#endregion
+
+		#region OnDragDrop Helpers
+
+		/// <summary>
+		/// Handles wand recharging for wizard citizens.
+		/// </summary>
+		/// <param name="wand">The wand to recharge</param>
+		/// <param name="say">Output message to display</param>
+		/// <param name="sound">Output sound ID to play</param>
+		/// <returns>True if the wand was successfully recharged</returns>
+		private bool HandleWandRecharge(BaseMagicStaff wand, out string say, out int sound)
+		{
+			say = "";
+			sound = 0;
+			BaseWeapon bw = (BaseWeapon)wand;
+			int myCharges = GetWandCharges(bw.IntRequirement);
+
+			if (bw.IntRequirement < 1)
+			{
+				say = CitizensStringConstants.ERROR_WAND_NO_RECHARGE;
+				return false;
+			}
+			else if (wand.Charges <= myCharges)
+			{
+				say = CitizensStringConstants.SUCCESS_WAND_CHARGED;
+				sound = CitizensConstants.SOUND_WAND_CHARGE;
+				wand.Charges = myCharges;
+				return true;
+			}
+			else
+			{
+				say = CitizensStringConstants.ERROR_WAND_TOO_MANY_CHARGES;
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Handles item purchase with gold payment.
+		/// </summary>
+		/// <param name="from">The mobile purchasing the item</param>
+		/// <param name="gold">The gold being paid</param>
+		/// <param name="say">Output message to display</param>
+		/// <param name="sound">Output sound ID to play</param>
+		/// <returns>True if the purchase was successful</returns>
+		private bool HandleItemPurchase(Mobile from, Gold gold, out string say, out int sound)
+		{
+			say = "";
+			sound = 0;
+
+			if (CitizenCost > 0 && CitizenCost == gold.Amount)
+			{
+				gold.Delete();
+				sound = CitizensConstants.SOUND_TRADE_SUCCESS;
+				say = CitizensStringConstants.SUCCESS_FAIR_TRADE;
+				Item give = null;
+				foreach (Item i in this.Backpack.Items)
+				{
+					give = i;
+				}
+				if (give != null)
+				{
+					give.Movable = true;
+					give.InvalidateProperties();
+					from.AddToBackpack(give);
+					CitizenService = 0;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Handles container unlocking for rogue citizens.
+		/// </summary>
+		/// <param name="container">The container to unlock</param>
+		/// <param name="say">Output message to display</param>
+		/// <param name="sound">Output sound ID to play</param>
+		/// <returns>True if the container was successfully unlocked</returns>
+		private bool HandleContainerUnlock(LockableContainer container, out string say, out int sound)
+		{
+			say = CitizensStringConstants.SUCCESS_UNLOCKED;
+			sound = CitizensConstants.SOUND_UNLOCK;
+			container.Locked = false;
+			container.TrapPower = 0;
+			container.TrapLevel = 0;
+			container.LockLevel = 0;
+			container.MaxLockLevel = 0;
+			container.RequiredSkill = 0;
+			container.TrapType = TrapType.None;
+			return true;
+		}
+
+		/// <summary>
+		/// Repairs an armor item.
+		/// </summary>
+		/// <param name="armor">The armor to repair</param>
+		/// <returns>Success message</returns>
+		private string RepairArmor(BaseArmor armor)
+		{
+			if (armor.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
+				armor.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
+			else
+				armor.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
+			armor.HitPoints = armor.MaxHitPoints;
+			return CitizensStringConstants.SUCCESS_ARMOR_REPAIRED;
+		}
+
+		/// <summary>
+		/// Repairs a weapon item.
+		/// </summary>
+		/// <param name="weapon">The weapon to repair</param>
+		/// <returns>Success message</returns>
+		private string RepairWeapon(BaseWeapon weapon)
+		{
+			if (weapon.MaxHitPoints > CitizensConstants.REPAIR_HP_THRESHOLD)
+				weapon.MaxHitPoints -= Utility.RandomMinMax(CitizensConstants.REPAIR_HP_REDUCTION_MIN, CitizensConstants.REPAIR_HP_REDUCTION_MAX);
+			else
+				weapon.MaxHitPoints -= CitizensConstants.REPAIR_HP_MIN_REDUCTION;
+			weapon.HitPoints = weapon.MaxHitPoints;
+			return CitizensStringConstants.SUCCESS_WEAPON_REPAIRED;
+		}
+
+		/// <summary>
+		/// Determines if an item can be repaired and what type of repair is needed.
+		/// </summary>
+		/// <param name="dropped">The item to check</param>
+		/// <param name="isArmor">True if item is armor</param>
+		/// <param name="isWeapon">True if item is weapon</param>
+		/// <param name="isMetal">True if item is metal</param>
+		/// <param name="isWood">True if item is wood</param>
+		/// <param name="isLeather">True if item is leather</param>
+		/// <param name="fixArmor">Output: true if armor should be repaired</param>
+		/// <param name="fixWeapon">Output: true if weapon should be repaired</param>
+		/// <param name="sound">Output: sound ID to play</param>
+		private void DetermineRepairType(Item dropped, bool isArmor, bool isWeapon, bool isMetal, bool isWood, bool isLeather, out bool fixArmor, out bool fixWeapon, out int sound)
+		{
+			fixArmor = false;
+			fixWeapon = false;
+			sound = 0;
+
+			if (CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR)
+			{
+				if (CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isArmor && isMetal)
+				{
+					fixArmor = true;
+					sound = CitizensConstants.SOUND_REPAIR;
+				}
+			}
+			else if (CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_2)
+			{
+				if (CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER && isWeapon && isMetal)
+				{
+					fixWeapon = true;
+					sound = CitizensConstants.SOUND_REPAIR;
+				}
+				else if (CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isArmor && isLeather)
+				{
+					fixArmor = true;
+					sound = CitizensConstants.SOUND_LEATHER_REPAIR;
+				}
+				else if (CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE && isWeapon && isLeather)
+				{
+					fixWeapon = true;
+					sound = CitizensConstants.SOUND_LEATHER_REPAIR;
+				}
+			}
+			else if (CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_WEAPON)
+			{
+				if ((CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER || CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE) && isWeapon && isWood)
+				{
+					fixWeapon = true;
+					sound = CitizensConstants.SOUND_WOOD_REPAIR;
+				}
+			}
+			else if (CitizenService == CitizensConstants.CITIZEN_SERVICE_REPAIR_WOOD_ARMOR)
+			{
+				if ((CitizenType == CitizensConstants.CITIZEN_TYPE_FIGHTER || CitizenType == CitizensConstants.CITIZEN_TYPE_ROGUE) && isArmor && isWood)
+				{
+					fixArmor = true;
+					sound = CitizensConstants.SOUND_WOOD_REPAIR;
+				}
+			}
 		}
 
 		#endregion
