@@ -97,7 +97,7 @@ namespace Server.Mobiles
 			}
 			else if (this is EvilHealer && m.Karma > 0)
 			{
-				this.Say("Go somewhere else, I don't resurrect those like you.");
+				this.Say(BaseHealerStringConstants.MSG_EVIL_HEALER_REFUSE);
 				return false;
 			}
 
@@ -242,7 +242,7 @@ namespace Server.Mobiles
             if ( Deleted || !from.Alive )
                 return;
 
-			SayTo(from, "Did one of your henchman suffer a deathly fate? I can resurrect them for you.");
+			SayTo(from, BaseHealerStringConstants.MSG_OFFER_HENCHMAN_RESURRECTION);
 
             from.Target = new HealingTarget(this);
         }
@@ -275,21 +275,21 @@ namespace Server.Mobiles
 
                     if ( nCost < 1 )
                     {
-                        m_BaseHealer.SayTo( from, "Your friend is not dead." );
+                        m_BaseHealer.SayTo( from, BaseHealerStringConstants.MSG_HENCHMAN_NOT_DEAD );
                     }
                     else if (pack.ConsumeTotal(typeof(Gold), toConsume))
                     {
-						thing.Name = "fighter henchman";
+						thing.Name = BaseHealerStringConstants.HENCHMAN_NAME_FIGHTER;
 						thing.HenchDead = 0;
 						thing.InvalidateProperties();
-                        from.SendMessage(String.Format("You pay {0} gold.", toConsume));
+                        from.SendMessage(String.Format(BaseHealerStringConstants.MSG_PAY_GOLD_FORMAT, toConsume));
 						from.PlaySound( 0x214 );
-						m_BaseHealer.SayTo(from, "Your henchman is back in the land of the living.");
+						m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_HENCHMAN_RESURRECTED);
                     }
                     else
                     {
-                        m_BaseHealer.SayTo(from, "It would cost you {0} gold to have them resurrected.", toConsume);
-                        from.SendMessage("You do not have enough gold.");
+                        m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_RESURRECTION_COST_FORMAT, toConsume);
+                        from.SendMessage(BaseHealerStringConstants.MSG_NOT_ENOUGH_GOLD);
                     }
                 }
                 else if (targeted is HenchmanWizardItem && from.Backpack != null)
@@ -308,21 +308,21 @@ namespace Server.Mobiles
 
                     if ( nCost < 1 )
                     {
-                        m_BaseHealer.SayTo( from, "Your friend is not dead." );
+                        m_BaseHealer.SayTo( from, BaseHealerStringConstants.MSG_HENCHMAN_NOT_DEAD );
                     }
                     else if (pack.ConsumeTotal(typeof(Gold), toConsume))
                     {
-						thing.Name = "wizard henchman";
+						thing.Name = BaseHealerStringConstants.HENCHMAN_NAME_WIZARD;
 						thing.HenchDead = 0;
 						thing.InvalidateProperties();
-                        from.SendMessage(String.Format("You pay {0} gold.", toConsume));
+                        from.SendMessage(String.Format(BaseHealerStringConstants.MSG_PAY_GOLD_FORMAT, toConsume));
 						from.PlaySound( 0x214 );
-						m_BaseHealer.SayTo(from, "Your henchman is back in the land of the living.");
+						m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_HENCHMAN_RESURRECTED);
                     }
                     else
                     {
-                        m_BaseHealer.SayTo(from, "It would cost you {0} gold to have them resurrected.", toConsume);
-                        from.SendMessage("You do not have enough gold.");
+                        m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_RESURRECTION_COST_FORMAT, toConsume);
+                        from.SendMessage(BaseHealerStringConstants.MSG_NOT_ENOUGH_GOLD);
                     }
                 }
                 else if (targeted is HenchmanArcherItem && from.Backpack != null)
@@ -341,21 +341,21 @@ namespace Server.Mobiles
 
                     if ( nCost < 1 )
                     {
-                        m_BaseHealer.SayTo( from, "Your friend is not dead." );
+                        m_BaseHealer.SayTo( from, BaseHealerStringConstants.MSG_HENCHMAN_NOT_DEAD );
                     }
                     else if (pack.ConsumeTotal(typeof(Gold), toConsume))
                     {
-						thing.Name = "archer henchman";
+						thing.Name = BaseHealerStringConstants.HENCHMAN_NAME_ARCHER;
 						thing.HenchDead = 0;
 						thing.InvalidateProperties();
-                        from.SendMessage(String.Format("You pay {0} gold.", toConsume));
+                        from.SendMessage(String.Format(BaseHealerStringConstants.MSG_PAY_GOLD_FORMAT, toConsume));
 						from.PlaySound( 0x214 );
-						m_BaseHealer.SayTo(from, "Your henchman is back in the land of the living.");
+						m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_HENCHMAN_RESURRECTED);
                     }
                     else
                     {
-                        m_BaseHealer.SayTo(from, "It would cost you {0} gold to have them resurrected.", toConsume);
-                        from.SendMessage("You do not have enough gold.");
+                        m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_RESURRECTION_COST_FORMAT, toConsume);
+                        from.SendMessage(BaseHealerStringConstants.MSG_NOT_ENOUGH_GOLD);
                     }
                 }
                 else if (targeted is HenchmanMonsterItem && from.Backpack != null)
@@ -374,26 +374,26 @@ namespace Server.Mobiles
 
                     if ( nCost < 1 )
                     {
-                        m_BaseHealer.SayTo( from, "Your friend is not dead." );
+                        m_BaseHealer.SayTo( from, BaseHealerStringConstants.MSG_HENCHMAN_NOT_DEAD );
                     }
                     else if (pack.ConsumeTotal(typeof(Gold), toConsume))
                     {
-						thing.Name = "creature henchman";
+						thing.Name = BaseHealerStringConstants.HENCHMAN_NAME_CREATURE;
 						thing.HenchDead = 0;
 						thing.InvalidateProperties();
-                        from.SendMessage(String.Format("You pay {0} gold.", toConsume));
+                        from.SendMessage(String.Format(BaseHealerStringConstants.MSG_PAY_GOLD_FORMAT, toConsume));
 						from.PlaySound( 0x214 );
-						m_BaseHealer.SayTo(from, "Your henchman is back in the land of the living.");
+						m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_HENCHMAN_RESURRECTED);
                     }
                     else
                     {
-                        m_BaseHealer.SayTo(from, "It would cost you {0} gold to have them resurrected.", toConsume);
-                        from.SendMessage("You do not have enough gold.");
+                        m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_RESURRECTION_COST_FORMAT, toConsume);
+                        from.SendMessage(BaseHealerStringConstants.MSG_NOT_ENOUGH_GOLD);
                     }
                 }
 				else
 				{
-					m_BaseHealer.SayTo(from, "That does not need my services.");
+					m_BaseHealer.SayTo(from, BaseHealerStringConstants.MSG_DOES_NOT_NEED_SERVICES);
 				}
             }
         }

@@ -158,15 +158,15 @@ namespace Server.Mobiles
 
 						switch (Utility.Random(15) )
 						{
-									case 0: Say("Wow!  A knight!"); break;
-									case 1: Say("I wanna be like him one day."); break;
-									case 2: Say("It's " + m.Name + "!"); break;
-									case 3: Say("You wear strange clothes. "  ); break;
-									case 4: Say("An adventurer! An adventurer!"); break;
-									case 5: Say("Daddy says you are a wimp, " + m.Name + "."); break;
-									case 6: Say("When I grow up, ill be just like " + m.Name + "."); break;
-									case 7: Say( m.Name + " is shorter than I imagined..."); break;
-									case 8: Say("I want armor like that!"); break;
+									case 0: Say(BaseChildStringConstants.MSG_KNIGHT); break;
+									case 1: Say(BaseChildStringConstants.MSG_WANNA_BE_LIKE); break;
+									case 2: Say(string.Format(BaseChildStringConstants.MSG_ITS_PLAYER_FORMAT, m.Name)); break;
+									case 3: Say(BaseChildStringConstants.MSG_STRANGE_CLOTHES); break;
+									case 4: Say(BaseChildStringConstants.MSG_ADVENTURER); break;
+									case 5: Say(string.Format(BaseChildStringConstants.MSG_DADDY_WIMP_FORMAT, m.Name)); break;
+									case 6: Say(string.Format(BaseChildStringConstants.MSG_GROW_UP_LIKE_FORMAT, m.Name)); break;
+									case 7: Say(string.Format(BaseChildStringConstants.MSG_SHORTER_FORMAT, m.Name)); break;
+									case 8: Say(BaseChildStringConstants.MSG_WANT_ARMOR); break;
 						}
 							
 						m_talk = false;
@@ -203,7 +203,7 @@ namespace Server.Mobiles
 						if (m_childtarget.Hidden && (this.Skills[SkillName.DetectHidden].Value / 120) >= Utility.RandomDouble())	
 						{
 							m_childtarget.RevealingAction();
-							this.Say("Found you!");
+							this.Say(BaseChildStringConstants.MSG_FOUND_YOU);
 						}	
 						else		
 							m_childtarget = null;
@@ -271,7 +271,7 @@ namespace Server.Mobiles
 						((BaseCreature)this).ControlOrder = OrderType.None; 
 						((BaseCreature)this).AIFullSpeedActive = true;
 						((BaseCreature)this).AIFullSpeedPassive = true;	
-						this.Say ("No... I must try to escape!");
+						this.Say(BaseChildStringConstants.MSG_MUST_ESCAPE);
 					}					
 					
 					this.m_freedom = false;
@@ -291,18 +291,18 @@ namespace Server.Mobiles
 
 				switch (Utility.Random(12))
 				{
-							case 0: Say("Please!  Please give me some food!"); break;
-							case 1: Say("A few coins Sire?"); break;
-							case 2: Say("Please " + target.Name + ", im hungry!"); break;
-							case 3: Say("a few coins will go a long way for me and my family, " + target.Name ); break;
-							case 4: Say("I didn't eat yesterday...."); break;
-							case 5: Say("Please " + target.Name + ", a few coins."); break;
-							case 6: Say("My shoes are old and full of holes, " + target.Name + "."); break;
-							case 7: Say("I have nothing, " + target.Name + "."); break;
-							case 8: Say("Give me a few coins please."); break;
-							case 9: Say("Why do you look so funny?"); break;
-							case 10: Say("My mother is sick and needs medicine, help me..."); break;
-							case 11: Say("I hear coins in that big backpack of yours."); break;
+							case 0: Say(BaseChildStringConstants.MSG_BEG_FOOD); break;
+							case 1: Say(BaseChildStringConstants.MSG_BEG_COINS); break;
+							case 2: Say(string.Format(BaseChildStringConstants.MSG_BEG_HUNGRY_FORMAT, target.Name)); break;
+							case 3: Say(string.Format(BaseChildStringConstants.MSG_BEG_FAMILY_FORMAT, target.Name)); break;
+							case 4: Say(BaseChildStringConstants.MSG_BEG_NO_EAT); break;
+							case 5: Say(string.Format(BaseChildStringConstants.MSG_BEG_COINS_FORMAT, target.Name)); break;
+							case 6: Say(string.Format(BaseChildStringConstants.MSG_BEG_SHOES_FORMAT, target.Name)); break;
+							case 7: Say(string.Format(BaseChildStringConstants.MSG_BEG_NOTHING_FORMAT, target.Name)); break;
+							case 8: Say(BaseChildStringConstants.MSG_BEG_GIVE_COINS); break;
+							case 9: Say(BaseChildStringConstants.MSG_BEG_FUNNY); break;
+							case 10: Say(BaseChildStringConstants.MSG_BEG_MOTHER_SICK); break;
+							case 11: Say(BaseChildStringConstants.MSG_BEG_HEAR_COINS); break;
 				}
 					
 				m_talk = false;
@@ -352,12 +352,12 @@ namespace Server.Mobiles
 								m_stole = target;
 								switch (Utility.Random(6))
 								{
-											case 0: Say("You're boring."); break;
-											case 1: Say("Bye!"); break;
-											case 2: Say("Have a great day Sire!"); break;
-											case 3: Say("Oh I thought you were my parent "); break;
-											case 4: Say("Oh look over there!"); break;
-											case 5: Say("You're no fun."); break;
+											case 0: Say(BaseChildStringConstants.MSG_STEAL_BORING); break;
+											case 1: Say(BaseChildStringConstants.MSG_STEAL_BYE); break;
+											case 2: Say(BaseChildStringConstants.MSG_STEAL_GOOD_DAY); break;
+											case 3: Say(BaseChildStringConstants.MSG_STEAL_THOUGHT_PARENT); break;
+											case 4: Say(BaseChildStringConstants.MSG_STEAL_LOOK_THERE); break;
+											case 5: Say(BaseChildStringConstants.MSG_STEAL_NO_FUN); break;
 								}
 							}
 						}
@@ -385,10 +385,10 @@ namespace Server.Mobiles
 				if (thing != null && from.Backpack != null && Utility.RandomBool())
 				{
 					from.Backpack.DropItem(thing);
-					this.Say("Thank you Mister!  Here is something I found!");
+					this.Say(BaseChildStringConstants.MSG_THANK_CANDY_GIFT);
 				}
 				else
-					this.Say("Thank you Mister!");
+					this.Say(BaseChildStringConstants.MSG_THANK_CANDY);
 				
 				if (m_childtarget != null)
 						m_childtarget = null; // leaves player alone
@@ -430,7 +430,7 @@ namespace Server.Mobiles
 
 				if (reward)
 				{
-					Say("Thank you Sire!"); // success
+					Say(BaseChildStringConstants.MSG_THANK_SIRE); // success
 					if (m_childtarget != null)
 						m_childtarget = null; // leaves player alone
 
@@ -453,24 +453,24 @@ namespace Server.Mobiles
 						}
 						if (give != null)
 						{
-							Say("Here, I found this - you can have it!");
+							Say(BaseChildStringConstants.MSG_GIFT_FOUND);
 							Container newpack = from.Backpack;
 							newpack.DropItem(give);
-							from.SendMessage("The child nimbly slips something in your pack.");
+							from.SendMessage(BaseChildStringConstants.MSG_GIFT_SLIPPED);
 						}
 						else
-							Say("I don't have anything to give you though.");
+							Say(BaseChildStringConstants.MSG_GIFT_NOTHING);
 
 					}
 				}
 				else
 				{
 						if (dropped is Gold)
-							Say("Oh look, " + dropped.Amount + " Gold!  I want more!"); // failure
+							Say(string.Format(BaseChildStringConstants.MSG_REQUEST_MORE_GOLD_FORMAT, dropped.Amount)); // failure
 						else if (dropped is Food)
-							Say("I'm still hungry!");
+							Say(BaseChildStringConstants.MSG_REQUEST_STILL_HUNGRY);
 						else if (dropped.Name != null)
-							Say("Oh, " + dropped.Name + ", can I have something else?");
+							Say(string.Format(BaseChildStringConstants.MSG_REQUEST_SOMETHING_ELSE_FORMAT, dropped.Name));
 				}
 				this.annoyed += yay;
 	
@@ -489,7 +489,7 @@ namespace Server.Mobiles
 
 				if ( from.InRange(this, 1) && InLOS( from ))
 				{
-					from.SendMessage("You grab the thief and look through his posessions!");
+					from.SendMessage(BaseChildStringConstants.MSG_THIEF_SEARCH);
 					this.Backpack.DisplayTo( from );
 					int time = Utility.RandomMinMax(3,5);
 					this.Paralyze( TimeSpan.FromSeconds( time ) );
@@ -501,12 +501,12 @@ namespace Server.Mobiles
 			{
 				switch (Utility.Random(6))
 								{
-											case 0: Say("Help! this person's trying to molest me!"); break;
-											case 1: Say("This person tried to touch my private parts!"); break;
-											case 2: Say("AAAAAAAAAAAH!"); break;
-											case 3: Say("Help! Help!"); break;
-											case 4: Say("A stranger touched me!!"); break;
-											case 5: Say("aah!"); break;
+											case 0: Say(BaseChildStringConstants.MSG_MOLEST_TRYING); break;
+											case 1: Say(BaseChildStringConstants.MSG_MOLEST_TOUCHED); break;
+											case 2: Say(BaseChildStringConstants.MSG_MOLEST_SCREAM); break;
+											case 3: Say(BaseChildStringConstants.MSG_MOLEST_HELP); break;
+											case 4: Say(BaseChildStringConstants.MSG_MOLEST_STRANGER); break;
+											case 5: Say(BaseChildStringConstants.MSG_MOLEST_AAH); break;
 								}
 				from.CriminalAction( true );
 			}
@@ -521,24 +521,24 @@ namespace Server.Mobiles
 			{
 				switch (Utility.Random(18))
 				{
-							case 0: Say("Why are you wearing that?"); break;
-							case 1: Say("What does this do?"); break;
-							case 2: Say("I bet you die a lot, " + target.Name + "."); break;
-							case 3: Say("Why did you do that, " + target.Name + "??" ); break;
-							case 4: Say("You have a funny hat!  It's ugly!"); break;
-							case 5: Say("My father could have at thee, " + target.Name + ".  He's stronger!"); break;
-							case 6: Say("You stink like an old cow,  " + target.Name + "."); break;
-							case 7: Say("you're not that strong, " + target.Name + "."); break;
-							case 8: Say("You stink!"); break;
-							case 9: Say("You're ugly!"); break;
-							case 10: Say("I bet you can't kill a mongbat!"); break;
-							case 11: Say("Was your father a Mongbat?"); break;
-							case 12: Say("An Imp is better looking than you - I've seen one."); break;
-							case 13: Say("Why aren't you talking to me?"); break;
-							case 14: Say("GIMME GIMME GIMME"); break;
-							case 15: Say("Your mom was a Bog Thing and your dad was a slime!"); break;
-							case 16: Say("I want something!"); break;
-							case 17: Say("What is that you're wearing there?"); break;
+							case 0: Say(BaseChildStringConstants.MSG_ANNOY_WHY_WEARING); break;
+							case 1: Say(BaseChildStringConstants.MSG_ANNOY_WHAT_DOES); break;
+							case 2: Say(string.Format(BaseChildStringConstants.MSG_ANNOY_DIE_LOT_FORMAT, target.Name)); break;
+							case 3: Say(string.Format(BaseChildStringConstants.MSG_ANNOY_WHY_DID_FORMAT, target.Name)); break;
+							case 4: Say(BaseChildStringConstants.MSG_ANNOY_FUNNY_HAT); break;
+							case 5: Say(string.Format(BaseChildStringConstants.MSG_ANNOY_FATHER_STRONGER_FORMAT, target.Name)); break;
+							case 6: Say(string.Format(BaseChildStringConstants.MSG_ANNOY_STINK_COW_FORMAT, target.Name)); break;
+							case 7: Say(string.Format(BaseChildStringConstants.MSG_ANNOY_NOT_STRONG_FORMAT, target.Name)); break;
+							case 8: Say(BaseChildStringConstants.MSG_ANNOY_STINK); break;
+							case 9: Say(BaseChildStringConstants.MSG_ANNOY_UGLY); break;
+							case 10: Say(BaseChildStringConstants.MSG_ANNOY_CANT_KILL); break;
+							case 11: Say(BaseChildStringConstants.MSG_ANNOY_FATHER_MONGBAT); break;
+							case 12: Say(BaseChildStringConstants.MSG_ANNOY_IMP_BETTER); break;
+							case 13: Say(BaseChildStringConstants.MSG_ANNOY_WHY_NOT_TALKING); break;
+							case 14: Say(BaseChildStringConstants.MSG_ANNOY_GIMME); break;
+							case 15: Say(BaseChildStringConstants.MSG_ANNOY_PARENTS_MONSTERS); break;
+							case 16: Say(BaseChildStringConstants.MSG_ANNOY_WANT_SOMETHING); break;
+							case 17: Say(BaseChildStringConstants.MSG_ANNOY_WHAT_WEARING); break;
 							
 				}
 				if (Utility.RandomBool())
@@ -574,40 +574,40 @@ namespace Server.Mobiles
 
 				if ( ( e.Speech.ToLower() == "follow" ) )
 				{
-					Say("Follow me  me me me me me me me me !" );
+					Say(BaseChildStringConstants.MSG_SPEECH_FOLLOW);
 				}
 				else if ( ( e.Speech.ToLower() == "buy" ) )
 				{
-					Yell("Buy something for me!! Buy something for me!! Buy something for me!! Buy something for me!! Buy something for me!!" );
-					Yell("NOOOOOW!!");
+					Yell(BaseChildStringConstants.MSG_SPEECH_BUY);
+					Yell(BaseChildStringConstants.MSG_SPEECH_NOW);
 				}
 				else if ( ( e.Speech.ToLower() == "sell" ) )
 				{
-					Yell("SELL!  SELL! SELL! WAAAAH NO DON'T SELL IT!");
+					Yell(BaseChildStringConstants.MSG_SPEECH_SELL);
 				}
 				else if ( ( e.Speech.ToLower() == "sell" ) )
 				{
-					Yell("NO!  I DON'T WANT TO STAY HERE!  NO NO NO NO NO!");
+					Yell(BaseChildStringConstants.MSG_SPEECH_NO_STAY);
 				}
 				else if ( ( e.Speech.ToLower() == "go away" ) )
 				{
-					Yell("NO! I'm gonna follow you forever!");
+					Yell(BaseChildStringConstants.MSG_SPEECH_FOLLOW_FOREVER);
 				}
 				else if ( ( e.Speech.ToLower() == "fuck you" ) )
 				{
-					Yell("No! Fuck YOU!");
+					Yell(BaseChildStringConstants.MSG_SPEECH_FUCK_YOU);
 				}
 				else
 				{
 					switch (Utility.Random(7))
 					{
-								case 0: this.Say( "why " + e.Speech + "?" ); break;
-								case 1: this.Say( e.Speech ); break;
-								case 2: this.Yell(" Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah Blah "); break;
-								case 3: this.Yell(" Not " + e.Speech + " !"); break;
-								case 4: this.Yell(" *high pitch voice* " + e.Speech + " !"); break;
-								case 5: this.Yell( e.Speech + e.Speech +e.Speech +e.Speech +e.Speech +e.Speech ); break;
-								case 6: this.Yell("I'll tell a guard you told said " + e.Speech + " !"); break;
+								case 0: this.Say(string.Format(BaseChildStringConstants.MSG_SPEECH_WHY_FORMAT, e.Speech)); break;
+								case 1: this.Say(e.Speech); break;
+								case 2: this.Yell(BaseChildStringConstants.MSG_SPEECH_BLAH); break;
+								case 3: this.Yell(string.Format(BaseChildStringConstants.MSG_SPEECH_NOT_FORMAT, e.Speech)); break;
+								case 4: this.Yell(string.Format(BaseChildStringConstants.MSG_SPEECH_HIGH_PITCH_FORMAT, e.Speech)); break;
+								case 5: this.Yell(string.Format(BaseChildStringConstants.MSG_SPEECH_REPEAT_FORMAT, e.Speech)); break;
+								case 6: this.Yell(string.Format(BaseChildStringConstants.MSG_SPEECH_TELL_GUARD_FORMAT, e.Speech)); break;
 					}
 
 				}

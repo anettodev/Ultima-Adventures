@@ -107,15 +107,15 @@ namespace Server.Mobiles
 				killer.Kills = killer.Kills + 1;
 			}
 
-			string bSay = "Socorro!";
+			string bSay = BasePersonStringConstants.DEATH_CRY_DEFAULT;
 
 				switch ( Utility.Random( 5 ))		   
 				{
-					case 0: bSay = "Guardas!"; break;
-					case 1: bSay = "Não há local que você possa se esconder!"; break;
-					case 2: bSay = "Nãaaaaoo!"; break;
-					case 3: bSay = "Vagabundo!"; break;
-					case 4: bSay = "Aarrgh!"; break;
+					case 0: bSay = BasePersonStringConstants.DEATH_CRY_GUARDS; break;
+					case 1: bSay = BasePersonStringConstants.DEATH_CRY_NO_HIDING; break;
+					case 2: bSay = BasePersonStringConstants.DEATH_CRY_NO; break;
+					case 3: bSay = BasePersonStringConstants.DEATH_CRY_VAGABUNDO; break;
+					case 4: bSay = BasePersonStringConstants.DEATH_CRY_AARRGH; break;
 				};
 
 			this.PublicOverheadMessage( MessageType.Regular, 0, false, string.Format ( bSay ) );

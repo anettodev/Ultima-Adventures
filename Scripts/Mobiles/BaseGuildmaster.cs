@@ -32,7 +32,7 @@ namespace Server.Mobiles
 
 		public virtual void SayWelcomeTo( Mobile m )
 		{
-			SayTo( m, "Welcome to the guild! Thou shalt find it beneficial to your future endeavors." );
+			SayTo( m, BaseGuildmasterStringConstants.MSG_WELCOME_TO_GUILD );
 		}
 
 		public static void SayPriceTo( Mobile m, Mobile guildmaster )
@@ -111,11 +111,11 @@ namespace Server.Mobiles
 			PlayerMobile pm = (PlayerMobile)player;
 
 			if ( player.Blessed )
-				guildmaster.SayTo( player, "Speak to me when that strange effect has worn off." );
+				guildmaster.SayTo( player, BaseGuildmasterStringConstants.MSG_BLESSED_CANNOT_JOIN );
 			else if ( ((PlayerMobile)player).Profession == 1 )
-				guildmaster.SayTo( player, "I don't think we could let someone like you join." );
+				guildmaster.SayTo( player, BaseGuildmasterStringConstants.MSG_PROFESSION_CANNOT_JOIN );
 			else if ( ((BaseVendor)guildmaster).NpcGuild == NpcGuild.ThievesGuild && pm.Karma > -500 )
-				guildmaster.SayTo( player, "I've heard you like hang out with the good folk... you wouldn't fit in here." );
+				guildmaster.SayTo( player, BaseGuildmasterStringConstants.MSG_KARMA_TOO_HIGH_THIEVES );
 			else if ( pm.NpcGuild == ((BaseVendor)guildmaster).NpcGuild )
 				guildmaster.SayTo( player, 501047 ); // Thou art already a member of our guild.
 			else if ( pm.NpcGuild != NpcGuild.None )
@@ -283,7 +283,7 @@ namespace Server.Mobiles
 					else if ( this.NpcGuild == NpcGuild.CulinariansGuild ){ GuildType = 20; }
 					else if ( this.NpcGuild == NpcGuild.AssassinsGuild ){ GuildType = 21; }
 
-					this.Say( "Here is your replacement ring." );
+					this.Say( BaseGuildmasterStringConstants.MSG_REPLACEMENT_RING );
 					from.AddToBackpack( new GuildRings( from, GuildType ) );
 
 					return true;
@@ -411,7 +411,7 @@ namespace Server.Mobiles
 				else if ( this.NpcGuild == NpcGuild.CulinariansGuild ){ GuildType = 20; }
 				else if ( this.NpcGuild == NpcGuild.AssassinsGuild ){ GuildType = 21; }
 
-				this.Say( "Here is your replacement ring." );
+				this.Say( BaseGuildmasterStringConstants.MSG_REPLACEMENT_RING );
 				from.AddToBackpack( new GuildRings( from, GuildType ) );
 
 				return true;
@@ -422,7 +422,7 @@ namespace Server.Mobiles
 
 		public BaseGuildmaster( string title ) : base( title )
 		{
-			Title = String.Format( ", {0} - GM", title );
+			Title = String.Format( " {0}", title );
 		}
 
 		public BaseGuildmaster( Serial serial ) : base( serial )
