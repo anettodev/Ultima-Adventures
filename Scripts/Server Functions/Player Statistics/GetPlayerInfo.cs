@@ -13,6 +13,8 @@ namespace Server.Misc
 {
     class GetPlayerInfo
     {
+		#region Public Skill Title Methods
+
 		public static string GetSkillTitle( Mobile m )
 		{
 			bool isOriental = Server.Misc.GetPlayerInfo.OrientalPlay( m );
@@ -21,9 +23,9 @@ namespace Server.Misc
 
 			CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( m );
 
-			if ( DB.CharacterSkill == 55 )
+			if ( DB.CharacterSkill == PlayerInfoConstants.TITAN_OF_ETHER_SKILL_ID )
 			{
-				return "Titan of Ether";
+				return PlayerInfoStringConstants.TITLE_TITAN_OF_ETHER;
 			}
 			else if ( m.SkillsTotal > 0 )
 			{
@@ -31,14 +33,14 @@ namespace Server.Misc
 
 				if ( highest != null )
 				{
-					if ( highest.Value < 0.1 )
+					if ( highest.Value < PlayerInfoConstants.MIN_SKILL_FOR_TITLE )
 					{
-						return "Village Idiot";
+						return PlayerInfoStringConstants.TITLE_VILLAGE_IDIOT;
 					}
 					else
 					{
 						string skillLevel = null;
-						if ( highest.Value < 29.1 ){ skillLevel = "Aspiring"; }
+						if ( highest.Value < PlayerInfoConstants.ASPIRING_SKILL_THRESHOLD ){ skillLevel = PlayerInfoStringConstants.LEVEL_ASPIRING; }
 						else { skillLevel = GetSkillLevel( highest ); }
 
 						string skillTitle = highest.Info.Title;
@@ -104,9 +106,16 @@ namespace Server.Misc
 						Wrestling			Wrestler
 						*/
 
-						// WIZARD CHANGED SOME SKILL TITLES
-
-						if ( isBarbaric > 0 && 
+						// Apply title transformations in order of priority
+						skillTitle = ApplyBarbaricTransformations( skillTitle, m, isBarbaric );
+						skillTitle = ApplyArchmageTransformation( skillTitle, m, isOriental );
+						skillTitle = ApplyMonkTransformation( skillTitle, m );
+						skillTitle = ApplySythJediScholarTransformation( skillTitle, m );
+						skillTitle = ApplyJediPaladinTransformation( skillTitle, m );
+						skillTitle = ApplySythPaladinTransformation( skillTitle, m );
+						skillTitle = ApplyOrientalTransformations( skillTitle, m, isOriental );
+						skillTitle = ApplyDefaultTransformations( skillTitle, m, isEvil );
+						skillTitle = ApplyPostTransformations( skillTitle, m, isBarbaric, isOriental ); 
 							( skillTitle.Contains("Alchemist") || 
 							skillTitle.Contains("Naturalist") || 
 							skillTitle.Contains("Tamer") || 
@@ -129,49 +138,140 @@ namespace Server.Misc
 							skillTitle.Contains("Veterinarian") )
 						)
 						{
-							if ( skillTitle.Contains("Alchemist") && m.Female ){ skillTitle = skillTitle.Replace("Alchemist", "Medicine Woman"); }
-							else if ( skillTitle.Contains("Alchemist") ){ skillTitle = skillTitle.Replace("Alchemist", "Medicine Man"); }
-							else if ( skillTitle.Contains("Naturalist") ){ skillTitle = skillTitle.Replace("Naturalist", "Beastmaster"); }
-							else if ( skillTitle.Contains("Tamer") ){ skillTitle = skillTitle.Replace("Tamer", "Beastmaster"); }
-							else if ( skillTitle.Contains("Shepherd") ){ skillTitle = skillTitle.Replace("Shepherd", "Beastmaster"); }
+							if ( skillTitle.Contains("Alchemist") )
+							{
+								skillTitle = skillTitle.Replace("Alchemist", PlayerInfoStringConstants.TITLE_BARBARIC_ALCHEMIST);
+							}
+							else if ( skillTitle.Contains("Naturalist") )
+							{
+								skillTitle = skillTitle.Replace("Naturalist", PlayerInfoStringConstants.TITLE_BARBARIC_BEASTMASTER);
+							}
+							else if ( skillTitle.Contains("Tamer") )
+							{
+								skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_BARBARIC_TAMER);
+							}
+							else if ( skillTitle.Contains("Shepherd") )
+							{
+								skillTitle = skillTitle.Replace("Shepherd", PlayerInfoStringConstants.TITLE_BARBARIC_SHEPHERD);
+							}
 							else if ( skillTitle.Contains("Fishing") )
 							{
-								skillTitle = skillTitle.Replace("Fishing", "Atlantean");
-								if ( m.Skills[SkillName.Fishing].Value >= 100 ){ skillTitle = skillTitle.Replace("Atlantean", "Atlantean Captain"); }
+								if ( m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN )
+								{
+									skillTitle = skillTitle.Replace("Fishing", PlayerInfoStringConstants.TITLE_ATLANTEAN);
+								}
+								else
+								{
+									skillTitle = skillTitle.Replace("Fishing", PlayerInfoStringConstants.TITLE_FISHERMAN);
+								}
 							}
-							else if ( skillTitle.Contains("Veterinarian") ){ skillTitle = skillTitle.Replace("Veterinarian", "Beastmaster"); }
-							else if ( skillTitle.Contains("Explorer") ){ skillTitle = skillTitle.Replace("Explorer", "Wanderer"); }
+							else if ( skillTitle.Contains("Veterinarian") )
+							{
+								skillTitle = skillTitle.Replace("Veterinarian", PlayerInfoStringConstants.TITLE_VETERINARIAN);
+							}
+							else if ( skillTitle.Contains("Explorer") )
+							{
+								skillTitle = skillTitle.Replace("Explorer", PlayerInfoStringConstants.TITLE_EXPLORER);
+							}
 							else if ( skillTitle.Contains("Paladin") )
 							{
-								if ( m.Karma < 0 ){ skillTitle = skillTitle.Replace("Paladin", "Death Knight"); }
-								else if ( isBarbaric > 1 ){ skillTitle = skillTitle.Replace("Paladin", "Valkyrie"); }
-								else { skillTitle = skillTitle.Replace("Paladin", "Chieftain"); }
+								if ( m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+								{
+									skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_DEATH_KNIGHT);
+								}
+								else
+								{
+									skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_PALADIN);
+								}
 							}
-							else if ( skillTitle.Contains("Tactician") ){ skillTitle = skillTitle.Replace("Tactician", "Warlord"); }
-							else if ( skillTitle.Contains("Duelist") ){ skillTitle = skillTitle.Replace("Duelist", "Defender"); }
-							else if ( skillTitle.Contains("Necromancer") ){ skillTitle = skillTitle.Replace("Necromancer", "Witch Doctor"); }
-							else if ( skillTitle.Contains("Bard") ){ skillTitle = skillTitle.Replace("Bard", "Chronicler"); }
-							else if ( skillTitle.Contains("Mage") ){ skillTitle = skillTitle.Replace("Mage", "Shaman"); }
-							else if ( skillTitle.Contains("Healer") && m.Female ){ skillTitle = skillTitle.Replace("Healer", "Medicine Woman"); }
-							else if ( skillTitle.Contains("Healer") ){ skillTitle = skillTitle.Replace("Healer", "Medicine Man"); }
-							else if ( skillTitle.Contains("Archer") && isBarbaric > 1 ){ skillTitle = skillTitle.Replace("Archer", "Amazon"); }
-							else if ( skillTitle.Contains("Fencer") && isBarbaric > 1 ){ skillTitle = skillTitle.Replace("Fencer", "Amazon"); }
-							else if ( skillTitle.Contains("Armsman") && isBarbaric > 1 ){ skillTitle = skillTitle.Replace("Armsman", "Amazon"); }
-							else if ( skillTitle.Contains("Swordsman") && isBarbaric > 1 ){ skillTitle = skillTitle.Replace("Swordsman", "Amazon"); }
-							else if ( skillTitle.Contains("Archer") ){ skillTitle = skillTitle.Replace("Archer", "Barbarian"); }
-							else if ( skillTitle.Contains("Fencer") ){ skillTitle = skillTitle.Replace("Fencer", "Barbarian"); }
-							else if ( skillTitle.Contains("Armsman") ){ skillTitle = skillTitle.Replace("Armsman", "Barbarian"); }
-							else if ( skillTitle.Contains("Swordsman") ){ skillTitle = skillTitle.Replace("Swordsman", "Barbarian"); }
-							else if ( skillTitle.Contains("Ranger") ){ skillTitle = skillTitle.Replace("Ranger", "Hunter"); }
-							else if ( skillTitle.Contains("Weapon Master") ){ skillTitle = skillTitle.Replace("Weapon Master", "Gladiator"); }
+							else if ( skillTitle.Contains("Tactician") )
+							{
+								skillTitle = skillTitle.Replace("Tactician", PlayerInfoStringConstants.TITLE_GENERAL);
+							}
+							else if ( skillTitle.Contains("Duelist") )
+							{
+								skillTitle = skillTitle.Replace("Duelist", PlayerInfoStringConstants.TITLE_DUELIST);
+							}
+							else if ( skillTitle.Contains("Necromancer") )
+							{
+								skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_OCCULTIST);
+							}
+							else if ( skillTitle.Contains("Bard") )
+							{
+								skillTitle = skillTitle.Replace("Bard", PlayerInfoStringConstants.TITLE_BARD);
+							}
+							else if ( skillTitle.Contains("Mage") )
+							{
+								skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ARCANIST);
+							}
+							else if ( skillTitle.Contains("Healer") )
+							{
+								if ( m.Female )
+								{
+									skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_HEALER_FEMALE);
+								}
+								else
+								{
+									skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_HEALER_MALE);
+								}
+							}
+							else if ( skillTitle.Contains("Archer") && isBarbaric > 1 )
+							{
+								skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_ARCHER_AMAZON);
+							}
+							else if ( skillTitle.Contains("Fencer") && isBarbaric > 1 )
+							{
+								skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_FENCER_AMAZON);
+							}
+							else if ( skillTitle.Contains("Armsman") && isBarbaric > 1 )
+							{
+								skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_ARMSMAN_AMAZON);
+							}
+							else if ( skillTitle.Contains("Swordsman") && isBarbaric > 1 )
+							{
+								skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_SWORDSMAN_AMAZON);
+							}
+							else if ( skillTitle.Contains("Archer") )
+							{
+								skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_BARBARIC_ARCHER);
+							}
+							else if ( skillTitle.Contains("Fencer") )
+							{
+								skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_BARBARIC_FENCER);
+							}
+							else if ( skillTitle.Contains("Armsman") )
+							{
+								skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_BARBARIC_ARMSMAN);
+							}
+							else if ( skillTitle.Contains("Swordsman") )
+							{
+								skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_BARBARIC_SWORDSMAN);
+							}
+							else if ( skillTitle.Contains("Ranger") )
+							{
+								skillTitle = skillTitle.Replace("Ranger", PlayerInfoStringConstants.TITLE_RANGER);
+							}
+							else if ( skillTitle.Contains("Weapon Master") )
+							{
+								skillTitle = skillTitle.Replace("Weapon Master", PlayerInfoStringConstants.TITLE_GLADIATOR);
+							}
 						}
-						else if ( !isOriental && skillTitle.Contains("Mage") && m.Skills[SkillName.Magery].Base >= 100 && m.Skills[SkillName.Necromancy].Base >= 100 ){ skillTitle = skillTitle.Replace("Mage", "Archmage"); }
-						else if ( !isOriental && skillTitle.Contains("Necromancer") && m.Skills[SkillName.Magery].Base >= 100 && m.Skills[SkillName.Necromancy].Base >= 100 ){ skillTitle = skillTitle.Replace("Necromancer", "Archmage"); }
+						else if ( !isOriental && skillTitle.Contains("Mage") && m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE && m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE )
+						{
+							skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ARCHMAGE);
+						}
+						else if ( !isOriental && skillTitle.Contains("Necromancer") && m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE && m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE )
+						{
+							skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_ARCHMAGE);
+						}
 
 						else if ( ( skillTitle.Contains("Wrestler") ) && isMonk(m) )
 						{
-							skillTitle = skillTitle.Replace("Wrestler", "Monk");
-							if ( m.Skills[SkillName.Magery].Base >= 50 || m.Skills[SkillName.Necromancy].Base >= 50 ){ skillTitle = skillTitle.Replace("Monk", "Mystic"); }
+							skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_MONK);
+							if ( m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_MYSTIC || m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_MYSTIC )
+							{
+								skillTitle = skillTitle.Replace(PlayerInfoStringConstants.TITLE_MONK, PlayerInfoStringConstants.TITLE_MYSTIC);
+							}
 						}
 						else if ( ( skillTitle.Contains("Scholar") ) && isSyth(m,false) )
 						{
@@ -182,114 +282,102 @@ namespace Server.Misc
 							skillTitle = skillTitle.Replace("Scholar", "Jedi");
 						}
 						
-					// Jedi  titles.
+					// Jedi titles - ordered from highest to lowest
 						else if ( ( skillTitle.Contains("Paladin") ) && isJedi(m,false) ) 
 						
 			{
-				string jedi = "Jedi Youngling";
+				string jedi = PlayerInfoStringConstants.TITLE_JEDI_YOUNGLING;
 				
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Jedi Padawan";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ jedi = "Jedi Service Corps";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ jedi = "Jedi Knight";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 100 || m.Karma >= 5000 ){ jedi = "Jedi Consular";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
+				// Check conditions from highest to lowest
+				if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_GRAND_MASTER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_MASTER_OF_ORDER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_COUNCIL_MEMBER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_MASTER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_CONSULAR || m.Karma >= PlayerInfoConstants.KARMA_JEDI_CONSULAR )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_CONSULAR;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_GUARDIAN;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_SENTINEL;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_PADAWAN;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_SERVICE_CORPS;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_KNIGHT;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base < PlayerInfoConstants.KARMA_NEUTRAL || m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					jedi = PlayerInfoStringConstants.TITLE_JEDI_TROLL;
+				}
 				
 				skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Jedi Guardian";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Jedi Sentinel";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 120 || m.Karma >= 7500 ){ jedi = "Jedi Master";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Jedi Council Member";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-				if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Master of the Order";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-				if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ jedi = "Grand Master";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ jedi = "Jedi Troll";}   //   { skillTitle = skillTitle.Replace("Scholar", "Jedi Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", jedi);
-			
-			
 			}
 			
-			////syth titles   titles are a work in progress. and karma and skills need editing . same for jedi
-			
-			
+			// Syth titles - ordered from highest to lowest (work in progress)
 						else if ( ( skillTitle.Contains("Paladin") ) && isSyth(m,false) ) 
 						
 			{
-				string syth = "Syth Hopeful";
+				string syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL;
 				
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 100 || m.Karma >= 5000 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
+				// Check conditions from highest to lowest
+				if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					syth = PlayerInfoStringConstants.TITLE_GRAND_MASTER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					syth = PlayerInfoStringConstants.TITLE_MASTER_OF_ORDER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_COUNCIL_MEMBER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_MASTER;
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_CONSULAR || m.Karma >= PlayerInfoConstants.KARMA_JEDI_CONSULAR )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+				}
+				else if ( m.Skills[SkillName.Chivalry].Base < PlayerInfoConstants.KARMA_NEUTRAL || m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					syth = PlayerInfoStringConstants.TITLE_SYTH_TROLL;
+				}
 				
 				skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "Syth Hopefu";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 120 || m.Karma >= 7500 ){ syth = "Syth Master";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "syth Council Member";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-				if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "Master of the Order";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-				if ( m.Skills[SkillName.Chivalry].Base >= 10 || m.Karma >= 500 ){ syth = "Grand Master";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			if ( m.Skills[SkillName.Chivalry].Base >= 0 || m.Karma >= 0 ){ syth = "Syth Troll";}   //   { skillTitle = skillTitle.Replace("Scholar", "syth Knight"); }
-			
-			skillTitle = skillTitle.Replace("Paladin", syth);
-			
-			
 			}
 			
 			
@@ -300,78 +388,79 @@ namespace Server.Misc
 						
 						else if ( skillTitle.Contains("Naturalist") )
 						{ 
-							if ( m.Karma < 0 ){ skillTitle = skillTitle.Replace("Naturalist", "Industrialist"); }
+							if ( m.Karma < 0 ){ skillTitle = skillTitle.Replace("Naturalist", PlayerInfoStringConstants.TITLE_INDUSTRIALIST); }
 						}
-						else if ( skillTitle.Contains("Beggar") && isJester(m) ){ skillTitle = skillTitle.Replace("Beggar", "Jester"); }
-						else if ( skillTitle.Contains("Scholar") && isJester(m) ){ skillTitle = skillTitle.Replace("Scholar", "Joker"); }
-						else if ( skillTitle.Contains("Samurai") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Samurai", "Ronin"); }
-						else if ( skillTitle.Contains("Ninja") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Ninja", "Yakuza"); }
-						else if ( skillTitle.Contains("Mage") && isOriental == true ){ skillTitle = skillTitle.Replace("Mage", "Wu Jen"); }
-						else if ( skillTitle.Contains("Swordsman") && isOriental == true ){ skillTitle = skillTitle.Replace("Swordsman", "Kensai"); }
-						else if ( skillTitle.Contains("Healer") && isOriental == true ){ skillTitle = skillTitle.Replace("Healer", "Shukenja"); }
-						else if ( skillTitle.Contains("Necromancer") && isOriental == true ){ skillTitle = skillTitle.Replace("Necromancer", "Fangshi"); }
-						else if ( skillTitle.Contains("Alchemist") && isOriental == true ){ skillTitle = skillTitle.Replace("Alchemist", "Waidan"); }
-						else if ( skillTitle.Contains("Medium") && isOriental == true ){ skillTitle = skillTitle.Replace("Medium", "Neidan"); }
-						else if ( skillTitle.Contains("Archer") && isOriental == true ){ skillTitle = skillTitle.Replace("Archer", "Kyudo"); }
-						else if ( skillTitle.Contains("Fencer") && isOriental == true ){ skillTitle = skillTitle.Replace("Fencer", "Yuki Ota"); }
-						else if ( skillTitle.Contains("Armsman") && isOriental == true ){ skillTitle = skillTitle.Replace("Armsman", "Mace Fighter"); }
-						else if ( skillTitle.Contains("Tactician") && isOriental == true ){ skillTitle = skillTitle.Replace("Tactician", "Sakushi"); }
-						else if ( skillTitle.Contains("Paladin") && isOriental == true ){ skillTitle = skillTitle.Replace("Paladin", "Youxia"); }
+						else if ( skillTitle.Contains("Beggar") && isJester(m) ){ skillTitle = skillTitle.Replace("Beggar", PlayerInfoStringConstants.TITLE_JESTER); }
+						else if ( skillTitle.Contains("Scholar") && isJester(m) ){ skillTitle = skillTitle.Replace("Scholar", PlayerInfoStringConstants.TITLE_CLOWN); }
+						else if ( skillTitle.Contains("Samurai") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Samurai", PlayerInfoStringConstants.TITLE_RONIN); }
+						else if ( skillTitle.Contains("Ninja") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Ninja", PlayerInfoStringConstants.TITLE_YAKUZA); }
+						else if ( skillTitle.Contains("Mage") && isOriental == true ){ skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ORIENTAL_MAGE); }
+						else if ( skillTitle.Contains("Swordsman") && isOriental == true ){ skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_ORIENTAL_SWORDSMAN); }
+						else if ( skillTitle.Contains("Healer") && isOriental == true ){ skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_ORIENTAL_HEALER); }
+						else if ( skillTitle.Contains("Necromancer") && isOriental == true ){ skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_ORIENTAL_NECROMANCER); }
+						else if ( skillTitle.Contains("Alchemist") && isOriental == true ){ skillTitle = skillTitle.Replace("Alchemist", PlayerInfoStringConstants.TITLE_ORIENTAL_ALCHEMIST); }
+						else if ( skillTitle.Contains("Medium") && isOriental == true ){ skillTitle = skillTitle.Replace("Medium", PlayerInfoStringConstants.TITLE_ORIENTAL_MEDIUM); }
+						else if ( skillTitle.Contains("Archer") && isOriental == true ){ skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_ORIENTAL_ARCHER); }
+						else if ( skillTitle.Contains("Fencer") && isOriental == true ){ skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_ORIENTAL_FENCER); }
+						else if ( skillTitle.Contains("Armsman") && isOriental == true ){ skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_ORIENTAL_ARMSMAN); }
+						else if ( skillTitle.Contains("Tactician") && isOriental == true ){ skillTitle = skillTitle.Replace("Tactician", PlayerInfoStringConstants.TITLE_ORIENTAL_TACTICIAN); }
+						else if ( skillTitle.Contains("Paladin") && isOriental == true ){ skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_ORIENTAL_PALADIN); }
 
-						else if ( ( skillTitle.Contains("Healer") || skillTitle.Contains("Medium") ) && m.Karma >= 2500 && m.Skills[SkillName.Healing].Base >= 50 && m.Skills[SkillName.SpiritSpeak].Base >= 50 )
+						else if ( ( skillTitle.Contains("Healer") || skillTitle.Contains("Medium") ) && m.Karma >= PlayerInfoConstants.KARMA_PRIEST && m.Skills[SkillName.Healing].Base >= PlayerInfoConstants.MIN_SKILL_FOR_PRIEST && m.Skills[SkillName.SpiritSpeak].Base >= PlayerInfoConstants.MIN_SKILL_FOR_PRIEST )
 						{
-							skillTitle = skillTitle.Replace("Medium", "Priest");
-							skillTitle = skillTitle.Replace("Healer", "Priest");
+							skillTitle = skillTitle.Replace("Medium", PlayerInfoStringConstants.TITLE_PRIEST);
+							skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_PRIEST);
 
-							if ( isOriental == true ){ skillTitle = skillTitle.Replace("Priest", "Buddhist"); }
+							if ( isOriental == true ){ skillTitle = skillTitle.Replace("Priest", PlayerInfoStringConstants.TITLE_BUDDHIST); }
 						}
 
-						else if ( skillTitle.Contains("Wrestler") && isOriental == true ){ skillTitle = skillTitle.Replace("Wrestler", "Karateka"); }
-						else if ( skillTitle.Contains("Detective") ){ skillTitle = skillTitle.Replace("Detective", "Undertaker"); }
-						else if ( skillTitle.Contains("Shade") ){ skillTitle = skillTitle.Replace("Shade", "Skulker"); }
-						else if ( skillTitle.Contains("Rogue") ){ skillTitle = skillTitle.Replace("Rogue", "Sneak"); }
+						else if ( skillTitle.Contains("Wrestler") && isOriental == true ){ skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_ORIENTAL_WRESTLER); }
+						else if ( skillTitle.Contains("Detective") ){ skillTitle = skillTitle.Replace("Detective", PlayerInfoStringConstants.TITLE_UNDERTAKER); }
+						else if ( skillTitle.Contains("Shade") ){ skillTitle = skillTitle.Replace("Shade", PlayerInfoStringConstants.TITLE_STEALTH); }
+						else if ( skillTitle.Contains("Rogue") ){ skillTitle = skillTitle.Replace("Rogue", PlayerInfoStringConstants.TITLE_ROGUE); }
 						//else if ( skillTitle.Contains("Infiltrator") ){ skillTitle = skillTitle.Replace("Infiltrator", "Lockpicker"); }
-						else if ( skillTitle.Contains("Mage") && isEvil == true && m.Body == 0x191 ){ skillTitle = skillTitle.Replace("Mage", "Enchantress"); }
-						else if ( skillTitle.Contains("Mage") && isEvil == true ){ skillTitle = skillTitle.Replace("Mage", "Warlock"); }
-						else if ( skillTitle.Contains("Mage") ){ skillTitle = skillTitle.Replace("Mage", "Wizard"); }
-						else if ( skillTitle.Contains("Paladin") ){ skillTitle = skillTitle.Replace("Paladin", "Knight"); }
+						else if ( skillTitle.Contains("Mage") && isEvil == true && m.Body == PlayerInfoConstants.BODY_FEMALE ){ skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ENCHANTRESS); }
+						else if ( skillTitle.Contains("Mage") && isEvil == true ){ skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_WARLOCK); }
+						else if ( skillTitle.Contains("Mage") ){ skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_WIZARD); }
+						else if ( skillTitle.Contains("Paladin") ){ skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_KNIGHT); }
 						else if ( skillTitle.Contains("Tamer") )
 						{ 
-							if ( m.Karma < -2500 ){ skillTitle = skillTitle.Replace("Naturalist", "Slaver"); }
-							else { skillTitle = skillTitle.Replace("Tamer", "Beastmaster"); }
+							if ( m.Karma < PlayerInfoConstants.KARMA_SLAVER ){ skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_SLAVER); }
+							else { skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_BEASTMASTER); }
 						}
-						else if ( skillTitle.Contains("Pickpocket") ){ skillTitle = skillTitle.Replace("Pickpocket", "Thief"); }
-						else if ( skillTitle.Contains("Fisherman") ){ skillTitle = skillTitle.Replace("Fisherman", "Sailor"); }
-						else if ( skillTitle.Contains("Stoic") ){ skillTitle = skillTitle.Replace("Stoic", "Meditator"); }
+						else if ( skillTitle.Contains("Pickpocket") ){ skillTitle = skillTitle.Replace("Pickpocket", PlayerInfoStringConstants.TITLE_THIEF); }
+						else if ( skillTitle.Contains("Fisherman") ){ skillTitle = skillTitle.Replace("Fisherman", PlayerInfoStringConstants.TITLE_SAILOR); }
+						else if ( skillTitle.Contains("Stoic") ){ skillTitle = skillTitle.Replace("Stoic", PlayerInfoStringConstants.TITLE_MEDITATOR); }
 						//else if ( skillTitle.Contains("Armsman") ){ skillTitle = skillTitle.Replace("Armsman", "Mace Fighter"); }
-						else if ( skillTitle.Contains("Wrestler") ){ skillTitle = skillTitle.Replace("Wrestler", "Brawler"); }
+						else if ( skillTitle.Contains("Wrestler") ){ skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_BRAWLER); }
 						//else if ( skillTitle.Contains("Praegustator") ){ skillTitle = skillTitle.Replace("Praegustator", "Food Taster"); }
-						else if ( skillTitle.Contains("Warder") ){ skillTitle = skillTitle.Replace("Warder", "Spell Warder"); }
+						else if ( skillTitle.Contains("Warder") ){ skillTitle = skillTitle.Replace("Warder", PlayerInfoStringConstants.TITLE_SPELL_WARDER); }
 
 						if ( isBarbaric == 0 )
 						{
-							if ( skillTitle.Contains("Wizard") && m.Body == 0x191 ){ skillTitle = skillTitle.Replace("Wizard", "Sorceress"); }
-							if ( skillTitle.Contains("Necromancer") && m.Body == 0x191 ){ skillTitle = skillTitle.Replace("Necromancer", "Witch"); }
-							if ( skillTitle.Contains("Knight") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Knight", "Death Knight"); }
-							if ( skillTitle.Contains("Healer") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Healer", "Mortician"); }
+							if ( skillTitle.Contains("Wizard") && m.Body == PlayerInfoConstants.BODY_FEMALE ){ skillTitle = skillTitle.Replace("Wizard", PlayerInfoStringConstants.TITLE_SORCERESS); }
+							if ( skillTitle.Contains("Necromancer") && m.Body == PlayerInfoConstants.BODY_FEMALE ){ skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_WITCH); }
+							if ( skillTitle.Contains("Knight") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL ){ skillTitle = skillTitle.Replace("Knight", PlayerInfoStringConstants.TITLE_DEATH_KNIGHT_POST); }
+							if ( skillTitle.Contains("Healer") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL ){ skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_MORTICIAN); }
 						}
 
-						if ( skillTitle.Contains("Sailor") && m.Karma < 0 ){ skillTitle = skillTitle.Replace("Sailor", "Pirate"); }
-						if ( skillTitle.Contains("Sailor") && m.Skills[SkillName.Fishing].Value >= 100 ){ skillTitle = skillTitle.Replace("Sailor", "Ship Captain"); }
-						if ( skillTitle.Contains("Pirate") && m.Skills[SkillName.Fishing].Value >= 100 ){ skillTitle = skillTitle.Replace("Pirate", "Pirate Captain"); }
-
-						if ( m.Female && isBarbaric == 0 && skillTitle.EndsWith( "man" ) )
-							skillTitle = skillTitle.Substring( 0, skillTitle.Length - 3 ) + "woman";
+						if ( skillTitle.Contains("Sailor") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL ){ skillTitle = skillTitle.Replace("Sailor", PlayerInfoStringConstants.TITLE_PIRATE); }
+						if ( skillTitle.Contains("Sailor") && m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN ){ skillTitle = skillTitle.Replace("Sailor", PlayerInfoStringConstants.TITLE_SHIP_CAPTAIN); }
+						if ( skillTitle.Contains("Pirate") && m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN ){ skillTitle = skillTitle.Replace("Pirate", PlayerInfoStringConstants.TITLE_PIRATE_CAPTAIN); }
 
 						return String.Concat( skillLevel, " ", skillTitle );
 					}
 				}
 			}
 
-			return "Village Idiot";
+			return PlayerInfoStringConstants.TITLE_VILLAGE_IDIOT;
 		}
 
-		public static bool isMonk ( Mobile m )
+		#endregion
+
+		#region Private Skill Title Helpers
+
+		private static Skill GetHighestSkill( Mobile m )
 		{
 			int points = 0;
 
@@ -395,7 +484,7 @@ namespace Server.Misc
 
 		public static bool isFromSpace( Mobile m )
 		{
-			if ( m.Skills.Cap >= 40000 )
+			if ( m.Skills.Cap >= PlayerInfoConstants.SKILLS_CAP_SPACE )
 				return true;
 
 			return false;
@@ -458,7 +547,7 @@ namespace Server.Misc
 					if ( i != null ){ points = 1; }
 				}
 
-				if ( from.Skills[SkillName.Begging].Value > 10 || from.Skills[SkillName.EvalInt].Value > 10 )
+				if ( from.Skills[SkillName.Begging].Value > PlayerInfoConstants.MIN_SKILL_FOR_JESTER || from.Skills[SkillName.EvalInt].Value > PlayerInfoConstants.MIN_SKILL_FOR_JESTER )
 				{
 					points++;
 				}
@@ -489,11 +578,13 @@ namespace Server.Misc
 				}
 			}
 
-			if ( points > 2 )
+			if ( points > PlayerInfoConstants.MIN_POINTS_FOR_SPECIAL )
 				return true;
 
 			return false;
 		}
+
+		#endregion
 
 		private static Skill GetHighestSkill( Mobile m )
 		{
@@ -548,22 +639,20 @@ namespace Server.Misc
 
 		private static int GetTableIndex( Skill skill )
 		{
-			int fp = 0; // Math.Min( skill.BaseFixedPoint, 1200 );
+			int fp = 0;
 
-			if ( skill.Value >= 120 ){ fp = 9; }
-			else if ( skill.Value >= 110 ){ fp = 8; }
-			else if ( skill.Value >= 100 ){ fp = 7; }
-			else if ( skill.Value >= 90 ){ fp = 6; }
-			else if ( skill.Value >= 80 ){ fp = 5; }
-			else if ( skill.Value >= 70 ){ fp = 4; }
-			else if ( skill.Value >= 60 ){ fp = 3; }
-			else if ( skill.Value >= 50 ){ fp = 2; }
-			else if ( skill.Value >= 40 ){ fp = 1; }
+			if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_120 ){ fp = 9; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_110 ){ fp = 8; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_100 ){ fp = 7; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_90 ){ fp = 6; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_80 ){ fp = 5; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_70 ){ fp = 4; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_60 ){ fp = 3; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_50 ){ fp = 2; }
+			else if ( skill.Value >= PlayerInfoConstants.SKILL_LEVEL_40 ){ fp = 1; }
 			else { fp = 0; }
 
 			return fp;
-
-			// return (fp - 300) / 100;
 		}
 
 		private static Skill GetShowingSkill( Mobile m, CharacterDatabase DB )
@@ -576,68 +665,621 @@ namespace Server.Misc
 
 				if ( NskillShow > 0 )
 				{
-					if ( NskillShow == 1 ){ skill = m.Skills[SkillName.Alchemy]; }
-					else if ( NskillShow == 2 ){ skill = m.Skills[SkillName.Anatomy]; }
-					else if ( NskillShow == 3 ){ skill = m.Skills[SkillName.AnimalLore]; }
-					else if ( NskillShow == 4 ){ skill = m.Skills[SkillName.AnimalTaming]; }
-					else if ( NskillShow == 5 ){ skill = m.Skills[SkillName.Archery]; }
-					else if ( NskillShow == 6 ){ skill = m.Skills[SkillName.ArmsLore]; }
-					else if ( NskillShow == 7 ){ skill = m.Skills[SkillName.Begging]; }
-					else if ( NskillShow == 8 ){ skill = m.Skills[SkillName.Blacksmith]; }
-					else if ( NskillShow == 9 ){ skill = m.Skills[SkillName.Bushido]; }
-					else if ( NskillShow == 10 ){ skill = m.Skills[SkillName.Camping]; }
-					else if ( NskillShow == 11 ){ skill = m.Skills[SkillName.Carpentry]; }
-					else if ( NskillShow == 12 ){ skill = m.Skills[SkillName.Cartography]; }
-					else if ( NskillShow == 13 ){ skill = m.Skills[SkillName.Chivalry]; }
-					else if ( NskillShow == 14 ){ skill = m.Skills[SkillName.Cooking]; }
-					else if ( NskillShow == 15 ){ skill = m.Skills[SkillName.DetectHidden]; }
-					else if ( NskillShow == 16 ){ skill = m.Skills[SkillName.Discordance]; }
-					else if ( NskillShow == 17 ){ skill = m.Skills[SkillName.EvalInt]; }
-					else if ( NskillShow == 18 ){ skill = m.Skills[SkillName.Fencing]; }
-					else if ( NskillShow == 19 ){ skill = m.Skills[SkillName.Fishing]; }
-					else if ( NskillShow == 20 ){ skill = m.Skills[SkillName.Fletching]; }
-					else if ( NskillShow == 21 ){ skill = m.Skills[SkillName.Focus]; }
-					else if ( NskillShow == 22 ){ skill = m.Skills[SkillName.Forensics]; }
-					else if ( NskillShow == 23 ){ skill = m.Skills[SkillName.Healing]; }
-					else if ( NskillShow == 24 ){ skill = m.Skills[SkillName.Herding]; }
-					else if ( NskillShow == 25 ){ skill = m.Skills[SkillName.Hiding]; }
-					else if ( NskillShow == 26 ){ skill = m.Skills[SkillName.Inscribe]; }
-					else if ( NskillShow == 27 ){ skill = m.Skills[SkillName.ItemID]; }
-					else if ( NskillShow == 28 ){ skill = m.Skills[SkillName.Lockpicking]; }
-					else if ( NskillShow == 29 ){ skill = m.Skills[SkillName.Lumberjacking]; }
-					else if ( NskillShow == 30 ){ skill = m.Skills[SkillName.Macing]; }
-					else if ( NskillShow == 31 ){ skill = m.Skills[SkillName.Magery]; }
-					else if ( NskillShow == 32 ){ skill = m.Skills[SkillName.MagicResist]; }
-					else if ( NskillShow == 33 ){ skill = m.Skills[SkillName.Meditation]; }
-					else if ( NskillShow == 34 ){ skill = m.Skills[SkillName.Mining]; }
-					else if ( NskillShow == 35 ){ skill = m.Skills[SkillName.Musicianship]; }
-					else if ( NskillShow == 36 ){ skill = m.Skills[SkillName.Necromancy]; }
-					else if ( NskillShow == 37 ){ skill = m.Skills[SkillName.Ninjitsu]; }
-					else if ( NskillShow == 38 ){ skill = m.Skills[SkillName.Parry]; }
-					else if ( NskillShow == 39 ){ skill = m.Skills[SkillName.Peacemaking]; }
-					else if ( NskillShow == 40 ){ skill = m.Skills[SkillName.Poisoning]; }
-					else if ( NskillShow == 41 ){ skill = m.Skills[SkillName.Provocation]; }
-					else if ( NskillShow == 42 ){ skill = m.Skills[SkillName.RemoveTrap]; }
-					else if ( NskillShow == 43 ){ skill = m.Skills[SkillName.Snooping]; }
-					else if ( NskillShow == 44 ){ skill = m.Skills[SkillName.SpiritSpeak]; }
-					else if ( NskillShow == 45 ){ skill = m.Skills[SkillName.Stealing]; }
-					else if ( NskillShow == 46 ){ skill = m.Skills[SkillName.Stealth]; }
-					else if ( NskillShow == 47 ){ skill = m.Skills[SkillName.Swords]; }
-					else if ( NskillShow == 48 ){ skill = m.Skills[SkillName.Tactics]; }
-					else if ( NskillShow == 49 ){ skill = m.Skills[SkillName.Tailoring]; }
-					else if ( NskillShow == 50 ){ skill = m.Skills[SkillName.TasteID]; }
-					else if ( NskillShow == 51 ){ skill = m.Skills[SkillName.Tinkering]; }
-					else if ( NskillShow == 52 ){ skill = m.Skills[SkillName.Tracking]; }
-					else if ( NskillShow == 53 ){ skill = m.Skills[SkillName.Veterinary]; }
-					else if ( NskillShow == 54 ){ skill = m.Skills[SkillName.Wrestling]; }
-					else { skill = GetHighestSkill( m ); }
+					SkillName skillName;
+					if ( SkillIndexMap.TryGetValue( NskillShow, out skillName ) )
+					{
+						skill = m.Skills[skillName];
+					}
+					else
+					{
+						skill = GetHighestSkill( m );
+					}
 				}
 			}
 
 			return skill;
 		}
 
-		public static string GetNPCGuild( Mobile m )
+		#endregion
+
+		#region Title Transformation Methods
+
+		/// <summary>
+		/// Applies barbaric title transformations based on player's barbaric level.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <param name="isBarbaric">Barbaric level (0 = none, 1 = barbaric, 2 = amazon)</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyBarbaricTransformations( string skillTitle, Mobile m, int isBarbaric )
+		{
+			if ( isBarbaric <= 0 )
+				return skillTitle;
+
+			// Check if title is eligible for barbaric transformation
+			if ( !( skillTitle.Contains("Alchemist") || 
+					skillTitle.Contains("Naturalist") || 
+					skillTitle.Contains("Tamer") || 
+					skillTitle.Contains("Archer") || 
+					skillTitle.Contains("Explorer") || 
+					skillTitle.Contains("Paladin") || 
+					skillTitle.Contains("Fencer") || 
+					skillTitle.Contains("Healer") || 
+					skillTitle.Contains("Shepherd") || 
+					skillTitle.Contains("Armsman") || 
+					skillTitle.Contains("Mage") || 
+					skillTitle.Contains("Bard") || 
+					skillTitle.Contains("Necromancer") || 
+					skillTitle.Contains("Fishing") || 
+					skillTitle.Contains("Ranger") || 
+					skillTitle.Contains("Duelist") || 
+					skillTitle.Contains("Swordsman") || 
+					skillTitle.Contains("Weapon Master") || 
+					skillTitle.Contains("Tactician") || 
+					skillTitle.Contains("Veterinarian") ) )
+			{
+				return skillTitle;
+			}
+
+			// Apply transformations
+			if ( skillTitle.Contains("Alchemist") )
+			{
+				skillTitle = skillTitle.Replace("Alchemist", PlayerInfoStringConstants.TITLE_BARBARIC_ALCHEMIST);
+			}
+			else if ( skillTitle.Contains("Naturalist") )
+			{
+				skillTitle = skillTitle.Replace("Naturalist", PlayerInfoStringConstants.TITLE_BARBARIC_BEASTMASTER);
+			}
+			else if ( skillTitle.Contains("Tamer") )
+			{
+				skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_BARBARIC_TAMER);
+			}
+			else if ( skillTitle.Contains("Shepherd") )
+			{
+				skillTitle = skillTitle.Replace("Shepherd", PlayerInfoStringConstants.TITLE_BARBARIC_SHEPHERD);
+			}
+			else if ( skillTitle.Contains("Fishing") )
+			{
+				if ( m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN )
+				{
+					skillTitle = skillTitle.Replace("Fishing", PlayerInfoStringConstants.TITLE_ATLANTEAN);
+				}
+				else
+				{
+					skillTitle = skillTitle.Replace("Fishing", PlayerInfoStringConstants.TITLE_FISHERMAN);
+				}
+			}
+			else if ( skillTitle.Contains("Veterinarian") )
+			{
+				skillTitle = skillTitle.Replace("Veterinarian", PlayerInfoStringConstants.TITLE_VETERINARIAN);
+			}
+			else if ( skillTitle.Contains("Explorer") )
+			{
+				skillTitle = skillTitle.Replace("Explorer", PlayerInfoStringConstants.TITLE_EXPLORER);
+			}
+			else if ( skillTitle.Contains("Paladin") )
+			{
+				if ( m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_DEATH_KNIGHT);
+				}
+				// else if ( isBarbaric > 1 )
+				// {
+				// 	skillTitle = skillTitle.Replace("Paladin", "Valkyrie");
+				// }
+				else
+				{
+					skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_PALADIN);
+				}
+			}
+			else if ( skillTitle.Contains("Tactician") )
+			{
+				skillTitle = skillTitle.Replace("Tactician", PlayerInfoStringConstants.TITLE_GENERAL);
+			}
+			else if ( skillTitle.Contains("Duelist") )
+			{
+				skillTitle = skillTitle.Replace("Duelist", PlayerInfoStringConstants.TITLE_DUELIST);
+			}
+			else if ( skillTitle.Contains("Necromancer") )
+			{
+				skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_OCCULTIST);
+			}
+			else if ( skillTitle.Contains("Bard") )
+			{
+				skillTitle = skillTitle.Replace("Bard", PlayerInfoStringConstants.TITLE_BARD);
+			}
+			else if ( skillTitle.Contains("Mage") )
+			{
+				skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ARCANIST);
+			}
+			else if ( skillTitle.Contains("Healer") )
+			{
+				if ( m.Female )
+				{
+					skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_HEALER_FEMALE);
+				}
+				else
+				{
+					skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_HEALER_MALE);
+				}
+			}
+			else if ( skillTitle.Contains("Archer") && isBarbaric > 1 )
+			{
+				skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_ARCHER_AMAZON);
+			}
+			else if ( skillTitle.Contains("Fencer") && isBarbaric > 1 )
+			{
+				skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_FENCER_AMAZON);
+			}
+			else if ( skillTitle.Contains("Armsman") && isBarbaric > 1 )
+			{
+				skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_ARMSMAN_AMAZON);
+			}
+			else if ( skillTitle.Contains("Swordsman") && isBarbaric > 1 )
+			{
+				skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_SWORDSMAN_AMAZON);
+			}
+			else if ( skillTitle.Contains("Archer") )
+			{
+				skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_BARBARIC_ARCHER);
+			}
+			else if ( skillTitle.Contains("Fencer") )
+			{
+				skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_BARBARIC_FENCER);
+			}
+			else if ( skillTitle.Contains("Armsman") )
+			{
+				skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_BARBARIC_ARMSMAN);
+			}
+			else if ( skillTitle.Contains("Swordsman") )
+			{
+				skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_BARBARIC_SWORDSMAN);
+			}
+			else if ( skillTitle.Contains("Ranger") )
+			{
+				skillTitle = skillTitle.Replace("Ranger", PlayerInfoStringConstants.TITLE_RANGER);
+			}
+			else if ( skillTitle.Contains("Weapon Master") )
+			{
+				skillTitle = skillTitle.Replace("Weapon Master", PlayerInfoStringConstants.TITLE_GLADIATOR);
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies archmage transformation for high-level mages/necromancers.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <param name="isOriental">Whether player is oriental</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyArchmageTransformation( string skillTitle, Mobile m, bool isOriental )
+		{
+			if ( isOriental )
+				return skillTitle;
+
+			if ( skillTitle.Contains("Mage") && m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE && m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE )
+			{
+				return skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ARCHMAGE);
+			}
+			else if ( skillTitle.Contains("Necromancer") && m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE && m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_ARCHMAGE )
+			{
+				return skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_ARCHMAGE);
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies monk/mystic transformation for wrestlers with mystic abilities.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyMonkTransformation( string skillTitle, Mobile m )
+		{
+			if ( skillTitle.Contains("Wrestler") && isMonk(m) )
+			{
+				skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_MONK);
+				if ( m.Skills[SkillName.Magery].Base >= PlayerInfoConstants.MIN_SKILL_FOR_MYSTIC || m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_MYSTIC )
+				{
+					skillTitle = skillTitle.Replace(PlayerInfoStringConstants.TITLE_MONK, PlayerInfoStringConstants.TITLE_MYSTIC);
+				}
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies Syth/Jedi scholar transformation.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplySythJediScholarTransformation( string skillTitle, Mobile m )
+		{
+			if ( skillTitle.Contains("Scholar") && isSyth(m, false) )
+			{
+				return skillTitle.Replace("Scholar", "Syth");
+			}
+			else if ( skillTitle.Contains("Scholar") && isJedi(m, false) )
+			{
+				return skillTitle.Replace("Scholar", "Jedi");
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies Jedi Paladin title transformation based on skill and karma.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyJediPaladinTransformation( string skillTitle, Mobile m )
+		{
+			if ( !skillTitle.Contains("Paladin") || !isJedi(m, false) )
+				return skillTitle;
+
+			string jedi = PlayerInfoStringConstants.TITLE_JEDI_YOUNGLING;
+
+			// Check conditions from highest to lowest
+			if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_GRAND_MASTER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_MASTER_OF_ORDER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_COUNCIL_MEMBER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_MASTER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_CONSULAR || m.Karma >= PlayerInfoConstants.KARMA_JEDI_CONSULAR )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_CONSULAR;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_GUARDIAN;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_SENTINEL;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_PADAWAN;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_SERVICE_CORPS;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_KNIGHT;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base < PlayerInfoConstants.KARMA_NEUTRAL || m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				jedi = PlayerInfoStringConstants.TITLE_JEDI_TROLL;
+			}
+
+			return skillTitle.Replace("Paladin", jedi);
+		}
+
+		/// <summary>
+		/// Applies Syth Paladin title transformation based on skill and karma.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplySythPaladinTransformation( string skillTitle, Mobile m )
+		{
+			if ( !skillTitle.Contains("Paladin") || !isSyth(m, false) )
+				return skillTitle;
+
+			string syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL;
+
+			// Check conditions from highest to lowest
+			if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				syth = PlayerInfoStringConstants.TITLE_GRAND_MASTER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				syth = PlayerInfoStringConstants.TITLE_MASTER_OF_ORDER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_COUNCIL_MEMBER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_MASTER || m.Karma >= PlayerInfoConstants.KARMA_JEDI_MASTER )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_MASTER;
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_CONSULAR || m.Karma >= PlayerInfoConstants.KARMA_JEDI_CONSULAR )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.JEDI_SKILL_PADAWAN || m.Karma >= PlayerInfoConstants.KARMA_JEDI_PADAWAN )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.KARMA_NEUTRAL || m.Karma >= PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_HOPEFUL; // Placeholder - needs proper title
+			}
+			else if ( m.Skills[SkillName.Chivalry].Base < PlayerInfoConstants.KARMA_NEUTRAL || m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				syth = PlayerInfoStringConstants.TITLE_SYTH_TROLL;
+			}
+
+			return skillTitle.Replace("Paladin", syth);
+		}
+
+		/// <summary>
+		/// Applies oriental title transformations.
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <param name="isOriental">Whether player is oriental</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyOrientalTransformations( string skillTitle, Mobile m, bool isOriental )
+		{
+			if ( !isOriental )
+				return skillTitle;
+
+			if ( skillTitle.Contains("Mage") )
+			{
+				skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ORIENTAL_MAGE);
+			}
+			else if ( skillTitle.Contains("Swordsman") )
+			{
+				skillTitle = skillTitle.Replace("Swordsman", PlayerInfoStringConstants.TITLE_ORIENTAL_SWORDSMAN);
+			}
+			else if ( skillTitle.Contains("Healer") )
+			{
+				skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_ORIENTAL_HEALER);
+			}
+			else if ( skillTitle.Contains("Necromancer") )
+			{
+				skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_ORIENTAL_NECROMANCER);
+			}
+			else if ( skillTitle.Contains("Alchemist") )
+			{
+				skillTitle = skillTitle.Replace("Alchemist", PlayerInfoStringConstants.TITLE_ORIENTAL_ALCHEMIST);
+			}
+			else if ( skillTitle.Contains("Medium") )
+			{
+				skillTitle = skillTitle.Replace("Medium", PlayerInfoStringConstants.TITLE_ORIENTAL_MEDIUM);
+			}
+			else if ( skillTitle.Contains("Archer") )
+			{
+				skillTitle = skillTitle.Replace("Archer", PlayerInfoStringConstants.TITLE_ORIENTAL_ARCHER);
+			}
+			else if ( skillTitle.Contains("Fencer") )
+			{
+				skillTitle = skillTitle.Replace("Fencer", PlayerInfoStringConstants.TITLE_ORIENTAL_FENCER);
+			}
+			else if ( skillTitle.Contains("Armsman") )
+			{
+				skillTitle = skillTitle.Replace("Armsman", PlayerInfoStringConstants.TITLE_ORIENTAL_ARMSMAN);
+			}
+			else if ( skillTitle.Contains("Tactician") )
+			{
+				skillTitle = skillTitle.Replace("Tactician", PlayerInfoStringConstants.TITLE_ORIENTAL_TACTICIAN);
+			}
+			else if ( skillTitle.Contains("Paladin") )
+			{
+				skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_ORIENTAL_PALADIN);
+			}
+			else if ( skillTitle.Contains("Wrestler") )
+			{
+				skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_ORIENTAL_WRESTLER);
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies default title transformations (non-barbaric, non-oriental).
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <param name="isEvil">Whether player is evil</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyDefaultTransformations( string skillTitle, Mobile m, bool isEvil )
+		{
+			if ( skillTitle.Contains("Naturalist") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				skillTitle = skillTitle.Replace("Naturalist", PlayerInfoStringConstants.TITLE_INDUSTRIALIST);
+			}
+			else if ( skillTitle.Contains("Beggar") && isJester(m) )
+			{
+				skillTitle = skillTitle.Replace("Beggar", PlayerInfoStringConstants.TITLE_JESTER);
+			}
+			else if ( skillTitle.Contains("Scholar") && isJester(m) )
+			{
+				skillTitle = skillTitle.Replace("Scholar", PlayerInfoStringConstants.TITLE_CLOWN);
+			}
+			else if ( skillTitle.Contains("Samurai") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				skillTitle = skillTitle.Replace("Samurai", PlayerInfoStringConstants.TITLE_RONIN);
+			}
+			else if ( skillTitle.Contains("Ninja") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				skillTitle = skillTitle.Replace("Ninja", PlayerInfoStringConstants.TITLE_YAKUZA);
+			}
+			else if ( ( skillTitle.Contains("Healer") || skillTitle.Contains("Medium") ) && m.Karma >= PlayerInfoConstants.KARMA_PRIEST && m.Skills[SkillName.Healing].Base >= PlayerInfoConstants.MIN_SKILL_FOR_PRIEST && m.Skills[SkillName.SpiritSpeak].Base >= PlayerInfoConstants.MIN_SKILL_FOR_PRIEST )
+			{
+				skillTitle = skillTitle.Replace("Medium", PlayerInfoStringConstants.TITLE_PRIEST);
+				skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_PRIEST);
+			}
+			else if ( skillTitle.Contains("Detective") )
+			{
+				skillTitle = skillTitle.Replace("Detective", PlayerInfoStringConstants.TITLE_UNDERTAKER);
+			}
+			else if ( skillTitle.Contains("Shade") )
+			{
+				skillTitle = skillTitle.Replace("Shade", PlayerInfoStringConstants.TITLE_STEALTH);
+			}
+			else if ( skillTitle.Contains("Rogue") )
+			{
+				skillTitle = skillTitle.Replace("Rogue", PlayerInfoStringConstants.TITLE_ROGUE);
+			}
+			else if ( skillTitle.Contains("Mage") && isEvil && m.Body == PlayerInfoConstants.BODY_FEMALE )
+			{
+				skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_ENCHANTRESS);
+			}
+			else if ( skillTitle.Contains("Mage") && isEvil )
+			{
+				skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_WARLOCK);
+			}
+			else if ( skillTitle.Contains("Mage") )
+			{
+				skillTitle = skillTitle.Replace("Mage", PlayerInfoStringConstants.TITLE_WIZARD);
+			}
+			else if ( skillTitle.Contains("Paladin") )
+			{
+				skillTitle = skillTitle.Replace("Paladin", PlayerInfoStringConstants.TITLE_KNIGHT);
+			}
+			else if ( skillTitle.Contains("Tamer") )
+			{
+				if ( m.Karma < PlayerInfoConstants.KARMA_SLAVER )
+				{
+					skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_SLAVER);
+				}
+				else
+				{
+					skillTitle = skillTitle.Replace("Tamer", PlayerInfoStringConstants.TITLE_BEASTMASTER);
+				}
+			}
+			else if ( skillTitle.Contains("Pickpocket") )
+			{
+				skillTitle = skillTitle.Replace("Pickpocket", PlayerInfoStringConstants.TITLE_THIEF);
+			}
+			else if ( skillTitle.Contains("Fisherman") )
+			{
+				skillTitle = skillTitle.Replace("Fisherman", PlayerInfoStringConstants.TITLE_SAILOR);
+			}
+			else if ( skillTitle.Contains("Stoic") )
+			{
+				skillTitle = skillTitle.Replace("Stoic", PlayerInfoStringConstants.TITLE_MEDITATOR);
+			}
+			else if ( skillTitle.Contains("Wrestler") )
+			{
+				skillTitle = skillTitle.Replace("Wrestler", PlayerInfoStringConstants.TITLE_BRAWLER);
+			}
+			else if ( skillTitle.Contains("Warder") )
+			{
+				skillTitle = skillTitle.Replace("Warder", PlayerInfoStringConstants.TITLE_SPELL_WARDER);
+			}
+
+			return skillTitle;
+		}
+
+		/// <summary>
+		/// Applies post-transformation adjustments (gender, karma-based, etc.).
+		/// </summary>
+		/// <param name="skillTitle">The current skill title</param>
+		/// <param name="m">The mobile</param>
+		/// <param name="isBarbaric">Barbaric level</param>
+		/// <param name="isOriental">Whether player is oriental</param>
+		/// <returns>Transformed title</returns>
+		private static string ApplyPostTransformations( string skillTitle, Mobile m, int isBarbaric, bool isOriental )
+		{
+			// Priest to Buddhist for oriental players
+			if ( skillTitle.Contains("Priest") && isOriental )
+			{
+				skillTitle = skillTitle.Replace("Priest", PlayerInfoStringConstants.TITLE_BUDDHIST);
+			}
+
+			// Non-barbaric gender and karma transformations
+			if ( isBarbaric == 0 )
+			{
+				if ( skillTitle.Contains("Wizard") && m.Body == PlayerInfoConstants.BODY_FEMALE )
+				{
+					skillTitle = skillTitle.Replace("Wizard", PlayerInfoStringConstants.TITLE_SORCERESS);
+				}
+				if ( skillTitle.Contains("Necromancer") && m.Body == PlayerInfoConstants.BODY_FEMALE )
+				{
+					skillTitle = skillTitle.Replace("Necromancer", PlayerInfoStringConstants.TITLE_WITCH);
+				}
+				if ( skillTitle.Contains("Knight") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					skillTitle = skillTitle.Replace("Knight", PlayerInfoStringConstants.TITLE_DEATH_KNIGHT_POST);
+				}
+				if ( skillTitle.Contains("Healer") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				{
+					skillTitle = skillTitle.Replace("Healer", PlayerInfoStringConstants.TITLE_MORTICIAN);
+				}
+			}
+
+			// Sailor/Pirate transformations
+			if ( skillTitle.Contains("Sailor") && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+			{
+				skillTitle = skillTitle.Replace("Sailor", PlayerInfoStringConstants.TITLE_PIRATE);
+			}
+			if ( skillTitle.Contains("Sailor") && m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN )
+			{
+				skillTitle = skillTitle.Replace("Sailor", PlayerInfoStringConstants.TITLE_SHIP_CAPTAIN);
+			}
+			if ( skillTitle.Contains("Pirate") && m.Skills[SkillName.Fishing].Value >= PlayerInfoConstants.MIN_SKILL_FOR_CAPTAIN )
+			{
+				skillTitle = skillTitle.Replace("Pirate", PlayerInfoStringConstants.TITLE_PIRATE_CAPTAIN);
+			}
+
+			// Gender suffix transformation for PT-BR
+			if ( m.Female && isBarbaric == 0 )
+			{
+				// Handle common PT-BR masculine endings (check more specific patterns first)
+				if ( skillTitle.EndsWith( "eiro" ) && !skillTitle.EndsWith( "eira" ) )
+				{
+					// -eiro → -eira (e.g., "Marinheiro" → "Marinheira", "Cavaleiro" → "Cavaleira")
+					skillTitle = skillTitle.Substring( 0, skillTitle.Length - 4 ) + "eira";
+				}
+				else if ( skillTitle.EndsWith( "dor" ) && !skillTitle.EndsWith( "dora" ) )
+				{
+					// -dor → -dora (e.g., "Domador" → "Domadora", "Meditador" → "Meditadora")
+					skillTitle = skillTitle.Substring( 0, skillTitle.Length - 3 ) + "dora";
+				}
+				else if ( skillTitle.EndsWith( "Brigão" ) )
+				{
+					// Special case: "Brigão" → "Brigona"
+					skillTitle = skillTitle.Replace( "Brigão", "Brigona" );
+				}
+				else if ( skillTitle.EndsWith( "rão" ) && !skillTitle.EndsWith( "ra" ) )
+				{
+					// -rão → -ra (e.g., "Ladrão" → "Ladra")
+					skillTitle = skillTitle.Substring( 0, skillTitle.Length - 3 ) + "ra";
+				}
+				else if ( skillTitle.EndsWith( "ão" ) && !skillTitle.EndsWith( "ã" ) && !skillTitle.EndsWith( "ra" ) )
+				{
+					// -ão → -ã (e.g., "Capitão" → "Capitã")
+					skillTitle = skillTitle.Substring( 0, skillTitle.Length - 2 ) + "ã";
+				}
+				else if ( skillTitle.EndsWith( "o" ) && !skillTitle.EndsWith( "a" ) && !skillTitle.EndsWith( "ista" ) && !skillTitle.EndsWith( "eiro" ) && !skillTitle.EndsWith( "dor" ) && !skillTitle.EndsWith( "ão" ) && !skillTitle.EndsWith( "rão" ) )
+				{
+					// -o → -a (e.g., "Mago" → "Maga")
+					// Skip if already feminine, ends with -ista (gender-neutral), or matches other patterns above
+					skillTitle = skillTitle.Substring( 0, skillTitle.Length - 1 ) + "a";
+				}
+			}
+
+			return skillTitle;
+		}
+
+		#endregion
+
+		#region Player Type Detection Methods
+
+		public static bool isMonk ( Mobile m )
 		{
 			string GuildTitle = "";
 
@@ -645,54 +1287,23 @@ namespace Server.Misc
 			{
 				PlayerMobile pm = (PlayerMobile)m;
 
-				if ( pm.Profession == 1 ){ GuildTitle = " & Fugitive"; }
-				else if ( pm.NpcGuild == NpcGuild.MagesGuild ){ GuildTitle = " of the Wizards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.WarriorsGuild ){ GuildTitle = " of the Warriors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ThievesGuild ){ GuildTitle = " of the Thieves Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.RangersGuild ){ GuildTitle = " of the Rangers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.HealersGuild ){ GuildTitle = " of the Healers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MinersGuild ){ GuildTitle = " of the Miners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MerchantsGuild ){ GuildTitle = " of the Merchants Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TinkersGuild ){ GuildTitle = " of the Tinkers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TailorsGuild ){ GuildTitle = " of the Tailors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.FishermensGuild ){ GuildTitle = " of the Mariners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BardsGuild ){ GuildTitle = " of the Bards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BlacksmithsGuild ){ GuildTitle = " of the Blacksmiths Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.NecromancersGuild ){ GuildTitle = " of the Black Magic Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AlchemistsGuild ){ GuildTitle = " of the Alchemists Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.DruidsGuild ){ GuildTitle = " of the Druids Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ArchersGuild ){ GuildTitle = " of the Archers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CarpentersGuild ){ GuildTitle = " of the Carpenters Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CartographersGuild ){ GuildTitle = " of the Cartographers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.LibrariansGuild ){ GuildTitle = " of the Librarians Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CulinariansGuild ){ GuildTitle = " of the Culinary Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AssassinsGuild ){ GuildTitle = " of the Assassins Guild"; }
+				if ( pm.Profession == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
+				{
+					GuildTitle = PlayerInfoStringConstants.GUILD_NPC_FUGITIVE;
+				}
+				else if ( pm.NpcGuild != NpcGuild.None )
+				{
+					GuildNPCTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
+				}
 			}
 			else if ( m is BaseVendor )
 			{
 				BaseVendor pm = (BaseVendor)m;
 
-				if ( pm.NpcGuild == NpcGuild.MagesGuild ){ GuildTitle = "Wizards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.WarriorsGuild ){ GuildTitle = "Warriors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ThievesGuild ){ GuildTitle = "Thieves Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.RangersGuild ){ GuildTitle = "Rangers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.HealersGuild ){ GuildTitle = "Healers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MinersGuild ){ GuildTitle = "Miners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MerchantsGuild ){ GuildTitle = "Merchants Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TinkersGuild ){ GuildTitle = "Tinkers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TailorsGuild ){ GuildTitle = "Tailors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.FishermensGuild ){ GuildTitle = "Mariners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BardsGuild ){ GuildTitle = "Bards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BlacksmithsGuild ){ GuildTitle = "Blacksmiths Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.NecromancersGuild ){ GuildTitle = "Black Magic Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AlchemistsGuild ){ GuildTitle = "Alchemists Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.DruidsGuild ){ GuildTitle = "Druids Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ArchersGuild ){ GuildTitle = "Archers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CarpentersGuild ){ GuildTitle = "Carpenters Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CartographersGuild ){ GuildTitle = "Cartographers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.LibrariansGuild ){ GuildTitle = "Librarians Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CulinariansGuild ){ GuildTitle = "Culinary Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AssassinsGuild ){ GuildTitle = "Assassins Guild"; }
+				if ( pm.NpcGuild != NpcGuild.None )
+				{
+					GuildVendorTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
+				}
 			}
 			return GuildTitle;
 		}
@@ -705,54 +1316,43 @@ namespace Server.Misc
 			{
 				PlayerMobile pm = (PlayerMobile)m;
 
-				if ( pm.Profession == 1 ){ GuildTitle = "The Fugitive"; }
-				else if ( pm.NpcGuild == NpcGuild.MagesGuild ){ GuildTitle = "The Wizards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.WarriorsGuild ){ GuildTitle = "The Warriors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ThievesGuild ){ GuildTitle = "The Thieves Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.RangersGuild ){ GuildTitle = "The Rangers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.HealersGuild ){ GuildTitle = "The Healers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MinersGuild ){ GuildTitle = "The Miners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.MerchantsGuild ){ GuildTitle = "The Merchants Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TinkersGuild ){ GuildTitle = "The Tinkers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.TailorsGuild ){ GuildTitle = "The Tailors Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.FishermensGuild ){ GuildTitle = "The Mariners Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BardsGuild ){ GuildTitle = "The Bards Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.BlacksmithsGuild ){ GuildTitle = "The Blacksmiths Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.NecromancersGuild ){ GuildTitle = "The Black Magic Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AlchemistsGuild ){ GuildTitle = "The Alchemists Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.DruidsGuild ){ GuildTitle = "The Druids Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.ArchersGuild ){ GuildTitle = "The Archers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CarpentersGuild ){ GuildTitle = "The Carpenters Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CartographersGuild ){ GuildTitle = "The Cartographers Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.LibrariansGuild ){ GuildTitle = "The Librarians Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.CulinariansGuild ){ GuildTitle = "The Culinary Guild"; }
-				else if ( pm.NpcGuild == NpcGuild.AssassinsGuild ){ GuildTitle = "The Assassins Guild"; }
+				if ( pm.Profession == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
+				{
+					GuildTitle = PlayerInfoStringConstants.GUILD_STATUS_FUGITIVE;
+				}
+				else if ( pm.NpcGuild != NpcGuild.None )
+				{
+					GuildStatusTitles.TryGetValue( pm.NpcGuild, out GuildTitle );
+				}
 			}
 			return GuildTitle;
 		}
 
+		#endregion
+
+		#region Player Statistics Methods
+
 		public static int GetPlayerLevel( Mobile m )
 		{
 			int fame = m.Fame;
-				if ( fame > 15000){ fame = 15000; }
+				if ( fame > PlayerInfoConstants.MAX_FAME_FOR_LEVEL ){ fame = PlayerInfoConstants.MAX_FAME_FOR_LEVEL; }
 
 			int karma = m.Karma;
-				if ( karma < 0 ){ karma = m.Karma * -1; }
-				if ( karma > 15000){ karma = 15000; }
+				if ( karma < PlayerInfoConstants.KARMA_NEUTRAL ){ karma = m.Karma * -1; }
+				if ( karma > PlayerInfoConstants.MAX_KARMA_FOR_LEVEL ){ karma = PlayerInfoConstants.MAX_KARMA_FOR_LEVEL; }
 
 			int skills = m.Skills.Total;
-				if ( skills > 10000){ skills = 10000; }
-				skills = (int)( 1.5 * skills );			// UP TO 15,000
+				if ( skills > PlayerInfoConstants.MAX_SKILLS_FOR_LEVEL ){ skills = PlayerInfoConstants.MAX_SKILLS_FOR_LEVEL; }
+				skills = (int)( PlayerInfoConstants.SKILLS_MULTIPLIER * skills );
 
 			int stats = m.RawStr + m.RawDex + m.RawInt;
-				//if ( stats > 250){ stats = 250; }
-				stats = 60 * stats;						// UP TO 15,000
+				stats = PlayerInfoConstants.STATS_MULTIPLIER * stats;
 
-			int level = (int)( ( fame + karma + skills + stats ) / 600 );
-				level = (int)( ( level - 10 ) * 1.12 );
+			int level = (int)( ( fame + karma + skills + stats ) / PlayerInfoConstants.LEVEL_DIVISOR );
+				level = (int)( ( level - PlayerInfoConstants.LEVEL_ADJUSTMENT_SUBTRACTOR ) * PlayerInfoConstants.LEVEL_ADJUSTMENT_MULTIPLIER );
 
-			if ( level < 1 ){ level = 1; }
-			if ( level > 100 ){ level = 100; }
+			if ( level < PlayerInfoConstants.MIN_PLAYER_LEVEL ){ level = PlayerInfoConstants.MIN_PLAYER_LEVEL; }
+			if ( level > PlayerInfoConstants.MAX_PLAYER_LEVEL ){ level = PlayerInfoConstants.MAX_PLAYER_LEVEL; }
 
 			return level;
 		}
@@ -762,10 +1362,10 @@ namespace Server.Misc
 			int difficulty = 0;
 			int level = GetPlayerLevel( m );
 
-			if ( level >=95 ){ difficulty = 4; }
-			else if ( level >=75 ){ difficulty = 3; }
-			else if ( level >=50 ){ difficulty = 2; }
-			else if ( level >=25 ){ difficulty = 1; }
+			if ( level >= PlayerInfoConstants.DIFFICULTY_LEVEL_4 ){ difficulty = 4; }
+			else if ( level >= PlayerInfoConstants.DIFFICULTY_LEVEL_3 ){ difficulty = 3; }
+			else if ( level >= PlayerInfoConstants.DIFFICULTY_LEVEL_2 ){ difficulty = 2; }
+			else if ( level >= PlayerInfoConstants.DIFFICULTY_LEVEL_1 ){ difficulty = 1; }
 
 			return difficulty;
 		}
@@ -778,57 +1378,61 @@ namespace Server.Misc
 			return 0;
 		}
 
-		int fame = (int)((double)m.Fame / 3);
-			if ( fame > 5000){ fame = 5000; }
-		int karma = (int)((double)Math.Abs(m.Karma) / 3);
-			if ( karma > 5000){ karma = 5000; }
+		int fame = (int)((double)m.Fame / PlayerInfoConstants.RESURRECT_DIVISOR);
+			if ( fame > PlayerInfoConstants.MAX_FAME_FOR_RESURRECT ){ fame = PlayerInfoConstants.MAX_FAME_FOR_RESURRECT; }
+		int karma = (int)((double)Math.Abs(m.Karma) / PlayerInfoConstants.RESURRECT_DIVISOR);
+			if ( karma > PlayerInfoConstants.MAX_KARMA_FOR_RESURRECT ){ karma = PlayerInfoConstants.MAX_KARMA_FOR_RESURRECT; }
 
-		int skills = (int)((double)m.Skills.Total / 3);
-			if ( skills > 25000){ skills = 25000; }		
+		int skills = (int)((double)m.Skills.Total / PlayerInfoConstants.RESURRECT_DIVISOR);
+			if ( skills > PlayerInfoConstants.MAX_SKILLS_FOR_RESURRECT ){ skills = PlayerInfoConstants.MAX_SKILLS_FOR_RESURRECT; }		
 
 		int stats = m.RawStr + m.RawDex + m.RawInt;
-			if ( stats > 250){ stats = 250; }
-			stats = 50 * stats;					
+			if ( stats > PlayerInfoConstants.MAX_STATS_FOR_RESURRECT ){ stats = PlayerInfoConstants.MAX_STATS_FOR_RESURRECT; }
+			stats = PlayerInfoConstants.RESURRECT_STATS_MULTIPLIER * stats;					
 
-		int level = (int)( ( fame + karma + skills + stats ) / 1000 );
-			level = (int)( ( level - 10 ) * 1.12 );
+		int level = (int)( ( fame + karma + skills + stats ) / PlayerInfoConstants.RESURRECT_LEVEL_DIVISOR );
+			level = (int)( ( level - PlayerInfoConstants.LEVEL_ADJUSTMENT_SUBTRACTOR ) * PlayerInfoConstants.LEVEL_ADJUSTMENT_MULTIPLIER );
 
-		if ( level < 1 ){ level = 1; }
-		if ( level > 150 ){ level = 150; }
+		if ( level < PlayerInfoConstants.MIN_PLAYER_LEVEL ){ level = PlayerInfoConstants.MIN_PLAYER_LEVEL; }
+		if ( level > PlayerInfoConstants.MAX_RESURRECT_LEVEL ){ level = PlayerInfoConstants.MAX_RESURRECT_LEVEL; }
 
-		level = ( level * 100 );
+		level = ( level * PlayerInfoConstants.RESURRECT_COST_MULTIPLIER );
 
 		if (m is PlayerMobile)
 		{
-			if (((PlayerMobile)m).Profession == 1 ){ level = (int)(level * 1.25); }
-			if ( !((PlayerMobile)m).Avatar) {level = (int)(level * 2);}
+			if (((PlayerMobile)m).Profession == PlayerInfoConstants.CHARACTER_FLAG_TRUE ){ level = (int)(level * PlayerInfoConstants.RESURRECT_PROFESSION_MULTIPLIER); }
+			if ( !((PlayerMobile)m).Avatar) {level = (int)(level * PlayerInfoConstants.RESURRECT_NON_AVATAR_MULTIPLIER);}
 		}
 
 		// Minimum cost is 300 gold (matching debt system)
-		if (level < 300)
+		if (level < PlayerInfoConstants.MIN_RESURRECT_COST)
 		{
-			level = 300;
+			level = PlayerInfoConstants.MIN_RESURRECT_COST;
 		}
 
 		return level;
 	}
 
+		#endregion
+
+		#region Utility Methods
+
 		public static string GetTodaysDate()
 		{
 			string sYear = DateTime.UtcNow.Year.ToString();
 			string sMonth = DateTime.UtcNow.Month.ToString();
-				string sMonthName = "January";
-				if ( sMonth == "2" ){ sMonthName = "February"; }
-				else if ( sMonth == "3" ){ sMonthName = "March"; }
-				else if ( sMonth == "4" ){ sMonthName = "April"; }
-				else if ( sMonth == "5" ){ sMonthName = "May"; }
-				else if ( sMonth == "6" ){ sMonthName = "June"; }
-				else if ( sMonth == "7" ){ sMonthName = "July"; }
-				else if ( sMonth == "8" ){ sMonthName = "August"; }
-				else if ( sMonth == "9" ){ sMonthName = "September"; }
-				else if ( sMonth == "10" ){ sMonthName = "October"; }
-				else if ( sMonth == "11" ){ sMonthName = "November"; }
-				else if ( sMonth == "12" ){ sMonthName = "December"; }
+				string sMonthName = "Janeiro";
+				if ( sMonth == "2" ){ sMonthName = "Fevereiro"; }
+				else if ( sMonth == "3" ){ sMonthName = "Março"; }
+				else if ( sMonth == "4" ){ sMonthName = "Abril"; }
+				else if ( sMonth == "5" ){ sMonthName = "Maio"; }
+				else if ( sMonth == "6" ){ sMonthName = "Junho"; }
+				else if ( sMonth == "7" ){ sMonthName = "Julho"; }
+				else if ( sMonth == "8" ){ sMonthName = "Agosto"; }
+				else if ( sMonth == "9" ){ sMonthName = "Setembro"; }
+				else if ( sMonth == "10" ){ sMonthName = "Outubro"; }
+				else if ( sMonth == "11" ){ sMonthName = "Novembro"; }
+				else if ( sMonth == "12" ){ sMonthName = "Dezembro"; }
 			string sDay = DateTime.UtcNow.Day.ToString();
 			string sHour = DateTime.UtcNow.Hour.ToString();
 			string sMinute = DateTime.UtcNow.Minute.ToString();
@@ -838,49 +1442,31 @@ namespace Server.Misc
 			if ( sMinute.Length == 1 ){ sMinute = "0" + sMinute; }
 			if ( sSecond.Length == 1 ){ sSecond = "0" + sSecond; }
 
-			string sDateString = sMonthName + " " + sDay + ", " + sYear + " at " + sHour + ":" + sMinute;
+			string sDateString = sMonthName + " " + sDay + ", " + sYear + " às " + sHour + ":" + sMinute;
 
 			return sDateString;
 		}
 
+		#endregion
+
+		#region Luck Calculation Methods
+
 		public static bool LuckyPlayer( int luck, Mobile from )
 		{
-			if (AdventuresFunctions.IsInMidland((object)from) || luck > 8000)
-				luck = 0;
-
-			int realluck = Utility.RandomMinMax(1,2000) + (int)( (double)luck /2);	
-
-			double balancetweak = 1;
-			double balance = (double)AetherGlobe.BalanceLevel;
-
-			if (from is PlayerMobile )		
-			{
-				PlayerMobile pm = (PlayerMobile)from;
-				if (pm.Karma < 0)
-					balance = 100000 - balance;
-
-				balance = (balance - 50000) / 200000;
-				balancetweak += balance;
-
-			}
-			
-			realluck = (int)((double)realluck * balancetweak);
+			int realluck = CalculateRealLuck( luck, from, false );
 
 			if ( realluck <= 0 )
 				return false;
 
-			if ( realluck > MyServerSettings.LuckCap() )
-			realluck = MyServerSettings.LuckCap();
+			int clover = (int)((double)realluck * PlayerInfoConstants.CLOVER_PERCENTAGE);
 
-			int clover = (int)((double)realluck * 0.05); // RETURNS A MAX OF 200
-
-			if (  clover >= Utility.RandomMinMax( 1, 250 ) )
+			if ( clover >= Utility.RandomMinMax( PlayerInfoConstants.LUCK_RANDOM_MIN, PlayerInfoConstants.CLOVER_RANDOM_RANGE ) )
 				return true;
 
-			if (from is PlayerMobile)
+			if ( from is PlayerMobile )
 				((PlayerMobile)from).CheckRest();
 			
-			if ( from is PlayerMobile && ((PlayerMobile)from).GetFlag(PlayerFlag.WellRested) && Utility.RandomDouble() < 0.10 ) 
+			if ( from is PlayerMobile && ((PlayerMobile)from).GetFlag(PlayerFlag.WellRested) && Utility.RandomDouble() < PlayerInfoConstants.WELL_RESTED_CHANCE ) 
 				return true;
 				
 			return false;
@@ -888,37 +1474,14 @@ namespace Server.Misc
 
 		public static bool LuckyKiller( int luck, Mobile from )
 		{
-
-			if (AdventuresFunctions.IsInMidland((object)from) || luck > 8000)
-				luck = 0;
-				
-			int realluck = Utility.RandomMinMax(1,2000) + (int)( (double)luck /2);			
-
-			double balancetweak = 1;
-			double balance = (double)AetherGlobe.BalanceLevel;
-
-			if (from is PlayerMobile && ((PlayerMobile)from).Avatar)		
-			{
-				PlayerMobile pm = (PlayerMobile)from;
-				if (pm.Karma < 0)
-					balance = 100000 - balance;
-
-				balance = (balance - 50000) / 200000;
-				balancetweak += balance;
-
-			}
-			
-			realluck = (int)((double)realluck * balancetweak);
+			int realluck = CalculateRealLuck( luck, from, true );
 
 			if ( realluck <= 0 )
 				return false;
 
-			if ( realluck > MyServerSettings.LuckCap() )
-			realluck = MyServerSettings.LuckCap();
+			int clover = (int)((double)realluck * PlayerInfoConstants.CLOVER_PERCENTAGE);
 
-			int clover = (int)((double)realluck * 0.05); // RETURNS A MAX OF 200
-
-			if (  clover >= Utility.RandomMinMax( 1, 250 ) )
+			if ( clover >= Utility.RandomMinMax( PlayerInfoConstants.LUCK_RANDOM_MIN, PlayerInfoConstants.CLOVER_RANDOM_RANGE ) )
 				return true;
 
 			return false;
@@ -934,16 +1497,16 @@ namespace Server.Misc
 				if ( m.AccessLevel > AccessLevel.Player )
 					return true;
 
-				if ( m.Skills[SkillName.Necromancy].Base >= 50.0 && m.Karma < 0 ) // NECROMANCERS
+				if ( m.Skills[SkillName.Necromancy].Base >= PlayerInfoConstants.MIN_SKILL_FOR_EVIL_CHECKS && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL ) // NECROMANCERS
 					return true;
 
-				if ( m.Skills[SkillName.Forensics].Base >= 80.0 && m.Karma < 0 ) // UNDERTAKERS
+				if ( m.Skills[SkillName.Forensics].Base >= PlayerInfoConstants.MIN_SKILL_FOR_UNDERTAKER && m.Karma < PlayerInfoConstants.KARMA_NEUTRAL ) // UNDERTAKERS
 					return true;
 
-				if ( m.Skills[SkillName.Chivalry].Base >= 50.0 && m.Karma <= -5000 ) // DEATH KNIGHTS
+				if ( m.Skills[SkillName.Chivalry].Base >= PlayerInfoConstants.MIN_SKILL_FOR_EVIL_CHECKS && m.Karma <= PlayerInfoConstants.KARMA_DEATH_KNIGHT ) // DEATH KNIGHTS
 					return true;
 
-				if ( m.Skills[SkillName.EvalInt].Base >= 50.0 && m.Skills[SkillName.Swords].Base >= 50.0 && m.Karma <= -5000 && Server.Misc.GetPlayerInfo.isSyth(m,false) ) // SYTH
+				if ( m.Skills[SkillName.EvalInt].Base >= PlayerInfoConstants.MIN_SKILL_FOR_EVIL_CHECKS && m.Skills[SkillName.Swords].Base >= PlayerInfoConstants.MIN_SKILL_FOR_EVIL_CHECKS && m.Karma <= PlayerInfoConstants.KARMA_DEATH_KNIGHT && Server.Misc.GetPlayerInfo.isSyth(m,false) ) // SYTH
 					return true;
 
 				if (((PlayerMobile)m).BalanceStatus <0 ) // pledged to evil
@@ -953,74 +1516,21 @@ namespace Server.Misc
 			return false;
 		}
 		
-		/* make this perhaps?
-		
-		 public static bool GoodPlayer( Mobile m )
-		{
-			if ( m is BaseCreature )
-				m = ((BaseCreature)m).GetMaster();
-
-			if ( m is PlayerMobile )
-			{
-				if ( m.AccessLevel > AccessLevel.Player )
-					return true;
-
-				//if ( m.Skills[SkillName.Necromancy].Base >= 50.0 && m.Karma < 0 ) // NECROMANCERS
-					return true;
-
-			//	if ( m.Skills[SkillName.Forensics].Base >= 80.0 && m.Karma < 0 ) // UNDERTAKERS
-					return true;
-
-				//if ( m.Skills[SkillName.Chivalry].Base >= 50.0 && m.Karma <= -5000 ) // DEATH KNIGHTS
-					return true;
-
-				if ( m.Skills[SkillName.EvalInt].Base >= 50.0 && m.Skills[SkillName.Swords].Base >= 50.0 && m.Karma >= 0 && Server.Misc.GetPlayerInfo.isJedi(m,false) ) //Jedi
-					return true;
-
-				if (((PlayerMobile)m).BalanceStatus >0 ) // pledged to good
-					return true;
-			}
-
-			return false;
-		}
-		
-		*/
 		
 
 		public static int LuckyPlayerArtifacts( int luck, Mobile from)
 		{
-
-			if (AdventuresFunctions.IsInMidland((object)from) || luck > 8000)
-				luck = 0;
-
-			int realluck = Utility.RandomMinMax(1,2000) + (int)( (double)luck /2);	
-
-			double balancetweak = 1;
-			double balance = (double)AetherGlobe.BalanceLevel;
-
-			if (from is PlayerMobile && ((PlayerMobile)from).Avatar)		
-			{
-				PlayerMobile pm = (PlayerMobile)from;
-				if (pm.Karma < 0)
-					balance = 100000 - balance;
-
-				balance = (balance - 50000) / 200000;
-				balancetweak += balance;
-
-			}
-			
-			realluck = (int)((double)realluck * balancetweak);
+			int realluck = CalculateRealLuck( luck, from, true );
 
 			if ( realluck <= 0 )
 				return 0;
 
-			if ( realluck > MyServerSettings.LuckCap() )
-				realluck = MyServerSettings.LuckCap();
-
-			int clover = (int)((double)realluck * 0.005); // RETURNS A MAX OF 20
+			int clover = (int)((double)realluck * PlayerInfoConstants.CLOVER_PERCENTAGE_ARTIFACTS);
 
 			return clover;
 		}
+
+		#endregion
 
 		public static bool OrientalPlay( Mobile m )
 		{
@@ -1031,67 +1541,29 @@ namespace Server.Misc
 			{
 				CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( m );
 
-				if ( DB.CharacterOriental == 1 )
+				if ( DB.CharacterOriental == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 					return true;
 			}
 			else if ( m is BaseCreature )
 			{
-				Mobile killer = m.LastKiller;
-				if ( killer != null && killer is BaseCreature)
-				{
-					BaseCreature bc_killer = (BaseCreature)killer;
-					if(bc_killer.Summoned)
-					{
-						if(bc_killer.SummonMaster != null)
-							killer = bc_killer.SummonMaster;
-					}
-					else if(bc_killer.Controlled)
-					{
-						if(bc_killer.ControlMaster != null)
-							killer=bc_killer.ControlMaster;
-					}
-					else if(bc_killer.BardProvoked)
-					{
-						if(bc_killer.BardMaster != null)
-							killer=bc_killer.BardMaster;
-					}
-				}
+				Mobile killer = ResolveCreatureMaster( m.LastKiller );
 
 				if ( killer != null && killer is PlayerMobile )
 				{
 					CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( killer );
 
-					if ( DB.CharacterOriental == 1 )
+					if ( DB.CharacterOriental == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 						return true;
 				}
 				else
 				{
-					Mobile hitter = m.FindMostRecentDamager(true);
-					if (hitter != null && hitter is BaseCreature)
-					{
-						BaseCreature bc_killer = (BaseCreature)hitter;
-						if(bc_killer.Summoned)
-						{
-							if(bc_killer.SummonMaster != null)
-								hitter = bc_killer.SummonMaster;
-						}
-						else if(bc_killer.Controlled)
-						{
-							if(bc_killer.ControlMaster != null)
-								hitter=bc_killer.ControlMaster;
-						}
-						else if(bc_killer.BardProvoked)
-						{
-							if(bc_killer.BardMaster != null)
-								hitter=bc_killer.BardMaster;
-						}
-					}
+					Mobile hitter = ResolveCreatureMaster( m.FindMostRecentDamager(true) );
 
 					if ( hitter != null && hitter is PlayerMobile )
 					{
 						CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( hitter );
 
-						if ( DB.CharacterOriental == 1 )
+						if ( DB.CharacterOriental == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 							return true;
 					}
 				}
@@ -1119,7 +1591,7 @@ namespace Server.Misc
 			{
 				CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( m );
 
-				if ( DB.CharacterEvil == 1 )
+				if ( DB.CharacterEvil == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 					return true;
 			}
 			else if ( m != null && m is BaseCreature )
@@ -1149,7 +1621,7 @@ namespace Server.Misc
 				{
 					CharacterDatabase DB = Server.Items.CharacterDatabase.GetDB( killer );
 
-					if ( DB.CharacterEvil == 1 )
+					if ( DB.CharacterEvil == PlayerInfoConstants.CHARACTER_FLAG_TRUE )
 						return true;
 				}
 				else
@@ -1237,5 +1709,228 @@ namespace Server.Misc
 
 			return wealth;
 		}
+
+		#region Private Helper Methods
+
+		/// <summary>
+		/// Resolves the master of a creature (SummonMaster, ControlMaster, or BardMaster).
+		/// Used to find the actual player controlling a creature.
+		/// </summary>
+		/// <param name="creature">The creature to resolve the master for</param>
+		/// <returns>The master mobile, or the original creature if no master found</returns>
+		private static Mobile ResolveCreatureMaster( Mobile creature )
+		{
+			if ( creature is BaseCreature )
+			{
+				BaseCreature bc = (BaseCreature)creature;
+				if ( bc.Summoned && bc.SummonMaster != null )
+					return bc.SummonMaster;
+				if ( bc.Controlled && bc.ControlMaster != null )
+					return bc.ControlMaster;
+				if ( bc.BardProvoked && bc.BardMaster != null )
+					return bc.BardMaster;
+			}
+			return creature;
+		}
+
+		/// <summary>
+		/// Calculates the balance tweak multiplier for luck calculations.
+		/// </summary>
+		/// <param name="pm">The player mobile</param>
+		/// <param name="requireAvatar">Whether avatar status is required</param>
+		/// <returns>Balance tweak multiplier (1.0 if no balance effect)</returns>
+		private static double CalculateBalanceTweak( PlayerMobile pm, bool requireAvatar )
+		{
+			if ( pm == null || ( requireAvatar && !pm.Avatar ) )
+				return 1.0;
+
+			double balance = (double)AetherGlobe.BalanceLevel;
+			if ( pm.Karma < PlayerInfoConstants.KARMA_NEUTRAL )
+				balance = PlayerInfoConstants.BALANCE_MAX - balance;
+
+			return 1.0 + ( ( balance - PlayerInfoConstants.BALANCE_CENTER ) / PlayerInfoConstants.BALANCE_DIVISOR );
+		}
+
+		/// <summary>
+		/// Calculates real luck value with balance tweak applied.
+		/// </summary>
+		/// <param name="luck">Base luck value</param>
+		/// <param name="from">The mobile</param>
+		/// <param name="requireAvatar">Whether avatar status is required for balance effect</param>
+		/// <returns>Calculated real luck value</returns>
+		private static int CalculateRealLuck( int luck, Mobile from, bool requireAvatar )
+		{
+			if ( AdventuresFunctions.IsInMidland( (object)from ) || luck > PlayerInfoConstants.LUCK_CAP_MIDLAND )
+				luck = 0;
+
+			int realluck = Utility.RandomMinMax( PlayerInfoConstants.LUCK_RANDOM_MIN, PlayerInfoConstants.LUCK_RANDOM_MAX ) + (int)( (double)luck * PlayerInfoConstants.LUCK_DIVISOR );
+
+			if ( from is PlayerMobile )
+			{
+				PlayerMobile pm = (PlayerMobile)from;
+				double balancetweak = CalculateBalanceTweak( pm, requireAvatar );
+				realluck = (int)( (double)realluck * balancetweak );
+			}
+
+			if ( realluck <= 0 )
+				return 0;
+
+			if ( realluck > MyServerSettings.LuckCap() )
+				realluck = MyServerSettings.LuckCap();
+
+			return realluck;
+		}
+
+		#endregion
+
+		#region Private Static Dictionaries
+
+		/// <summary>
+		/// Dictionary mapping skill index numbers to SkillName enum values.
+		/// Used to replace 54 if-else statements in GetShowingSkill.
+		/// </summary>
+		private static readonly System.Collections.Generic.Dictionary<int, SkillName> SkillIndexMap = new System.Collections.Generic.Dictionary<int, SkillName>
+		{
+			{ 1, SkillName.Alchemy },
+			{ 2, SkillName.Anatomy },
+			{ 3, SkillName.AnimalLore },
+			{ 4, SkillName.AnimalTaming },
+			{ 5, SkillName.Archery },
+			{ 6, SkillName.ArmsLore },
+			{ 7, SkillName.Begging },
+			{ 8, SkillName.Blacksmith },
+			{ 9, SkillName.Bushido },
+			{ 10, SkillName.Camping },
+			{ 11, SkillName.Carpentry },
+			{ 12, SkillName.Cartography },
+			{ 13, SkillName.Chivalry },
+			{ 14, SkillName.Cooking },
+			{ 15, SkillName.DetectHidden },
+			{ 16, SkillName.Discordance },
+			{ 17, SkillName.EvalInt },
+			{ 18, SkillName.Fencing },
+			{ 19, SkillName.Fishing },
+			{ 20, SkillName.Fletching },
+			{ 21, SkillName.Focus },
+			{ 22, SkillName.Forensics },
+			{ 23, SkillName.Healing },
+			{ 24, SkillName.Herding },
+			{ 25, SkillName.Hiding },
+			{ 26, SkillName.Inscribe },
+			{ 27, SkillName.ItemID },
+			{ 28, SkillName.Lockpicking },
+			{ 29, SkillName.Lumberjacking },
+			{ 30, SkillName.Macing },
+			{ 31, SkillName.Magery },
+			{ 32, SkillName.MagicResist },
+			{ 33, SkillName.Meditation },
+			{ 34, SkillName.Mining },
+			{ 35, SkillName.Musicianship },
+			{ 36, SkillName.Necromancy },
+			{ 37, SkillName.Ninjitsu },
+			{ 38, SkillName.Parry },
+			{ 39, SkillName.Peacemaking },
+			{ 40, SkillName.Poisoning },
+			{ 41, SkillName.Provocation },
+			{ 42, SkillName.RemoveTrap },
+			{ 43, SkillName.Snooping },
+			{ 44, SkillName.SpiritSpeak },
+			{ 45, SkillName.Stealing },
+			{ 46, SkillName.Stealth },
+			{ 47, SkillName.Swords },
+			{ 48, SkillName.Tactics },
+			{ 49, SkillName.Tailoring },
+			{ 50, SkillName.TasteID },
+			{ 51, SkillName.Tinkering },
+			{ 52, SkillName.Tracking },
+			{ 53, SkillName.Veterinary },
+			{ 54, SkillName.Wrestling }
+		};
+
+		/// <summary>
+		/// Dictionary mapping NpcGuild enum values to NPC format guild titles (for PlayerMobile).
+		/// </summary>
+		private static readonly System.Collections.Generic.Dictionary<NpcGuild, string> GuildNPCTitles = new System.Collections.Generic.Dictionary<NpcGuild, string>
+		{
+			{ NpcGuild.MagesGuild, PlayerInfoStringConstants.GUILD_NPC_WIZARDS },
+			{ NpcGuild.WarriorsGuild, PlayerInfoStringConstants.GUILD_NPC_WARRIORS },
+			{ NpcGuild.ThievesGuild, PlayerInfoStringConstants.GUILD_NPC_THIEVES },
+			{ NpcGuild.RangersGuild, PlayerInfoStringConstants.GUILD_NPC_RANGERS },
+			{ NpcGuild.HealersGuild, PlayerInfoStringConstants.GUILD_NPC_HEALERS },
+			{ NpcGuild.MinersGuild, PlayerInfoStringConstants.GUILD_NPC_MINERS },
+			{ NpcGuild.MerchantsGuild, PlayerInfoStringConstants.GUILD_NPC_MERCHANTS },
+			{ NpcGuild.TinkersGuild, PlayerInfoStringConstants.GUILD_NPC_TINKERS },
+			{ NpcGuild.TailorsGuild, PlayerInfoStringConstants.GUILD_NPC_TAILORS },
+			{ NpcGuild.FishermensGuild, PlayerInfoStringConstants.GUILD_NPC_MARINERS },
+			{ NpcGuild.BardsGuild, PlayerInfoStringConstants.GUILD_NPC_BARDS },
+			{ NpcGuild.BlacksmithsGuild, PlayerInfoStringConstants.GUILD_NPC_BLACKSMITHS },
+			{ NpcGuild.NecromancersGuild, PlayerInfoStringConstants.GUILD_NPC_BLACK_MAGIC },
+			{ NpcGuild.AlchemistsGuild, PlayerInfoStringConstants.GUILD_NPC_ALCHEMISTS },
+			{ NpcGuild.DruidsGuild, PlayerInfoStringConstants.GUILD_NPC_DRUIDS },
+			{ NpcGuild.ArchersGuild, PlayerInfoStringConstants.GUILD_NPC_ARCHERS },
+			{ NpcGuild.CarpentersGuild, PlayerInfoStringConstants.GUILD_NPC_CARPENTERS },
+			{ NpcGuild.CartographersGuild, PlayerInfoStringConstants.GUILD_NPC_CARTOGRAPHERS },
+			{ NpcGuild.LibrariansGuild, PlayerInfoStringConstants.GUILD_NPC_LIBRARIANS },
+			{ NpcGuild.CulinariansGuild, PlayerInfoStringConstants.GUILD_NPC_CULINARY },
+			{ NpcGuild.AssassinsGuild, PlayerInfoStringConstants.GUILD_NPC_ASSASSINS }
+		};
+
+		/// <summary>
+		/// Dictionary mapping NpcGuild enum values to vendor format guild titles (for BaseVendor).
+		/// </summary>
+		private static readonly System.Collections.Generic.Dictionary<NpcGuild, string> GuildVendorTitles = new System.Collections.Generic.Dictionary<NpcGuild, string>
+		{
+			{ NpcGuild.MagesGuild, PlayerInfoStringConstants.GUILD_VENDOR_WIZARDS },
+			{ NpcGuild.WarriorsGuild, PlayerInfoStringConstants.GUILD_VENDOR_WARRIORS },
+			{ NpcGuild.ThievesGuild, PlayerInfoStringConstants.GUILD_VENDOR_THIEVES },
+			{ NpcGuild.RangersGuild, PlayerInfoStringConstants.GUILD_VENDOR_RANGERS },
+			{ NpcGuild.HealersGuild, PlayerInfoStringConstants.GUILD_VENDOR_HEALERS },
+			{ NpcGuild.MinersGuild, PlayerInfoStringConstants.GUILD_VENDOR_MINERS },
+			{ NpcGuild.MerchantsGuild, PlayerInfoStringConstants.GUILD_VENDOR_MERCHANTS },
+			{ NpcGuild.TinkersGuild, PlayerInfoStringConstants.GUILD_VENDOR_TINKERS },
+			{ NpcGuild.TailorsGuild, PlayerInfoStringConstants.GUILD_VENDOR_TAILORS },
+			{ NpcGuild.FishermensGuild, PlayerInfoStringConstants.GUILD_VENDOR_MARINERS },
+			{ NpcGuild.BardsGuild, PlayerInfoStringConstants.GUILD_VENDOR_BARDS },
+			{ NpcGuild.BlacksmithsGuild, PlayerInfoStringConstants.GUILD_VENDOR_BLACKSMITHS },
+			{ NpcGuild.NecromancersGuild, PlayerInfoStringConstants.GUILD_VENDOR_BLACK_MAGIC },
+			{ NpcGuild.AlchemistsGuild, PlayerInfoStringConstants.GUILD_VENDOR_ALCHEMISTS },
+			{ NpcGuild.DruidsGuild, PlayerInfoStringConstants.GUILD_VENDOR_DRUIDS },
+			{ NpcGuild.ArchersGuild, PlayerInfoStringConstants.GUILD_VENDOR_ARCHERS },
+			{ NpcGuild.CarpentersGuild, PlayerInfoStringConstants.GUILD_VENDOR_CARPENTERS },
+			{ NpcGuild.CartographersGuild, PlayerInfoStringConstants.GUILD_VENDOR_CARTOGRAPHERS },
+			{ NpcGuild.LibrariansGuild, PlayerInfoStringConstants.GUILD_VENDOR_LIBRARIANS },
+			{ NpcGuild.CulinariansGuild, PlayerInfoStringConstants.GUILD_VENDOR_CULINARY },
+			{ NpcGuild.AssassinsGuild, PlayerInfoStringConstants.GUILD_VENDOR_ASSASSINS }
+		};
+
+		/// <summary>
+		/// Dictionary mapping NpcGuild enum values to status format guild titles (for GetStatusGuild).
+		/// </summary>
+		private static readonly System.Collections.Generic.Dictionary<NpcGuild, string> GuildStatusTitles = new System.Collections.Generic.Dictionary<NpcGuild, string>
+		{
+			{ NpcGuild.MagesGuild, PlayerInfoStringConstants.GUILD_STATUS_WIZARDS },
+			{ NpcGuild.WarriorsGuild, PlayerInfoStringConstants.GUILD_STATUS_WARRIORS },
+			{ NpcGuild.ThievesGuild, PlayerInfoStringConstants.GUILD_STATUS_THIEVES },
+			{ NpcGuild.RangersGuild, PlayerInfoStringConstants.GUILD_STATUS_RANGERS },
+			{ NpcGuild.HealersGuild, PlayerInfoStringConstants.GUILD_STATUS_HEALERS },
+			{ NpcGuild.MinersGuild, PlayerInfoStringConstants.GUILD_STATUS_MINERS },
+			{ NpcGuild.MerchantsGuild, PlayerInfoStringConstants.GUILD_STATUS_MERCHANTS },
+			{ NpcGuild.TinkersGuild, PlayerInfoStringConstants.GUILD_STATUS_TINKERS },
+			{ NpcGuild.TailorsGuild, PlayerInfoStringConstants.GUILD_STATUS_TAILORS },
+			{ NpcGuild.FishermensGuild, PlayerInfoStringConstants.GUILD_STATUS_MARINERS },
+			{ NpcGuild.BardsGuild, PlayerInfoStringConstants.GUILD_STATUS_BARDS },
+			{ NpcGuild.BlacksmithsGuild, PlayerInfoStringConstants.GUILD_STATUS_BLACKSMITHS },
+			{ NpcGuild.NecromancersGuild, PlayerInfoStringConstants.GUILD_STATUS_BLACK_MAGIC },
+			{ NpcGuild.AlchemistsGuild, PlayerInfoStringConstants.GUILD_STATUS_ALCHEMISTS },
+			{ NpcGuild.DruidsGuild, PlayerInfoStringConstants.GUILD_STATUS_DRUIDS },
+			{ NpcGuild.ArchersGuild, PlayerInfoStringConstants.GUILD_STATUS_ARCHERS },
+			{ NpcGuild.CarpentersGuild, PlayerInfoStringConstants.GUILD_STATUS_CARPENTERS },
+			{ NpcGuild.CartographersGuild, PlayerInfoStringConstants.GUILD_STATUS_CARTOGRAPHERS },
+			{ NpcGuild.LibrariansGuild, PlayerInfoStringConstants.GUILD_STATUS_LIBRARIANS },
+			{ NpcGuild.CulinariansGuild, PlayerInfoStringConstants.GUILD_STATUS_CULINARY },
+			{ NpcGuild.AssassinsGuild, PlayerInfoStringConstants.GUILD_STATUS_ASSASSINS }
+		};
+
+		#endregion
 	}
 }

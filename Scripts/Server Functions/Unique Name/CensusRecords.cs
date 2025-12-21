@@ -12,53 +12,100 @@ using Server.Items;
 
 namespace Server.Items
 {
-	[Flipable(0xFBD, 0xFBE)]
+	/// <summary>
+	/// Census Records item that allows players to change their character name for a gold fee.
+	/// Can be legal (sages) or forged (thieves guild) version.
+	/// </summary>
+	[Flipable(NameChangeConstants.ITEM_ID_CENSUS_RECORDS_1, NameChangeConstants.ITEM_ID_CENSUS_RECORDS_2)]
 	public class CensusRecords : Item
 	{
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new Census Records item.
+		/// </summary>
 		[Constructable]
-		public CensusRecords( ) : base( 0xFBD )
+		public CensusRecords() : base(NameChangeConstants.ITEM_ID_CENSUS_RECORDS_1)
 		{
 			Weight = 1.0;
-			Name = "Census Records";
+			Name = NameChangeStringConstants.ITEM_NAME_CENSUS_RECORDS;
 		}
 
-		public override void OnDoubleClick( Mobile e )
-		{
-			if ( Name == "Census Records" ){ e.SendGump( new CensusGump( e, true ) ); } else { e.SendGump( new CensusGump( e, false ) ); }
-		}
-
+		/// <summary>
+		/// Deserialization constructor.
+		/// </summary>
 		public CensusRecords(Serial serial) : base(serial)
 		{
 		}
 
+		#endregion
+
+		#region Event Handlers
+
+		/// <summary>
+		/// Opens the census gump when double-clicked.
+		/// Determines if records are legal or forged based on item name.
+		/// </summary>
+		public override void OnDoubleClick(Mobile e)
+		{
+			bool isLegal = (Name == NameChangeStringConstants.ITEM_NAME_CENSUS_RECORDS);
+			e.SendGump(new CensusGump(e, isLegal));
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the item.
+		/// </summary>
 		public override void Serialize(GenericWriter writer)
 		{
 			base.Serialize(writer);
-			writer.Write((int) 0);
+			writer.Write((int)0);
 		}
 
+		/// <summary>
+		/// Deserializes the item.
+		/// </summary>
 		public override void Deserialize(GenericReader reader)
 		{
 			base.Deserialize(reader);
 			int version = reader.ReadInt();
 		}
+
+		#endregion
 	}
 }
 
 namespace Server.Gumps
 {
-    public class CensusGump : Gump
-    {
-        public CensusGump(Mobile from, bool legal) : base(25, 25)
-        {
-            this.Closable=true;
-			this.Disposable=true;
-			this.Dragable=true;
-			this.Resizable=false;
+	/// <summary>
+	/// Gump for Census Records name change interface.
+	/// Supports both legal (sages) and forged (thieves guild) versions.
+	/// </summary>
+	public class CensusGump : Gump
+	{
+		#region Gump Construction
 
-			string text = "These are the census records for the many lands, and the sages have compiled a list of names of its citizens. Your name is on this list as well. If you want to change your name, you can do it within this book.";
+		/// <summary>
+		/// Creates a new Census Records gump.
+		/// </summary>
+		/// <param name="from">Mobile viewing the gump</param>
+		/// <param name="isLegal">True if legal census records, false if forged</param>
+		public CensusGump(Mobile from, bool isLegal) : base(NameChangeConstants.GUMP_BASE_X_LEGAL, NameChangeConstants.GUMP_BASE_Y_LEGAL)
+		{
+			this.Closable = true;
+			this.Disposable = true;
+			this.Dragable = true;
+			this.Resizable = false;
 
-			if ( !legal ){ text = "These are the forged census records for the many lands, and the thieves guild has compiled a list of names of its citizens. Your name is on this list as well. If you want to change your name, you can do it within this book."; } 
+			string instructionText = isLegal
+				? NameChangeStringConstants.GUMP_TEXT_CENSUS_LEGAL
+				: NameChangeStringConstants.GUMP_TEXT_CENSUS_FORGED;
+
+			string fullText = instructionText + NameChangeStringConstants.GUMP_TEXT_CENSUS_ADDITIONAL;
+			string htmlText = string.Format(NameChangeStringConstants.HTML_FORMAT, fullText);
 
 			AddPage(0);
 			AddImage(0, 0, 151);
@@ -76,65 +123,66 @@ namespace Server.Gumps
 			AddImage(257, 16, 130);
 			AddImage(552, 11, 143);
 			AddImage(16, 348, 159);
-			AddTextEntry(126, 238, 267, 20, 1511, 1, @"Type here...", 16);
-			AddHtml( 175, 37, 349, 180, @"<BODY><BASEFONT Color=#FBFBFB><BIG>" + text + " So if you have an idea for a new fantasy appropriate name, and are willing to spend 2,000 gold, then delete the text below and retype it. A new name can be no longer than 16 characters.</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
-			AddButton(90, 238, 4005, 4005, 1, GumpButtonType.Reply, 0);
-        }
+			AddTextEntry(
+				NameChangeConstants.TEXT_ENTRY_X,
+				NameChangeConstants.TEXT_ENTRY_Y,
+				NameChangeConstants.TEXT_ENTRY_WIDTH,
+				NameChangeConstants.TEXT_ENTRY_HEIGHT,
+				NameChangeConstants.TEXT_ENTRY_HUE,
+				NameChangeConstants.TEXT_ENTRY_ID,
+				NameChangeStringConstants.PLACEHOLDER_TYPE_HERE,
+				NameChangeConstants.TEXT_ENTRY_MAX_LENGTH
+			);
+			AddHtml(
+				NameChangeConstants.HTML_TEXT_X,
+				NameChangeConstants.HTML_TEXT_Y,
+				NameChangeConstants.HTML_TEXT_WIDTH,
+				NameChangeConstants.HTML_TEXT_HEIGHT,
+				htmlText,
+				(bool)false,
+				(bool)false
+			);
+			AddButton(
+				NameChangeConstants.BUTTON_X,
+				NameChangeConstants.BUTTON_Y,
+				NameChangeConstants.BUTTON_NORMAL_ID,
+				NameChangeConstants.BUTTON_PRESSED_ID,
+				NameChangeConstants.BUTTON_REPLY_ID,
+				GumpButtonType.Reply,
+				0
+			);
+		}
 
-        private string GetString(RelayInfo info, int id)
-        {
-            TextRelay t = info.GetTextEntry(id);
-            return (t == null ? null : t.Text.Trim());
-        }
+		#endregion
 
-        public override void OnResponse( NetState sender, RelayInfo info )
-        {
-            Mobile from = sender.Mobile;
-            if (from == null)
-            {
-                return;
-            }
+		#region Event Handlers
 
-			Container pack = from.Backpack;
-
-            string name = GetString(info, 1);
-            if (name != null)
-            {
-                name = name.Trim();
-            }
-
-			if ( name == "Type here..." )
+		/// <summary>
+		/// Handles gump response and processes name change request.
+		/// </summary>
+		public override void OnResponse(NetState sender, RelayInfo info)
+		{
+			Mobile from = sender.Mobile;
+			if (from == null)
 			{
+				return;
 			}
-            else if (name != "")
-            {
-                if (!NameVerification.Validate(name, 2, 16, true, false, true, 1, NameVerification.SpaceOnly))
-                {
-                    from.SendMessage(0X22, "That name is unacceptable or already taken.");
-                    return;
-                }
-                else if ( CharacterCreation.CheckDupe(from, name) && pack.ConsumeTotal(typeof(Gold), 2000) )
-                {
-                    from.SendMessage(0X22, "Your name is now {0}.", name);
-                    from.Name = name;
-                    from.CantWalk = false;
-                    return;
-                }
-                else if ( CharacterCreation.CheckDupe(from, name) && !(pack.ConsumeTotal(typeof(Gold), 2000)) )
-                {
-                    from.SendMessage(0X22, "You do not have enough gold!");
-                    return;
-                }
-                else
-                {
-                    from.SendMessage(0X22, "That name is unacceptable or already taken.");
-                    return;
-                }
-            }
-            else
-            {
-                from.SendMessage(0X22, "You must enter a name.");
-            }
-        }
-    }
+
+			string name = NameChangeHelper.GetString(info, NameChangeConstants.TEXT_ENTRY_ID);
+			if (string.IsNullOrEmpty(name))
+			{
+				from.SendMessage(NameChangeConstants.MSG_COLOR_INFO, NameChangeStringConstants.MSG_NAME_REQUIRED);
+				return;
+			}
+
+			// Validate and apply name change with gold requirement
+			if (!NameChangeHelper.ValidateAndApplyNameChange(from, name, requireGold: true))
+			{
+				// Error messages are sent by helper method
+				return;
+			}
+		}
+
+		#endregion
+	}
 }
