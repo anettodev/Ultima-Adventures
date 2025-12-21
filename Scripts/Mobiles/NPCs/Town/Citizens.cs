@@ -1399,13 +1399,10 @@ namespace Server.Mobiles
 		}
 
 		/// <summary>
-		/// Handles item drag and drop interactions with the citizen.
-		/// Supports wand recharging, item repairs, unlocking containers, and item purchases.
+		/// Refreshes the citizen population by clearing existing wanderers and creating new citizens at meeting spots.
+		/// This is called when a MeetingSpots item is dropped on a citizen.
 		/// </summary>
-		/// <param name="from">The mobile dropping the item</param>
-		/// <param name="dropped">The item being dropped</param>
-		/// <returns>Always returns false to prevent default handling</returns>
-		public override bool OnDragDrop( Mobile from, Item dropped )
+		public static void RefreshCitizenPopulation()
 		{
 			ArrayList wanderers = new ArrayList();
 			foreach ( Mobile wanderer in World.Mobiles.Values )
@@ -2193,6 +2190,13 @@ namespace Server.Mobiles
 			from.CloseGump( typeof( CitizenGump ) );
 			int sound = 0;
 			string say = "";
+
+			// Handle MeetingSpots item - refresh population
+			if ( dropped is MeetingSpots )
+			{
+				RefreshCitizenPopulation();
+				return false;
+			}
 
 			// Handle special item types
 			if ( dropped is Cargo )
