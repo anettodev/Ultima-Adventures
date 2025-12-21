@@ -112,31 +112,31 @@ namespace Server.Misc
 						skillTitle = ApplyMonkTransformation( skillTitle, m );
 						skillTitle = ApplySythJediScholarTransformation( skillTitle, m );
 						skillTitle = ApplyJediPaladinTransformation( skillTitle, m );
-						skillTitle = ApplySythPaladinTransformation( skillTitle, m );
-						skillTitle = ApplyOrientalTransformations( skillTitle, m, isOriental );
-						skillTitle = ApplyDefaultTransformations( skillTitle, m, isEvil );
-						skillTitle = ApplyPostTransformations( skillTitle, m, isBarbaric, isOriental ); 
-							( skillTitle.Contains("Alchemist") || 
-							skillTitle.Contains("Naturalist") || 
-							skillTitle.Contains("Tamer") || 
-							skillTitle.Contains("Archer") || 
-							skillTitle.Contains("Explorer") || 
-							skillTitle.Contains("Paladin") || 
-							skillTitle.Contains("Fencer") || 
-							skillTitle.Contains("Healer") || 
-							skillTitle.Contains("Shepherd") || 
-							skillTitle.Contains("Armsman") || 
-							skillTitle.Contains("Mage") || 
-							skillTitle.Contains("Bard") || 
-							skillTitle.Contains("Necromancer") || 
-							skillTitle.Contains("Fishing") || 
-							skillTitle.Contains("Ranger") || 
-							skillTitle.Contains("Duelist") || 
-							skillTitle.Contains("Swordsman") || 
-							skillTitle.Contains("Weapon Master") || 
-							skillTitle.Contains("Tactician") || 
-							skillTitle.Contains("Veterinarian") )
-						)
+					skillTitle = ApplySythPaladinTransformation( skillTitle, m );
+					skillTitle = ApplyOrientalTransformations( skillTitle, m, isOriental );
+					skillTitle = ApplyDefaultTransformations( skillTitle, m, isEvil );
+					skillTitle = ApplyPostTransformations( skillTitle, m, isBarbaric, isOriental ); 
+					
+					if ( skillTitle.Contains("Alchemist") || 
+						skillTitle.Contains("Naturalist") || 
+						skillTitle.Contains("Tamer") || 
+						skillTitle.Contains("Archer") || 
+						skillTitle.Contains("Explorer") || 
+						skillTitle.Contains("Paladin") || 
+						skillTitle.Contains("Fencer") || 
+						skillTitle.Contains("Healer") || 
+						skillTitle.Contains("Shepherd") || 
+						skillTitle.Contains("Armsman") || 
+						skillTitle.Contains("Mage") || 
+						skillTitle.Contains("Bard") || 
+						skillTitle.Contains("Necromancer") || 
+						skillTitle.Contains("Fishing") || 
+						skillTitle.Contains("Ranger") || 
+						skillTitle.Contains("Duelist") || 
+						skillTitle.Contains("Swordsman") || 
+						skillTitle.Contains("Weapon Master") || 
+						skillTitle.Contains("Tactician") || 
+						skillTitle.Contains("Veterinarian") )
 						{
 							if ( skillTitle.Contains("Alchemist") )
 							{
@@ -679,8 +679,6 @@ namespace Server.Misc
 
 			return skill;
 		}
-
-		#endregion
 
 		#region Title Transformation Methods
 
