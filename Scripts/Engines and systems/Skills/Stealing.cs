@@ -148,7 +148,7 @@ namespace Server.SkillHandlers
 					{
 						if (m_Thief.CheckSkill(SkillName.Stealing, ThieveryConstants.SKILL_CHECK_MIN, ThieveryConstants.SKILL_CHECK_VERY_HIGH))
 						{
-							m_Thief.SendMessage( "You dump out the entire contents while stealing the item." );
+							m_Thief.SendMessage( "Você despeja todo o conteúdo enquanto rouba o item." );
 							StolenChest sBox = new StolenChest();
 							int dValue = 0;
 
@@ -177,7 +177,7 @@ namespace Server.SkillHandlers
 
 							Titles.AwardFame( m_Thief, dValue, true );
 
-							LoggingFunctions.LogStandard( m_Thief, "has stolen a " + iBox.Name + "" );
+							LoggingFunctions.LogStandard( m_Thief, "roubou um " + iBox.Name + "" );
 						}
 						else
 						{
@@ -259,7 +259,7 @@ namespace Server.SkillHandlers
 							coffer.CofferRobber = m_Thief.Name + " the " + Server.Misc.GetPlayerInfo.GetSkillTitle( m_Thief );
 							coffer.CofferGold = 0;
 
-							LoggingFunctions.LogStandard( m_Thief, "has stolen " + coffer.CofferGold + " gold from a " + coffer.CofferType + " in " + Server.Misc.Worlds.GetRegionName( m_Thief.Map, m_Thief.Location ) + "" );
+							LoggingFunctions.LogStandard( m_Thief, "roubou " + coffer.CofferGold + " ouros de um " + coffer.CofferType + " em " + Server.Misc.Worlds.GetRegionName( m_Thief.Map, m_Thief.Location ) + "" );
 						}
 						else
 						{
@@ -914,24 +914,24 @@ namespace Server.SkillHandlers
 				{
 					if ( Server.Misc.Worlds.IsOnSpaceship( from.Location, from.Map ) )
 					{
-						string newName = "odd alien";
+						string newName = "alienígena estranho";
 						switch( Utility.RandomMinMax( 0, 6 ) )
 						{
-							case 0: newName = "odd"; break;
-							case 1: newName = "unusual"; break;
-							case 2: newName = "bizarre"; break;
-							case 3: newName = "curious"; break;
+							case 0: newName = "estranho"; break;
+							case 1: newName = "incomum"; break;
+							case 2: newName = "bizarro"; break;
+							case 3: newName = "curioso"; break;
 							case 4: newName = "peculiar"; break;
-							case 5: newName = "strange"; break;
-							case 6: newName = "weird"; break;
+							case 5: newName = "estranho"; break;
+							case 6: newName = "esquisito"; break;
 						}
 
 						switch (Utility.RandomMinMax(ThieveryConstants.RANDOM_RANGE_INSTRUMENT_VARIANT_MIN, ThieveryConstants.RANDOM_RANGE_INSTRUMENT_VARIANT_MAX))
 						{
-							case 1: item = new Pipes();		item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " pipes";		break;
-							case 2: item = new Pipes();		item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " pan flute";	break;
-							case 3: item = new Fiddle();	item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " violin";		break;
-							case 4: item = new Fiddle();	item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " fiddle";		break;
+							case 1: item = new Pipes();		item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " flautas";		break;
+							case 2: item = new Pipes();		item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " flauta de pã";	break;
+							case 3: item = new Fiddle();	item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " violino";		break;
+							case 4: item = new Fiddle();	item.Name = newName + " " + Server.Misc.RandomThings.GetRandomAlienRace() + " rabeca";		break;
 						}
 
 						BaseInstrument lute = (BaseInstrument)item;
@@ -1026,7 +1026,7 @@ namespace Server.SkillHandlers
 		{
 			if ( !IsEmptyHanded( m ) )
 			{
-				m.SendMessage( "You cannot be wielding a weapon when trying to steal something." );
+				m.SendMessage( "Você não pode estar empunhando uma arma ao tentar roubar algo." );
 			}
 			else
 			{
