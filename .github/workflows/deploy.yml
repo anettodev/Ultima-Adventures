@@ -9,10 +9,6 @@ on:
 jobs:
     deploy:
       runs-on: ubuntu-latest
-      env:
-        VPS_HOST: ${{ secrets.VPS_HOST }}
-        VPS_USER: ${{ secrets.VPS_USERNAME }}
-        VPS_PATH: ${{ secrets.DEPLOY_PATH }}
 
       steps:
         - name: Checkout code
@@ -29,50 +25,55 @@ jobs:
             cp -r Server deploy-package/ 2>/dev/null || true
             tar -czf deploy.tar.gz deploy-package/
 
-        - name: Setup SSH key
+        - name: Setup SSH and Deploy
           env:
             SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+            VPS_HOST: ${{ secrets.VPS_HOST }}
+            VPS_USER: ${{ secrets.VPS_USERNAME }}
+            VPS_PATH: ${{ secrets.DEPLOY_PATH }}
           run: |
+            # Setup SSH
             mkdir -p ~/.ssh
             echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
             chmod 600 ~/.ssh/deploy_key
-            ssh-keyscan -H $VPS_HOST >> ~/.ssh/known_hosts 2>/dev/null
+            ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
-            # Test connection and verify path
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o ConnectTimeout=10 ${VPS_USER}@${VPS_HOST} "echo 'SSH OK' && echo 'Path: ${VPS_PATH}' && ls -la ${VPS_PATH} || echo 'Path does not exist'"
+            # Debug - show what we're connecting to
+            echo "Connecting to: $VPS_USER@$VPS_HOST"
+            echo "Deploy path: $VPS_PATH"
 
-        - name: Stop server
-          run: |
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && pkill -f 'LinuxServer.exe' || true && sleep 5 && pkill -9 -f 'LinuxServer.exe' || true && echo 'Server stopped'"
+            # Test connection
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "echo 'Connected successfully'"
 
-        - name: Backup current version
-          run: |
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && BACKUP_DIR=\"backups/\$(date +%Y%m%d_%H%M%S)\" && mkdir -p \"\$BACKUP_DIR\" && cp -r Scripts \"\$BACKUP_DIR/\" 2>/dev/null || true && echo \"Backup created\" && cd backups && ls -t | tail -n +6 | xargs -r rm -rf"
+            # Stop server
+            echo "Stopping server..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "pkill -f 'LinuxServer.exe' || true; sleep 5; pkill -9 -f 'LinuxServer.exe' || true; echo 'Server stopped'"
 
-        - name: Deploy to VPS
-          run: |
-            scp -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no deploy.tar.gz ${VPS_USER}@${VPS_HOST}:${VPS_PATH}/
+            # Backup
+            echo "Creating backup..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && mkdir -p backups && cp -r Scripts backups/\$(date +%Y%m%d_%H%M%S) 2>/dev/null || true"
 
-        - name: Extract and setup files
-          run: |
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && tar -xzf deploy.tar.gz && cp -r deploy-package/* . && rm -rf deploy-package deploy.tar.gz && rm -f Scripts/Output/Scripts.CS.dll Scripts/Output/Scripts.CS.hash 2>/dev/null || true && chmod +x LinuxServer.exe && echo 'Files extracted'"
+            # Upload
+            echo "Uploading files..."
+            scp -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no deploy.tar.gz "$VPS_USER@$VPS_HOST:$VPS_PATH/"
 
-        - name: Start server
-          run: |
-            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no ${VPS_USER}@${VPS_HOST} "cd ${VPS_PATH} && nohup mono LinuxServer.exe > server.log 2>&1 & sleep 30 && if pgrep -f 'LinuxServer.exe' > /dev/null; then echo 'Server running' && tail -20 server.log; else echo 'Server failed' && tail -50 server.log && exit 1; fi"
+            # Extract
+            echo "Extracting files..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && tar -xzf deploy.tar.gz && cp -r deploy-package/* . && rm -rf deploy-package deploy.tar.gz && rm -f Scripts/Output/Scripts.CS.dll Scripts/Output/Scripts.CS.hash 2>/dev/null || true && chmod +x LinuxServer.exe"
+
+            # Start server
+            echo "Starting server..."
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "cd $VPS_PATH && nohup mono LinuxServer.exe > server.log 2>&1 &"
+
+            # Wait and check
+            echo "Waiting for server to start..."
+            sleep 30
+            ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" "pgrep -f 'LinuxServer.exe' && echo 'Server is running' && tail -20 $VPS_PATH/server.log || (echo 'Server failed to start' && tail -50 $VPS_PATH/server.log && exit 1)"
+
+            echo "Deployment complete!"
 
         - name: Cleanup
           if: always()
           run: |
             rm -f ~/.ssh/deploy_key
             rm -f deploy.tar.gz
-
-        - name: Deployment notification
-          if: success()
-          run: |
-            echo "Deployment completed successfully!"
-
-        - name: Deployment failed notification
-          if: failure()
-          run: |
-            echo "Deployment failed!"
