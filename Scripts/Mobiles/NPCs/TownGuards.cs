@@ -12,74 +12,68 @@ using Server.Mobiles;
 
 namespace Server.Mobiles 
 { 
+	/// <summary>
+	/// Town Guards - NPCs that protect towns and cities, accept bounties, and enforce law.
+	/// Equipment and appearance vary by region/world location.
+	/// </summary>
 	public class TownGuards : BasePerson
     {
+		#region Fields
 
-        private static bool m_Talked;
+		/// <summary>Flag to prevent multiple combat messages in quick succession</summary>
+		private bool m_Talked;
+
+		#endregion
+
+		#region Constructors
 
         [Constructable] 
 		public TownGuards() : base() 
 		{
-			Title = "o guarda";
-			NameHue = 1154;
-			SetStr( 200, 300 );
-			SetDex( 200, 300 );
-			SetInt( 200, 300 );
-			SetHits( 500,5000 );
-			SetDamage( 200, 500 );
-			VirtualArmor = 3000;
+			Title = TownGuardsStringConstants.TITLE_GUARD;
+			NameHue = TownGuardsConstants.NAME_HUE;
+			SetStr(TownGuardsConstants.STAT_STR_MIN, TownGuardsConstants.STAT_STR_MAX);
+			SetDex(TownGuardsConstants.STAT_DEX_MIN, TownGuardsConstants.STAT_DEX_MAX);
+			SetInt(TownGuardsConstants.STAT_INT_MIN, TownGuardsConstants.STAT_INT_MAX);
+			SetHits(TownGuardsConstants.HITS_MIN, TownGuardsConstants.HITS_MAX);
+			SetDamage(TownGuardsConstants.DAMAGE_MIN, TownGuardsConstants.DAMAGE_MAX);
+			VirtualArmor = TownGuardsConstants.VIRTUAL_ARMOR;
 
-			SetSkill( SkillName.Anatomy, 120.0 );
-			SetSkill( SkillName.MagicResist, 120.0);
-			SetSkill( SkillName.Parry, 120.0);
-            SetSkill(SkillName.Fencing, 120.0);
-            SetSkill(SkillName.Macing, 120.0);
-            SetSkill( SkillName.DetectHidden, 120.0);
-			SetSkill( SkillName.Wrestling, 120.0);
-			SetSkill( SkillName.Swords, 120.0);
-			SetSkill( SkillName.Tactics, 120.0);
+			SetSkill(SkillName.Anatomy, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.MagicResist, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Parry, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Fencing, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Macing, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.DetectHidden, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Wrestling, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Swords, TownGuardsConstants.SKILL_VALUE);
+			SetSkill(SkillName.Tactics, TownGuardsConstants.SKILL_VALUE);
 		}
 
-		public override bool BardImmune{ get{ return true; } }
-		public override Poison PoisonImmune{ get{ return Poison.Deadly; } }
+		#endregion
+
+		#region Properties
+
+		public override bool BardImmune { get { return true; } }
+		public override Poison PoisonImmune { get { return Poison.Deadly; } }
 		public override bool Unprovokable { get { return true; } }
-		public override bool Uncalmable{ get{ return true; } }
+		public override bool Uncalmable { get { return true; } }
 
-		private string getBountyDialog(Mobile from, Item dropped, int gold) 
-		{
-            string sMessage = "";
-			string sReward = "";
+		#endregion
 
-            switch (Utility.RandomMinMax(0, 3))
-            {
-                case 0: sReward = "Aqui está a sua recompensa de " + gold.ToString() + " moedas de ouro."; break;
-                case 1: sReward = "Tome o seu pagamento de " + gold.ToString() + " moedas de ouro."; break;
-                case 2: sReward = "Sua recompensa é de " + gold.ToString() + " moedas de ouro."; break;
-                case 3: sReward = "Este procurado tinha uma recompensa de " + gold.ToString() + " moedas de ouro."; break;
-            }
+		#region Core Logic
 
-            switch (Utility.RandomMinMax(0, 4))
-            {
-                case 0: sMessage = "Ora ora! Estavamos a muito tempo atrás desse aí. " + sReward; break;
-                case 1: sMessage = "Que satisfação hein aspira?! " + sReward; break;
-                case 2: sMessage = "Hmm..eu nunca achei que pegariam esse criminoso. " + sReward; break;
-                case 3: sMessage = "Os mares agora estão mais seguros. " + sReward; break;
-                case 4: sMessage = "Onde você achou esse traste!? " + sReward; break;
-            }
-
-            return sMessage;
-        }
-
-		public override bool OnDragDrop( Mobile from, Item dropped )
+		/// <summary>
+		/// Handles item drag and drop for bounty rewards
+		/// </summary>
+		public override bool OnDragDrop(Mobile from, Item dropped)
 		{
 			if (IntelligentAction.GetMyEnemies(from, this, false) == true)
 			{
-				string sSay = "Você não deveria estar carregando isso com você!";
-				this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sSay, from.NetState);
+				this.PrivateOverheadMessage(MessageType.Regular, TownGuardsConstants.MESSAGE_COLOR, false, TownGuardsStringConstants.MSG_ENEMY_CANNOT_DROP, from.NetState);
+				return base.OnDragDrop(from, dropped);
             }
-			else 
-			{
-				string sMessage = "";
+
                 int karma = 0;
                 int gold = 0;
 				int fame = 0;
@@ -87,316 +81,458 @@ namespace Server.Mobiles
 				if (dropped is PirateBounty)
 				{
 					PirateBounty bounty = (PirateBounty)dropped;
-					fame = (int)(bounty.BountyValue / 5);
-					karma = -1 * fame;
+				fame = (int)(bounty.BountyValue / TownGuardsConstants.PIRATE_BOUNTY_FAME_DIVISOR);
+				karma = TownGuardsConstants.PIRATE_BOUNTY_KARMA_MULTIPLIER * fame;
 					gold = bounty.BountyValue;
 				}
 				else if (dropped is Head && !from.Blessed)
 				{
 					Head head = (Head)dropped;
+				BountyReward reward = CalculateHeadBountyReward(head.m_Job);
 
-					if (head.m_Job == "Thief")
-					{
-						karma = Utility.RandomMinMax(40, 60);
-						gold = Utility.RandomMinMax(80, 120);
-					}
-					else if (head.m_Job == "Bandit")
-					{
-						karma = Utility.RandomMinMax(20, 30);
-						gold = Utility.RandomMinMax(30, 40);
-					}
-					else if (head.m_Job == "Brigand")
-					{
-						karma = Utility.RandomMinMax(30, 40);
-						gold = Utility.RandomMinMax(50, 80);
-					}
-					else if (head.m_Job == "Pirate")
-					{
-						karma = Utility.RandomMinMax(90, 110);
-						gold = Utility.RandomMinMax(120, 160);
-					}
-					else if (head.m_Job == "Assassin")
-					{
-						karma = Utility.RandomMinMax(60, 80);
-						gold = Utility.RandomMinMax(100, 140);
+				if (reward == null)
+				{
+					this.PrivateOverheadMessage(MessageType.Regular, TownGuardsConstants.MESSAGE_COLOR, false, TownGuardsStringConstants.MSG_UNKNOWN_HEAD_TYPE, from.NetState);
+					return base.OnDragDrop(from, dropped);
+				}
+
+				karma = reward.Karma;
+				gold = reward.Gold;
 					}
 					else
 					{
-						sMessage = "Irei assumir que ele lhe fez algum mal. Vou fazer vista grossa dessa vez!";
-						this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
 						return base.OnDragDrop(from, dropped);
-					}
 				}
 
-                sMessage = getBountyDialog(from, dropped, gold);
-
+			string message = GetBountyDialog(gold);
                 Titles.AwardKarma(from, karma, true);
                 Titles.AwardFame(from, fame, true);
 
-                from.SendSound(0x2E6);
+			from.SendSound(TownGuardsConstants.SOUND_BOUNTY_REWARD);
                 from.AddToBackpack(new Gold(gold));
 
-                this.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, from.NetState);
+			this.PrivateOverheadMessage(MessageType.Regular, TownGuardsConstants.MESSAGE_COLOR, false, message, from.NetState);
                 dropped.Delete();
                 return true;
-            }
-            return base.OnDragDrop(from, dropped);
-        }
-
-        public override void OnMovement(Mobile m, Point3D oldLocation)
-        {
-            WalkAwayCombatTimer t = new WalkAwayCombatTimer(this);
-            t.Start();
-
-        }
-
-        private class WalkAwayCombatTimer : Timer
-        {
-            private static TownGuards m_from;
-
-            public WalkAwayCombatTimer(TownGuards from) : base(TimeSpan.FromSeconds(5))
-            {
-				m_Talked = true;
-                m_from = from;
-                Priority = TimerPriority.OneSecond;
-            }
-
-            protected override void OnTick()
-            {
-                if ((int)m_from.GetDistanceToSqrt(m_from.Home) > (m_from.RangeHome + 15))
-                {
-                    string sMessage = "Estou retornando para o meu posto!";
-                    m_from.PrivateOverheadMessage(MessageType.Regular, 1153, false, sMessage, m_from.NetState);
-
-                    m_from.Location = m_from.Home;
-                    Effects.SendLocationParticles(EffectItem.Create(m_from.Location, m_from.Map, EffectItem.DefaultDuration), 0x3728, 8, 20, 5042);
-                    Effects.PlaySound(m_from, m_from.Map, 0x201);
-                }
-                m_Talked = false;
-            }
-        }
-
-        private int getCityColor() 
-		{
-			return 0;
 		}
 
+		/// <summary>
+		/// Configures guard equipment based on spawn location
+		/// </summary>
 		public override void OnAfterSpawn()
 		{
 			base.OnAfterSpawn();
 
-			Region reg = Region.Find( this.Location, this.Map );
+			string regionName = Server.Misc.Worlds.GetRegionName(this.Map, this.Location);
+			string worldName = Server.Misc.Worlds.GetMyWorld(this.Map, this.Location, this.X, this.Y);
 
-			string World = Server.Misc.Worlds.GetMyWorld( this.Map, this.Location, this.X, this.Y );
-
-			int clothColor = 0;
-			int shieldType = 0;
-			int helmType = 0;
-			int cloakColor = 0;
-
-			Item weapon = new VikingSword(); weapon.Delete();
-
-			if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Whisper" )
+			TownGuardEquipmentConfig config = TownGuardEquipmentConfig.GetConfigByRegionName(regionName);
+			if (config == null)
 			{
-				clothColor = 0x96D;		shieldType = 0x1B72;	helmType = 0x140E;		cloakColor = 0x972;		weapon = new Longsword();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Town of Glacial Hills" )
-			{
-				clothColor = 0x482;		shieldType = 0x1B74;	helmType = 0x1412;		cloakColor = 0x542;		weapon = new Kryss();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Springvale" )
-			{
-				clothColor = 0x595;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x593;		weapon = new Pike();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Elidor" )
-			{
-				clothColor = 0x665;		shieldType = 0x1B7B;	helmType = 0x1412;		cloakColor = 0x664;		weapon = new Katana();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Islegem" )
-			{
-				clothColor = 0x7D1;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x7D6;		weapon = new Spear();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Greensky Village" )
-			{
-				clothColor = 0x7D7;		shieldType = 0;			helmType = 0x1412;		cloakColor = 0x7DA;		weapon = new Bardiche();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Port of Dusk" )
-			{
-				clothColor = 0x601;		shieldType = 0x1B76;	helmType = 0x140E;		cloakColor = 0x600;		weapon = new Cutlass();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Port of Starguide" )
-			{
-				clothColor = 0x751;		shieldType = 0;			helmType = 0x1412;		cloakColor = 0x758;		weapon = new BladedStaff();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Portshine" )
-			{
-				clothColor = 0x847;		shieldType = 0x1B7A;	helmType = 0x140E;		cloakColor = 0x851;		weapon = new Mace();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Ranger Outpost" )
-			{
-				clothColor = 0x598;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x83F;		weapon = new Spear();
-			}
-			else if ( World == "the Land of Lodoria" ) // ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Lodoria" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Castle of Knowledge" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Lodoria City Park" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Lodoria" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Lodoria Cemetery" )
-			{
-				clothColor = 0x6E4;		shieldType = 0x1BC4;	helmType = 0x1412;		cloakColor = 0x6E7;		weapon = new Scimitar();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Lunar City of Dawn" )
-			{
-				clothColor = 0x9C4;		shieldType = 0x1B76;	helmType = 0x140E;		cloakColor = 0x9C4;		weapon = new DiamondMace();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "The Town of Devil Guard" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "The Farmland of Devil Guard" )
-			{
-				clothColor = 0x430;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0;			weapon = new LargeBattleAxe();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Town of Moon" )
-			{
-				clothColor = 0x8AF;		shieldType = 0x1B72;	helmType = 0x1412;		cloakColor = 0x972;		weapon = new Longsword();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Grey" )
-			{
-				clothColor = 0;			shieldType = 0;			helmType = 0x140E;		cloakColor = 0x763;		weapon = new Halberd();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Montor" )
-			{
-				clothColor = 0x96F;		shieldType = 0x1B74;	helmType = 0x1412;		cloakColor = 0x529;		weapon = new Broadsword();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Fawn" )
-			{
-				clothColor = 0x59D;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x59C;		weapon = new DoubleAxe();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Yew" )
-			{
-				clothColor = 0x83C;		shieldType = 0;			helmType = 0x1412;		cloakColor = 0x850;		weapon = new Spear();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Iceclad Fisherman's Village" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Town of Mountain Crest" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Glacial Coast Village" )
-			{
-				clothColor = 0x482;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x47E;		weapon = new Bardiche();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Undercity of Umbra" )
-			{
-				clothColor = 0x964;		shieldType = 0x1BC3;	helmType = 0x140E;		cloakColor = 0x966;		weapon = new BoneHarvester();
-			}
-			else if ( World == "the Island of Umber Veil" )
-			{
-				clothColor = 0xA5D;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x96D;		weapon = new Halberd();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "ilha de Kuldar" || Server.Misc.Worlds.GetRegionName(this.Map, this.Location) == "cidade de Kuldara")
-			{
-				clothColor = 0xB3B;		shieldType = 0x1BC3;	helmType = 0x140E;		cloakColor = 0x845;		weapon = new Maul();
-			}
-			else if ( World == "the Isles of Dread" )
-			{
-				clothColor = 0x978;		shieldType = 0;			helmType = 0x2645;		cloakColor = 0x973;		weapon = new OrnateAxe();
-			}
-			else if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Barako" )
-			{
-				clothColor = 0x515;		shieldType = 0x1B72;	helmType = 0x2645;		cloakColor = 0x58D;		weapon = new WarMace();
-			}
-			else if ( World == "the Savaged Empire" ) // ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Village of Kurak" )
-			{
-				clothColor = 0x515;		shieldType = 0;			helmType = 0x140E;		cloakColor = 0x59D;		weapon = new Spear();
-			}
-			else if ( World == "the Serpent Island" ) // ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Furnace" )
-			{
-				clothColor = 0x515;		shieldType = 0;			helmType = 0x2FBB;		cloakColor = 0;			weapon = new Halberd();
-			}
-			else // if ( Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the City of Britain" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Britain Castle Grounds" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "Lord British Castle" || Server.Misc.Worlds.GetRegionName( this.Map, this.Location ) == "the Britain Dungeons" )
-			{
-				clothColor = 0x966;		shieldType = 0x1BC4;	helmType = 0x140E;		cloakColor = 2900;		weapon = new VikingSword();
+				config = TownGuardEquipmentConfig.GetConfig(regionName, worldName);
 			}
 
-			weapon.Movable = false;
-			((BaseWeapon)weapon).MaxHitPoints = 1000;
-			((BaseWeapon)weapon).HitPoints = 1000;
-			((BaseWeapon)weapon).MinDamage = 100;
-			((BaseWeapon)weapon).MaxDamage = 500;
-			AddItem( weapon );
+			Item weapon = CreateWeapon(config.WeaponType);
+			ConfigureWeapon(weapon);
+			AddItem(weapon);
 
-			AddItem( new PlateChest() );
-			if ( World == "the Serpent Island" ){ AddItem( new RingmailArms() ); } else { AddItem( new PlateArms() ); } // FOR GARGOYLES
-			AddItem( new PlateLegs() );
-			AddItem( new PlateGorget() );
-			AddItem( new PlateGloves() );
-			AddItem( new Boots( ) );
+			AddStandardArmor(worldName);
 
-			if ( helmType > 0 )
+			if (config.HelmType > 0)
 			{
-				PlateHelm helm = new PlateHelm();
-					helm.ItemID = helmType;
-					helm.Name = "helm";
-					AddItem( helm );
-			}
-			if ( shieldType > 0 )
-			{
-				ChaosShield shield = new ChaosShield();
-					shield.ItemID = shieldType;
-					shield.Name = "shield";
-					AddItem( shield );
+				AddItem(CreateHelm(config.HelmType));
 			}
 
-			MorphingTime.ColorMyClothes( this, clothColor );
-
-			if ( cloakColor > 0 )
+			if (config.ShieldType > 0)
 			{
-				Cloak cloak = new Cloak();
-					cloak.Hue = cloakColor;
-					AddItem( cloak );
+				AddItem(CreateShield(config.ShieldType));
 			}
 
-			Server.Misc.MorphingTime.CheckMorph( this );
+			MorphingTime.ColorMyClothes(this, config.ClothColor);
+
+			if (config.CloakColor > 0)
+			{
+				AddItem(CreateCloak(config.CloakColor));
+			}
+
+			Server.Misc.MorphingTime.CheckMorph(this);
 		}
 
-		public override void OnGaveMeleeAttack( Mobile defender )
+		/// <summary>
+		/// Determines if a mobile is an enemy and handles guard response
+		/// </summary>
+		public override bool IsEnemy(Mobile m)
 		{
-			if (m_Talked == false)
-			{
-                switch (Utility.Random(8))
-                {
-                    case 0: Say("AUTO! Pare em nome da lei!"); break;
-                    case 1: Say("Eu irei lhe mostrar a justiça!"); break;
-                    case 2: Say("" + defender.Name + "!! Sua história acaba aqui e agora!"); break;
-                    case 3: Say("Estavamos atrás de você " + defender.Name + "!"); break;
-                    case 4: Say("Soldados! " + defender.Name + " está aqui!"); break;
-                    case 5: Say("Somos treinados para caçar criminosos como você " + defender.Name + "!"); break;
-                    case 6: Say("Desista! Irei acabar com você " + defender.Name + "!"); break;
-                    case 7: Say("" + defender.Name + "! Sua sentença será a morte!"); break;
-                };
-            }
-		}
-
-		public override bool IsEnemy( Mobile m )
-		{
-			if ( IntelligentAction.GetMyEnemies( m, this, true ) == false )
+			if (IntelligentAction.GetMyEnemies(m, this, true) == false)
 				return false;
 
-			if ( m.Region != this.Region && !(m is PlayerMobile) )
+			if (m.Region != this.Region && !(m is PlayerMobile))
 				return false;
 
 			m.Criminal = true;
-			Effects.SendLocationParticles( EffectItem.Create( this.Location, this.Map, EffectItem.DefaultDuration ), 0x3728, 8, 20, 5042 );
-			Effects.PlaySound( this, this.Map, 0x201 );
+			PlayTeleportEffects(this.Location);
 			this.Location = m.Location;
 			this.Combatant = m;
 			this.Warmode = true;
-			Effects.SendLocationParticles( EffectItem.Create( this.Location, this.Map, EffectItem.DefaultDuration ), 0x3728, 8, 20, 5042 );
-			Effects.PlaySound( this, this.Map, 0x201 );
+			PlayTeleportEffects(this.Location);
 
 			return true;
 		}
 
-		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
-		{ 
-			base.GetContextMenuEntries( from, list ); 
-			list.Add( new SpeechGumpEntry( from, this ) ); 
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Calculates bounty reward for a head based on job type
+		/// </summary>
+		/// <param name="job">The job type of the head</param>
+		/// <returns>Bounty reward with karma and gold, or null if unknown job</returns>
+		private BountyReward CalculateHeadBountyReward(string job)
+		{
+			if (job == "Thief")
+			{
+				return new BountyReward
+				{
+					Karma = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_THIEF_KARMA_MIN, TownGuardsConstants.BOUNTY_THIEF_KARMA_MAX),
+					Gold = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_THIEF_GOLD_MIN, TownGuardsConstants.BOUNTY_THIEF_GOLD_MAX)
+				};
+			}
+			else if (job == "Bandit")
+			{
+				return new BountyReward
+				{
+					Karma = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_BANDIT_KARMA_MIN, TownGuardsConstants.BOUNTY_BANDIT_KARMA_MAX),
+					Gold = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_BANDIT_GOLD_MIN, TownGuardsConstants.BOUNTY_BANDIT_GOLD_MAX)
+				};
+			}
+			else if (job == "Brigand")
+			{
+				return new BountyReward
+				{
+					Karma = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_BRIGAND_KARMA_MIN, TownGuardsConstants.BOUNTY_BRIGAND_KARMA_MAX),
+					Gold = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_BRIGAND_GOLD_MIN, TownGuardsConstants.BOUNTY_BRIGAND_GOLD_MAX)
+				};
+			}
+			else if (job == "Pirate")
+			{
+				return new BountyReward
+				{
+					Karma = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_PIRATE_KARMA_MIN, TownGuardsConstants.BOUNTY_PIRATE_KARMA_MAX),
+					Gold = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_PIRATE_GOLD_MIN, TownGuardsConstants.BOUNTY_PIRATE_GOLD_MAX)
+				};
+			}
+			else if (job == "Assassin")
+			{
+				return new BountyReward
+				{
+					Karma = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_ASSASSIN_KARMA_MIN, TownGuardsConstants.BOUNTY_ASSASSIN_KARMA_MAX),
+					Gold = Utility.RandomMinMax(TownGuardsConstants.BOUNTY_ASSASSIN_GOLD_MIN, TownGuardsConstants.BOUNTY_ASSASSIN_GOLD_MAX)
+				};
+			}
+
+			return null;
 		}
 
-		
+		/// <summary>
+		/// Gets a random bounty dialog message
+		/// </summary>
+		/// <param name="gold">The gold amount to include in the message</param>
+		/// <returns>Formatted dialog message</returns>
+		private string GetBountyDialog(int gold)
+		{
+			string rewardMessage = GetRewardMessage(gold);
+			string dialogMessage = GetDialogMessage(rewardMessage);
+			return dialogMessage;
+		}
+
+		/// <summary>
+		/// Gets a random reward message with gold amount
+		/// </summary>
+		/// <param name="gold">The gold amount</param>
+		/// <returns>Formatted reward message</returns>
+		private string GetRewardMessage(int gold)
+		{
+			int index = Utility.RandomMinMax(TownGuardsConstants.REWARD_MESSAGE_MIN, TownGuardsConstants.REWARD_MESSAGE_MAX);
+			
+			switch (index)
+			{
+				case 0: return string.Format(TownGuardsStringConstants.BOUNTY_REWARD_1_FORMAT, gold);
+				case 1: return string.Format(TownGuardsStringConstants.BOUNTY_REWARD_2_FORMAT, gold);
+				case 2: return string.Format(TownGuardsStringConstants.BOUNTY_REWARD_3_FORMAT, gold);
+				case 3: return string.Format(TownGuardsStringConstants.BOUNTY_REWARD_4_FORMAT, gold);
+				default: return string.Format(TownGuardsStringConstants.BOUNTY_REWARD_1_FORMAT, gold);
+			}
+		}
+
+		/// <summary>
+		/// Gets a random dialog message with reward message appended
+		/// </summary>
+		/// <param name="rewardMessage">The reward message to append</param>
+		/// <returns>Formatted dialog message</returns>
+		private string GetDialogMessage(string rewardMessage)
+		{
+			int index = Utility.RandomMinMax(TownGuardsConstants.DIALOG_MESSAGE_MIN, TownGuardsConstants.DIALOG_MESSAGE_MAX);
+			
+			switch (index)
+			{
+				case 0: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_1_FORMAT, rewardMessage);
+				case 1: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_2_FORMAT, rewardMessage);
+				case 2: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_3_FORMAT, rewardMessage);
+				case 3: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_4_FORMAT, rewardMessage);
+				case 4: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_5_FORMAT, rewardMessage);
+				default: return string.Format(TownGuardsStringConstants.BOUNTY_DIALOG_1_FORMAT, rewardMessage);
+			}
+		}
+
+		/// <summary>
+		/// Creates a weapon of the specified type
+		/// </summary>
+		/// <param name="weaponType">The type of weapon to create</param>
+		/// <returns>Created weapon item</returns>
+		private Item CreateWeapon(Type weaponType)
+		{
+			if (weaponType == null)
+			{
+				return new VikingSword();
+			}
+
+			try
+			{
+				Item weapon = Activator.CreateInstance(weaponType) as Item;
+				if (weapon == null)
+				{
+					return new VikingSword();
+				}
+
+				return weapon;
+			}
+			catch
+			{
+				return new VikingSword();
+			}
+		}
+
+		/// <summary>
+		/// Configures weapon stats (damage, durability, etc.)
+		/// </summary>
+		/// <param name="weapon">The weapon to configure</param>
+		private void ConfigureWeapon(Item weapon)
+		{
+			weapon.Movable = false;
+			
+			BaseWeapon baseWeapon = weapon as BaseWeapon;
+			if (baseWeapon != null)
+			{
+				baseWeapon.MaxHitPoints = TownGuardsConstants.WEAPON_MAX_HIT_POINTS;
+				baseWeapon.HitPoints = TownGuardsConstants.WEAPON_HIT_POINTS;
+				baseWeapon.MinDamage = TownGuardsConstants.WEAPON_MIN_DAMAGE;
+				baseWeapon.MaxDamage = TownGuardsConstants.WEAPON_MAX_DAMAGE;
+			}
+		}
+
+		/// <summary>
+		/// Adds standard armor pieces to the guard
+		/// </summary>
+		/// <param name="worldName">The world name (used for special cases like Serpent Island)</param>
+		private void AddStandardArmor(string worldName)
+		{
+			AddItem(new PlateChest());
+			
+			if (worldName == "the Serpent Island")
+			{
+				AddItem(new RingmailArms()); // FOR GARGOYLES
+			}
+			else
+			{
+				AddItem(new PlateArms());
+			}
+			
+			AddItem(new PlateLegs());
+			AddItem(new PlateGorget());
+			AddItem(new PlateGloves());
+			AddItem(new Boots());
+		}
+
+		/// <summary>
+		/// Creates a helm with the specified item ID
+		/// </summary>
+		/// <param name="helmType">The helm item ID</param>
+		/// <returns>Created helm item</returns>
+		private PlateHelm CreateHelm(int helmType)
+			{
+				PlateHelm helm = new PlateHelm();
+					helm.ItemID = helmType;
+			helm.Name = TownGuardsStringConstants.EQUIPMENT_NAME_HELM;
+			return helm;
+		}
+
+		/// <summary>
+		/// Creates a shield with the specified item ID
+		/// </summary>
+		/// <param name="shieldType">The shield item ID</param>
+		/// <returns>Created shield item</returns>
+		private ChaosShield CreateShield(int shieldType)
+			{
+				ChaosShield shield = new ChaosShield();
+					shield.ItemID = shieldType;
+			shield.Name = TownGuardsStringConstants.EQUIPMENT_NAME_SHIELD;
+			return shield;
+		}
+
+		/// <summary>
+		/// Creates a cloak with the specified color
+		/// </summary>
+		/// <param name="cloakColor">The cloak color hue</param>
+		/// <returns>Created cloak item</returns>
+		private Cloak CreateCloak(int cloakColor)
+			{
+				Cloak cloak = new Cloak();
+					cloak.Hue = cloakColor;
+			return cloak;
+		}
+
+		/// <summary>
+		/// Plays teleportation visual and sound effects
+		/// </summary>
+		/// <param name="location">The location where effects should play</param>
+		private void PlayTeleportEffects(Point3D location)
+		{
+			Effects.SendLocationParticles(
+				EffectItem.Create(location, this.Map, EffectItem.DefaultDuration),
+				TownGuardsConstants.EFFECT_PARTICLE_ID,
+				TownGuardsConstants.EFFECT_PARTICLE_COUNT,
+				TownGuardsConstants.EFFECT_PARTICLE_SPEED,
+				TownGuardsConstants.EFFECT_PARTICLE_HUE);
+			Effects.PlaySound(this, this.Map, TownGuardsConstants.EFFECT_SOUND_ID);
+		}
+
+		#endregion
+
+		#region Event Handlers
+
+		/// <summary>
+		/// Handles movement events to check if guard should return to post
+		/// </summary>
+		public override void OnMovement(Mobile m, Point3D oldLocation)
+		{
+			WalkAwayCombatTimer t = new WalkAwayCombatTimer(this);
+			t.Start();
+		}
+
+		/// <summary>
+		/// Handles melee attack events to say combat messages
+		/// </summary>
+		public override void OnGaveMeleeAttack(Mobile defender)
+		{
+			if (m_Talked == false)
+			{
+				int index = Utility.Random(TownGuardsConstants.COMBAT_MESSAGE_MAX);
+				string message = GetCombatMessage(index, defender.Name);
+				Say(message);
+			}
+		}
+
+		/// <summary>
+		/// Gets a combat message based on index and defender name
+		/// </summary>
+		/// <param name="index">The message index</param>
+		/// <param name="defenderName">The defender's name</param>
+		/// <returns>Formatted combat message</returns>
+		private string GetCombatMessage(int index, string defenderName)
+		{
+			switch (index)
+			{
+				case 0: return TownGuardsStringConstants.COMBAT_STOP_LAW;
+				case 1: return TownGuardsStringConstants.COMBAT_SHOW_JUSTICE;
+				case 2: return string.Format(TownGuardsStringConstants.COMBAT_HISTORY_ENDS_FORMAT, defenderName);
+				case 3: return string.Format(TownGuardsStringConstants.COMBAT_AFTER_YOU_FORMAT, defenderName);
+				case 4: return string.Format(TownGuardsStringConstants.COMBAT_SOLDIERS_ALERT_FORMAT, defenderName);
+				case 5: return string.Format(TownGuardsStringConstants.COMBAT_TRAINED_HUNT_FORMAT, defenderName);
+				case 6: return string.Format(TownGuardsStringConstants.COMBAT_GIVE_UP_FORMAT, defenderName);
+				case 7: return string.Format(TownGuardsStringConstants.COMBAT_SENTENCE_DEATH_FORMAT, defenderName);
+				default: return TownGuardsStringConstants.COMBAT_STOP_LAW;
+			}
+		}
+
+		/// <summary>
+		/// Prevents guard death and restores health
+		/// </summary>
+		public override bool OnBeforeDeath()
+		{
+			Say(TownGuardsStringConstants.MSG_DEATH_PREVENTION);
+			this.Hits = this.HitsMax;
+			this.FixedParticles(
+				TownGuardsConstants.EFFECT_DEATH_PARTICLE_ID,
+				TownGuardsConstants.EFFECT_DEATH_PARTICLE_COUNT,
+				TownGuardsConstants.EFFECT_DEATH_PARTICLE_SPEED,
+				TownGuardsConstants.EFFECT_DEATH_PARTICLE_HUE,
+				EffectLayer.Waist);
+			this.PlaySound(TownGuardsConstants.SOUND_DEATH_PREVENTION);
+				return false;
+		}
+
+		#endregion
+
+		#region Context Menu
+
+		/// <summary>
+		/// Adds context menu entries for the guard
+		/// </summary>
+		public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list) 
+		{ 
+			base.GetContextMenuEntries(from, list); 
+			list.Add(new SpeechGumpEntry(from, this)); 
+		}
+
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Timer to check if guard should return to post after moving away
+		/// </summary>
+		private class WalkAwayCombatTimer : Timer
+		{
+			private TownGuards m_Owner;
+
+			public WalkAwayCombatTimer(TownGuards owner) : base(TimeSpan.FromSeconds(TownGuardsConstants.TIMER_DELAY_SECONDS))
+			{
+				m_Owner = owner;
+				Priority = TimerPriority.OneSecond;
+			}
+
+			protected override void OnTick()
+			{
+				if (m_Owner == null || m_Owner.Deleted)
+					return;
+
+				if ((int)m_Owner.GetDistanceToSqrt(m_Owner.Home) > (m_Owner.RangeHome + TownGuardsConstants.HOME_RANGE_OFFSET))
+				{
+					m_Owner.PrivateOverheadMessage(MessageType.Regular, TownGuardsConstants.MESSAGE_COLOR, false, TownGuardsStringConstants.MSG_RETURNING_TO_POST, m_Owner.NetState);
+					m_Owner.Location = m_Owner.Home;
+					Effects.SendLocationParticles(
+						EffectItem.Create(m_Owner.Location, m_Owner.Map, EffectItem.DefaultDuration),
+						TownGuardsConstants.EFFECT_PARTICLE_ID,
+						TownGuardsConstants.EFFECT_PARTICLE_COUNT,
+						TownGuardsConstants.EFFECT_PARTICLE_SPEED,
+						TownGuardsConstants.EFFECT_PARTICLE_HUE);
+					Effects.PlaySound(m_Owner, m_Owner.Map, TownGuardsConstants.EFFECT_SOUND_ID);
+				}
+
+				m_Owner.m_Talked = false;
+			}
+		}
+
+		/// <summary>
+		/// Context menu entry for speech gump
+		/// </summary>
         public class SpeechGumpEntry : ContextMenuEntry
 		{
 			private Mobile m_Mobile;
 			private Mobile m_Giver;
 			
-			public SpeechGumpEntry( Mobile from, Mobile giver ) : base( 6146, 3 )
+			public SpeechGumpEntry(Mobile from, Mobile giver) : base(TownGuardsConstants.CONTEXT_MENU_ENTRY_ID, TownGuardsConstants.CONTEXT_MENU_RANGE)
 			{
 				m_Mobile = from;
 				m_Giver = giver;
@@ -404,72 +540,69 @@ namespace Server.Mobiles
 
 			public override void OnClick()
 			{
-			    if( !( m_Mobile is PlayerMobile ) )
+				if (!(m_Mobile is PlayerMobile))
 				return;
 				
-				PlayerMobile mobile = (PlayerMobile) m_Mobile;
+				PlayerMobile mobile = (PlayerMobile)m_Mobile;
+				if (!mobile.HasGump(typeof(SpeechGump)))
 				{
-					if ( ! mobile.HasGump( typeof( SpeechGump ) ) )
-					{
-						mobile.SendGump(new SpeechGump( "Código de Conduta Militar", SpeechFunctions.SpeechText( m_Giver.Name, m_Mobile.Name, "Guard" ) ));
-					}
+					mobile.SendGump(new SpeechGump(TownGuardsStringConstants.GUMP_TITLE_MILITARY_CONDUCT, SpeechFunctions.SpeechText(m_Giver.Name, m_Mobile.Name, "Guard")));
 				}
 
-				ArrayList wanted = new ArrayList();
-				int w = 0;
-				foreach ( Item item in World.Items.Values )
+				List<CharacterDatabase> wanted = new List<CharacterDatabase>();
+				foreach (Item item in World.Items.Values)
 				{
-					if ( item is CharacterDatabase )
+					if (item is CharacterDatabase)
 					{
 						CharacterDatabase DB = (CharacterDatabase)item;
-
-						if ( DB.CharacterWanted != null && DB.CharacterWanted != "" )
+						if (DB.CharacterWanted != null && DB.CharacterWanted != "")
 						{
-							wanted.Add( item );
-							w++;
+							wanted.Add(DB);
 						}
 					}
 				}
-				int wChoice = Utility.RandomMinMax( 1, w );
-				int c = 0;
-				for ( int i = 0; i < wanted.Count; ++i )
+
+				if (wanted.Count > 0)
 				{
-					c++;
-					if ( c == wChoice )
-					{
-						CharacterDatabase DB = ( CharacterDatabase )wanted[ i ];
+					int wChoice = Utility.RandomMinMax(1, wanted.Count);
+					CharacterDatabase DB = wanted[wChoice - 1];
 						GuardNote note = new GuardNote();
 						note.ScrollText = DB.CharacterWanted;
-						m_Mobile.AddToBackpack( note );
-						m_Giver.Say("Cidadão, fique atento!");
-					}
+					m_Mobile.AddToBackpack(note);
+					m_Giver.Say(TownGuardsStringConstants.MSG_CITIZEN_ALERT);
 				}
-            }
-        }
-
-		public override bool OnBeforeDeath()
-		{
-			Say("A aura da irmandade militar irá me proteger!");
-			this.Hits = this.HitsMax;
-			this.FixedParticles( 0x376A, 9, 32, 5030, EffectLayer.Waist );
-			this.PlaySound( 0x202 );
-			return false;
+			}
 		}
 
-		public TownGuards( Serial serial ) : base( serial ) 
+		/// <summary>
+		/// Helper class to hold bounty reward information
+		/// </summary>
+		private class BountyReward
+		{
+			public int Karma { get; set; }
+			public int Gold { get; set; }
+		}
+
+		#endregion
+
+		#region Serialization
+
+		public TownGuards(Serial serial) : base(serial) 
 		{ 
 		} 
 
-		public override void Serialize( GenericWriter writer ) 
+		public override void Serialize(GenericWriter writer) 
 		{ 
-			base.Serialize( writer ); 
-			writer.Write( (int) 0 ); // version 
+			base.Serialize(writer); 
+			writer.Write((int)0); // version 
 		} 
 
-		public override void Deserialize( GenericReader reader ) 
+		public override void Deserialize(GenericReader reader) 
 		{ 
-			base.Deserialize( reader ); 
+			base.Deserialize(reader); 
 			int version = reader.ReadInt(); 
 		} 
+
+		#endregion
 	} 
 }   

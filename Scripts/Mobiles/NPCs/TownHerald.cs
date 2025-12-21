@@ -8,27 +8,48 @@ using Server;
 using Server.Items;
 using Server.Gumps;
 using Server.Mobiles;
+using Server.Mobiles.Helpers;
 using Server.Regions;
 using Server.Commands;
 using System.Text;
 
 namespace Server.Mobiles
 {
+	/// <summary>
+	/// DungeonGuide NPC that provides contextual guidance based on region type.
+	/// Inherits from TownHerald and specializes in dungeon and region-specific messages.
+	/// </summary>
 	public class DungeonGuide : TownHerald
 	{
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the DungeonGuide class.
+		/// Sets up the guide with appropriate title and paralyzes for long-term placement.
+		/// </summary>
 		[Constructable]
 		public DungeonGuide() : base()
 		{
-			Title = "o guia das masmorras";
+			Title = TownHeraldStringConstants.TITLE_DUNGEON_GUIDE;
 			Name = NameList.RandomName( "male" );
 
 			Blessed = true;
-			Paralyze( TimeSpan.FromDays( 365 * 10 ) ); // Paralyzed for 10 years
+			Paralyze( TimeSpan.FromDays( TownHeraldConstants.PARALYZE_DAYS ) ); // Paralyzed for 10 years
 		}
 
+		#endregion
+
+		#region Override Methods
+
+		/// <summary>
+		/// Called when a mobile moves near the dungeon guide.
+		/// Provides contextual guidance based on the current region type.
+		/// </summary>
+		/// <param name="m">The mobile that moved</param>
+		/// <param name="oldLocation">The previous location of the mobile</param>
 		public override void OnMovement( Mobile m, Point3D oldLocation )
 		{
-			if ( InRange( m, 10 ) && m is PlayerMobile )
+			if ( InRange( m, TownHeraldConstants.TALK_RANGE ) && m is PlayerMobile )
 			{
 				// Turn to face the approaching player
 				this.Direction = this.GetDirectionTo( m );
@@ -38,130 +59,97 @@ namespace Server.Mobiles
 					Region reg = Region.Find( this.Location, this.Map );
 
 					// Provide contextual guidance based on region type
+					string message = null;
+
 					if ( reg is DungeonRegion )
 					{
-						string dungeonMessage = GetDungeonMessage(reg);
-						Say( dungeonMessage );
+						message = RegionMessageHelper.GetDungeonMessage(reg.Name);
 					}
-				else if ( reg is CaveRegion )
-				{
-					Say( "Cuidado com desmoronamentos e criaturas venenosas nestas profundezas! Fique alerta e observe onde pisa." );
-				}
-				else if ( reg is DeadRegion )
-				{
-					Say( "Os mortos caminham por estas terras! Use magia sagrada e procure solo consagrado para sua segurança." );
-				}
-				else if ( reg is GargoyleRegion )
-				{
-					Say( "Gargulas habitam aqui! Sua pele semelhante a pedra resiste a armas normais. Magia e armas abençoadas são sua melhor defesa." );
-				}
-				else if ( reg is NecromancerRegion )
-				{
-					Say( "Necromantes praticam suas artes sombrias nas proximidades! Cuidado com lacaios mortos-vivos e magia amaldiçoada." );
-				}
-				else if ( reg.Name.Contains( "Pirate" ) || reg is PirateRegion )
-				{
-					Say( "Piratas navegam estas águas! Proteja sua carga e cuidado com grupos de abordagem." );
-				}
-				else if ( reg.Name.Contains( "Maze" ) || reg is MazeRegion )
-				{
-					Say( "Perdido no labirinto? Acompanhe seu caminho e cuidado com ilusões que podem enganar você!" );
-				}
-				else if ( reg.Name.Contains( "Abyss" ) )
-				{
-					Say( "Bem-vindo ao Abismo! As profundezas mais profundas guardam grandes perigos e maiores tesouros. Prepare-se!" );
-				}
-				else if ( reg.Name.Contains( "Ice" ) || reg.Name.Contains( "Frozen" ) )
-				{
-					Say( "O frio morde profundamente aqui! Vista-se com roupas quentes e cuidado com queimaduras de frio." );
-				}
-				else if ( reg.Name.Contains( "Fire" ) || reg.Name.Contains( "Volcano" ) )
-				{
-					Say( "Fogo e lava cercam você! Armaduras resistentes ao calor e poções de proteção contra fogo são essenciais aqui." );
-				}
-				else if ( reg.Name.Contains( "Swamp" ) || reg.Name.Contains( "Bog" ) )
-				{
-					Say( "Estas águas turvas escondem muitos perigos! Cuidado com plantas venenosas e criaturas que atacam por baixo." );
-				}
-				else if ( reg.Name.Contains( "Castle" ) || reg.Name.Contains( "Keep" ) )
-				{
-					Say( "Castelos antigos guardam segredos esquecidos! Esteja preparado para armadilhas, enigmas e poderosos guardiões." );
-				}
-				else if ( reg.Name.Contains( "Ruins" ) )
-				{
-					Say( "Estas ruínas em ruínas são instáveis! Cuidado com detritos caindo e maldições antigas." );
-				}
-				else if ( reg.Name.Contains( "Tomb" ) || reg.Name.Contains( "Crypt" ) )
-				{
-					Say( "Tumbas guardam espíritos inquietos! Magia sagrada e armas abençoadas lhe servirão bem aqui." );
-				}
-				else if ( reg.Name.Contains( "Mine" ) )
-				{
-					Say( "Túneis de mineração podem desmoronar! Traga picaretas, lanternas e esteja preparado para se desenterrar se necessário." );
-				}
-				else
-				{
-					// Fall back to regular TownHerald behavior
-					base.OnMovement( m, oldLocation );
-				}
+					else
+					{
+						message = RegionMessageHelper.GetRegionMessage(reg);
+					}
 
-				NextTalk = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( 20, 45 ) );
+					if ( message != null )
+					{
+						Say( message );
+					}
+					else
+					{
+						// Fall back to regular TownHerald behavior
+						base.OnMovement( m, oldLocation );
+					}
+
+				NextTalk = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( TownHeraldConstants.TALK_DELAY_MIN, TownHeraldConstants.TALK_DELAY_MAX ) );
 			}
 		}
-		}
 
-		private string GetDungeonMessage( Region reg )
-		{
-			string regionName = reg.Name.ToLower();
+		#endregion
 
-			if ( regionName.Contains( "deceit" ) || regionName.Contains( "wrong" ) )
-				return "Bem-vindo a Deceit! As ilusões aqui podem enganar até o aventureiro mais sábio. Não confie em nada que vê!";
-			else if ( regionName.Contains( "despise" ) )
-				return "Despise aguarda! As piscinas ácidas aqui podem derreter armadura e carne. Pule com cuidado e traga resistência a ácido!";
-			else if ( regionName.Contains( "destard" ) )
-				return "As chamas de Destard queimam forte! Poções de resistência ao fogo e roupas frescas são seus melhores amigos aqui.";
-			else if ( regionName.Contains( "shame" ) )
-				return "Shame guarda muitos segredos! Procure portas escondidas e baús armadilhados, mas cuidado com os guardiões.";
-			else if ( regionName.Contains( "hythloth" ) )
-				return "Hythloth, o submundo! A masmorra mais profunda guarda os segredos mais sombrios. Traga muitos suprimentos!";
-			else if ( regionName.Contains( "covetous" ) )
-				return "Covetous está cheio de armadilhas e truques! Teste cada passo e verifique falsos pisos.";
-			else if ( regionName.Contains( "wind" ) )
-				return "A masmorra do vento! Correntes fortes podem jogá-lo para fora de penhascos. Mantenha-se no chão e mova-se com cuidado.";
-			else if ( regionName.Contains( "fire" ) )
-				return "Masmorra de fogo! Tudo queima aqui. Traga resistência ao fogo e extintores.";
-			else if ( regionName.Contains( "ice" ) )
-				return "Masmorra de gelo! O frio é mortal. Roupas quentes e armas baseadas em fogo ajudarão.";
-			else if ( regionName.Contains( "doom" ) )
-				return "Luva de Doom! Apenas os mais bravos entram aqui. Os artefatos dentro são lendários, mas os perigos também!";
-			else if ( regionName.Contains( "bedlam" ) )
-				return "O enigma de Bedlam! Resolva os enigmas para prosseguir, mas respostas erradas trazem consequências mortais.";
-			else if ( regionName.Contains( "labyrinth" ) )
-				return "O Labirinto! Este labirinto de loucura testará sua sanidade. Traga um mapa ou se perca para sempre.";
-			else if ( regionName.Contains( "sanctuary" ) )
-				return "Um santuário nas profundezas! Descanse aqui com segurança, mas cuidado - a segurança frequentemente atrai perigo.";
-			else if ( regionName.Contains( "prison" ) || regionName.Contains( "jail" ) )
-				return "Complexo prisional! Cuidado com presos que podem ter escapado, e tenha cuidado com patrulhas de guardas.";
-			else
-				return "Bem-vindo a esta masmorra! Fique alerta, trabalhe em conjunto e lembre-se - a discrição é a melhor parte da bravura!";
-		}
+		#region Serialization
 
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
 		public DungeonGuide( Serial serial ) : base( serial )
 		{
 		}
 
+		/// <summary>
+		/// Serializes the dungeon guide data
+		/// </summary>
+		/// <param name="writer">The writer to serialize to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 			writer.Write( (int) 0 ); // version
 		}
 
+		/// <summary>
+		/// Deserializes the dungeon guide data
+		/// </summary>
+		/// <param name="reader">The reader to deserialize from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
 		}
+
+		#endregion
 	}
+
+	/// <summary>
+	/// TownHerald NPC that announces events, infections, and general news to players.
+	/// Provides contextual information based on current game state and region.
+	/// </summary>
+	public class TownHerald : BasePerson
+	{
+		#region Fields
+
+		/// <summary>Next time the herald can talk</summary>
+		private DateTime m_NextTalk;
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>Gets or sets the next time the herald can talk</summary>
+		public DateTime NextTalk{ get{ return m_NextTalk; } set{ m_NextTalk = value; } }
+
+		/// <summary>Gets whether to display title in single click</summary>
+		public override bool ClickTitle{ get{ return false; } }
+
+		#endregion
+
+		#region Constructor
+
+		/// <summary>
+		/// Initializes a new instance of the TownHerald class.
+		/// Sets up appearance, stats, and equipment.
+		/// </summary>
+		[Constructable]
+		public TownHerald() : base( )
 
 	public class TownHerald : BasePerson
 	{
@@ -173,11 +161,11 @@ namespace Server.Mobiles
 		[Constructable]
 		public TownHerald() : base( )
 		{
-			NameHue = -1;
+			NameHue = TownHeraldConstants.NAME_HUE_DEFAULT;
 
-			InitStats( 100, 100, 25 );
+			InitStats( TownHeraldConstants.STAT_STR, TownHeraldConstants.STAT_DEX, TownHeraldConstants.STAT_INT );
 
-			Title = "the town crier";
+			Title = TownHeraldStringConstants.TITLE_TOWN_CRIER;
 			Hue = Server.Misc.RandomThings.GetRandomSkinColor();
 
 			AddItem( new FancyShirt( Utility.RandomBlueHue() ) );
@@ -210,9 +198,19 @@ namespace Server.Mobiles
 			Utility.AssignRandomHair( this );
 		}
 
+		#endregion
+
+		#region Override Methods
+
+		/// <summary>
+		/// Called when a mobile moves near the town herald.
+		/// Announces infections, events, or general status based on game state.
+		/// </summary>
+		/// <param name="m">The mobile that moved</param>
+		/// <param name="oldLocation">The previous location of the mobile</param>
 		public override void OnMovement( Mobile m, Point3D oldLocation )
 		{
-			if ( InRange( m, 10 ) && m is PlayerMobile )
+			if ( InRange( m, TownHeraldConstants.TALK_RANGE ) && m is PlayerMobile )
 			{
 				// Turn to face the approaching player
 				this.Direction = this.GetDirectionTo( m );
@@ -223,10 +221,10 @@ namespace Server.Mobiles
 
 					if (AdventuresFunctions.InfectedRegions.Count > 0)
 					{
-						if (AetherGlobe.carrier != null && Utility.RandomDouble() > 0.70)
-							Say("Ive heard word of a being named " + AetherGlobe.carrier + " spreading a mysterious infection in the lands!");
+						if (AetherGlobe.carrier != null && Utility.RandomDouble() > TownHeraldConstants.CARRIER_MESSAGE_CHANCE)
+							Say(string.Format(TownHeraldStringConstants.MSG_CARRIER_SPREADING_FORMAT, AetherGlobe.carrier));
 						else
-							Say("Infected have been seen in the lands! Help is needed!");
+							Say(TownHeraldStringConstants.MSG_INFECTED_SEEN);
 					}
 					else if ( LoggingFunctions.LoggingEvents() == true )
 					{
@@ -235,21 +233,31 @@ namespace Server.Mobiles
 					}
 					else
 					{
-						Say( "All is well in the land!" );
+						Say( TownHeraldStringConstants.MSG_ALL_WELL );
 					}
-					m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( 15, 30 ) ));
+					m_NextTalk = (DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( TownHeraldConstants.HERALD_TALK_DELAY_MIN, TownHeraldConstants.HERALD_TALK_DELAY_MAX ) ));
 				}
 			}
 		}
 
+		/// <summary>
+		/// Determines if the herald handles speech from the specified mobile.
+		/// </summary>
+		/// <param name="from">The mobile speaking</param>
+		/// <returns>Always returns true</returns>
 		public override bool HandlesOnSpeech( Mobile from ) 
 		{ 
 			return true; 
 		} 
 
+		/// <summary>
+		/// Called when a mobile speaks near the herald.
+		/// Responds to queries about infections.
+		/// </summary>
+		/// <param name="e">The speech event arguments</param>
 		public override void OnSpeech( SpeechEventArgs e ) 
 		{
-			if( e.Mobile.InRange( this, 4 ))
+			if( e.Mobile.InRange( this, TownHeraldConstants.SPEECH_RANGE ))
 			{
 				if ( Insensitive.Contains( e.Speech, "infected") )  
 				{
@@ -259,65 +267,105 @@ namespace Server.Mobiles
 		
 		} 
 
+		#endregion
+
+		#region Helper Methods
+
+		/// <summary>
+		/// Talks about current infection status in the lands.
+		/// Provides information about infected regions and carriers.
+		/// </summary>
 		public void TalkInfection()
 		{
 			StringBuilder sb = new StringBuilder();
 
 			if (AdventuresFunctions.InfectedRegions == null)
-                sb.Append("Thank the balance! The infected are contained.");
+                sb.Append(TownHeraldStringConstants.MSG_INFECTED_CONTAINED);
 
 			AdventuresFunctions.CheckInfection();
 
 			if (AdventuresFunctions.InfectedRegions.Count > 0 )
 			{
-				sb.Append("Hear Ye! Infected have been spotted in ");
+				sb.Append(TownHeraldStringConstants.MSG_INFECTED_SPOTTED);
 
 				for ( int i = 0; i < AdventuresFunctions.InfectedRegions.Count; i++ ) // load static regions
 				{			
 					String r = (String)AdventuresFunctions.InfectedRegions[i];
 
 					if ( r != null || r != "" || r != " " )
-						sb.Append( r + ", and " );
+						sb.Append( r + TownHeraldStringConstants.MSG_LOCATION_SEPARATOR );
 					else
-						sb.Append( "an unknown location, and ");
+						sb.Append( TownHeraldStringConstants.MSG_UNKNOWN_LOCATION );
 				}
 
-				sb.Append("help is urgently needed!");
+				sb.Append(TownHeraldStringConstants.MSG_HELP_NEEDED);
 			}
 			else
-				sb.Append("Thank the balance! The infected are contained.");
+				sb.Append(TownHeraldStringConstants.MSG_INFECTED_CONTAINED);
 
 			Say( sb.ToString() );
 		}
 
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		/// <param name="serial">The serialization reader</param>
         public TownHerald(Serial serial) : base(serial)
 		{
 		}
 
-		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
-		{ 
-			base.GetContextMenuEntries( from, list ); 
-			//list.Add( new TownHeraldEntry( from, this ) ); 
-		} 
-
+		/// <summary>
+		/// Serializes the town herald data
+		/// </summary>
+		/// <param name="writer">The writer to serialize to</param>
 		public override void Serialize( GenericWriter writer )
 		{
 			base.Serialize( writer );
 			writer.Write( (int) 0 ); 
 		}
 
+		/// <summary>
+		/// Deserializes the town herald data
+		/// </summary>
+		/// <param name="reader">The reader to deserialize from</param>
 		public override void Deserialize( GenericReader reader )
 		{
 			base.Deserialize( reader );
 			int version = reader.ReadInt();
 		}
-		
+
+		#endregion
+
+		#region Context Menu
+
+		/// <summary>
+		/// Gets context menu entries for the town herald.
+		/// </summary>
+		/// <param name="from">The mobile viewing the menu</param>
+		/// <param name="list">The list to add entries to</param>
+		public override void GetContextMenuEntries( Mobile from, List<ContextMenuEntry> list ) 
+		{ 
+			base.GetContextMenuEntries( from, list ); 
+			//list.Add( new TownHeraldEntry( from, this ) ); 
+		} 
+
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Context menu entry for interacting with the town herald.
+		/// </summary>
 		public class TownHeraldEntry : ContextMenuEntry
 		{
 			private Mobile m_Mobile;
 			private Mobile m_Giver;
 			
-			public TownHeraldEntry( Mobile from, Mobile giver ) : base( 6146, 3 )
+			public TownHeraldEntry( Mobile from, Mobile giver ) : base( TownHeraldConstants.CONTEXT_MENU_ID, TownHeraldConstants.CONTEXT_MENU_RANGE )
 			{
 				m_Mobile = from;
 				m_Giver = giver;
@@ -334,15 +382,17 @@ namespace Server.Mobiles
 					{
 						if ( ! mobile.HasGump( typeof( LoggingGumpCrier ) ) )
 						{
-							mobile.SendGump(new LoggingGumpCrier( mobile, 1 ));
+							mobile.SendGump(new LoggingGumpCrier( mobile, TownHeraldConstants.GUMP_PAGE ));
 						}
 					}
 					else
 					{
-						m_Giver.Say("Good day to you, " + m_Mobile.Name + ".");
+						m_Giver.Say(string.Format(TownHeraldStringConstants.MSG_GOOD_DAY_FORMAT, m_Mobile.Name));
 					}
 				}
             }
         }
+
+		#endregion
 	}  
 }
