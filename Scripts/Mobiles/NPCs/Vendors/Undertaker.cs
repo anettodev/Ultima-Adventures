@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.NecromancersGuild; } }
 
 		[Constructable]
-		public Undertaker() : base( "the undertaker" )
+		public Undertaker() : base( UndertakerStringConstants.TITLE_UNDERTAKER )
 		{
 			Job = JobFragment.jailor;
 			Karma = Utility.RandomMinMax( 13, -45 );

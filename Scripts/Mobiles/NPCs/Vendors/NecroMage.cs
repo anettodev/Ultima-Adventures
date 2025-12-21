@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.NecromancersGuild; } }
 
 		[Constructable]
-		public NecroMage() : base( "the necromancer" )
+		public NecroMage() : base( NecroMageStringConstants.TITLE_NECRO_MAGE )
 		{
 
 			Job = JobFragment.cashual;

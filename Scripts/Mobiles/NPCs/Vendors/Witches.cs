@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.NecromancersGuild; } }
 
 		[Constructable]
-		public Witches() : base( "the witch" )
+		public Witches() : base( WitchesStringConstants.TITLE_WITCHES )
 		{
 			Job = JobFragment.cashual;
 			Karma = Utility.RandomMinMax( 13, -45 );

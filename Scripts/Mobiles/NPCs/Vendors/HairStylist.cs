@@ -10,7 +10,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } } 
 
 		[Constructable]
-		public HairStylist() : base( "the hair stylist" ) 
+		public HairStylist() : base( HairStylistStringConstants.TITLE_HAIR_STYLIST ) 
 		{ 
 			Job = JobFragment.artist;
 			Karma = Utility.RandomMinMax( 13, -45 );

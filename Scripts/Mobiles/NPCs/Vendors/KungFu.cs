@@ -14,7 +14,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 		
 		[Constructable]
-		public KungFu() : base( "the Monk" )
+		public KungFu() : base( KungFuStringConstants.TITLE_KUNG_FU )
 		{
 			Job = JobFragment.monk;
 			Karma = Utility.RandomMinMax( 13, -45 );

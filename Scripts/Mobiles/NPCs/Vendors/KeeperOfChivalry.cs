@@ -18,7 +18,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
 		[Constructable]
-		public KeeperOfChivalry() : base( "the Knight" )
+		public KeeperOfChivalry() : base( KeeperOfChivalryStringConstants.TITLE_KEEPER_OF_CHIVALRY )
 		{
 			Job = JobFragment.paladin;
 			Karma = Utility.RandomMinMax( 13, -45 );

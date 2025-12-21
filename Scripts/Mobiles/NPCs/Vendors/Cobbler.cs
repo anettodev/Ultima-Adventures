@@ -10,7 +10,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } } 
 
 		[Constructable]
-		public Cobbler() : base( "the cobbler" ) 
+		public Cobbler() : base( CobblerStringConstants.TITLE_COBBLER ) 
 		{ 
 			Job = JobFragment.cobbler;
 			Karma = Utility.RandomMinMax( 13, -45 );

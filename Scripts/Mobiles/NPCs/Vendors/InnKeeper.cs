@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } } 
 
 		[Constructable]
-		public InnKeeper() : base( "the innkeeper" ) 
+		public InnKeeper() : base( InnKeeperStringConstants.TITLE_INN_KEEPER ) 
 		{ 
 			Job = JobFragment.innkeeper;
 			Karma = Utility.RandomMinMax( 13, -45 );

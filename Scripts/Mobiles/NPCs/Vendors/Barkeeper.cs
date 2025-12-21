@@ -68,7 +68,7 @@ namespace Server.Mobiles
 		///////////////////////////////////////////////////////////////////////////
 
 		[Constructable]
-		public Barkeeper() : base( "the barkeeper" )
+		public Barkeeper() : base( BarkeeperStringConstants.TITLE_BARKEEPER )
 		{
 			Job = JobFragment.tavkeep;
 			Karma = Utility.RandomMinMax( 13, -45 );

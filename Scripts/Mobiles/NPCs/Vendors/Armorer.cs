@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.WarriorsGuild; } }
 
 		[Constructable]
-		public Armorer() : base( "the armorer" )
+		public Armorer() : base( ArmorerStringConstants.TITLE_ARMORER )
 		{
 			Job = JobFragment.armourer;
 			Karma = Utility.RandomMinMax( 13, -45 );

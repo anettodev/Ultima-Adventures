@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.WarriorsGuild; } }
 
 		[Constructable]
-		public Weaponsmith() : base( "the weaponsmith" )
+		public Weaponsmith() : base( WeaponsmithStringConstants.TITLE_WEAPONSMITH )
 		{
 			Job = JobFragment.weaponsmith;
 			Karma = Utility.RandomMinMax( 13, -45 );

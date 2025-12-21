@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.TailorsGuild; } }
 
 		[Constructable]
-		public Furtrader() : base( "the furtrader" )
+		public Furtrader() : base( FurtraderStringConstants.TITLE_FURTRADER )
 		{
 			Job = JobFragment.furtrader;
 			Karma = Utility.RandomMinMax( 13, -45 );

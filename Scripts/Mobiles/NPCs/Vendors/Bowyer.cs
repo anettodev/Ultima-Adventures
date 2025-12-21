@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.ArchersGuild; } }
 
 		[Constructable]
-		public Bowyer() : base( "the bowyer" )
+		public Bowyer() : base( BowyerStringConstants.TITLE_BOWYER )
 		{
 			Job = JobFragment.bowyer;
 			Karma = Utility.RandomMinMax( 13, -45 );

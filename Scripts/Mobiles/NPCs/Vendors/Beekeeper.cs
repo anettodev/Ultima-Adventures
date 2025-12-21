@@ -10,7 +10,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } } 
 
 		[Constructable]
-		public Beekeeper() : base( "the beekeeper" ) 
+		public Beekeeper() : base( BeekeeperStringConstants.TITLE_BEEKEEPER ) 
 		{ 
 			Job = JobFragment.beekeeper;
 			Karma = Utility.RandomMinMax( 13, -45 );

@@ -13,7 +13,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.BlacksmithsGuild; } }
 
 		[Constructable]
-		public IronWorker() : base( "the iron worker" )
+		public IronWorker() : base( IronWorkerStringConstants.TITLE_IRON_WORKER )
 		{
 			Job = JobFragment.blacksmith;
 			Karma = Utility.RandomMinMax( 13, -45 );

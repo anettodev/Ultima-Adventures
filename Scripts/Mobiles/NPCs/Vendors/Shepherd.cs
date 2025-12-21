@@ -52,7 +52,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.DruidsGuild; } }
 
 		[Constructable]
-		public Shepherd() : base( "the shepherd" )
+		public Shepherd() : base( ShepherdStringConstants.TITLE_SHEPHERD )
 		{
 			Job = JobFragment.shepherd;
 			Karma = Utility.RandomMinMax( 13, -45 );

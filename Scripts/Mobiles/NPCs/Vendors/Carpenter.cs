@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.CarpentersGuild; } }
 
 		[Constructable]
-		public Carpenter() : base( "the carpenter" )
+		public Carpenter() : base( CarpenterStringConstants.TITLE_CARPENTER )
 		{
 			Job = JobFragment.carpenter;
 			Karma = Utility.RandomMinMax( 13, -45 );

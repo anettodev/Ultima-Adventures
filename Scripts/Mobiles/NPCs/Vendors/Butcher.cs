@@ -12,7 +12,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.CulinariansGuild; } }
 
 		[Constructable]
-		public Butcher() : base( "the butcher" ) 
+		public Butcher() : base( ButcherStringConstants.TITLE_BUTCHER ) 
 		{ 
 			Job = JobFragment.cook;
 			Karma = Utility.RandomMinMax( 13, -45 );

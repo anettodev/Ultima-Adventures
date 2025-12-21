@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MagesGuild; } }
 
 		[Constructable]
-		public HolyMage() : base( "the holy mage" )
+		public HolyMage() : base( HolyMageStringConstants.TITLE_HOLY_MAGE )
 		{
 			Job = JobFragment.mage;
 			Karma = Utility.RandomMinMax( 13, -45 );

@@ -11,7 +11,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
 		[Constructable]
-		public GolemCrafter() : base( "the golem crafter" )
+		public GolemCrafter() : base( GolemCrafterStringConstants.TITLE_GOLEM_CRAFTER )
 		{
 			Job = JobFragment.tinker;
 			Karma = Utility.RandomMinMax( 13, -45 );

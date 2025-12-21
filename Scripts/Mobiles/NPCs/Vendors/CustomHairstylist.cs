@@ -77,7 +77,7 @@ namespace Server.Mobiles
 		}
 
 		[Constructable]
-		public CustomHairstylist() : base( "the barber" )
+		public CustomHairstylist() : base( CustomHairstylistStringConstants.TITLE_CUSTOM_HAIRSTYLIST )
 		{ 
 			Job = JobFragment.artist;
 			Karma = Utility.RandomMinMax( 13, -45 );

@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.LibrariansGuild; } }
 
 		[Constructable]
-		public Scribe() : base( "the scribe" )
+		public Scribe() : base( ScribeStringConstants.TITLE_SCRIBE )
 		{
 			Job = JobFragment.scholar;
 			Karma = Utility.RandomMinMax( 13, -45 );

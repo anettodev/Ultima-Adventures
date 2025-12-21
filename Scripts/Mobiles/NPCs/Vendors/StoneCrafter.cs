@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MinersGuild; } }
 
 		[Constructable]
-		public StoneCrafter() : base( "the stone crafter" )
+		public StoneCrafter() : base( StoneCrafterStringConstants.TITLE_STONE_CRAFTER )
 		{
 			Job = JobFragment.sculptor;
 			Karma = Utility.RandomMinMax( 13, -45 );
@@ -85,7 +85,7 @@ namespace Server.Mobiles
 			int version = reader.ReadInt();
 
 			if ( Title == "the stonecrafter" )
-				Title = "the stone crafter";
+				Title = StoneCrafterStringConstants.TITLE_STONE_CRAFTER;
 		}
 	}
 }

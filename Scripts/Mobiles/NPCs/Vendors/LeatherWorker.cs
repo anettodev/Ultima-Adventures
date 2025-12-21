@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.TailorsGuild; } }
 
 		[Constructable]
-		public LeatherWorker() : base( "the leather worker" ) 
+		public LeatherWorker() : base( LeatherWorkerStringConstants.TITLE_LEATHER_WORKER ) 
 		{ 
 			Job = JobFragment.tailor;
 			Karma = Utility.RandomMinMax( 13, -45 );

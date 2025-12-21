@@ -11,7 +11,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
 		[Constructable]
-		public Vagabond() : base( "the vagabond" )
+		public Vagabond() : base( VagabondStringConstants.TITLE_VAGABOND )
 		{
 			Job = JobFragment.beggar;
 			Karma = Utility.RandomMinMax( 13, -45 );

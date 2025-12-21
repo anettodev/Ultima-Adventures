@@ -11,7 +11,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
 		[Constructable]
-		public Glassblower() : base( "the glassblower" )
+		public Glassblower() : base( GlassblowerStringConstants.TITLE_GLASSBLOWER )
 		{
 			Job = JobFragment.glassblower;
 			Karma = Utility.RandomMinMax( 13, -45 );

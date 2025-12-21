@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MerchantsGuild; } }
 
 		[Constructable]
-		public VarietyDealer() : base( "the art collector" )
+		public VarietyDealer() : base( VarietyDealerStringConstants.TITLE_VARIETY_DEALER )
 		{
 			Job = JobFragment.shopkeep;
 			Karma = Utility.RandomMinMax( 13, -45 );

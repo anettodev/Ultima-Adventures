@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MerchantsGuild; } }
 
 		[Constructable]
-		public Jeweler() : base( "the jeweler" )
+		public Jeweler() : base( JewelerStringConstants.TITLE_JEWELER )
 		{
 			Job = JobFragment.jeweler;
 			Karma = Utility.RandomMinMax( 13, -45 );

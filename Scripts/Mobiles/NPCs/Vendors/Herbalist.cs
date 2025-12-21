@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.AlchemistsGuild; } }
 
 		[Constructable]
-		public Herbalist() : base( "the herbalist" ) 
+		public Herbalist() : base( HerbalistStringConstants.TITLE_HERBALIST ) 
 		{ 
 			Job = JobFragment.herbalist;
 			Karma = Utility.RandomMinMax( 13, -45 );

@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MagesGuild; } }
 
 		[Constructable]
-		public Mage() : base( "the mage" )
+		public Mage() : base( MageStringConstants.TITLE_MAGE )
 		{
 			Job = JobFragment.mage;
 			Karma = Utility.RandomMinMax( 13, -45 );

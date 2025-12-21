@@ -15,7 +15,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.FishermensGuild; } }
 
 		[Constructable]
-		public DrunkenPirate() : base( "the drunken pirate" ) 
+		public DrunkenPirate() : base( DrunkenPirateStringConstants.TITLE_DRUNKEN_PIRATE ) 
 		{ 
 			Job = JobFragment.pirate;
 			Karma = Utility.RandomMinMax( 13, -45 );

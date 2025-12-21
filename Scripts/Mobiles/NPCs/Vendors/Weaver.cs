@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.TailorsGuild; } }
 
 		[Constructable]
-		public Weaver() : base( "the weaver" )
+		public Weaver() : base( WeaverStringConstants.TITLE_WEAVER )
 		{
 			Job = JobFragment.weaver;
 			Karma = Utility.RandomMinMax( 13, -45 );

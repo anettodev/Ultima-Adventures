@@ -15,7 +15,7 @@ namespace Server.Mobiles
 		protected override List<SBInfo> SBInfos{ get { return m_SBInfos; } }
 
 		[Constructable]
-		public GypsyMaiden() : base( "the gypsy maiden" )
+		public GypsyMaiden() : base( GypsyMaidenStringConstants.TITLE_GYPSY_MAIDEN )
 		{
 			Job = JobFragment.gypsy;
 			Karma = Utility.RandomMinMax( 13, -45 );

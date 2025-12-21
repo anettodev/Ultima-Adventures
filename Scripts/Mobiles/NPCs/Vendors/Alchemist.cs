@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.AlchemistsGuild; } }
 
 		[Constructable]
-		public Alchemist() : base( "the alchemist" )
+		public Alchemist() : base( AlchemistStringConstants.TITLE_ALCHEMIST )
 		{
 			SetSkill( SkillName.Alchemy, 85.0, 100.0 );
 			SetSkill( SkillName.TasteID, 65.0, 88.0 );

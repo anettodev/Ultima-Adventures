@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.BardsGuild; } }
 
 		[Constructable]
-		public Bard() : base( "the bard" )
+		public Bard() : base( BardStringConstants.TITLE_BARD )
 		{
 			Job = JobFragment.bard;
 			Karma = Utility.RandomMinMax( 13, -45 );

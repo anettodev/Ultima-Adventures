@@ -21,7 +21,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.TinkersGuild; } }
 
 		[Constructable]
-		public Tinker() : base( "the tinker" )
+		public Tinker() : base( TinkerStringConstants.TITLE_TINKER )
 		{
 			Job = JobFragment.tinker;
 			Karma = Utility.RandomMinMax( 13, -45 );

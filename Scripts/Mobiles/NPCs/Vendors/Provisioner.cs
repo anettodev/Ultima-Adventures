@@ -22,7 +22,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MerchantsGuild; } }
 
 		[Constructable]
-		public Provisioner() : base( "the provisioner" )
+		public Provisioner() : base( ProvisionerStringConstants.TITLE_PROVISIONER )
 		{
 			Job = JobFragment.shopkeep;
 			Karma = Utility.RandomMinMax( 13, -45 );

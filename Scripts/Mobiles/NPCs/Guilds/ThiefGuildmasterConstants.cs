@@ -9,7 +9,7 @@ namespace Server.Mobiles
 		#region NPC Title
 
 		/// <summary>Title for ThiefGuildmaster NPC</summary>
-		public const string TITLE_THIEF = "thief";
+		public const string TITLE_THIEF = "o Ladino";
 
 		#endregion
 

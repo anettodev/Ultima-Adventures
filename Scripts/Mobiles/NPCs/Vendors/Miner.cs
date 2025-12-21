@@ -12,7 +12,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MinersGuild; } }
 
 		[Constructable]
-		public Miner() : base( "the miner" )
+		public Miner() : base( MinerStringConstants.TITLE_MINER )
 		{
 			Job = JobFragment.miner;
 			Karma = Utility.RandomMinMax( 13, -45 );

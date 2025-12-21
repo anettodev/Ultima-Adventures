@@ -17,7 +17,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MerchantsGuild; } }
 
 		[Constructable]
-		public RealEstateBroker() : base( "the architect" )
+		public RealEstateBroker() : base( RealEstateBrokerStringConstants.TITLE_REAL_ESTATE_BROKER )
 		{
 			Job = JobFragment.realtor;
 			Karma = Utility.RandomMinMax( 13, -45 );

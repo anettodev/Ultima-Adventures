@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.MagesGuild; } }
 
 		[Constructable]
-		public Enchanter() : base( "the enchanter" )
+		public Enchanter() : base( EnchanterStringConstants.TITLE_ENCHANTER )
 		{
 			Job = JobFragment.mage;
 			Karma = Utility.RandomMinMax( 13, -45 );

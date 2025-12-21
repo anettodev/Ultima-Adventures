@@ -19,7 +19,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.ThievesGuild; } }
 
 		[Constructable]
-		public Jester() : base( "the jester" )
+		public Jester() : base( JesterStringConstants.TITLE_JESTER )
 		{
 			Job = JobFragment.actor;
 			Karma = Utility.RandomMinMax( 13, -45 );

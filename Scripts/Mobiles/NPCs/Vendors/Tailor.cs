@@ -20,7 +20,7 @@ namespace Server.Mobiles
 		public override NpcGuild NpcGuild{ get{ return NpcGuild.TailorsGuild; } }
 
 		[Constructable]
-		public Tailor() : base( "the tailor" )
+		public Tailor() : base( TailorStringConstants.TITLE_TAILOR )
 		{
 			Job = JobFragment.tailor;
 			Karma = Utility.RandomMinMax( 13, -45 );
