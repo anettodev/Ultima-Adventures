@@ -1380,59 +1380,6 @@ namespace Server.Mobiles
 		/// <returns>Always returns false to prevent death</returns>
 		public override bool OnBeforeDeath()
 		{
-			private Mobile m_Mobile;
-			private Mobile m_Giver;
-			
-			public SpeechGumpEntry( Mobile from, Mobile giver ) : base( CitizensConstants.CONTEXT_MENU_ID, CitizensConstants.CONTEXT_MENU_RANGE )
-			{
-				m_Mobile = from;
-				m_Giver = giver;
-			}
-
-			public override void OnClick()
-			{
-			    if( !( m_Mobile is PlayerMobile ) )
-				return;
-
-				Citizens citizen = (Citizens)m_Giver;
-
-				PlayerMobile mobile = (PlayerMobile) m_Mobile;
-				{
-					string speak = "";
-
-					if ( m_Giver.Fame == 0 && m_Mobile.Backpack.FindItemByType( typeof ( MuseumBook ) ) != null && !(m_Giver is HouseVisitor) )
-					{
-						speak = MuseumBook.TellRumor( m_Mobile, m_Giver );
-					}
-					if ( speak == "" && m_Giver.Fame == 0 && m_Mobile.Backpack.FindItemByType( typeof ( QuestTome ) ) != null && !(m_Giver is HouseVisitor) )
-					{
-						speak = QuestTome.TellRumor( m_Mobile, m_Giver );
-					}
-
-					if ( speak != "" )
-					{
-						m_Mobile.PlaySound( CitizensConstants.SOUND_SPEECH );
-						m_Giver.Say( speak );
-					}
-					else if ( citizen.CitizenService == 0 )
-					{
-						speak = citizen.CitizenRumor;
-						if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME, m_Mobile.Name); }
-						if ( speak.Contains(CitizensStringConstants.PLACEHOLDER_REGION_NAME) ){ speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_REGION_NAME, m_Mobile.Region.Name); }
-						m_Giver.Say( speak );
-					}
-					else
-					{
-						mobile.CloseGump( typeof( CitizenGump ) );
-						mobile.SendGump(new CitizenGump( m_Giver, m_Mobile ));
-					}
-				}
-            }
-        }
-		///////////////////////////////////////////////////////////////////////////
-
-		public override bool OnBeforeDeath()
-		{
 			Say(CitizensStringConstants.DEATH_SPELL);
 			this.Hits = this.HitsMax;
 			this.FixedParticles( CitizensConstants.EFFECT_PARTICLE, CitizensConstants.EFFECT_SPEED, CitizensConstants.EFFECT_DURATION, CitizensConstants.EFFECT_ITEM_ID, EffectLayer.Waist );
@@ -2058,168 +2005,6 @@ namespace Server.Mobiles
 			BaseMount mount = SelectMountType(m);
 			Server.Mobiles.BaseMount.Ride(mount, m);
 		}
-			{
-				BaseMount mount = new Horse();
-
-
-				int roll = 0;
-
-
-				switch ( Utility.Random( 30 ) )
-				{
-					case 0: roll = Utility.RandomMinMax( 1, 10 ); 
-						switch ( roll )
-						{
-							case 1: mount = new CaveBearRiding();				break;
-							case 2: mount = new DireBear();						break;
-							case 3: mount = new ElderBlackBearRiding();			break;
-							case 4: mount = new ElderBrownBearRiding();			break;
-							case 5: mount = new ElderPolarBearRiding();			break;
-							case 6: mount = new GreatBear();					break;
-							case 7: mount = new GrizzlyBearRiding();			break;
-							case 8: mount = new KodiakBear();					break;
-							case 9: mount = new SabretoothBearRiding();			break;
-							case 10: mount = new PandaRiding();					break;
-						}
-						break;
-					case 1: roll = Utility.RandomMinMax( 1, 4 ); 
-						switch ( roll )
-						{
-							case 1: mount = new BullradonRiding();				break;
-							case 2: mount = new GorceratopsRiding();			break;
-							case 3: mount = new GorgonRiding();					break;
-							case 4: mount = new BasiliskRiding();				break;
-						}
-						break;
-					case 2:
-						roll = Utility.RandomMinMax( 1, 4 );
-						if ( Server.Misc.MorphingTime.CheckNecro( m ) ){ roll = Utility.RandomMinMax( 3, 4 ); }
-						switch ( roll )
-						{
-							case 1: mount = new WhiteWolf();		break;
-							case 2: mount = new WinterWolf();		break;
-							case 3: mount = new BlackWolf();		break;
-							case 4: mount = new DemonDog();			Server.Misc.MorphingTime.TurnToNecromancer( m );	break;
-						}
-						break;
-					case 3: roll = Utility.RandomMinMax( 1, 6 ); 
-						switch ( roll )
-						{
-							case 1: mount = new LionRiding();		break;
-							case 2: mount = new SnowLion();			break;
-							case 3: mount = new TigerRiding();				break;
-							case 4: mount = new WhiteTigerRiding();			break;
-							case 5: mount = new PredatorHellCatRiding();	break;
-							case 6: mount = new SabretoothTigerRiding();	break;
-						}
-						break;
-					case 4:
-						switch ( Utility.RandomMinMax( 1, 4 ) )
-						{
-							case 1: mount = new DesertOstard();		break;
-							case 2: mount = new ForestOstard();		break;
-							case 3: mount = new FrenziedOstard();	break;
-							case 4: mount = new SnowOstard();		break;
-						}
-						break;
-					case 5: roll = Utility.RandomMinMax( 1, 5 ); 
-						switch ( roll )
-						{
-							case 1: mount = new GiantHawk();		break;
-							case 2: mount = new GiantRaven();		break;
-							case 3: mount = new Roc();				break;
-							case 4: mount = new Phoenix();			break;
-							case 5: mount = new AxeBeakRiding();	break;
-						}
-						break;
-					case 6:
-						switch ( Utility.RandomMinMax( 1, 4 ) )
-						{
-							case 1: mount = new SwampDrakeRiding();	break;
-							case 2: mount = new Wyverns();			break;
-							case 3: mount = new Teradactyl();																																break;
-							case 4: mount = new GemDragon();	mount.Hue = 0; mount.ItemID = Utility.RandomMinMax( 595, 596 ); 		break;
-						}
-						break;
-					case 7:
-						switch ( Utility.RandomMinMax( 1, 6 ) )
-						{
-							case 1: mount = new Beetle();					break;
-							case 2: mount = new FireBeetle();				break;
-							case 3: mount = new GlowBeetleRiding();			break;
-							case 4: mount = new PoisonBeetleRiding();		break;
-							case 5: mount = new TigerBeetleRiding();		break;
-							case 6: mount = new WaterBeetleRiding();		break;
-						}
-						break;
-					case 8: roll = Utility.RandomMinMax( 1, 5 ); 
-						switch ( roll )
-						{
-							case 1: mount = new RaptorRiding();			break;
-							case 2: mount = new RavenousRiding();		break;
-							case 3: mount = new RaptorRiding();			mount.Body = 116;	mount.ItemID = 116;	break;
-							case 4: mount = new RaptorRiding();			mount.Body = 117;	mount.ItemID = 117;	break;
-							case 5: mount = new RaptorRiding();			mount.Body = 219;	mount.ItemID = 219;	break;
-						}
-						break;
-					case 9:
-						roll = 1; roll = 0; 
-						roll = Utility.RandomMinMax( roll, 8 );
-						if ( Server.Misc.MorphingTime.CheckNecro( m ) ){ roll = Utility.RandomMinMax( 3, 8 ); }
-						switch ( roll )
-						{
-							case 0: mount = new ZebraRiding();					break;
-							case 1: mount = new Unicorn();						break;
-							case 2: mount = new IceSteed();						break;
-							case 3: mount = new FireSteed();					break;
-							case 4: mount = new Nightmare();					break;
-							case 5: mount = new AncientNightmareRiding();		break;
-							case 6: mount = new DarkUnicornRiding();			Server.Misc.MorphingTime.TurnToNecromancer( m );	break;
-							case 7: mount = new HellSteed();					Server.Misc.MorphingTime.TurnToNecromancer( m );	break;
-							case 8: mount = new Dreadhorn();					break;
-						}
-						break;
-					case 10: roll = Utility.RandomMinMax( 1, 6 ); 
-						switch ( roll )
-						{
-							case 1: mount = new Ramadon();				break;
-							case 2: mount = new RidableLlama();			break;
-							case 3: mount = new GriffonRiding();		break;
-							case 4: mount = new HippogriffRiding();		break;
-							case 5: mount = new Kirin();				break;
-							case 6: mount = new ManticoreRiding();		break;
-						}
-						break;
-				}
-
-				if ( mount is Horse && Utility.RandomMinMax(1,50) == 1  )
-				{
-					mount.Body = 587;
-					mount.ItemID = 587;
-					switch ( Utility.RandomMinMax( 1, 16 ) )
-					{
-						case 1: mount.Hue = MaterialInfo.GetMaterialColor( "dull copper", "classic", 0 );	break;
-						case 2: mount.Hue = MaterialInfo.GetMaterialColor( "shadow iron", "classic", 0 );	break;
-						case 3: mount.Hue = MaterialInfo.GetMaterialColor( "copper", "classic", 0 );		break;
-						case 4: mount.Hue = MaterialInfo.GetMaterialColor( "bronze", "classic", 0 );		break;
-						case 5: mount.Hue = MaterialInfo.GetMaterialColor( "gold", "classic", 0 );			break;
-						case 6: mount.Hue = MaterialInfo.GetMaterialColor( "agapite", "classic", 0 );		break;
-						case 7: mount.Hue = MaterialInfo.GetMaterialColor( "verite", "classic", 0 );		break;
-						case 8: mount.Hue = MaterialInfo.GetMaterialColor( "valorite", "classic", 0 );		break;
-						case 9: mount.Hue = MaterialInfo.GetMaterialColor( "nepturite", "classic", 0 );		break;
-						case 10: mount.Hue = MaterialInfo.GetMaterialColor( "obsidian", "classic", 0 );		break;
-						case 11: mount.Hue = MaterialInfo.GetMaterialColor( "steel", "classic", 0 );		break;
-						case 12: mount.Hue = MaterialInfo.GetMaterialColor( "brass", "classic", 0 );		break;
-						case 13: mount.Hue = MaterialInfo.GetMaterialColor( "mithril", "classic", 0 );		break;
-						case 14: mount.Hue = MaterialInfo.GetMaterialColor( "xormite", "classic", 0 );		break;
-						case 15: mount.Hue = MaterialInfo.GetMaterialColor( "dwarven", "classic", 0 );		break;
-						case 16: mount.Hue = MaterialInfo.GetMaterialColor( "silver", "classic", 0 );		break;
-					}
-				}
-
-				Server.Mobiles.BaseMount.Ride( mount, m );
-			}
-		}
 
 		/// <summary>
 		/// Determines if people should be meeting at a location.
@@ -2233,14 +2018,6 @@ namespace Server.Mobiles
 			return false;
 		}
 
-		#endregion
-
-		#region Serialization
-
-		/// <summary>
-		/// Deserialization constructor
-		/// </summary>
-		/// <param name="serial">The serialization reader</param>
 		#endregion
 
 		#region Serialization
@@ -2330,10 +2107,45 @@ namespace Server.Mobiles
 
 			public override void OnClick()
 			{
-				Mobile from = m_Mobile;
+				if (!(m_Mobile is PlayerMobile))
+					return;
+
 				Citizens citizen = (Citizens)m_Giver;
-				from.CloseGump( typeof( CitizenGump ) );
-				from.SendGump( new CitizenGump( citizen, from ) );
+				PlayerMobile mobile = (PlayerMobile)m_Mobile;
+				string speak = "";
+
+				if (m_Giver.Fame == 0 && m_Mobile.Backpack.FindItemByType(typeof(MuseumBook)) != null && !(m_Giver is HouseVisitor))
+				{
+					speak = MuseumBook.TellRumor(m_Mobile, m_Giver);
+				}
+				if (speak == "" && m_Giver.Fame == 0 && m_Mobile.Backpack.FindItemByType(typeof(QuestTome)) != null && !(m_Giver is HouseVisitor))
+				{
+					speak = QuestTome.TellRumor(m_Mobile, m_Giver);
+				}
+
+				if (speak != "")
+				{
+					m_Mobile.PlaySound(CitizensConstants.SOUND_SPEECH);
+					m_Giver.Say(speak);
+				}
+				else if (citizen.CitizenService == 0)
+				{
+					speak = citizen.CitizenRumor;
+					if (speak.Contains(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME))
+					{
+						speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_PLAYER_NAME, m_Mobile.Name);
+					}
+					if (speak.Contains(CitizensStringConstants.PLACEHOLDER_REGION_NAME))
+					{
+						speak = speak.Replace(CitizensStringConstants.PLACEHOLDER_REGION_NAME, m_Mobile.Region.Name);
+					}
+					m_Giver.Say(speak);
+				}
+				else
+				{
+					mobile.CloseGump(typeof(CitizenGump));
+					mobile.SendGump(new CitizenGump(m_Giver, m_Mobile));
+				}
 			}
 		}
 
