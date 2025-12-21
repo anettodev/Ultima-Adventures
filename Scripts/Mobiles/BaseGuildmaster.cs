@@ -422,7 +422,7 @@ namespace Server.Mobiles
 
 		public BaseGuildmaster( string title ) : base( title )
 		{
-			Title = String.Format( "the {0} {1}", title, Female ? "guildmistress" : "guildmaster" );
+			Title = String.Format( ", {0} - GM", title );
 		}
 
 		public BaseGuildmaster( Serial serial ) : base( serial )
