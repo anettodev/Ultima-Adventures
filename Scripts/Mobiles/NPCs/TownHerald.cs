@@ -150,16 +150,6 @@ namespace Server.Mobiles
 		/// </summary>
 		[Constructable]
 		public TownHerald() : base( )
-
-	public class TownHerald : BasePerson
-	{
-		private DateTime m_NextTalk;
-		public DateTime NextTalk{ get{ return m_NextTalk; } set{ m_NextTalk = value; } }
-
-		public override bool ClickTitle{ get{ return false; } }
-
-		[Constructable]
-		public TownHerald() : base( )
 		{
 			NameHue = TownHeraldConstants.NAME_HUE_DEFAULT;
 
