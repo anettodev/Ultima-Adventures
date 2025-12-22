@@ -167,6 +167,15 @@ namespace Server.Misc
 		/// <summary>Action: had been killed</summary>
 		public const string ACTION_HAD_BEEN_KILLED = "foi morto";
 
+		/// <summary>Action: killed (for lastdeeds)</summary>
+		public const string ACTION_KILLED = "matou";
+
+		/// <summary>Murder message: is wanted for the murder of X people</summary>
+		public const string MURDER_WANTED_MULTIPLE_FORMAT = "está procurado pelo assassinato de {0} pessoas.";
+
+		/// <summary>Murder message: is wanted for murder</summary>
+		public const string MURDER_WANTED_SINGLE = "está procurado por assassinato.";
+
 		#endregion
 
 		#region Trap Action Strings (Portuguese)

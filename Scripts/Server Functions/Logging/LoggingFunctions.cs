@@ -590,10 +590,10 @@ namespace Server.Misc
 
 				if ( sDirection == "enter" )
 				{
-					m.SendMessage(55, "Voc� entrou em " + sRegion + sDifficulty + "."); 
+					m.SendMessage(55, "Voce entrou em " + sRegion + sDifficulty + "."); 
 					//((PlayerMobile)m).lastdeeds = " entered " + sRegion + sDifficulty + "."; 
 				}
-				else { m.SendMessage(55, "Voc� saiu do(a) " + sRegion + "."); }
+				else { m.SendMessage(55, "Voce saiu do(a) " + sRegion + "."); }
 			}
 
 			if ( ( m is PlayerMobile ) && ( m.AccessLevel < AccessLevel.GameMaster ) )
@@ -641,7 +641,7 @@ namespace Server.Misc
 					string Killed = sKiller;
 						if ( mob.Title != "" && mob.Title != null ){ Killed = Killed + " " + mob.Title; }
 					string sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_SLAIN + " " + Killed + "#" + sDateString;
-					((PlayerMobile)m).lastdeeds = "killed " + Killed;
+					((PlayerMobile)m).lastdeeds = LoggingStringConstants.ACTION_KILLED + " " + Killed;
 					LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_BATTLES );
 				//}
 				/*else
@@ -934,8 +934,8 @@ namespace Server.Misc
 			string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
 			if ( m.Title != null ){ sTitle = m.Title; }
 
-			if ( m.Kills > 1){ sEvent = m.Name + " " + sTitle + " is wanted for the murder of " + m.Kills + " people."; }
-			else if ( m.Kills > 0){ sEvent = m.Name + " " + sTitle + " is wanted for murder."; }
+			if ( m.Kills > 1){ sEvent = m.Name + " " + sTitle + " " + string.Format(LoggingStringConstants.MURDER_WANTED_MULTIPLE_FORMAT, m.Kills); }
+			else if ( m.Kills > 0){ sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.MURDER_WANTED_SINGLE; }
 
 			LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_MURDERERS );
 
