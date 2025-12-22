@@ -41,7 +41,7 @@ public class RandomEncounterEngine
     private static ReinitializeTimer    m_ReinitializeTimer;
     private static DeleteTimer          m_DeleteTimer;
     private static EncounterTimer[]     m_EncounterTimers;
-    private static string               m_EncountersFile = "./Scripts/Engines and systems/RandomEncounters/RandomEncounters.xml";
+    private static string               m_EncountersFile = "./Scripts/Engines/RandomEncounters/RandomEncounters.xml";
 	
     //----------------------------------------------------------------------
     public static CultureInfo           Language { get { return m_Language; } }

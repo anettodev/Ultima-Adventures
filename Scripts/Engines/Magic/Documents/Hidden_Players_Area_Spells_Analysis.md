@@ -23,12 +23,12 @@ public static bool ValidIndirectTarget( Mobile from, Mobile to )
 }
 ```
 
-**Location**: `Scripts/Engines and systems/Magic/Base/Calculations/SpellHelper.cs` line 516
+**Location**: `Scripts/Engines/Magic/Base/Calculations/SpellHelper.cs` line 516
 
 ---
 
 ### Chain Lightning (7th Circle)
-**File**: `Scripts/Engines and systems/Magic/Magery 7th/ChainLightning.cs`
+**File**: `Scripts/Engines/Magic/Magery 7th/ChainLightning.cs`
 
 **Status**: ✅ **CAN** damage hidden players
 
@@ -47,7 +47,7 @@ if ( Caster.Region == m.Region && Caster != m )
 ---
 
 ### Meteor Swarm (7th Circle)
-**File**: `Scripts/Engines and systems/Magic/Magery 7th/MeteorSwarm.cs`
+**File**: `Scripts/Engines/Magic/Magery 7th/MeteorSwarm.cs`
 
 **Status**: ✅ **CAN** damage hidden players
 
@@ -66,7 +66,7 @@ if ( Caster.Region == m.Region && Caster != m && Caster.CanBeHarmful( m, true ) 
 ---
 
 ### Earthquake (8th Circle)
-**File**: `Scripts/Engines and systems/Magic/Magery 8th/Earthquake.cs`
+**File**: `Scripts/Engines/Magic/Magery 8th/Earthquake.cs`
 
 **Status**: ❌ **CANNOT** damage hidden players
 
@@ -112,8 +112,8 @@ if ( Caster.Region == m.Region && Caster != m &&
 
 ## Related Files
 
-- **SpellHelper.cs**: `Scripts/Engines and systems/Magic/Base/Calculations/SpellHelper.cs`
-- **Invisibility System**: `Scripts/Engines and systems/Magic/Magery 6th/Invisibility.cs`
+- **SpellHelper.cs**: `Scripts/Engines/Magic/Base/Calculations/SpellHelper.cs`
+- **Invisibility System**: `Scripts/Engines/Magic/Magery 6th/Invisibility.cs`
 - **PlayerMobile Damage**: `Scripts/Mobiles/PlayerMobile.cs` (line 4440 - reveals on damage)
 
 ---

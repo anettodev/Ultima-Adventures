@@ -14,7 +14,7 @@ This document describes the recommended folder structure for the spell system fo
 ## Recommended Folder Structure
 
 ```
-Scripts/Engines and systems/Magic/
+Scripts/Engines/Magic/
 ├── Base/
 │   ├── Core/                          # Core spell classes
 │   │   ├── Spell.cs

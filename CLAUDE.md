@@ -28,12 +28,12 @@ The codebase is split into two main components:
 
 ### Scripts Directory Structure
 
-- **Custom/** - Custom content and testing scripts
-- **Engines and systems/** - 40+ major game systems (see Key Systems below)
-- **Items and addons/** - All item definitions organized by category
+- **Core/** - Server utilities (commands, regions, spawners, task managers)
+- **Engines/** - 40+ major game systems (see Key Systems below)
+- **Experimental/** - Custom content and testing scripts (Legacy subfolder)
+- **Items/** - All item definitions organized by category
 - **Mobiles/** - NPC and creature definitions, AI logic
-- **Server Functions/** - Core server utilities (commands, regions, spawners, task managers)
-- **Ultima Live/** - Dynamic map modification system
+- **UltimaLive/** - Dynamic map modification system
 
 ## Building and Running
 
@@ -81,7 +81,7 @@ The server loads `Scripts.dll` at startup and initializes all systems.
 
 ### Soulbound System
 
-Located in `Scripts/Engines and systems/Soulbound/`
+Located in `Scripts/Engines/Soulbound/`
 - **Phylactery** - Core soulbound item that stores character essences
 - Players can bind items/stats to their phylactery
 - Essence types: `Power`, `Regular`, `Channeling`, `Luck`
@@ -89,7 +89,7 @@ Located in `Scripts/Engines and systems/Soulbound/`
 
 ### Champion Spawns
 
-Located in `Scripts/Engines and systems/Champ Spawns/`
+Located in `Scripts/Engines/Champ Spawns/`
 - Custom champ spawn AI with unique behaviors per spawn type
 - Spawn types: Abyss, Arachnid, Cold Blood, Corrupt, Forest Lord, Glade, etc.
 - Champions: Barracoon, Harrower, Mephitis, Neira, Lord Oaks, etc.
@@ -97,7 +97,7 @@ Located in `Scripts/Engines and systems/Champ Spawns/`
 
 ### Magic Systems
 
-Multiple magic systems in `Scripts/Engines and systems/Magic/`:
+Multiple magic systems in `Scripts/Engines/Magic/`:
 - **Magery** - Standard UO spellcasting (1st-8th circles)
 - **Necromancy** - Death magic
 - **Chivalry** - Paladin abilities
@@ -138,9 +138,9 @@ When creating new content, inherit from these base classes:
 - Server configuration: `Scripts/MyServerSettings.cs`
 - Player mobile: `Scripts/Mobiles/PlayerMobile.cs`
 - Vendor SB (sell/buy) info: Throughout scripts in `SB*.cs` files
-- Loot generation: `Scripts/Server Functions/Misc/Loot.cs`
-- Region definitions: `Scripts/Server Functions/Regions/`
-- Command handlers: `Scripts/Server Functions/Commands/Handlers.cs`
+- Loot generation: `Scripts/Core/Misc/Loot.cs`
+- Region definitions: `Scripts/Core/Regions/`
+- Command handlers: `Scripts/Core/Commands/Handlers.cs`
 
 ## Development Notes
 
@@ -148,5 +148,5 @@ When creating new content, inherit from these base classes:
 - Items are not insured - death has significant consequences
 - Extensive custom content not found in standard ServUO
 - Uses ServUO defines and timers (`NEWTIMERS`, `ServUO`)
-- Many `.bak` files exist throughout - these are backup copies of modified files
 - Unsafe code blocks are enabled for performance-critical operations
+- Scripts are compiled at runtime by `LinuxServer.exe` / `WindowsServer.exe`
