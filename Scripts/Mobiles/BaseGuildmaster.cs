@@ -422,7 +422,120 @@ namespace Server.Mobiles
 
 		public BaseGuildmaster( string title ) : base( title )
 		{
-			Title = String.Format( " {0}", title );
+			Title = FormatTitleWithPronoun( title );
+		}
+
+		/// <summary>
+		/// Formats the title with the appropriate Portuguese pronoun (a/o) based on gender.
+		/// Replaces existing pronouns if present and transforms gender endings.
+		/// </summary>
+		/// <param name="title">The title to format</param>
+		/// <returns>Formatted title with appropriate pronoun and gender ending</returns>
+		private string FormatTitleWithPronoun( string title )
+		{
+			if ( string.IsNullOrEmpty( title ) )
+				return title;
+
+			// Determine the correct pronoun based on gender
+			string pronoun = this.Female ? "a" : "o";
+
+			// Remove existing pronouns if present (case-insensitive)
+			string trimmedTitle = title.TrimStart();
+			if ( trimmedTitle.StartsWith( "a ", System.StringComparison.OrdinalIgnoreCase ) )
+			{
+				trimmedTitle = trimmedTitle.Substring( 2 ).TrimStart();
+			}
+			else if ( trimmedTitle.StartsWith( "o ", System.StringComparison.OrdinalIgnoreCase ) )
+			{
+				trimmedTitle = trimmedTitle.Substring( 2 ).TrimStart();
+			}
+
+			// Transform gender endings if female (transform only the last word)
+			if ( this.Female )
+			{
+				trimmedTitle = TransformTitleToFeminine( trimmedTitle );
+			}
+
+			// Format with the correct pronoun
+			return string.Format( " {0} {1}", pronoun, trimmedTitle );
+		}
+
+		/// <summary>
+		/// Transforms a title to feminine form by transforming the last word.
+		/// Handles multi-word titles by only transforming the final word.
+		/// </summary>
+		/// <param name="title">The title to transform</param>
+		/// <returns>Transformed title with feminine ending on the last word</returns>
+		private string TransformTitleToFeminine( string title )
+		{
+			if ( string.IsNullOrEmpty( title ) )
+				return title;
+
+			// Split into words
+			string[] words = title.Split( new char[] { ' ' }, System.StringSplitOptions.RemoveEmptyEntries );
+			
+			if ( words.Length == 0 )
+				return title;
+
+			// Transform only the last word
+			int lastIndex = words.Length - 1;
+			words[lastIndex] = TransformToFeminine( words[lastIndex] );
+
+			// Rejoin words
+			return string.Join( " ", words );
+		}
+
+		/// <summary>
+		/// Transforms Portuguese masculine word endings to feminine endings.
+		/// Handles common PT-BR gender transformation patterns.
+		/// </summary>
+		/// <param name="word">The word to transform</param>
+		/// <returns>Transformed word with feminine ending, or original if no transformation applies</returns>
+		private string TransformToFeminine( string word )
+		{
+			if ( string.IsNullOrEmpty( word ) )
+				return word;
+
+			// Handle common PT-BR masculine endings (check more specific patterns first)
+			// -eiro → -eira (e.g., "Marinheiro" → "Marinheira", "Cavaleiro" → "Cavaleira")
+			if ( word.EndsWith( "eiro" ) && !word.EndsWith( "eira" ) )
+			{
+				return word.Substring( 0, word.Length - 4 ) + "eira";
+			}
+			// -dor → -dora (e.g., "Domador" → "Domadora", "Meditador" → "Meditadora")
+			else if ( word.EndsWith( "dor" ) && !word.EndsWith( "dora" ) )
+			{
+				return word.Substring( 0, word.Length - 3 ) + "dora";
+			}
+			// Special case: "Brigão" → "Brigona"
+			else if ( word.EndsWith( "Brigão" ) )
+			{
+				return word.Replace( "Brigão", "Brigona" );
+			}
+			// -rão → -ra (e.g., "Ladrão" → "Ladra")
+			else if ( word.EndsWith( "rão" ) && !word.EndsWith( "ra" ) )
+			{
+				return word.Substring( 0, word.Length - 3 ) + "ra";
+			}
+			// -ão → -ã (e.g., "Capitão" → "Capitã")
+			else if ( word.EndsWith( "ão" ) && !word.EndsWith( "ã" ) && !word.EndsWith( "ra" ) )
+			{
+				return word.Substring( 0, word.Length - 2 ) + "ã";
+			}
+			// -ino → -ina (e.g., "Ladino" → "Ladina")
+			else if ( word.EndsWith( "ino" ) && !word.EndsWith( "ina" ) )
+			{
+				return word.Substring( 0, word.Length - 3 ) + "ina";
+			}
+			// -o → -a (e.g., "Mago" → "Maga", "Ladino" → "Ladina")
+			// Skip if already feminine, ends with -ista (gender-neutral), or matches other patterns above
+			else if ( word.EndsWith( "o" ) && !word.EndsWith( "a" ) && !word.EndsWith( "ista" ) && !word.EndsWith( "eiro" ) && !word.EndsWith( "dor" ) && !word.EndsWith( "ão" ) && !word.EndsWith( "rão" ) && !word.EndsWith( "ino" ) )
+			{
+				return word.Substring( 0, word.Length - 1 ) + "a";
+			}
+
+			// No transformation needed (already feminine or gender-neutral)
+			return word;
 		}
 
 		public BaseGuildmaster( Serial serial ) : base( serial )
