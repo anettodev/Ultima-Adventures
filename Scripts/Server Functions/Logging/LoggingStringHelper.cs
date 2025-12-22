@@ -1,7 +1,7 @@
 using Server.Mobiles;
 using Server.Misc;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for building event strings and retrieving player titles.

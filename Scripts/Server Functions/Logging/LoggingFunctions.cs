@@ -166,7 +166,7 @@ namespace Server.Misc
 				if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
 					Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
-				string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+				string sPath = LoggingPathHelper.GetFilePath( sLog );
 				
 				
 				CreateFile( sPath );
@@ -199,7 +199,7 @@ namespace Server.Misc
 			if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
 				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
-			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+			string sPath = LoggingPathHelper.GetFilePath( sLog );
 
 			string sBreak = "";
 
@@ -242,7 +242,7 @@ namespace Server.Misc
 
 			if ( nBlank == 1 )
 			{
-				sLogEntries = sLogEntries + Server.Misc.Helpers.LoggingStringHelper.GetNoEntriesMessage( sLog, m.Name );
+				sLogEntries = sLogEntries + LoggingStringHelper.GetNoEntriesMessage( sLog, m.Name );
 			}
 
 			sLogEntries = sLogEntries + LoggingConstants.HTML_BASE_FONT_END;
@@ -336,7 +336,7 @@ namespace Server.Misc
 				case 6: sLog = LoggingConstants.LOG_TYPE_MISC; break;
 			};
 
-			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+			string sPath = LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -409,7 +409,7 @@ namespace Server.Misc
 
 			myShout = sGreet + " " + myShout + "!";
 			if ( myShout.Contains(" !") ){ myShout = myShout.Replace(" !", "!"); }
-			myShout = Server.Misc.Helpers.LoggingVerbHelper.ApplyLogShoutReplacements( myShout );
+			myShout = LoggingVerbHelper.ApplyLogShoutReplacements( myShout );
 
 			LoggingFunctions.LogServer( "Done - Town Crier" );
 						
@@ -439,7 +439,7 @@ namespace Server.Misc
 			};
 
 
-			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+			string sPath = LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -491,7 +491,7 @@ namespace Server.Misc
 					reader.Dispose();
 			}
 
-			mySpeaking = Server.Misc.Helpers.LoggingVerbHelper.ApplyLogSpeakReplacements( mySpeaking );
+			mySpeaking = LoggingVerbHelper.ApplyLogSpeakReplacements( mySpeaking );
 
 			LoggingFunctions.LogServer( "Done - Tavern Chatter" );
 						
@@ -508,7 +508,7 @@ namespace Server.Misc
 				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
 			string sLog = LoggingConstants.LOG_TYPE_QUESTS;
-			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+			string sPath = LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -630,11 +630,11 @@ namespace Server.Misc
 
 			if ( m is PlayerMobile && mob != null )
 			{
-				string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
+				string sTitle = LoggingStringHelper.GetPlayerTitle( m );
 
 				PlayerMobile pm = (PlayerMobile)m;
 
-				string sKiller = Server.Misc.Helpers.LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
+				string sKiller = LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
 
 				//if ( pm.PublicMyRunUO == true )
 				//{
@@ -815,19 +815,19 @@ namespace Server.Misc
 		public static string LogAccess( Mobile m, string sAccess )
 		{
 			PlayerMobile pm = (PlayerMobile)m;
-			string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
+			string sTitle = LoggingStringHelper.GetPlayerTitle( m );
 
             if ( m.AccessLevel < AccessLevel.GameMaster )
             {
 				string sEvent;
 				if ( sAccess == "login" )
 				{
-					sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_ENTERED_REALM );
+					sEvent = LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_ENTERED_REALM );
 					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_ENTERED_REALM_FORMAT, m.Name, sTitle);
 				}
 				else
 				{
-					sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_LEFT_REALM );
+					sEvent = LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_LEFT_REALM );
 					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_LEFT_REALM_FORMAT, m.Name, sTitle);
 				}
 
@@ -853,7 +853,7 @@ namespace Server.Misc
 				string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
 				if ( m.Title != null ){ sTitle = m.Title; }
 
-				string sKiller = Server.Misc.Helpers.LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
+				string sKiller = LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
 
 				///////// PLAYER DIED SO DO SINGLE FILES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				if ( m.AccessLevel < AccessLevel.GameMaster )
@@ -958,7 +958,7 @@ namespace Server.Misc
 			////if (pm.PublicMyRunUO == true)
 			//{
 				string action = string.Format(LoggingStringConstants.ACTION_SPENT_LOTTERY_FORMAT, purchase);
-				string sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventString( m, action );
+				string sEvent = LoggingStringHelper.BuildEventString( m, action );
 				((PlayerMobile)m).lastdeeds =  " spent " + purchase + " gold on Lottery tickets!";
 				LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_MISC );
 			//}
@@ -1178,7 +1178,7 @@ namespace Server.Misc
 				if ( m is PlayerMobile )
 				{
 					string sDateString = GetPlayerInfo.GetTodaysDate();
-					string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
+					string sTitle = LoggingStringHelper.GetPlayerTitle( m );
 
 					string verb = LoggingStringConstants.SLAYING_ACTION_DESTROYED;
 					switch( Utility.Random( LoggingConstants.SLAYING_VERB_COUNT ) )
@@ -1573,7 +1573,7 @@ namespace Server.Misc
 
 		public static string LogClear( string sLog )
 		{
-			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
+			string sPath = LoggingPathHelper.GetFilePath( sLog );
 
 			DeleteFile( sPath );
 

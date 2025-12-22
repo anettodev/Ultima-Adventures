@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Server.Misc;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for retrieving log file paths based on log type.

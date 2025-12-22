@@ -1,6 +1,6 @@
 using Server.Misc;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for verb replacement logic used in LogShout and LogSpeak methods.
