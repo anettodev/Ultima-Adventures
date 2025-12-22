@@ -80,7 +80,8 @@ namespace Server.Mobiles
 						base.OnMovement( m, oldLocation );
 					}
 
-				NextTalk = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( TownHeraldConstants.TALK_DELAY_MIN, TownHeraldConstants.TALK_DELAY_MAX ) );
+					NextTalk = DateTime.UtcNow + TimeSpan.FromSeconds( Utility.RandomMinMax( TownHeraldConstants.TALK_DELAY_MIN, TownHeraldConstants.TALK_DELAY_MAX ) );
+				}
 			}
 		}
 
