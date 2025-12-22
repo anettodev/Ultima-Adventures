@@ -64,7 +64,7 @@ The server loads `Scripts.dll` at startup and initializes all systems.
 
 ### AI and Combat
 
-- **BaseAI** (`Scripts/Mobiles/AI/BaseAI.cs`) - Foundation for all creature AI
+- **BaseAI** (`Scripts/Engines/AI/BaseAI.cs`) - Foundation for all creature AI
   - AI types: `AI_Melee`, `AI_Mage`, `AI_Archer`, `AI_Healer`, `AI_Berserk`, etc.
   - Action types: `Wander`, `Combat`, `Guard`, `Flee`, `Backoff`, `Interact`
 - **IntelligentAction** (`Scripts/Mobiles/IntelligentAction.cs`) - Enemy detection and targeting logic
@@ -138,7 +138,7 @@ When creating new content, inherit from these base classes:
 - Server configuration: `Scripts/MyServerSettings.cs`
 - Player mobile: `Scripts/Mobiles/PlayerMobile.cs`
 - Vendor SB (sell/buy) info: Throughout scripts in `SB*.cs` files
-- Loot generation: `Scripts/Core/Misc/Loot.cs`
+- Loot generation: `Scripts/Core/Utilities/Loot.cs`
 - Region definitions: `Scripts/Core/Regions/`
 - Command handlers: `Scripts/Core/Commands/Handlers.cs`
 

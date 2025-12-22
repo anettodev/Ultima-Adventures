@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(while read dir)",
+      "Bash(do echo \"$dir\")"
     ]
   }
 }
