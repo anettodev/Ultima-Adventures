@@ -3,7 +3,6 @@ using Server;
 using System.Collections;
 using System.Collections.Generic;
 using Server.Misc;
-using Server.Misc.Helpers;
 using Server.Items;
 using Server.Network;
 using Server.Commands;
@@ -167,7 +166,7 @@ namespace Server.Misc
 				if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
 					Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
-				string sPath = LoggingPathHelper.GetFilePath( sLog );
+				string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 				
 				
 				CreateFile( sPath );
@@ -200,7 +199,7 @@ namespace Server.Misc
 			if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
 				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
+			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 
 			string sBreak = "";
 
@@ -243,7 +242,7 @@ namespace Server.Misc
 
 			if ( nBlank == 1 )
 			{
-				sLogEntries = sLogEntries + LoggingStringHelper.GetNoEntriesMessage( sLog, m.Name );
+				sLogEntries = sLogEntries + Server.Misc.Helpers.LoggingStringHelper.GetNoEntriesMessage( sLog, m.Name );
 			}
 
 			sLogEntries = sLogEntries + LoggingConstants.HTML_BASE_FONT_END;
@@ -317,14 +316,6 @@ namespace Server.Misc
 			return part;
 		}
 
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		public static int TotalLines(string filePath)
-		{
-			int i = 0;
-			using (StreamReader r = new StreamReader(filePath)){ while (r.ReadLine() != null) { i++; } }
-			return i;
-		}
 
 		public static string LogShout()
 		{
@@ -345,7 +336,7 @@ namespace Server.Misc
 				case 6: sLog = LoggingConstants.LOG_TYPE_MISC; break;
 			};
 
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
+			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -418,7 +409,7 @@ namespace Server.Misc
 
 			myShout = sGreet + " " + myShout + "!";
 			if ( myShout.Contains(" !") ){ myShout = myShout.Replace(" !", "!"); }
-			myShout = LoggingVerbHelper.ApplyLogShoutReplacements( myShout );
+			myShout = Server.Misc.Helpers.LoggingVerbHelper.ApplyLogShoutReplacements( myShout );
 
 			LoggingFunctions.LogServer( "Done - Town Crier" );
 						
@@ -448,7 +439,7 @@ namespace Server.Misc
 			};
 
 
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
+			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -500,7 +491,7 @@ namespace Server.Misc
 					reader.Dispose();
 			}
 
-			mySpeaking = LoggingVerbHelper.ApplyLogSpeakReplacements( mySpeaking );
+			mySpeaking = Server.Misc.Helpers.LoggingVerbHelper.ApplyLogSpeakReplacements( mySpeaking );
 
 			LoggingFunctions.LogServer( "Done - Tavern Chatter" );
 						
@@ -517,7 +508,7 @@ namespace Server.Misc
 				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
 
 			string sLog = LoggingConstants.LOG_TYPE_QUESTS;
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
+			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 
 			CreateFile( sPath );
 
@@ -575,261 +566,6 @@ namespace Server.Misc
 		#endregion
 
 		#region Announcement Methods
-
-		/// <summary>
-		/// Generates a town crier announcement by reading a random event from log files.
-		/// </summary>
-		/// <returns>A formatted announcement string with greeting and event</returns>
-		public static string LogShout()
-		{
-			LoggingFunctions.LogServer( "Start - Town Crier" );
-
-			if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
-				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
-
-
-			string sLog = LoggingConstants.LOG_TYPE_MURDERERS;
-			switch ( Utility.Random( LoggingConstants.LOG_SHOUT_TYPE_COUNT ))
-			{
-				case 0: sLog = LoggingConstants.LOG_TYPE_MURDERERS; break;
-				case 1: sLog = LoggingConstants.LOG_TYPE_DEATHS; break;
-				case 2: sLog = LoggingConstants.LOG_TYPE_BATTLES; break;
-				case 3: sLog = LoggingConstants.LOG_TYPE_JOURNIES; break;
-				case 4: sLog = LoggingConstants.LOG_TYPE_ADVENTURES; break;
-				case 5: sLog = LoggingConstants.LOG_TYPE_QUESTS; break;
-				case 6: sLog = LoggingConstants.LOG_TYPE_MISC; break;
-			};
-
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
-
-			CreateFile( sPath );
-
-			int lineCount = 1;
-			string sGreet = LoggingStringConstants.MSG_GREET_0;
-				switch ( Utility.Random( LoggingConstants.GREETING_VARIANT_COUNT ))
-				{
-					case 0: sGreet = LoggingStringConstants.MSG_GREET_0; break;
-					case 1: sGreet = LoggingStringConstants.MSG_GREET_1; break;
-					case 2: sGreet = LoggingStringConstants.MSG_GREET_2; break;
-					case 3: sGreet = LoggingStringConstants.MSG_GREET_3; break;
-				};
-
-			string myShout = "";
-			if ( sLog == LoggingConstants.LOG_TYPE_MURDERERS ){ myShout = LoggingStringConstants.MSG_NO_MURDERS; }
-			else
-			{
-				switch ( Utility.Random( LoggingConstants.NO_NEWS_MESSAGE_COUNT ))
-				{
-					case 0: myShout = LoggingStringConstants.MSG_NO_NEWS_0; break;
-					case 1: myShout = LoggingStringConstants.MSG_NO_NEWS_1; break;
-					case 2: myShout = LoggingStringConstants.MSG_NO_NEWS_2; break;
-					case 3: myShout = LoggingStringConstants.MSG_NO_NEWS_3; break;
-				};
-			}
-
-			try
-			{
-				lineCount = TotalLines( sPath );
-			}
-			catch(Exception)
-			{
-			}
-
-			lineCount = Utility.RandomMinMax( 1, lineCount );
-			string readLine = "";
-			StreamReader reader = null;
-			int nWhichLine = 0;
-			int nLine = 1;
-			try
-			{
-				using (reader = new StreamReader( sPath ))
-				{
-					string line;
-
-					while ((line = reader.ReadLine()) != null)
-					{
-						nWhichLine = nWhichLine + 1;
-						if ( nWhichLine == lineCount )
-						{
-							readLine = line;
-							string[] shoutOut = readLine.Split('#');
-							foreach (string shoutOuts in shoutOut)
-							{
-								if ( nLine == 1 ){ nLine = 2; readLine = shoutOuts; }
-							}
-						}
-					}
-					if ( readLine != "" ){ myShout = readLine; }
-				}
-			}
-			catch(Exception)
-			{
-			}
-			finally
-			{
-				if (reader != null)
-					reader.Dispose();
-			}
-
-			myShout = sGreet + " " + myShout + "!";
-			if ( myShout.Contains(" !") ){ myShout = myShout.Replace(" !", "!"); }
-			myShout = LoggingVerbHelper.ApplyLogShoutReplacements( myShout );
-
-			LoggingFunctions.LogServer( "Done - Town Crier" );
-						
-			return myShout;
-		}
-
-		/// <summary>
-		/// Generates tavern chatter by reading a random event from log files.
-		/// </summary>
-		/// <returns>A formatted chatter string with verb replacements</returns>
-		public static string LogSpeak()
-		{
-			LoggingFunctions.LogServer( "Start - Tavern Chatter" );
-
-			if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
-				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
-
-
-			string sLog = LoggingConstants.LOG_TYPE_MURDERERS;
-			switch ( Utility.Random( LoggingConstants.LOG_SPEAK_TYPE_COUNT ))
-			{
-				case 0: sLog = LoggingConstants.LOG_TYPE_DEATHS; break;
-				case 1: sLog = LoggingConstants.LOG_TYPE_BATTLES; break;
-				case 2: sLog = LoggingConstants.LOG_TYPE_JOURNIES; break;
-				case 3: sLog = LoggingConstants.LOG_TYPE_BATTLES; break;
-				case 4: sLog = LoggingConstants.LOG_TYPE_JOURNIES; break;
-			};
-
-
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
-
-			CreateFile( sPath );
-
-			int lineCount = 1;
-
-			string mySpeaking = LoggingStringConstants.MSG_DEFAULT_NOTHING_INTEREST;
-
-			try
-			{
-				lineCount = TotalLines( sPath );
-			}
-			catch(Exception)
-			{
-			}
-
-			lineCount = Utility.RandomMinMax( 1, lineCount );
-			string readLine = "";
-			StreamReader reader = null;
-			int nWhichLine = 0;
-			int nLine = 1;
-			try
-			{
-				using (reader = new StreamReader( sPath ))
-				{
-					string line;
-
-					while ((line = reader.ReadLine()) != null)
-					{
-						nWhichLine = nWhichLine + 1;
-						if ( nWhichLine == lineCount )
-						{
-							readLine = line;
-							string[] shoutOut = readLine.Split('#');
-							foreach (string shoutOuts in shoutOut)
-							{
-								if ( nLine == 1 ){ nLine = 2; readLine = shoutOuts; }
-							}
-						}
-					}
-					if ( readLine != "" ){ mySpeaking = readLine; }
-				}
-			}
-			catch(Exception)
-			{
-			}
-			finally
-			{
-				if (reader != null)
-					reader.Dispose();
-			}
-
-			mySpeaking = LoggingVerbHelper.ApplyLogSpeakReplacements( mySpeaking );
-
-			LoggingFunctions.LogServer( "Done - Tavern Chatter" );
-						
-			return mySpeaking;
-		}
-
-		/// <summary>
-		/// Generates quest-related chatter by reading from quest log file.
-		/// </summary>
-		/// <returns>A quest-related message string</returns>
-		public static string LogSpeakQuest()
-		{
-			if ( !Directory.Exists( LoggingConstants.INFO_DIRECTORY ) )
-				Directory.CreateDirectory( LoggingConstants.INFO_DIRECTORY );
-
-			string sLog = LoggingConstants.LOG_TYPE_QUESTS;
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
-
-			CreateFile( sPath );
-
-			int lineCount = 1;
-
-			string mySpeaking = LoggingStringConstants.MSG_DEFAULT_NOTHING_INTEREST;
-
-			try
-			{
-				lineCount = TotalLines( sPath );
-			}
-			catch(Exception)
-			{
-			}
-
-			lineCount = Utility.RandomMinMax( 1, lineCount );
-			string readLine = "";
-			StreamReader reader = null;
-			int nWhichLine = 0;
-			int nLine = 1;
-			try
-			{
-				using (reader = new StreamReader( sPath ))
-				{
-					string line;
-
-					while ((line = reader.ReadLine()) != null)
-					{
-						nWhichLine = nWhichLine + 1;
-						if ( nWhichLine == lineCount )
-						{
-							readLine = line;
-							string[] shoutOut = readLine.Split('#');
-							foreach (string shoutOuts in shoutOut)
-							{
-								if ( nLine == 1 ){ nLine = 2; readLine = shoutOuts; }
-							}
-						}
-					}
-					if ( readLine != "" ){ mySpeaking = readLine; }
-				}
-			}
-			catch(Exception)
-			{
-			}
-			finally
-			{
-				if (reader != null)
-					reader.Dispose();
-			}
-						
-			return mySpeaking;
-		}
-
-		#endregion
-
-		#region Event Logging Methods
 
 		/// <summary>
 		/// Logs when a player enters or leaves a region.
@@ -894,11 +630,11 @@ namespace Server.Misc
 
 			if ( m is PlayerMobile && mob != null )
 			{
-				string sTitle = LoggingStringHelper.GetPlayerTitle( m );
+				string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
 
 				PlayerMobile pm = (PlayerMobile)m;
 
-				string sKiller = LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
+				string sKiller = Server.Misc.Helpers.LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
 
 				//if ( pm.PublicMyRunUO == true )
 				//{
@@ -1079,19 +815,19 @@ namespace Server.Misc
 		public static string LogAccess( Mobile m, string sAccess )
 		{
 			PlayerMobile pm = (PlayerMobile)m;
-			string sTitle = LoggingStringHelper.GetPlayerTitle( m );
+			string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
 
             if ( m.AccessLevel < AccessLevel.GameMaster )
             {
 				string sEvent;
 				if ( sAccess == "login" )
 				{
-					sEvent = LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_ENTERED_REALM );
+					sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_ENTERED_REALM );
 					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_ENTERED_REALM_FORMAT, m.Name, sTitle);
 				}
 				else
 				{
-					sEvent = LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_LEFT_REALM );
+					sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventStringWithTitle( m, sTitle, LoggingStringConstants.ACTION_HAD_LEFT_REALM );
 					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_LEFT_REALM_FORMAT, m.Name, sTitle);
 				}
 
@@ -1117,7 +853,7 @@ namespace Server.Misc
 				string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
 				if ( m.Title != null ){ sTitle = m.Title; }
 
-				string sKiller = LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
+				string sKiller = Server.Misc.Helpers.LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
 
 				///////// PLAYER DIED SO DO SINGLE FILES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				if ( m.AccessLevel < AccessLevel.GameMaster )
@@ -1222,7 +958,7 @@ namespace Server.Misc
 			////if (pm.PublicMyRunUO == true)
 			//{
 				string action = string.Format(LoggingStringConstants.ACTION_SPENT_LOTTERY_FORMAT, purchase);
-				string sEvent = LoggingStringHelper.BuildEventString( m, action );
+				string sEvent = Server.Misc.Helpers.LoggingStringHelper.BuildEventString( m, action );
 				((PlayerMobile)m).lastdeeds =  " spent " + purchase + " gold on Lottery tickets!";
 				LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_MISC );
 			//}
@@ -1422,29 +1158,11 @@ namespace Server.Misc
 			return null;
 		}
 
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		#endregion
 
-		public static string LogKillTile( Mobile m, string sTrap )
-		{
-			string sDateString = GetPlayerInfo.GetTodaysDate();
-			string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-			if ( m.Title != null ){ sTitle = m.Title; }
+		#region Quest Logging Methods
 
-			PlayerMobile pm = (PlayerMobile)m;
-			//if (pm.PublicMyRunUO == true)
-			{
-				string sEvent = m.Name + " " + sTitle + " made a fatal mistake from " + sTrap + "#" + sDateString;
-				((PlayerMobile)m).lastdeeds =  " made a fatal mistake from " + sTrap;
-				LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_JOURNIES );
-			}
-
-			return null;
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-		public static string LogLoot( Mobile m, string sBox, string sType )
+		public static string LogSlayingLord( Mobile m, string creature )
 		{
 			if (Utility.RandomDouble() < LoggingConstants.LOOT_LOG_PROBABILITY) // Final - too many of these were being generated
 			{
@@ -1905,154 +1623,9 @@ namespace Server.Misc
 			return null;
 		}
 
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		public static String GetTimestamp(DateTime value)
-		{
-			return value.ToString("yyyy-MM-dd HH:mm:ss");
-        }
-
-		public static string LogServer ( string sText )
-		{
-			//String timeStamp = GetTimestamp(DateTime.UtcNow);
-
-			//string sEvent = sText + "#" + timeStamp;
-			//LoggingFunctions.LogEvent( sEvent, "Logging Server" );
-
-			return null;
-		}
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		public static string LogAccess( Mobile m, string sAccess )
-		{
-			PlayerMobile pm = (PlayerMobile)m;
-			string sDateString = GetPlayerInfo.GetTodaysDate();
-			string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-			if ( m.Title != null ){ sTitle = m.Title; }
-
-            if ( m.AccessLevel < AccessLevel.GameMaster )
-            {
-				string sEvent;
-				if ( sAccess == "login" )
-				{
-					sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_ENTERED_REALM + "#" + sDateString;
-					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_ENTERED_REALM_FORMAT, m.Name, sTitle);
-				}
-				else
-				{
-					sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_LEFT_REALM + "#" + sDateString;
-					World.Broadcast(0x35, true, LoggingStringConstants.MSG_BROADCAST_LEFT_REALM_FORMAT, m.Name, sTitle);
-				}
-
-
-				LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_ADVENTURES );
-            }
-
-			return null;
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		public static string LogDeaths( Mobile m, Mobile mob )
-		{
-			if ( m != null && m is PlayerMobile && mob != null )
-			{
-				PlayerMobile pm = (PlayerMobile)m;
-				string sDateString = GetPlayerInfo.GetTodaysDate();
-				string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-				if ( m.Title != null ){ sTitle = m.Title; }
-
-				string sKiller = LoggingStringHelper.ExtractNameWithoutBrackets( mob.Name );
-
-				///////// PLAYER DIED SO DO SINGLE FILES //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-				if ( m.AccessLevel < AccessLevel.GameMaster )
-				{
-					string sEvent = "";
-
-					//if ( pm.PublicMyRunUO == true )
-					//{
-						if ( ( mob == m ) && ( mob != null ) )
-						{
-							sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_KILLED_SELVES + "#" + sDateString;
-						}
-						else if ( ( mob != null ) && ( mob is PlayerMobile ) )
-						{
-							string kTitle = " the " + GetPlayerInfo.GetSkillTitle( mob );
-							if ( mob.Title != null ){ kTitle = " " + mob.Title; }
-							sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_BEEN_KILLED_BY + " " + sKiller + kTitle + "#" + sDateString;
-						}
-						else if ( mob != null )
-						{
-							string kTitle = "";
-							if ( mob.Title != null ){ kTitle = " " + mob.Title; }
-							sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_BEEN_KILLED_BY + " " + sKiller + kTitle + "#" + sDateString;
-						}
-						else
-						{
-							sEvent = m.Name + " " + sTitle + " " + LoggingStringConstants.ACTION_HAD_BEEN_KILLED + "#" + sDateString;
-						}
-					/*}
-					else
-					{
-						string privateEnemy = "an opponent";
-						switch ( Utility.Random( 6 ) )
-						{
-							case 0: privateEnemy = "an opponent"; break;
-							case 1: privateEnemy = "an enemy"; break;
-							case 2: privateEnemy = "another"; break;
-							case 3: privateEnemy = "an adversary"; break;
-							case 4: privateEnemy = "a foe"; break;
-							case 5: privateEnemy = "a rival"; break;
-						}
-
-						if ( ( mob == m ) && ( mob != null ) )
-						{
-							sEvent = m.Name + " " + sTitle + " had killed themselves#" + sDateString;
-						}
-						else if ( ( mob != null ) && ( mob is PlayerMobile ) )
-						{
-							string kTitle = "the " + GetPlayerInfo.GetSkillTitle( mob );
-							if ( mob.Title != null ){ kTitle = mob.Title; }
-							sEvent = m.Name + " " + sTitle + " had been killed by " + sKiller + " " + kTitle + "#" + sDateString;
-						}
-						else if ( mob != null )
-						{
-							sEvent = m.Name + " " + sTitle + " had been killed by " + privateEnemy + "#" + sDateString;
-						}
-						else
-						{
-							sEvent = m.Name + " " + sTitle + " had been killed#" + sDateString;
-						}
-					}*/
-					LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_DEATHS );
-				}
-			}
-			return null;
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		public static string LogKillers( Mobile m, int nKills )
-		{
-			string sEvent = "";
-			string sDateString = GetPlayerInfo.GetTodaysDate();
-			string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-			if ( m.Title != null ){ sTitle = m.Title; }
-
-			if ( m.Kills > 1){ sEvent = m.Name + " " + sTitle + " is wanted for the murder of " + m.Kills + " people."; }
-			else if ( m.Kills > 0){ sEvent = m.Name + " " + sTitle + " is wanted for murder."; }
-
-			LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_MURDERERS );
-
-			return null;
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 		public static string LogClear( string sLog )
 		{
-			string sPath = LoggingPathHelper.GetFilePath( sLog );
+			string sPath = Server.Misc.Helpers.LoggingPathHelper.GetFilePath( sLog );
 
 			DeleteFile( sPath );
 
