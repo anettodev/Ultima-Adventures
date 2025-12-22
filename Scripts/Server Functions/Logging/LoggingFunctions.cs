@@ -1162,63 +1162,12 @@ namespace Server.Misc
 
 		#region Quest Logging Methods
 
-		public static string LogSlayingLord( Mobile m, string creature )
-		{
-			if (Utility.RandomDouble() < LoggingConstants.LOOT_LOG_PROBABILITY) // Final - too many of these were being generated
-			{
-				string sDateString = GetPlayerInfo.GetTodaysDate();
-				string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-				if ( m.Title != null ){ sTitle = m.Title; }
-
-				string sLoot = LoggingStringConstants.LOOT_ACTION_SEARCHED;
-				switch( Utility.Random( LoggingConstants.LOOT_VERB_COUNT ) )
-				{
-					case 0: sLoot = LoggingStringConstants.LOOT_ACTION_SEARCHED;	break;
-					case 1: sLoot = LoggingStringConstants.LOOT_ACTION_FOUND;	break;
-					case 2: sLoot = LoggingStringConstants.LOOT_ACTION_DISCOVERED;	break;
-					case 3: sLoot = LoggingStringConstants.LOOT_ACTION_LOOKED;	break;
-					case 4: sLoot = LoggingStringConstants.LOOT_ACTION_STUMBLED;	break;
-					case 5: sLoot = LoggingStringConstants.LOOT_ACTION_DUG;	break;
-					case 6: sLoot = LoggingStringConstants.LOOT_ACTION_OPENED;	break;
-				}
-				if ( sType == "boat" )
-				{
-					switch( Utility.Random( LoggingConstants.BOAT_LOOT_VERB_COUNT ) )
-					{
-						case 0: sLoot = LoggingStringConstants.LOOT_ACTION_SEARCHED;	break;
-						case 1: sLoot = LoggingStringConstants.LOOT_ACTION_FOUND;	break;
-						case 2: sLoot = LoggingStringConstants.LOOT_ACTION_DISCOVERED;	break;
-						case 3: sLoot = LoggingStringConstants.LOOT_ACTION_LOOKED;	break;
-						case 4: sLoot = LoggingStringConstants.LOOT_ACTION_SAILED;	break;
-					}
-					if ( sBox.Contains("Abandoned") || sBox.Contains("Adrift") ){ sLoot = sLoot + "n"; }
-				}
-				else if ( sType == "corpse" )
-				{
-					switch( Utility.Random( LoggingConstants.CORPSE_LOOT_VERB_COUNT ) )
-					{
-						case 0: sLoot = LoggingStringConstants.LOOT_ACTION_SEARCHED;	break;
-						case 1: sLoot = LoggingStringConstants.LOOT_ACTION_FOUND;	break;
-						case 2: sLoot = LoggingStringConstants.LOOT_ACTION_DISCOVERED;	break;
-						case 3: sLoot = LoggingStringConstants.LOOT_ACTION_LOOKED;	break;
-						case 4: sLoot = LoggingStringConstants.LOOT_ACTION_SAILED;	break;
-					}
-					if ( sBox.Contains("Abandoned") || sBox.Contains("Adrift") ){ sLoot = sLoot + "n"; }
-				}
-
-				PlayerMobile pm = (PlayerMobile)m;
-				//if (pm.PublicMyRunUO == true)
-				{
-					string sEvent = m.Name + " " + sTitle + " " + sLoot + " " + sBox + "#" + sDateString;
-					((PlayerMobile)m).lastdeeds =  " " + sLoot + " " + sBox;
-					LoggingFunctions.LogEvent( sEvent, LoggingConstants.LOG_TYPE_ADVENTURES );
-				}
-			}
-			return null;
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+		/// <summary>
+		/// Logs when a player slays a lord-level creature.
+		/// </summary>
+		/// <param name="m">The player who did the slaying</param>
+		/// <param name="creature">The creature name</param>
+		/// <returns>Always returns null</returns>
 		public static string LogSlayingLord( Mobile m, string creature )
 		{
 			if ( m != null )
@@ -1229,8 +1178,7 @@ namespace Server.Misc
 				if ( m is PlayerMobile )
 				{
 					string sDateString = GetPlayerInfo.GetTodaysDate();
-					string sTitle = "the " + GetPlayerInfo.GetSkillTitle( m );
-					if ( m.Title != null ){ sTitle = m.Title; }
+					string sTitle = Server.Misc.Helpers.LoggingStringHelper.GetPlayerTitle( m );
 
 					string verb = LoggingStringConstants.SLAYING_ACTION_DESTROYED;
 					switch( Utility.Random( LoggingConstants.SLAYING_VERB_COUNT ) )
