@@ -1,1 +1,309 @@
-using System;using System.Collections;using Server;using Server.Items;using Server.Network;using Server.Prompts;using System.Net;using Server.Accounting;using Server.Mobiles;using Server.Commands;using Server.Regions;using Server.Spells;using Server.Gumps;using Server.Targeting;namespace Server.Items{	[Flipable(0x1E5E, 0x1E5F)]	public class AdvertiserVendor : Item	{		[Constructable]		public AdvertiserVendor( ) : base( 0x1E5E )		{			Weight = 1.0;			Name = "Quadro de Anúncios - Comércio";			Hue = 0xB9A;		}		public override void GetProperties( ObjectPropertyList list )		{			base.GetProperties( list );			list.Add( "Lista de Vendedores" );		}		public override void OnDoubleClick( Mobile e )		{			ArrayList list = new ArrayList();			foreach ( Mobile mob in World.Mobiles.Values )			{				if ( mob is PlayerVendor )				{					PlayerVendor pv = mob as PlayerVendor;					list.Add( pv ); 									}			}			e.SendGump( new FindPlayerVendorsGump( e, list, 1 ) );		}		public class FindPlayerVendorsGump : Gump		{			private const int GreenHue = 0x40;			private const int RedHue = 0x20;			private ArrayList m_List;			private int m_DefaultIndex;			private int m_Page;			private Mobile m_From;			public void AddBlackAlpha( int x, int y, int width, int height )			{				AddImageTiled( x, y, width, height, 2624 );				AddAlphaRegion( x, y, width, height );			}			public FindPlayerVendorsGump( Mobile from, ArrayList list, int page ) : base( 50, 40 )			{				from.CloseGump( typeof( FindPlayerVendorsGump ) );				int pvs = 0;				m_Page = page;				m_From = from;				int pageCount = 0;				m_List = list;				AddPage( 0 );				AddBackground( 0, 0, 645, 325, 3500 );				AddBlackAlpha( 20, 20, 604, 277 );				if ( m_List == null )				{					return;				}				else				{					pvs = list.Count;					if ( list.Count % 12 == 0 )					{						pageCount = (list.Count / 12);					}					else					{						pageCount = (list.Count / 12) + 1;					}				}				AddLabelCropped( 32, 20, 100, 20, 1152, "Nome da Loja" );				AddLabelCropped( 250, 20, 120, 20, 1152, "Dono" );				AddLabelCropped( 415, 20, 120, 20, 1152, "Localização" );				AddLabel( 27, 298, 32, String.Format( "" + Server.Misc.ServerList.ServerName + "  -  Comerciantes                 Existem {0} comerciantes neste mundo.", pvs ));				if ( page > 1 )					AddButton( 573, 22, 0x15E3, 0x15E7, 1, GumpButtonType.Reply, 0 );				else					AddImage( 573, 22, 0x25EA );				if ( pageCount > page )					AddButton( 590, 22, 0x15E1, 0x15E5, 2, GumpButtonType.Reply, 0 );				else					AddImage( 590, 22, 0x25E6 );				if ( m_List.Count == 0 )					AddLabel( 180, 115, 1152, ".....::: Não há comerciantes neste mundo. :::.....");				if ( page == pageCount )				{					for ( int i = (page * 12) -12; i < pvs; ++i )						AddDetails( i );				}				else				{					for ( int i = (page * 12) -12; i < page * 12; ++ i )						AddDetails( i );				}			}			private void AddDetails( int index )			{				try{					if ( index < m_List.Count )					{						int xSet = 1;						int ySet = 1;						Map mSet = Map.Trammel;						int btn;						int row;						btn = (index) + 101;						row = index % 12;						bool online;						PlayerVendor pv = m_List[index] as PlayerVendor;						Account a = pv.Owner.Account as Account;						string vMap = "Sosaria";						if ( ( pv.Map == Map.Felucca ) && ( pv.X > 5157 ) && ( pv.Y > 1095 ) && ( pv.X < 5296 ) && ( pv.Y < 1401 ) ) { vMap = "Ranger Outpost"; xSet = 1241; ySet = 1888; mSet = Map.Felucca; }						else if ( ( pv.Map == Map.Felucca ) && ( pv.X > 6445 ) && ( pv.Y > 3054 ) && ( pv.X < 7007 ) && ( pv.Y < 3478 ) ) { vMap = "Ravendark Woods"; xSet = 466; ySet = 3801; mSet = Map.Felucca; }						else if ( pv.Map == Map.Felucca ) { vMap = "Lodoria"; xSet = pv.X; ySet = pv.Y; mSet = Map.Felucca; }						else if ( ( pv.Map == Map.Trammel ) && ( pv.X > 5218 ) && ( pv.Y > 1036 ) && ( pv.X < 5414 ) && ( pv.Y < 1304 ) ) { vMap = "Umbra Cave"; xSet = 3370; ySet = 1553; mSet = Map.Trammel; }						else if ( ( pv.Map == Map.Trammel ) && ( pv.X > 6548 ) && ( pv.Y > 3812 ) && ( pv.X < 6741 ) && ( pv.Y < 4071 ) ) { vMap = "Shipwreck Grotto"; xSet = 318; ySet = 1397; mSet = Map.Trammel; }						else if ( ( pv.Map == Map.Trammel ) && ( pv.X > 860 ) && ( pv.Y > 3184 ) && ( pv.X < 2136 ) && ( pv.Y < 4090 ) ) { vMap = "Umber Veil"; xSet = pv.X; ySet = pv.Y; mSet = Map.Trammel; }						else if ( ( pv.Map == Map.Trammel ) && ( pv.X > 5129 ) && ( pv.Y > 3062 ) ) { vMap = "Ambrosia"; xSet = pv.X; ySet = pv.Y; mSet = Map.Trammel; }						else if ( ( pv.Map == Map.Trammel ) && ( pv.X > 5793 ) && ( pv.Y > 2738 ) && ( pv.X < 6095 ) && ( pv.Y < 3011 ) ) { vMap = "Moon of Luna"; xSet = 3696; ySet = 519; mSet = Map.Trammel; }						else if ( ( pv.Map == Map.Malas ) && ( pv.X > 1875 ) )						{							if ( ( pv.X > 1949 ) && ( pv.Y > 1393 ) && ( pv.X < 2061 ) && ( pv.Y < 1486 ) ){ xSet = 1863; ySet = 1129; vMap = "Sosaria"; mSet = Map.Trammel; }							else if ( ( pv.X > 2150 ) && ( pv.Y > 1401 ) && ( pv.X < 2270 ) && ( pv.Y < 1513 ) ){ xSet = 1861; ySet = 2747; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 2375 ) && ( pv.Y > 1398 ) && ( pv.X < 2442 ) && ( pv.Y < 1467 ) ){ xSet = 466; ySet = 3801; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 2401 ) && ( pv.Y > 1635 ) && ( pv.X < 2468 ) && ( pv.Y < 1703 ) ){ xSet = 254; ySet = 670; vMap = "Serpent Island"; mSet = Map.Malas; }							else if ( ( pv.X > 2408 ) && ( pv.Y > 1896 ) && ( pv.X < 2517 ) && ( pv.Y < 2005 ) ){ xSet = 422; ySet = 398; vMap = "Savaged Empire"; mSet = Map.TerMur; }							else if ( ( pv.X > 2181 ) && ( pv.Y > 1889 ) && ( pv.X < 2275 ) && ( pv.Y < 2003 ) ){ xSet = 251; ySet = 1249; vMap = "Dread Isles"; mSet = Map.Tokuno; }							else if ( ( pv.X > 1930 ) && ( pv.Y > 1890 ) && ( pv.X < 2022 ) && ( pv.Y < 1997 ) ){ xSet = 3884; ySet = 2879; vMap = "Sosaria"; mSet = Map.Trammel; }						}						else if ( pv.Map == Map.Malas ) { vMap = "Serpent Island"; xSet = pv.X; ySet = pv.Y; mSet = Map.Malas; }						else if ( ( pv.Map == Map.Ilshenar ) && ( pv.X > 1630 ) )						{							if ( ( pv.X > 1644 ) && ( pv.Y > 35 ) && ( pv.X < 1818 ) && ( pv.Y < 163 ) ){ xSet = 4299; ySet = 3318; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 1864 ) && ( pv.Y > 32 ) && ( pv.X < 2041 ) && ( pv.Y < 162 ) ){ xSet = 177; ySet = 961; vMap = "Savaged Empire"; mSet = Map.TerMur; }							else if ( ( pv.X > 2098 ) && ( pv.Y > 27 ) && ( pv.X < 2272 ) && ( pv.Y < 156 ) ){ xSet = 766; ySet = 1527; vMap = "Savaged Empire"; mSet = Map.TerMur; }							else if ( ( pv.X > 1647 ) && ( pv.Y > 184 ) && ( pv.X < 1810 ) && ( pv.Y < 305 ) ){ xSet = 1191; ySet = 1516; vMap = "Serpent Island"; mSet = Map.Malas; }							else if ( ( pv.X > 1877 ) && ( pv.Y > 187 ) && ( pv.X < 2033 ) && ( pv.Y < 302 ) ){ xSet = 1944; ySet = 3377; vMap = "Umber Veil"; mSet = Map.Trammel; }							else if ( ( pv.X > 2108 ) && ( pv.Y > 190 ) && ( pv.X < 2269 ) && ( pv.Y < 305 ) ){ xSet = 1544; ySet = 1785; vMap = "Serpent Island"; mSet = Map.Malas; }							else if ( ( pv.X > 1656 ) && ( pv.Y > 335 ) && ( pv.X < 1807 ) && ( pv.Y < 443 ) ){ xSet = 2059; ySet = 2406; vMap = "Sosaria"; mSet = Map.Trammel; }							else if ( ( pv.X > 1880 ) && ( pv.Y > 338 ) && ( pv.X < 2031 ) && ( pv.Y < 445 ) ){ xSet = 1558; ySet = 2861; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 2111 ) && ( pv.Y > 335 ) && ( pv.X < 2266 ) && ( pv.Y < 446 ) ){ xSet = 755; ySet = 1093; vMap = "Dread Isles"; mSet = Map.Tokuno; }							else if ( ( pv.X > 1657 ) && ( pv.Y > 496 ) && ( pv.X < 1807 ) && ( pv.Y < 606 ) ){ xSet = 2181; ySet = 1327; vMap = "Sosaria"; mSet = Map.Trammel; }							else if ( ( pv.X > 1879 ) && ( pv.Y > 498 ) && ( pv.X < 2031 ) && ( pv.Y < 605 ) ){ xSet = 752; ySet = 680; vMap = "Savaged Empire"; mSet = Map.TerMur; }							else if ( ( pv.X > 2115 ) && ( pv.Y > 499 ) && ( pv.X < 2263 ) && ( pv.Y < 605 ) ){ xSet = 466; ySet = 3801; vMap = "Ravendark Woods"; mSet = Map.Felucca; }							else if ( ( pv.X > 1657 ) && ( pv.Y > 641 ) && ( pv.X < 1808 ) && ( pv.Y < 748 ) ){ xSet = 2893; ySet = 2030; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 1883 ) && ( pv.Y > 640 ) && ( pv.X < 2033 ) && ( pv.Y < 745 ) ){ xSet = 1050; ySet = 93; vMap = "Savaged Empire"; mSet = Map.TerMur; }							else if ( ( pv.X > 2113 ) && ( pv.Y > 641 ) && ( pv.X < 2266 ) && ( pv.Y < 747 ) ){ xSet = 127; ySet = 85; vMap = "Dread Isles"; mSet = Map.Tokuno; }							else if ( ( pv.X > 1657 ) && ( pv.Y > 795 ) && ( pv.X < 1811 ) && ( pv.Y < 898 ) ){ xSet = 145; ySet = 1434; vMap = "Serpent Island"; mSet = Map.Malas; }							else if ( ( pv.X > 1883 ) && ( pv.Y > 794 ) && ( pv.X < 2034 ) && ( pv.Y < 902 ) ){ xSet = 2625; ySet = 823; vMap = "Lodoria"; mSet = Map.Felucca; }							else if ( ( pv.X > 2112 ) && ( pv.Y > 794 ) && ( pv.X < 2267 ) && ( pv.Y < 898 ) ){ xSet = 740; ySet = 182; vMap = "Dread Isles"; mSet = Map.Tokuno; }							else if ( ( pv.X > 1659 ) && ( pv.Y > 953 ) && ( pv.X < 1809 ) && ( pv.Y < 1059 ) ){ xSet = 5390; ySet = 3280; vMap = "Ambrosia"; mSet = Map.Trammel; }							else if ( ( pv.X > 1881 ) && ( pv.Y > 954 ) && ( pv.X < 2034 ) && ( pv.Y < 1059 ) ){ xSet = 922; ySet = 1775; vMap = "Hedge Maze"; mSet = Map.TerMur; }							else if ( ( pv.X > 2113 ) && ( pv.Y > 952 ) && ( pv.X < 2268 ) && ( pv.Y < 1056 ) ){ xSet = 1036; ySet = 1162; vMap = "Savaged Empire"; mSet = Map.TerMur; }						}						else if ( pv.Map == Map.Tokuno ) { vMap = "Dread Isles"; xSet = pv.X; ySet = pv.Y; mSet = Map.Tokuno; }						else if ( ( pv.Map == Map.TerMur ) && ( pv.Y < 1800 ) ) { vMap = "Savaged Empire"; xSet = pv.X; ySet = pv.Y; mSet = Map.TerMur; }						else if ( pv.Map == Map.Trammel && pv.X > 5125 && pv.Y > 3038 && pv.X < 6124 && pv.Y < 4093 ){ vMap = "Ambrosia"; xSet = pv.X; ySet = pv.Y; mSet = Map.Trammel; }						else if ( pv.Map == Map.Trammel && pv.X > 699 && pv.Y > 3129 && pv.X < 2272 && pv.Y < 4095 ){ vMap = "Umber Veil"; xSet = pv.X; ySet = pv.Y; mSet = Map.Trammel; }						else if ( pv.Map == Map.Trammel && pv.X > 6127 && pv.Y > 828 && pv.X < 7168 && pv.Y < 2738 ){ vMap = "Bottle World"; xSet = pv.X; ySet = pv.Y; mSet = Map.Trammel; }						int xLong = 0, yLat = 0;						int xMins = 0, yMins = 0;						bool xEast = false, ySouth = false;						Point3D spot = new Point3D(xSet, ySet, 0);						string my_location = pv.Location.ToString();						if ( Sextant.Format( spot, mSet, ref xLong, ref yLat, ref xMins, ref yMins, ref xEast, ref ySouth ) )						{							my_location = String.Format( "{0}° {1}'{2}, {3}° {4}'{5}", yLat, yMins, ySouth ? "S" : "N", xLong, xMins, xEast ? "E" : "W" );						}						AddLabel(32, 46 +(row * 20), 1152, String.Format( "{0}", pv.ShopName ));						AddLabel(250, 46 +(row * 20), 1152, String.Format( "{0}", pv.Owner.Name ));						AddLabel(415, 46 +(row * 20), 1152, String.Format( "{0} {1}", my_location, vMap));						if ( pv == null )						{							Console.WriteLine("No Vendors In Shard...");							return;						}					}				}				catch {}			}			public override void OnResponse( NetState state, RelayInfo info )			{				Mobile from = state.Mobile;				int buttonID = info.ButtonID;				if ( buttonID == 2 )				{					m_Page ++;					from.CloseGump( typeof( FindPlayerVendorsGump ) );					from.SendGump( new FindPlayerVendorsGump( from, m_List, m_Page ) );				}				if ( buttonID == 1 )				{					m_Page --;					from.CloseGump( typeof( FindPlayerVendorsGump ) );					from.SendGump( new FindPlayerVendorsGump( from, m_List, m_Page ) );				}				if ( buttonID > 100 )				{					int index = buttonID - 101;					PlayerVendor pv = m_List[index] as PlayerVendor;					Point3D xyz = pv.Location;					int x = xyz.X;					int y = xyz.Y;					int z = xyz.Z;					Point3D dest = new Point3D( x, y, z );					from.MoveToWorld( dest, pv.Map );					from.SendGump( new FindPlayerVendorsGump( from, m_List, m_Page ) );									}			}		}		public AdvertiserVendor(Serial serial) : base(serial)		{		}		public override void Serialize(GenericWriter writer)		{			base.Serialize(writer);			writer.Write((int) 0);		}		public override void Deserialize(GenericReader reader)		{			base.Deserialize(reader);			int version = reader.ReadInt();		}	}}
+using System;
+using System.Collections.Generic;
+using Server;
+using Server.Items;
+using Server.Items.Helpers;
+using Server.Mobiles;
+using Server.Gumps;
+
+namespace Server.Items
+{
+	/// <summary>
+	/// AdvertiserVendor - Item that displays a gump listing all player vendors in the world.
+	/// Allows players to find and teleport to vendor locations.
+	/// </summary>
+	[Flipable(AdvertiserVendorConstants.ITEM_ID_1, AdvertiserVendorConstants.ITEM_ID_2)]
+	public class AdvertiserVendor : Item
+	{
+		#region Constructors
+
+		/// <summary>
+		/// Creates a new AdvertiserVendor item
+		/// </summary>
+		[Constructable]
+		public AdvertiserVendor() : base(AdvertiserVendorConstants.ITEM_ID_1)
+		{
+			Weight = AdvertiserVendorConstants.WEIGHT;
+			Name = AdvertiserVendorStringConstants.ITEM_NAME;
+			Hue = AdvertiserVendorConstants.ITEM_HUE;
+		}
+
+		/// <summary>
+		/// Deserialization constructor
+		/// </summary>
+		public AdvertiserVendor(Serial serial) : base(serial)
+		{
+		}
+
+		#endregion
+
+		#region Serialization
+
+		/// <summary>
+		/// Serializes the AdvertiserVendor
+		/// </summary>
+		public override void Serialize(GenericWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write((int)0);
+		}
+
+		/// <summary>
+		/// Deserializes the AdvertiserVendor
+		/// </summary>
+		public override void Deserialize(GenericReader reader)
+		{
+			base.Deserialize(reader);
+			int version = reader.ReadInt();
+		}
+
+		#endregion
+
+		#region Core Logic
+
+		/// <summary>
+		/// Gets properties displayed on the item
+		/// </summary>
+		public override void GetProperties(ObjectPropertyList list)
+		{
+			base.GetProperties(list);
+			list.Add(AdvertiserVendorStringConstants.PROPERTY_LABEL);
+		}
+
+		/// <summary>
+		/// Handles double-click to open vendor listing gump
+		/// </summary>
+		/// <param name="e">The mobile that double-clicked the item</param>
+		public override void OnDoubleClick(Mobile e)
+		{
+			List<PlayerVendor> list = new List<PlayerVendor>();
+
+			foreach (Mobile mob in World.Mobiles.Values)
+			{
+				if (mob is PlayerVendor)
+				{
+					PlayerVendor pv = (PlayerVendor)mob;
+					list.Add(pv);
+				}
+			}
+			e.SendGump(new FindPlayerVendorsGump(e, list, AdvertiserVendorConstants.FIRST_PAGE));
+		}
+
+		#endregion
+
+		#region Nested Classes
+
+		/// <summary>
+		/// Gump that displays a paginated list of player vendors
+		/// </summary>
+		public class FindPlayerVendorsGump : Gump
+		{
+			#region Fields
+
+			private List<PlayerVendor> m_List;
+			private int m_Page;
+			private Mobile m_From;
+
+			#endregion
+
+			#region Constructors
+
+			/// <summary>
+			/// Creates a new FindPlayerVendorsGump
+			/// </summary>
+			/// <param name="from">The mobile viewing the gump</param>
+			/// <param name="list">List of player vendors to display</param>
+			/// <param name="page">Current page number</param>
+			public FindPlayerVendorsGump(Mobile from, List<PlayerVendor> list, int page) : base(AdvertiserVendorConstants.GUMP_X, AdvertiserVendorConstants.GUMP_Y)
+			{
+				from.CloseGump(typeof(FindPlayerVendorsGump));
+				m_Page = page;
+				m_From = from;
+				m_List = list ?? new List<PlayerVendor>();
+
+				AddPage(0);
+				AddBackground(0, 0, AdvertiserVendorConstants.GUMP_WIDTH, AdvertiserVendorConstants.GUMP_HEIGHT, AdvertiserVendorConstants.GRAPHIC_GUMP_BACKGROUND);
+				AddBlackAlpha(AdvertiserVendorConstants.ALPHA_REGION_X, AdvertiserVendorConstants.ALPHA_REGION_Y, AdvertiserVendorConstants.ALPHA_REGION_WIDTH, AdvertiserVendorConstants.ALPHA_REGION_HEIGHT);
+
+				if (m_List == null || m_List.Count == 0)
+				{
+					AddLabel(AdvertiserVendorConstants.LABEL_EMPTY_X, AdvertiserVendorConstants.LABEL_EMPTY_Y, AdvertiserVendorConstants.HUE_LABEL_TEXT, AdvertiserVendorStringConstants.MSG_NO_VENDORS);
+					return;
+				}
+
+				int vendorCount = m_List.Count;
+				int pageCount = CalculatePageCount(vendorCount);
+
+				// Column headers
+				AddLabelCropped(AdvertiserVendorConstants.LABEL_SHOP_NAME_X, AdvertiserVendorConstants.LABEL_SHOP_NAME_Y, AdvertiserVendorConstants.LABEL_SHOP_NAME_WIDTH, AdvertiserVendorConstants.LABEL_SHOP_NAME_HEIGHT, AdvertiserVendorConstants.HUE_LABEL_TEXT, AdvertiserVendorStringConstants.LABEL_SHOP_NAME);
+				AddLabelCropped(AdvertiserVendorConstants.LABEL_OWNER_X, AdvertiserVendorConstants.LABEL_OWNER_Y, AdvertiserVendorConstants.LABEL_OWNER_WIDTH, AdvertiserVendorConstants.LABEL_OWNER_HEIGHT, AdvertiserVendorConstants.HUE_LABEL_TEXT, AdvertiserVendorStringConstants.LABEL_OWNER);
+				AddLabelCropped(AdvertiserVendorConstants.LABEL_LOCATION_X, AdvertiserVendorConstants.LABEL_LOCATION_Y, AdvertiserVendorConstants.LABEL_LOCATION_WIDTH, AdvertiserVendorConstants.LABEL_LOCATION_HEIGHT, AdvertiserVendorConstants.HUE_LABEL_TEXT, AdvertiserVendorStringConstants.LABEL_LOCATION);
+
+				// Footer message
+				AddLabel(AdvertiserVendorConstants.LABEL_FOOTER_X, AdvertiserVendorConstants.LABEL_FOOTER_Y, AdvertiserVendorConstants.HUE_FOOTER_TEXT, String.Format(AdvertiserVendorStringConstants.MSG_FOOTER_FORMAT, Server.Misc.ServerList.ServerName, vendorCount));
+
+				// Previous page button
+				if (page > AdvertiserVendorConstants.FIRST_PAGE)
+					AddButton(AdvertiserVendorConstants.BUTTON_PREV_X, AdvertiserVendorConstants.BUTTON_PREV_Y, AdvertiserVendorConstants.GRAPHIC_BUTTON_PREV_ACTIVE, AdvertiserVendorConstants.GRAPHIC_BUTTON_PREV_PRESSED, AdvertiserVendorConstants.BUTTON_ID_PREV, GumpButtonType.Reply, 0);
+				else
+					AddImage(AdvertiserVendorConstants.BUTTON_PREV_X, AdvertiserVendorConstants.BUTTON_PREV_Y, AdvertiserVendorConstants.GRAPHIC_BUTTON_PREV_DISABLED);
+
+				// Next page button
+				if (pageCount > page)
+					AddButton(AdvertiserVendorConstants.BUTTON_NEXT_X, AdvertiserVendorConstants.BUTTON_NEXT_Y, AdvertiserVendorConstants.GRAPHIC_BUTTON_NEXT_ACTIVE, AdvertiserVendorConstants.GRAPHIC_BUTTON_NEXT_PRESSED, AdvertiserVendorConstants.BUTTON_ID_NEXT, GumpButtonType.Reply, 0);
+				else
+					AddImage(AdvertiserVendorConstants.BUTTON_NEXT_X, AdvertiserVendorConstants.BUTTON_NEXT_Y, AdvertiserVendorConstants.GRAPHIC_BUTTON_NEXT_DISABLED);
+
+				// Add vendor details
+				int startIndex = (page - 1) * AdvertiserVendorConstants.VENDORS_PER_PAGE;
+				int endIndex = Math.Min(startIndex + AdvertiserVendorConstants.VENDORS_PER_PAGE, vendorCount);
+
+				for (int i = startIndex; i < endIndex; ++i)
+				{
+					AddDetails(i);
+				}
+			}
+
+			#endregion
+
+			#region Helper Methods
+
+			/// <summary>
+			/// Calculates the total number of pages needed
+			/// </summary>
+			/// <param name="itemCount">Total number of items</param>
+			/// <returns>Number of pages</returns>
+			private int CalculatePageCount(int itemCount)
+			{
+				if (itemCount % AdvertiserVendorConstants.VENDORS_PER_PAGE == 0)
+				{
+					return itemCount / AdvertiserVendorConstants.VENDORS_PER_PAGE;
+				}
+				else
+				{
+					return (itemCount / AdvertiserVendorConstants.VENDORS_PER_PAGE) + 1;
+				}
+			}
+
+			/// <summary>
+			/// Adds a black alpha region to the gump
+			/// </summary>
+			private void AddBlackAlpha(int x, int y, int width, int height)
+			{
+				AddImageTiled(x, y, width, height, AdvertiserVendorConstants.GRAPHIC_BLACK_ALPHA);
+				AddAlphaRegion(x, y, width, height);
+			}
+
+			/// <summary>
+			/// Adds vendor details to the gump for the specified index
+			/// </summary>
+			/// <param name="index">Index of the vendor in the list</param>
+			private void AddDetails(int index)
+			{
+				if (index < 0 || index >= m_List.Count)
+				{
+					return;
+				}
+
+				PlayerVendor pv = m_List[index];
+				if (pv == null || pv.Deleted)
+				{
+					return;
+				}
+
+				try
+				{
+					// Get location information using helper
+					string locationName;
+					int teleportX;
+					int teleportY;
+					Map teleportMap;
+					LocationMappingHelper.GetLocationInfo(pv.X, pv.Y, pv.Map, out locationName, out teleportX, out teleportY, out teleportMap);
+
+					// Calculate row position
+					int row = index % AdvertiserVendorConstants.VENDORS_PER_PAGE;
+					int rowY = AdvertiserVendorConstants.ROW_START_Y + (row * AdvertiserVendorConstants.ROW_HEIGHT);
+
+					// Format location coordinates
+					int xLong = 0, yLat = 0;
+					int xMins = 0, yMins = 0;
+					bool xEast = false, ySouth = false;
+
+					Point3D spot = new Point3D(teleportX, teleportY, AdvertiserVendorConstants.DEFAULT_Z);
+					string locationString = pv.Location.ToString();
+
+					if (Sextant.Format(spot, teleportMap, ref xLong, ref yLat, ref xMins, ref yMins, ref xEast, ref ySouth))
+					{
+						locationString = String.Format(AdvertiserVendorStringConstants.MSG_COORDINATE_FORMAT, yLat, yMins, ySouth ? "S" : "N", xLong, xMins, xEast ? "E" : "W");
+					}
+
+					// Add labels
+					AddLabel(AdvertiserVendorConstants.ROW_START_X_SHOP, rowY, AdvertiserVendorConstants.HUE_LABEL_TEXT, pv.ShopName);
+					AddLabel(AdvertiserVendorConstants.ROW_START_X_OWNER, rowY, AdvertiserVendorConstants.HUE_LABEL_TEXT, pv.Owner.Name);
+					AddLabel(AdvertiserVendorConstants.ROW_START_X_LOCATION, rowY, AdvertiserVendorConstants.HUE_LABEL_TEXT, String.Format("{0} {1}", locationString, locationName));
+				}
+				catch (Exception ex)
+				{
+					// Log error but don't crash the gump
+					Console.WriteLine("Error adding vendor details: {0}", ex.Message);
+				}
+			}
+
+			#endregion
+
+			#region Event Handlers
+
+			/// <summary>
+			/// Handles gump button responses
+			/// </summary>
+			public override void OnResponse(NetState state, RelayInfo info)
+			{
+				Mobile from = state.Mobile;
+				if (from == null)
+				{
+					return;
+				}
+
+				int buttonID = info.ButtonID;
+
+				// Next page
+				if (buttonID == AdvertiserVendorConstants.BUTTON_ID_NEXT)
+				{
+					m_Page++;
+					from.CloseGump(typeof(FindPlayerVendorsGump));
+					from.SendGump(new FindPlayerVendorsGump(from, m_List, m_Page));
+				}
+				// Previous page
+				else if (buttonID == AdvertiserVendorConstants.BUTTON_ID_PREV)
+				{
+					m_Page--;
+					if (m_Page < AdvertiserVendorConstants.FIRST_PAGE)
+					{
+						m_Page = AdvertiserVendorConstants.FIRST_PAGE;
+					}
+					from.CloseGump(typeof(FindPlayerVendorsGump));
+					from.SendGump(new FindPlayerVendorsGump(from, m_List, m_Page));
+				}
+				// Vendor selection (teleport)
+				else if (buttonID >= AdvertiserVendorConstants.BUTTON_ID_OFFSET)
+				{
+					int index = buttonID - AdvertiserVendorConstants.BUTTON_ID_OFFSET;
+					if (index >= 0 && index < m_List.Count)
+					{
+						PlayerVendor pv = m_List[index];
+						if (pv != null && !pv.Deleted)
+						{
+							Point3D dest = pv.Location;
+							from.MoveToWorld(dest, pv.Map);
+							from.SendGump(new FindPlayerVendorsGump(from, m_List, m_Page));
+						}
+					}
+				}
+			}
+
+			#endregion
+		}
+
+		#endregion
+	}
+}
