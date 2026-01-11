@@ -944,11 +944,13 @@ namespace Server
 
 			if ( info.Callback != null )
 			{
-				if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null && Server.Items.BandageHelpers.IsCurrentlyBandaging(from) == false)
+				// TODO: BandageHelpers and BaseInvisibilityPotion are Scripts types - Server cannot reference them
+				// Need to refactor to event/callback pattern
+				if (Core.TickCount - from.NextSkillTime >= 0 && from.Spell == null) // && Server.Items.BandageHelpers.IsCurrentlyBandaging(from) == false)
 				{
 					// Check if player has invisibility potion effect active
 					// Using a skill reveals the player
-					Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( from, "usou uma habilidade" );
+					// Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( from, "usou uma habilidade" );
 
 					from.DisruptiveAction();
 
