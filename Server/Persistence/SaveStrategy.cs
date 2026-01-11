@@ -33,7 +33,7 @@ namespace Server
 
 				if (processorCount > 2)
 				{
-					return new DualSaveStrategy(); // return new DynamicSaveStrategy(); (4.0 or return new ParallelSaveStrategy(processorCount); (2.0)
+					return new DynamicSaveStrategy(); // Uses all CPU cores for maximum performance
 				}
 				else
 				{
