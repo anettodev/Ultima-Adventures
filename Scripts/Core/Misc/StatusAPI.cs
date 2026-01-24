@@ -9,7 +9,7 @@ using Server.Network;
 namespace Server.Misc
 {
     /// <summary>
-    /// HTTP Status API Server
+    /// HTTP Status API Server - FIXED VERSION FOR MONO/LINUX
     /// Provides real-time server status via HTTP endpoint on port 8080
     /// Endpoint: GET http://YOUR_SERVER_IP:8080/status
     /// </summary>
@@ -38,23 +38,31 @@ namespace Server.Misc
                 Console.WriteLine("[Status API] Initializing HTTP listener on port {0}...", PORT);
 
                 listener = new HttpListener();
-                listener.Prefixes.Add($"http://*:{PORT}{ENDPOINT}/");
-                listener.Prefixes.Add($"http://*:{PORT}/"); // Root endpoint
 
+                // IMPORTANT: Use + instead of * for Mono compatibility
+                listener.Prefixes.Add($"http://+:{PORT}{ENDPOINT}/");
+                listener.Prefixes.Add($"http://+:{PORT}/"); // Root endpoint
+
+                Console.WriteLine("[Status API] Attempting to start listener...");
                 listener.Start();
                 isRunning = true;
-
-                listenerThread = new Thread(new ThreadStart(ListenForRequests));
-                listenerThread.IsBackground = true;
-                listenerThread.Start();
 
                 Console.WriteLine("[Status API] HTTP listener started successfully!");
                 Console.WriteLine("[Status API] Listening on: http://localhost:{0}{1}", PORT, ENDPOINT);
                 Console.WriteLine("[Status API] CORS enabled for all origins");
+                Console.WriteLine("[Status API] IsListening: {0}", listener.IsListening);
+
+                listenerThread = new Thread(new ThreadStart(ListenForRequests));
+                listenerThread.IsBackground = true;
+                listenerThread.Name = "Status API Listener";
+                listenerThread.Start();
+
+                Console.WriteLine("[Status API] Listener thread created and started");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("[Status API] ERROR: Failed to start HTTP listener: {0}", ex.Message);
+                Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
                 Console.WriteLine("[Status API] Make sure port {0} is not in use and you have administrator privileges", PORT);
             }
         }
@@ -71,8 +79,13 @@ namespace Server.Misc
                 {
                     Console.WriteLine("[Status API] Shutting down HTTP listener...");
                     isRunning = false;
-                    listener?.Stop();
-                    listener?.Close();
+
+                    if (listener != null && listener.IsListening)
+                    {
+                        listener.Stop();
+                        listener.Close();
+                    }
+
                     Console.WriteLine("[Status API] HTTP listener stopped");
                 }
             }
@@ -87,34 +100,68 @@ namespace Server.Misc
         /// </summary>
         private static void ListenForRequests()
         {
-            Console.WriteLine("[Status API] Listener thread started");
+            Console.WriteLine("[Status API] === Listener thread STARTED ===");
+            Console.WriteLine("[Status API] Thread ID: {0}", Thread.CurrentThread.ManagedThreadId);
+            Console.WriteLine("[Status API] isRunning: {0}", isRunning);
+            Console.WriteLine("[Status API] listener != null: {0}", listener != null);
+
+            if (listener != null)
+            {
+                Console.WriteLine("[Status API] listener.IsListening: {0}", listener.IsListening);
+            }
+
+            int loopCount = 0;
 
             while (isRunning)
             {
                 try
                 {
-                    if (!listener.IsListening)
-                        break;
+                    loopCount++;
+                    Console.WriteLine("[Status API] Loop iteration #{0}", loopCount);
+
+                    // REMOVED problematic IsListening check for Mono compatibility
+                    // The IsListening property can cause issues on Mono/Linux
+                    // if (!listener.IsListening)
+                    // {
+                    //     Console.WriteLine("[Status API] Listener is not listening, exiting...");
+                    //     break;
+                    // }
+
+                    Console.WriteLine("[Status API] Waiting for request (blocking)...");
 
                     // Wait for incoming request (blocking call)
                     HttpListenerContext context = listener.GetContext();
 
+                    Console.WriteLine("[Status API] Request received from {0}",
+                        context.Request.RemoteEndPoint?.Address?.ToString() ?? "unknown");
+
                     // Process request on thread pool to avoid blocking
                     ThreadPool.QueueUserWorkItem((_) => HandleRequest(context));
                 }
-                catch (HttpListenerException)
+                catch (HttpListenerException ex)
                 {
+                    Console.WriteLine("[Status API] HttpListenerException: {0}", ex.Message);
+                    Console.WriteLine("[Status API] Error code: {0}", ex.ErrorCode);
                     // Listener was stopped, exit gracefully
+                    break;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Console.WriteLine("[Status API] InvalidOperationException: {0}", ex.Message);
+                    Console.WriteLine("[Status API] This usually means Start() wasn't called or failed");
                     break;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("[Status API] ERROR in listener loop: {0}", ex.Message);
+                    Console.WriteLine("[Status API] Exception type: {0}", ex.GetType().Name);
+                    Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
                     Thread.Sleep(1000); // Prevent tight loop on errors
                 }
             }
 
-            Console.WriteLine("[Status API] Listener thread stopped");
+            Console.WriteLine("[Status API] === Listener thread STOPPED ===");
+            Console.WriteLine("[Status API] Reason: isRunning={0}, loopCount={1}", isRunning, loopCount);
         }
 
         /// <summary>
@@ -129,8 +176,10 @@ namespace Server.Misc
             {
                 // Log incoming request
                 string clientIP = request.RemoteEndPoint?.Address?.ToString() ?? "unknown";
-                Console.WriteLine("[Status API] Request from {0}: {1} {2}",
-                    clientIP, request.HttpMethod, request.Url?.AbsolutePath);
+                Console.WriteLine("[Status API] === Handling Request ===");
+                Console.WriteLine("[Status API] From: {0}", clientIP);
+                Console.WriteLine("[Status API] Method: {0}", request.HttpMethod);
+                Console.WriteLine("[Status API] Path: {0}", request.Url?.AbsolutePath);
 
                 // Add CORS headers (allow all origins for public API)
                 response.AddHeader("Access-Control-Allow-Origin", "*");
@@ -140,6 +189,7 @@ namespace Server.Misc
                 // Handle OPTIONS preflight request (CORS)
                 if (request.HttpMethod == "OPTIONS")
                 {
+                    Console.WriteLine("[Status API] OPTIONS request - sending 200");
                     response.StatusCode = 200;
                     response.Close();
                     return;
@@ -148,6 +198,7 @@ namespace Server.Misc
                 // Only accept GET requests
                 if (request.HttpMethod != "GET")
                 {
+                    Console.WriteLine("[Status API] Invalid method, sending 405");
                     SendErrorResponse(response, 405, "Method Not Allowed");
                     return;
                 }
@@ -156,12 +207,15 @@ namespace Server.Misc
                 string path = request.Url?.AbsolutePath?.ToLower() ?? "/";
                 if (path != ENDPOINT.ToLower() && path != "/")
                 {
+                    Console.WriteLine("[Status API] Invalid path, sending 404");
                     SendErrorResponse(response, 404, "Not Found");
                     return;
                 }
 
                 // Generate and send status JSON
+                Console.WriteLine("[Status API] Generating status JSON...");
                 string jsonResponse = GenerateStatusJSON();
+                Console.WriteLine("[Status API] JSON generated, sending response...");
                 SendJSONResponse(response, jsonResponse);
 
                 Console.WriteLine("[Status API] Response sent successfully to {0}", clientIP);
@@ -169,13 +223,14 @@ namespace Server.Misc
             catch (Exception ex)
             {
                 Console.WriteLine("[Status API] ERROR handling request: {0}", ex.Message);
+                Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
                 try
                 {
                     SendErrorResponse(response, 500, "Internal Server Error");
                 }
-                catch
+                catch (Exception ex2)
                 {
-                    // Response already closed or other error
+                    Console.WriteLine("[Status API] ERROR sending error response: {0}", ex2.Message);
                 }
             }
         }
