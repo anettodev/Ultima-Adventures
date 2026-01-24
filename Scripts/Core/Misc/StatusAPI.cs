@@ -18,6 +18,7 @@ namespace Server.Misc
         private static HttpListener listener;
         private static Thread listenerThread;
         private static bool isRunning = false;
+        private static bool hasInitialized = false;
         private static DateTime serverStartTime;
 
         // Configuration
@@ -31,6 +32,14 @@ namespace Server.Misc
         /// </summary>
         public static void Initialize()
         {
+            // Prevent double initialization from ANY source
+            if (hasInitialized)
+            {
+                Console.WriteLine("[Status API] Already initialized, ignoring duplicate call");
+                return;
+            }
+
+            hasInitialized = true;
             serverStartTime = DateTime.UtcNow;
 
             try
