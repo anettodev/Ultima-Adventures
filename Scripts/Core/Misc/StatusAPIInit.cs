@@ -3,18 +3,22 @@ using Server;
 
 namespace Server.Misc
 {
-    /// <summary>
-    /// Initialization script for Status API
-    /// This ensures the HTTP listener starts when the server boots
-    /// </summary>
     public class StatusAPIInit
     {
-        /// <summary>
-        /// Called automatically when server starts
-        /// Priority: Low (runs after core systems are ready)
-        /// </summary>
+        private static bool hasInitialized = false;
+
         public static void Initialize()
         {
+            // Prevent double initialization
+            if (hasInitialized)
+            {
+                Console.WriteLine("[Status API Init] Already initialized, skipping duplicate call");
+                return;
+            }
+
+            hasInitialized = true;
+            Console.WriteLine("[Status API Init] First initialization - starting API...");
+
             // Start the Status API HTTP listener
             StatusAPI.Initialize();
 
@@ -24,9 +28,6 @@ namespace Server.Misc
             Console.WriteLine("[Status API Init] Initialization complete");
         }
 
-        /// <summary>
-        /// Called when server shuts down
-        /// </summary>
         private static void OnShutdown(ShutdownEventArgs e)
         {
             StatusAPI.Shutdown();
