@@ -214,6 +214,20 @@ namespace Server.Misc
 
                 // Check endpoint
                 string path = request.Url?.AbsolutePath?.ToLower() ?? "/";
+
+                // Lightweight /ping endpoint for latency measurement
+                if (path == "/ping")
+                {
+                    response.StatusCode = 200;
+                    response.ContentType = "text/plain; charset=utf-8";
+                    byte[] buffer = Encoding.UTF8.GetBytes("pong");
+                    response.ContentLength64 = buffer.Length;
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                    response.OutputStream.Close();
+                    return;
+                }
+
+                // Main status endpoint
                 if (path != ENDPOINT.ToLower() && path != "/")
                 {
                     Console.WriteLine("[Status API] Invalid path, sending 404");
