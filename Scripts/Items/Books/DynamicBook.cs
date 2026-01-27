@@ -542,7 +542,7 @@ namespace Server.Items
 			SetStaticText( this );
 			BookTitle = "Guia para uma Aventura";
 			Name = BookTitle;
-			BookAuthor = RandomThings.GetRandomAuthor();
+			BookAuthor = "Developer";//RandomThings.GetRandomAuthor();
 		}
 
 		public LoreGuidetoAdventure( Serial serial ) : base( serial )
