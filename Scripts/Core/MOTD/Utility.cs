@@ -86,7 +86,7 @@ namespace Joeku.MOTD
 			{
 				while( (line = reader.ReadLine()) != null )
 				{
-					if( line != String.Empty && !line.StartsWith( "//" ) )
+					if( !line.StartsWith( "//" ) )
 					{
 						if( line.StartsWith( "[*]" ) )
 						{
@@ -99,7 +99,13 @@ namespace Joeku.MOTD
 								lines.Add( line );
 						}
 						else if( started )
-							lines.Add( line );
+						{
+							// Preserve empty lines for paragraph spacing
+							if( line == String.Empty )
+								lines.Add( String.Empty );
+							else
+								lines.Add( line );
+						}
 					}
 				}
 			}
@@ -125,7 +131,11 @@ namespace Joeku.MOTD
 						lines += String.Format( "by {0}<BR>----------------------------------</BIG></CENTER>", list[i] );
 						break;
 					default:
-						lines += list[i] + "<BR>";
+						// Empty lines create paragraph spacing (double line break)
+						if( list[i] == String.Empty )
+							lines += "<BR>";
+						else
+							lines += list[i] + "<BR>";
 						break;
 				}
 			}

@@ -50,7 +50,7 @@ namespace Joeku.MOTD
 			AddImage(558, 566, 143);
 			AddImage(558, 9, 143);
 			AddImage(286, 540, 156);
-			AddHtml( 177, 37, 230, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>RECADO IMPORTANTE!</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
+			AddHtml( 177, 37, 230, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>RECADO IMPORTANTE</BIG></BASEFONT></BODY>", (bool)false, (bool)false);
 			AddBody( user );
 			AddItem(38, 269, 7775);
 			AddHtml( 419, 531, 154, 20, @"<BODY><BASEFONT Color=#FBFBFB><BIG>MOSTRAR NO LOGIN</BIG></BASEFONT></BODY>", (bool)false, (bool)false);

@@ -3,12 +3,13 @@
 Developer
 
 Olá jogador!
+
 Nimeria Shard está no momento em modo de desenvolvimento. Isso significa que ainda haverá muito(muito mesmo) trabalho e sistemas para implementar e testar.
 
 Não estamos sequer prontos ainda para um beta público. Por isso, não existe nenhuma garantia de que tudo o que você fizer neste momento do jogo será salvo e servirá para o futuro.
 A qualquer momento poderemos ter de que simplesmente resetar o mundo do zero e tudo será perdido.
 
-Entendemos que pode ser frustrante. 
+Entendemos que pode ser frustrante.
 Assim como você, eu também já fui um jogador de UO e me frustrei e me irritei com diversos outros servidores e staffs que tomaram decisões duvidosas e claramente danosas ao jogo e demais jogadores.
 Por isso eu estou comprometido a desenvolver o Nimeria Shard de uma maneira transparente e o mais democrática o possível.
 Entretanto, porém e todavia, este início se faz necessário um maior controle e terei que tomar diversas medidas para conseguir evoluir o shard para atingir a maturidade de se estar em *produção*.
@@ -18,7 +19,7 @@ Mas eu posso lhe prometer de que eu vou tentar fazer isso acontecer e de que eu 
 
 Resumindo: Não há prazo e não há garantias. Mas há muita vontade e experiência para fazer acontecer.
 
-Se você aceitar isso, é aqui onde você entra: 
+Se você aceitar isso, é aqui onde você entra:
 Ajude-nos a testar e garantir o funcionamento correto do jogo. Além de também poder nos ajudar a criar e corrigir o rumo dos sistemas dando suas sugestões (elas serão ouvidas).
 
 Caso contrário, no Brasil há ainda diversos outros servidores para que você possa jogar.
