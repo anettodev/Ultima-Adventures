@@ -29,15 +29,6 @@ namespace Server.Gumps
 
 			AddPage(0);
 
-			AddHtml(
-				NameChangeConstants.FORCED_HTML_TEXT_X,
-				NameChangeConstants.FORCED_HTML_TEXT_Y,
-				NameChangeConstants.FORCED_HTML_TEXT_WIDTH,
-				NameChangeConstants.FORCED_HTML_TEXT_HEIGHT,
-				NameChangeStringConstants.GUMP_TEXT_NAME_CHANGE,
-				(bool)true,
-				(bool)false
-			);
 			AddBackground(
 				NameChangeConstants.FORCED_BACKGROUND_X,
 				NameChangeConstants.FORCED_BACKGROUND_Y,
@@ -51,6 +42,15 @@ namespace Server.Gumps
 				NameChangeConstants.FORCED_TEXT_BACKGROUND_WIDTH,
 				NameChangeConstants.FORCED_TEXT_BACKGROUND_HEIGHT,
 				NameChangeConstants.FORCED_TEXT_BACKGROUND_ID
+			);
+			AddHtml(
+				NameChangeConstants.FORCED_HTML_TEXT_X,
+				NameChangeConstants.FORCED_HTML_TEXT_Y,
+				NameChangeConstants.FORCED_HTML_TEXT_WIDTH,
+				NameChangeConstants.FORCED_HTML_TEXT_HEIGHT,
+				NameChangeStringConstants.GUMP_TEXT_NAME_CHANGE,
+				(bool)true,
+				(bool)false
 			);
 
 			AddLabel(

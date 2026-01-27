@@ -74,7 +74,7 @@ namespace Server.Gumps
 		public const string TITLE_STATUS_LOST = "<CENTER><BIG><BIG><BASEFONT COLOR=\"#FFFF00\">Você não é mais um Iniciante!</BASEFONT></BIG></BIG></CENTER>";
 
 		/// <summary>Greeting message</summary>
-		public const string BODY_GREETING = "<CENTER><BIG>Parabéns, Aventureiro!</BIG></CENTER><BR><BR>";
+		public const string BODY_GREETING = "<CENTER><BIG>Parabéns, Jogador!</BIG></CENTER><BR><BR>";
 
 		/// <summary>Introduction message</summary>
 		public const string BODY_INTRO = "O status de <BASEFONT COLOR=\"#00FFFF\">Iniciante</BASEFONT> não se aplica mais a você.<BR><BR>";
@@ -113,7 +113,7 @@ namespace Server.Gumps
 		/// <summary>Complete body text explaining Young status</summary>
 		public const string MSG_LOGIN_INFO_BODY = 
 			"<BASEFONT COLOR=\"#FFFFFF\">" +
-			"<CENTER><BIG>Bem-vindo, Aventureiro!</BIG></CENTER><BR><BR>" +
+			"<CENTER><BIG>Bem-vindo, Jogador!</BIG></CENTER><BR><BR>" +
 			"Você possui o Status de <BASEFONT COLOR=\"#00FFFF\">Iniciante</BASEFONT>, que oferece proteção especial durante seus primeiros passos no mundo.<BR>" +
 			"<BR><BASEFONT COLOR=\"#FFFF00\">Benefícios de Iniciante:</BASEFONT><BR>" +
 			"• Proteção contra a maioria dos monstros em áreas protegidas<BR>" +
