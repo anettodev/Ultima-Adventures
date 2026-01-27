@@ -37,7 +37,7 @@ namespace Server.Misc
 
 		public static bool AutoAccountCreation()
 		{
-			return false;
+			return true;
 		}
 
 		private static CityInfo[] StartingCities = new CityInfo[]
