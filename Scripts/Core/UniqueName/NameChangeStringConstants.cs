@@ -46,7 +46,7 @@ namespace Server.Items
 		public const string GUMP_TEXT_CENSUS_FORGED = "Estes são os registros falsificados do censo das muitas terras, e a guilda dos ladrões compilou uma lista de nomes de seus cidadãos. Seu nome também está nesta lista. Se você quiser mudar seu nome, pode fazê-lo neste livro.";
 
 		/// <summary>Additional instruction text for Census Records (about gold cost and character limit)</summary>
-		public const string GUMP_TEXT_CENSUS_ADDITIONAL = " Então, se você tem uma ideia para um novo nome apropriado para fantasia, e está disposto a gastar 2.000 moedas de ouro, então delete o texto abaixo e digite novamente. Um novo nome não pode ter mais de 16 caracteres.";
+		public const string GUMP_TEXT_CENSUS_ADDITIONAL = " Então, se você tem uma ideia para um novo nome apropriado, e está disposto a gastar 2.000 moedas de ouro, então delete o texto abaixo e digite novamente. Um novo nome não pode ter mais de 16 caracteres.";
 
 		#endregion
 
@@ -60,7 +60,7 @@ namespace Server.Items
 		#region Gump Text - Name Change (Portuguese)
 
 		/// <summary>NameChangeGump instruction text</summary>
-		public const string GUMP_TEXT_NAME_CHANGE = "O nome que você escolheu está atualmente em uso e não está mais disponível. Você deve escolher um nome diferente antes de poder continuar. Então delete o texto abaixo e insira um novo nome apropriado para fantasia.";
+		public const string GUMP_TEXT_NAME_CHANGE = "O nome que você escolheu está atualmente em uso e não está mais disponível. Você deve escolher um nome diferente antes de poder continuar. Então delete o texto abaixo e insira um novo nome.";
 
 		/// <summary>Label text for new name input</summary>
 		public const string LABEL_NEW_NAME = "Novo Nome:";
