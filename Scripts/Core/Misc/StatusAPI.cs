@@ -1,357 +1,345 @@
 using System;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
 using Server;
 using Server.Network;
+using Server.Misc.Helpers;
 
 namespace Server.Misc
 {
-    /// <summary>
-    /// HTTP Status API Server - FIXED VERSION FOR MONO/LINUX
-    /// Provides real-time server status via HTTP endpoint on port 8080
-    /// Endpoint: GET http://YOUR_SERVER_IP:8080/status
-    /// </summary>
-    public class StatusAPI
-    {
-        private static HttpListener listener;
-        private static Thread listenerThread;
-        private static bool isRunning = false;
-        private static bool hasInitialized = false;
-        private static DateTime serverStartTime;
+	/// <summary>
+	/// HTTP Status API Server - Provides real-time server status via HTTP endpoint
+	/// Endpoint: GET http://YOUR_SERVER_IP:8080/status
+	/// Optimized for performance with reduced logging in hot path and efficient JSON generation
+	/// </summary>
+	public class StatusAPI
+	{
+		#region Fields
 
-        // Configuration
-        private const int PORT = 8080;
-        private const string ENDPOINT = "/status";
-        private const int MAX_PLAYERS = 100; // Update this to your server's max players
+		private static HttpListener listener;
+		private static Thread listenerThread;
+		private static volatile bool isRunning = false;
+		private static volatile bool hasInitialized = false;
+		private static DateTime serverStartTime;
 
-        /// <summary>
-        /// Initialize and start the Status API server
-        /// Called automatically when the server starts
-        /// </summary>
-        public static void Initialize()
-        {
-            // Prevent double initialization from ANY source
-            if (hasInitialized)
-            {
-                Console.WriteLine("[Status API] Already initialized, ignoring duplicate call");
-                return;
-            }
+		#endregion
 
-            hasInitialized = true;
-            serverStartTime = DateTime.UtcNow;
+		#region Initialization
 
-            try
-            {
-                Console.WriteLine("[Status API] Initializing HTTP listener on port {0}...", PORT);
+		/// <summary>
+		/// Initialize and start the Status API server
+		/// Called automatically when the server starts
+		/// </summary>
+		public static void Initialize()
+		{
+			// Prevent double initialization from ANY source
+			if (hasInitialized)
+			{
+				LogMessage(StatusAPIStringConstants.LOG_ALREADY_INITIALIZED);
+				return;
+			}
 
-                listener = new HttpListener();
+			hasInitialized = true;
+			serverStartTime = DateTime.UtcNow;
 
-                // IMPORTANT: Use + instead of * for Mono compatibility
-                listener.Prefixes.Add($"http://+:{PORT}{ENDPOINT}/");
-                listener.Prefixes.Add($"http://+:{PORT}/"); // Root endpoint
+			try
+			{
+				LogMessage(string.Format(StatusAPIStringConstants.LOG_INITIALIZING, StatusAPIConstants.PORT));
 
-                Console.WriteLine("[Status API] Attempting to start listener...");
-                listener.Start();
-                isRunning = true;
+				listener = new HttpListener();
 
-                Console.WriteLine("[Status API] HTTP listener started successfully!");
-                Console.WriteLine("[Status API] Listening on: http://localhost:{0}{1}", PORT, ENDPOINT);
-                Console.WriteLine("[Status API] CORS enabled for all origins");
-                Console.WriteLine("[Status API] IsListening: {0}", listener.IsListening);
+				// IMPORTANT: Use + instead of * for Mono compatibility
+				listener.Prefixes.Add(string.Format(StatusAPIConstants.PREFIX_FORMAT, StatusAPIConstants.PORT, StatusAPIConstants.ENDPOINT_STATUS));
+				listener.Prefixes.Add(string.Format(StatusAPIConstants.PREFIX_FORMAT, StatusAPIConstants.PORT, StatusAPIConstants.ENDPOINT_ROOT));
+				listener.Prefixes.Add(string.Format(StatusAPIConstants.PREFIX_FORMAT, StatusAPIConstants.PORT, StatusAPIConstants.ENDPOINT_PING));
 
-                listenerThread = new Thread(new ThreadStart(ListenForRequests));
-                listenerThread.IsBackground = true;
-                listenerThread.Name = "Status API Listener";
-                listenerThread.Start();
+				LogMessage(StatusAPIStringConstants.LOG_STARTING);
+				listener.Start();
+				isRunning = true;
 
-                Console.WriteLine("[Status API] Listener thread created and started");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[Status API] ERROR: Failed to start HTTP listener: {0}", ex.Message);
-                Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
-                Console.WriteLine("[Status API] Make sure port {0} is not in use and you have administrator privileges", PORT);
-            }
-        }
+				LogMessage(StatusAPIStringConstants.LOG_STARTED);
+				LogMessage(string.Format(StatusAPIStringConstants.LOG_LISTENING_ON, StatusAPIConstants.PORT, StatusAPIConstants.ENDPOINT_STATUS));
+				LogMessage(StatusAPIStringConstants.LOG_CORS_ENABLED);
 
-        /// <summary>
-        /// Stop the Status API server
-        /// Called when the server shuts down
-        /// </summary>
-        public static void Shutdown()
-        {
-            try
-            {
-                if (isRunning)
-                {
-                    Console.WriteLine("[Status API] Shutting down HTTP listener...");
-                    isRunning = false;
+				listenerThread = new Thread(new ThreadStart(ListenForRequests));
+				listenerThread.IsBackground = true;
+				listenerThread.Name = "Status API Listener";
+				listenerThread.Start();
 
-                    if (listener != null && listener.IsListening)
-                    {
-                        listener.Stop();
-                        listener.Close();
-                    }
+				LogMessage(StatusAPIStringConstants.LOG_THREAD_CREATED);
 
-                    Console.WriteLine("[Status API] HTTP listener stopped");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[Status API] ERROR during shutdown: {0}", ex.Message);
-            }
-        }
+				// Initialize CPU monitor
+				StatusAPIHelpers.StatusAPICpuMonitor.Initialize();
+			}
+			catch (Exception ex)
+			{
+				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_START_FAILED, ex.Message));
+				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_PORT_PERMISSIONS, StatusAPIConstants.PORT));
+				if (ex.StackTrace != null)
+				{
+					LogError("Stack trace: " + ex.StackTrace);
+				}
+			}
+		}
 
-        /// <summary>
-        /// Main listener loop - processes incoming HTTP requests
-        /// </summary>
-        private static void ListenForRequests()
-        {
-            Console.WriteLine("[Status API] === Listener thread STARTED ===");
-            Console.WriteLine("[Status API] Thread ID: {0}", Thread.CurrentThread.ManagedThreadId);
-            Console.WriteLine("[Status API] isRunning: {0}", isRunning);
-            Console.WriteLine("[Status API] listener != null: {0}", listener != null);
+		#endregion
 
-            if (listener != null)
-            {
-                Console.WriteLine("[Status API] listener.IsListening: {0}", listener.IsListening);
-            }
+		#region Shutdown
 
-            int loopCount = 0;
+		/// <summary>
+		/// Stop the Status API server
+		/// Called when the server shuts down
+		/// </summary>
+		public static void Shutdown()
+		{
+			try
+			{
+				if (isRunning)
+				{
+					LogMessage(StatusAPIStringConstants.LOG_SHUTTING_DOWN);
+					isRunning = false;
 
-            while (isRunning)
-            {
-                try
-                {
-                    loopCount++;
-                    Console.WriteLine("[Status API] Loop iteration #{0}", loopCount);
+					if (listener != null && listener.IsListening)
+					{
+						listener.Stop();
+						listener.Close();
+					}
 
-                    // REMOVED problematic IsListening check for Mono compatibility
-                    // The IsListening property can cause issues on Mono/Linux
-                    // if (!listener.IsListening)
-                    // {
-                    //     Console.WriteLine("[Status API] Listener is not listening, exiting...");
-                    //     break;
-                    // }
+					// Shutdown CPU monitor
+					StatusAPIHelpers.StatusAPICpuMonitor.Shutdown();
 
-                    Console.WriteLine("[Status API] Waiting for request (blocking)...");
+					LogMessage(StatusAPIStringConstants.LOG_STOPPED);
+				}
+			}
+			catch (Exception ex)
+			{
+				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_SHUTDOWN, ex.Message));
+			}
+		}
 
-                    // Wait for incoming request (blocking call)
-                    HttpListenerContext context = listener.GetContext();
+		#endregion
 
-                    Console.WriteLine("[Status API] Request received from {0}",
-                        context.Request.RemoteEndPoint?.Address?.ToString() ?? "unknown");
+		#region Request Listener
 
-                    // Process request on thread pool to avoid blocking
-                    ThreadPool.QueueUserWorkItem((_) => HandleRequest(context));
-                }
-                catch (HttpListenerException ex)
-                {
-                    Console.WriteLine("[Status API] HttpListenerException: {0}", ex.Message);
-                    Console.WriteLine("[Status API] Error code: {0}", ex.ErrorCode);
-                    // Listener was stopped, exit gracefully
-                    break;
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Console.WriteLine("[Status API] InvalidOperationException: {0}", ex.Message);
-                    Console.WriteLine("[Status API] This usually means Start() wasn't called or failed");
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("[Status API] ERROR in listener loop: {0}", ex.Message);
-                    Console.WriteLine("[Status API] Exception type: {0}", ex.GetType().Name);
-                    Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
-                    Thread.Sleep(1000); // Prevent tight loop on errors
-                }
-            }
+		/// <summary>
+		/// Main listener loop - processes incoming HTTP requests
+		/// Optimized: Removed excessive logging from hot path
+		/// </summary>
+		private static void ListenForRequests()
+		{
+			LogMessage(StatusAPIStringConstants.LOG_THREAD_STARTED);
 
-            Console.WriteLine("[Status API] === Listener thread STOPPED ===");
-            Console.WriteLine("[Status API] Reason: isRunning={0}, loopCount={1}", isRunning, loopCount);
-        }
+			while (isRunning)
+			{
+				try
+				{
+					// Wait for incoming request (blocking call)
+					HttpListenerContext context = listener.GetContext();
 
-        /// <summary>
-        /// Handle individual HTTP request
-        /// </summary>
-        private static void HandleRequest(HttpListenerContext context)
-        {
-            HttpListenerRequest request = context.Request;
-            HttpListenerResponse response = context.Response;
+					// Process request on thread pool to avoid blocking
+					ThreadPool.QueueUserWorkItem((_) => HandleRequest(context));
+				}
+				catch (HttpListenerException ex)
+				{
+					// Listener was stopped, exit gracefully
+					LogError(string.Format("HttpListenerException: {0} (Error code: {1})", ex.Message, ex.ErrorCode));
+					break;
+				}
+				catch (InvalidOperationException ex)
+				{
+					LogError(string.Format("InvalidOperationException: {0}", ex.Message));
+					break;
+				}
+				catch (Exception ex)
+				{
+					LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_LISTENER_LOOP, ex.Message));
+					LogError(string.Format("Exception type: {0}", ex.GetType().Name));
+					if (ex.StackTrace != null)
+					{
+						LogError("Stack trace: " + ex.StackTrace);
+					}
+					Thread.Sleep(StatusAPIConstants.ERROR_RETRY_DELAY_MS); // Prevent tight loop on errors
+				}
+			}
 
-            try
-            {
-                // Log incoming request
-                string clientIP = request.RemoteEndPoint?.Address?.ToString() ?? "unknown";
-                Console.WriteLine("[Status API] === Handling Request ===");
-                Console.WriteLine("[Status API] From: {0}", clientIP);
-                Console.WriteLine("[Status API] Method: {0}", request.HttpMethod);
-                Console.WriteLine("[Status API] Path: {0}", request.Url?.AbsolutePath);
+			LogMessage(StatusAPIStringConstants.LOG_THREAD_STOPPED);
+		}
 
-                // Add CORS headers (allow all origins for public API)
-                response.AddHeader("Access-Control-Allow-Origin", "*");
-                response.AddHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-                response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
+		#endregion
 
-                // Handle OPTIONS preflight request (CORS)
-                if (request.HttpMethod == "OPTIONS")
-                {
-                    Console.WriteLine("[Status API] OPTIONS request - sending 200");
-                    response.StatusCode = 200;
-                    response.Close();
-                    return;
-                }
+		#region Request Handling
 
-                // Only accept GET requests
-                if (request.HttpMethod != "GET")
-                {
-                    Console.WriteLine("[Status API] Invalid method, sending 405");
-                    SendErrorResponse(response, 405, "Method Not Allowed");
-                    return;
-                }
+		/// <summary>
+		/// Handle individual HTTP request
+		/// Optimized: Uses helper classes to reduce complexity
+		/// </summary>
+		private static void HandleRequest(HttpListenerContext context)
+		{
+			HttpListenerRequest request = context.Request;
+			HttpListenerResponse response = context.Response;
 
-                // Check endpoint
-                string path = request.Url?.AbsolutePath?.ToLower() ?? "/";
+			try
+			{
+				// Add CORS headers (allow all origins for public API)
+				AddCORSHeaders(response);
 
-                // Lightweight /ping endpoint for latency measurement
-                if (path == "/ping")
-                {
-                    response.StatusCode = 200;
-                    response.ContentType = "text/plain; charset=utf-8";
-                    byte[] buffer = Encoding.UTF8.GetBytes("pong");
-                    response.ContentLength64 = buffer.Length;
-                    response.OutputStream.Write(buffer, 0, buffer.Length);
-                    response.OutputStream.Close();
-                    return;
-                }
+				// Handle OPTIONS preflight request (CORS)
+				if (StatusAPIRequestRouter.IsOptionsRequest(request.HttpMethod))
+				{
+					response.StatusCode = StatusAPIConstants.STATUS_CODE_OK;
+					response.Close();
+					return;
+				}
 
-                // Main status endpoint
-                if (path != ENDPOINT.ToLower() && path != "/")
-                {
-                    Console.WriteLine("[Status API] Invalid path, sending 404");
-                    SendErrorResponse(response, 404, "Not Found");
-                    return;
-                }
+				// Only accept GET requests
+				if (!StatusAPIRequestRouter.IsValidMethod(request.HttpMethod))
+				{
+					SendErrorResponse(response, StatusAPIConstants.STATUS_CODE_METHOD_NOT_ALLOWED, StatusAPIStringConstants.ERROR_METHOD_NOT_ALLOWED);
+					return;
+				}
 
-                // Generate and send status JSON
-                Console.WriteLine("[Status API] Generating status JSON...");
-                string jsonResponse = GenerateStatusJSON();
-                Console.WriteLine("[Status API] JSON generated, sending response...");
-                SendJSONResponse(response, jsonResponse);
+				// Get normalized path
+				string path = StatusAPIRequestRouter.GetNormalizedPath(request.Url?.AbsolutePath);
 
-                Console.WriteLine("[Status API] Response sent successfully to {0}", clientIP);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[Status API] ERROR handling request: {0}", ex.Message);
-                Console.WriteLine("[Status API] Stack trace: {0}", ex.StackTrace);
-                try
-                {
-                    SendErrorResponse(response, 500, "Internal Server Error");
-                }
-                catch (Exception ex2)
-                {
-                    Console.WriteLine("[Status API] ERROR sending error response: {0}", ex2.Message);
-                }
-            }
-        }
+				// Handle ping endpoint
+				if (StatusAPIRequestRouter.IsPingEndpoint(path))
+				{
+					SendPingResponse(response);
+					return;
+				}
 
-        /// <summary>
-        /// Generate JSON status response with real server data
-        /// </summary>
-        private static string GenerateStatusJSON()
-        {
-            try
-            {
-                // Get current player count
-                int playersOnline = NetState.Instances.Count;
+				// Handle status endpoint
+				if (StatusAPIRequestRouter.IsStatusEndpoint(path))
+				{
+					SendStatusResponse(response);
+					return;
+				}
 
-                // Calculate uptime
-                TimeSpan uptime = DateTime.UtcNow - serverStartTime;
+				// Invalid path
+				SendErrorResponse(response, StatusAPIConstants.STATUS_CODE_NOT_FOUND, StatusAPIStringConstants.ERROR_NOT_FOUND);
+			}
+			catch (Exception ex)
+			{
+				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_HANDLING_REQUEST, ex.Message));
+				if (ex.StackTrace != null)
+				{
+					LogError("Stack trace: " + ex.StackTrace);
+				}
+				try
+				{
+					SendErrorResponse(response, StatusAPIConstants.STATUS_CODE_INTERNAL_SERVER_ERROR, StatusAPIStringConstants.ERROR_INTERNAL_SERVER);
+				}
+				catch (Exception ex2)
+				{
+					LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_SENDING_ERROR, ex2.Message));
+				}
+			}
+		}
 
-                // Get server name (update this to your shard name)
-                string serverName = "Nimeria Shard";
+		/// <summary>
+		/// Adds CORS headers to the response
+		/// </summary>
+		private static void AddCORSHeaders(HttpListenerResponse response)
+		{
+			response.AddHeader("Access-Control-Allow-Origin", StatusAPIConstants.CORS_ALLOW_ORIGIN);
+			response.AddHeader("Access-Control-Allow-Methods", StatusAPIConstants.CORS_ALLOW_METHODS);
+			response.AddHeader("Access-Control-Allow-Headers", StatusAPIConstants.CORS_ALLOW_HEADERS);
+		}
 
-                // Get server version (update as needed)
-                string serverVersion = "1.0.0";
+		/// <summary>
+		/// Sends ping response (lightweight endpoint for latency measurement)
+		/// </summary>
+		private static void SendPingResponse(HttpListenerResponse response)
+		{
+			response.StatusCode = StatusAPIConstants.STATUS_CODE_OK;
+			response.ContentType = StatusAPIConstants.CONTENT_TYPE_TEXT;
+			
+			byte[] buffer = Encoding.UTF8.GetBytes(StatusAPIStringConstants.PING_RESPONSE);
+			response.ContentLength64 = buffer.Length;
+			response.OutputStream.Write(buffer, 0, buffer.Length);
+			response.OutputStream.Close();
+		}
 
-                // Get expansion (update based on your server config)
-                string expansion = "HighSeas";
+		/// <summary>
+		/// Generates and sends status JSON response
+		/// </summary>
+		private static void SendStatusResponse(HttpListenerResponse response)
+		{
+			try
+			{
+				// Get current player count
+				int playersOnline = NetState.Instances.Count;
 
-                // Build JSON manually (or use JSON serializer if available)
-                StringBuilder json = new StringBuilder();
-                json.Append("{");
-                json.AppendFormat("\"serverName\":\"{0}\",", EscapeJSON(serverName));
-                json.Append("\"isOnline\":true,");
-                json.AppendFormat("\"playersOnline\":{0},", playersOnline);
-                json.AppendFormat("\"maxPlayers\":{0},", MAX_PLAYERS);
-                json.Append("\"uptime\":{");
-                json.AppendFormat("\"days\":{0},", uptime.Days);
-                json.AppendFormat("\"hours\":{0},", uptime.Hours);
-                json.AppendFormat("\"minutes\":{0},", uptime.Minutes);
-                json.AppendFormat("\"seconds\":{0},", uptime.Seconds);
-                json.AppendFormat("\"totalSeconds\":{0}", (long)uptime.TotalSeconds);
-                json.Append("},");
-                json.AppendFormat("\"serverVersion\":\"{0}\",", EscapeJSON(serverVersion));
-                json.AppendFormat("\"expansion\":\"{0}\",", EscapeJSON(expansion));
-                json.AppendFormat("\"timestamp\":\"{0}\"", DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"));
-                json.Append("}");
+				// Calculate uptime
+				TimeSpan uptime = DateTime.UtcNow - serverStartTime;
 
-                return json.ToString();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("[Status API] ERROR generating JSON: {0}", ex.Message);
-                // Return minimal valid JSON on error
-                return "{\"serverName\":\"Error\",\"isOnline\":false,\"error\":\"Failed to generate status\"}";
-            }
-        }
+				// Generate JSON using optimized builder
+				string jsonResponse = StatusAPIJSONBuilder.BuildStatusJSON(playersOnline, uptime);
+				SendJSONResponse(response, jsonResponse);
+			}
+			catch (Exception ex)
+			{
+				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_GENERATING_JSON, ex.Message));
+				// Return minimal valid JSON on error
+				string errorJSON = StatusAPIJSONBuilder.BuildErrorJSON(StatusAPIStringConstants.ERROR_GENERATE_STATUS, StatusAPIConstants.STATUS_CODE_INTERNAL_SERVER_ERROR);
+				SendJSONResponse(response, errorJSON);
+			}
+		}
 
-        /// <summary>
-        /// Escape special characters for JSON
-        /// </summary>
-        private static string EscapeJSON(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return "";
+		#endregion
 
-            return text
-                .Replace("\\", "\\\\")
-                .Replace("\"", "\\\"")
-                .Replace("\n", "\\n")
-                .Replace("\r", "\\r")
-                .Replace("\t", "\\t");
-        }
+		#region Response Helpers
 
-        /// <summary>
-        /// Send JSON response
-        /// </summary>
-        private static void SendJSONResponse(HttpListenerResponse response, string json)
-        {
-            response.ContentType = "application/json; charset=utf-8";
-            response.StatusCode = 200;
+		/// <summary>
+		/// Send JSON response
+		/// </summary>
+		private static void SendJSONResponse(HttpListenerResponse response, string json)
+		{
+			response.ContentType = StatusAPIConstants.CONTENT_TYPE_JSON;
+			response.StatusCode = StatusAPIConstants.STATUS_CODE_OK;
 
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
-            response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
+			byte[] buffer = Encoding.UTF8.GetBytes(json);
+			response.ContentLength64 = buffer.Length;
+			response.OutputStream.Write(buffer, 0, buffer.Length);
+			response.OutputStream.Close();
+		}
 
-        /// <summary>
-        /// Send error response
-        /// </summary>
-        private static void SendErrorResponse(HttpListenerResponse response, int statusCode, string message)
-        {
-            response.StatusCode = statusCode;
-            response.ContentType = "application/json; charset=utf-8";
+		/// <summary>
+		/// Send error response
+		/// </summary>
+		private static void SendErrorResponse(HttpListenerResponse response, int statusCode, string message)
+		{
+			response.StatusCode = statusCode;
+			response.ContentType = StatusAPIConstants.CONTENT_TYPE_JSON;
 
-            string json = $"{{\"error\":\"{EscapeJSON(message)}\",\"statusCode\":{statusCode}}}";
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
-            response.ContentLength64 = buffer.Length;
-            response.OutputStream.Write(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-    }
+			string json = StatusAPIJSONBuilder.BuildErrorJSON(message, statusCode);
+			byte[] buffer = Encoding.UTF8.GetBytes(json);
+			response.ContentLength64 = buffer.Length;
+			response.OutputStream.Write(buffer, 0, buffer.Length);
+			response.OutputStream.Close();
+		}
+
+		#endregion
+
+		#region Logging Helpers
+
+		/// <summary>
+		/// Logs a standard message with prefix
+		/// </summary>
+		private static void LogMessage(string message)
+		{
+			Console.WriteLine("{0} {1}", StatusAPIStringConstants.LOG_PREFIX, message);
+		}
+
+		/// <summary>
+		/// Logs an error message with prefix
+		/// </summary>
+		private static void LogError(string message)
+		{
+			Console.WriteLine("{0} {1}: {2}", StatusAPIStringConstants.LOG_PREFIX, StatusAPIStringConstants.LOG_ERROR, message);
+		}
+
+		#endregion
+	}
 }
