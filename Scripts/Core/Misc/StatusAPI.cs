@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using Server;
 using Server.Network;
-using Server.Misc.Helpers;
 
 namespace Server.Misc
 {
@@ -70,7 +69,7 @@ namespace Server.Misc
 				LogMessage(StatusAPIStringConstants.LOG_THREAD_CREATED);
 
 				// Initialize CPU monitor
-				StatusAPICpuMonitor.Initialize();
+				Helpers.StatusAPICpuMonitor.Initialize();
 			}
 			catch (Exception ex)
 			{
@@ -107,7 +106,7 @@ namespace Server.Misc
 					}
 
 					// Shutdown CPU monitor
-					StatusAPICpuMonitor.Shutdown();
+					Helpers.StatusAPICpuMonitor.Shutdown();
 
 					LogMessage(StatusAPIStringConstants.LOG_STOPPED);
 				}
@@ -185,7 +184,7 @@ namespace Server.Misc
 				AddCORSHeaders(response);
 
 				// Handle OPTIONS preflight request (CORS)
-				if (StatusAPIRequestRouter.IsOptionsRequest(request.HttpMethod))
+				if (Helpers.StatusAPIRequestRouter.IsOptionsRequest(request.HttpMethod))
 				{
 					response.StatusCode = StatusAPIConstants.STATUS_CODE_OK;
 					response.Close();
@@ -193,24 +192,24 @@ namespace Server.Misc
 				}
 
 				// Only accept GET requests
-				if (!StatusAPIRequestRouter.IsValidMethod(request.HttpMethod))
+				if (!Helpers.StatusAPIRequestRouter.IsValidMethod(request.HttpMethod))
 				{
 					SendErrorResponse(response, StatusAPIConstants.STATUS_CODE_METHOD_NOT_ALLOWED, StatusAPIStringConstants.ERROR_METHOD_NOT_ALLOWED);
 					return;
 				}
 
 				// Get normalized path
-				string path = StatusAPIRequestRouter.GetNormalizedPath(request.Url?.AbsolutePath);
+				string path = Helpers.StatusAPIRequestRouter.GetNormalizedPath(request.Url?.AbsolutePath);
 
 				// Handle ping endpoint
-				if (StatusAPIRequestRouter.IsPingEndpoint(path))
+				if (Helpers.StatusAPIRequestRouter.IsPingEndpoint(path))
 				{
 					SendPingResponse(response);
 					return;
 				}
 
 				// Handle status endpoint
-				if (StatusAPIRequestRouter.IsStatusEndpoint(path))
+				if (Helpers.StatusAPIRequestRouter.IsStatusEndpoint(path))
 				{
 					SendStatusResponse(response);
 					return;
@@ -275,14 +274,14 @@ namespace Server.Misc
 				TimeSpan uptime = DateTime.UtcNow - serverStartTime;
 
 				// Generate JSON using optimized builder
-				string jsonResponse = StatusAPIJSONBuilder.BuildStatusJSON(playersOnline, uptime);
+				string jsonResponse = Helpers.StatusAPIJSONBuilder.BuildStatusJSON(playersOnline, uptime);
 				SendJSONResponse(response, jsonResponse);
 			}
 			catch (Exception ex)
 			{
 				LogError(string.Format(StatusAPIStringConstants.LOG_ERROR_GENERATING_JSON, ex.Message));
 				// Return minimal valid JSON on error
-				string errorJSON = StatusAPIJSONBuilder.BuildErrorJSON(StatusAPIStringConstants.ERROR_GENERATE_STATUS, StatusAPIConstants.STATUS_CODE_INTERNAL_SERVER_ERROR);
+				string errorJSON = Helpers.StatusAPIJSONBuilder.BuildErrorJSON(StatusAPIStringConstants.ERROR_GENERATE_STATUS, StatusAPIConstants.STATUS_CODE_INTERNAL_SERVER_ERROR);
 				SendJSONResponse(response, errorJSON);
 			}
 		}
@@ -313,7 +312,7 @@ namespace Server.Misc
 			response.StatusCode = statusCode;
 			response.ContentType = StatusAPIConstants.CONTENT_TYPE_JSON;
 
-			string json = StatusAPIJSONBuilder.BuildErrorJSON(message, statusCode);
+			string json = Helpers.StatusAPIJSONBuilder.BuildErrorJSON(message, statusCode);
 			byte[] buffer = Encoding.UTF8.GetBytes(json);
 			response.ContentLength64 = buffer.Length;
 			response.OutputStream.Write(buffer, 0, buffer.Length);
