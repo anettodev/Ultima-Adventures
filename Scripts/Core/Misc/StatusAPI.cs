@@ -70,7 +70,7 @@ namespace Server.Misc
 				LogMessage(StatusAPIStringConstants.LOG_THREAD_CREATED);
 
 				// Initialize CPU monitor
-				StatusAPIHelpers.StatusAPICpuMonitor.Initialize();
+				StatusAPICpuMonitor.Initialize();
 			}
 			catch (Exception ex)
 			{
@@ -107,7 +107,7 @@ namespace Server.Misc
 					}
 
 					// Shutdown CPU monitor
-					StatusAPIHelpers.StatusAPICpuMonitor.Shutdown();
+					StatusAPICpuMonitor.Shutdown();
 
 					LogMessage(StatusAPIStringConstants.LOG_STOPPED);
 				}
