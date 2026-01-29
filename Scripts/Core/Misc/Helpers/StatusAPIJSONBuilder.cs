@@ -1,8 +1,7 @@
 using System;
 using System.Text;
-using Server.Misc;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for building JSON responses in StatusAPI.

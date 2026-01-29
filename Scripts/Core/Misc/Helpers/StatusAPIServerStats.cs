@@ -1,7 +1,7 @@
 using System;
 using Server.Accounting;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for gathering server statistics for StatusAPI

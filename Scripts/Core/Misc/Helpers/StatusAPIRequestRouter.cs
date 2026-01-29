@@ -1,7 +1,6 @@
 using System;
-using Server.Misc;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// Helper class for routing HTTP requests in StatusAPI.

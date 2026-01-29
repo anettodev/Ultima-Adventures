@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using Server;
 
-namespace Server.Misc.Helpers
+namespace Server.Misc
 {
 	/// <summary>
 	/// CPU usage monitor for StatusAPI
