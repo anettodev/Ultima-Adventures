@@ -47,4 +47,23 @@
       <HintPath>..\UOArchitectInterface.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <!-- ============================================ -->
+  <!-- EXCLUDE test-scripts FROM COMPILATION       -->
+  <!-- test-scripts are for evaluation only        -->
+  <!-- They will NOT be compiled into Scripts.dll  -->
+  <!-- They will NOT be available in-game          -->
+  <!-- ============================================ -->
+  <ItemGroup>
+    <Compile Remove="test-scripts/**/*.cs" />
+    <None Include="test-scripts/**/*.cs" />
+  </ItemGroup>
+
+  <!-- ============================================ -->
+  <!-- TO TEMPORARILY ENABLE test-scripts:         -->
+  <!-- Comment out the Remove line above           -->
+  <!-- Uncomment the line below                    -->
+  <!-- <Compile Include="test-scripts/**/*.cs" />  -->
+  <!-- ============================================ -->
+
 </Project>

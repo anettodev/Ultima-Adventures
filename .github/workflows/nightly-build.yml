@@ -1,0 +1,186 @@
+name: Nightly Build (Dev)
+
+# Runs twice weekly on dev branch to catch build regressions
+# Monday and Thursday at 3 AM UTC
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  # Monday at 3 AM UTC
+    - cron: '0 3 * * 4'  # Thursday at 3 AM UTC
+  workflow_dispatch:
+
+env:
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  nightly:
+    name: Nightly Build (Dev Branch - Linux/Mono)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout dev branch
+      uses: actions/checkout@v4
+      with:
+        ref: dev  # Always build from dev branch
+
+    - name: Install Mono and build tools
+      run: |
+        echo "Installing Mono and MSBuild..."
+        sudo apt-get update
+        sudo apt-get install -y mono-complete msbuild nuget
+
+        echo "Installed versions:"
+        mono --version
+        msbuild -version
+
+    - name: Restore NuGet packages
+      run: nuget restore Scripts/Scripts.csproj
+
+    - name: Build Scripts.csproj
+      run: |
+        msbuild Scripts/Scripts.csproj \
+          /p:Configuration=${{ env.BUILD_CONFIGURATION }} \
+          /p:Platform=AnyCPU \
+          /p:OutputPath=../bin/Release/ \
+          /verbosity:minimal
+
+    - name: Verify build
+      run: |
+        if [ -f "bin/Release/Scripts.dll" ]; then
+          echo "✓ Nightly build successful"
+          SIZE=$(du -h bin/Release/Scripts.dll | cut -f1)
+          echo "  Scripts.dll size: $SIZE"
+        else
+          echo "✗ Nightly build failed - Scripts.dll not found"
+          exit 1
+        fi
+
+    - name: Get version
+      id: version
+      run: |
+        DATE=$(date +%Y.%m.%d)
+        COMMIT=$(echo "${{ github.sha }}" | cut -c1-7)
+        DAY=$(date +%A)
+        VERSION="nightly-$DATE-$COMMIT-$DAY"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Nightly build version: $VERSION"
+
+    - name: Create build info
+      run: |
+        cat > bin/Release/README.md << 'EOF'
+        # NMS UO Server - Nightly Build
+
+        ⚠️ **WARNING: This is an automated nightly build**
+        - Built from dev branch (Linux/Mono)
+        - Not tested for production use
+        - May contain unstable features
+        - Use at your own risk
+
+        ## Build Information
+
+        - **Version:** ${{ steps.version.outputs.version }}
+        - **Branch:** dev
+        - **Platform:** Linux/Mono
+        - **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        - **Commit:** ${{ github.sha }}
+
+        ## Usage
+
+        Replace your development Scripts.dll with this version:
+
+        ```bash
+        # Backup current version
+        cp bin/Scripts.dll bin/Scripts.dll.backup
+
+        # Copy nightly build
+        cp Scripts.dll bin/Scripts.dll
+
+        # Restart server
+        systemctl restart ultima-server
+        ```
+
+        ## Testing Nightly Builds
+
+        1. Deploy to test server only (never production)
+        2. Verify server starts without errors
+        3. Test critical functionality
+        4. Monitor logs for issues
+
+        ---
+
+        **Note:** This is a development build. For production, use official releases from main branch.
+        EOF
+
+    - name: Package nightly build
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        PACKAGE_DIR="nms-uoserver-$VERSION"
+
+        mkdir -p "$PACKAGE_DIR/bin"
+
+        # Copy Scripts.dll and README
+        cp bin/Release/Scripts.dll "$PACKAGE_DIR/bin/"
+        cp bin/Release/README.md "$PACKAGE_DIR/"
+
+        # Create zip
+        zip -r "$PACKAGE_DIR.zip" "$PACKAGE_DIR"
+
+        echo "✓ Package created: $PACKAGE_DIR.zip"
+        ls -lh "$PACKAGE_DIR.zip"
+
+    - name: Upload nightly artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nightly-${{ steps.version.outputs.version }}
+        path: nms-uoserver-${{ steps.version.outputs.version }}.zip
+        retention-days: 5  # Keep only 5 days (same as dev builds)
+
+    - name: Create issue on failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const date = new Date().toISOString().split('T')[0];
+          const day = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Nightly build failed - ${day}, ${date}`,
+            body: `## 🚨 Nightly Build Failure\n\n` +
+                  `The nightly build on **dev** branch has failed.\n\n` +
+                  `- **Date:** ${date}\n` +
+                  `- **Day:** ${day}\n` +
+                  `- **Branch:** dev\n` +
+                  `- **Platform:** Linux/Mono\n` +
+                  `- **Workflow Run:** [View Logs](${context.payload.repository.html_url}/actions/runs/${context.runId})\n\n` +
+                  `### Action Required\n\n` +
+                  `1. Check the workflow logs for errors\n` +
+                  `2. Fix any compilation issues on dev branch\n` +
+                  `3. Verify the fix with a manual push to dev\n\n` +
+                  `This issue was automatically created by the nightly build workflow.`,
+            labels: ['build-failure', 'automated', 'nightly-build', 'dev']
+          });
+
+    - name: Build summary
+      if: always()
+      run: |
+        echo "## Nightly Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** dev" >> $GITHUB_STEP_SUMMARY
+        echo "- **Platform:** Linux/Mono 🐧" >> $GITHUB_STEP_SUMMARY
+        echo "- **Schedule:** Monday & Thursday at 3 AM UTC" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f "bin/Release/Scripts.dll" ]; then
+          SIZE=$(du -h bin/Release/Scripts.dll | cut -f1)
+          echo "✅ **Build Status:** Success" >> $GITHUB_STEP_SUMMARY
+          echo "- **Scripts.dll size:** $SIZE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Build Status:** Failed" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🌙 Automated nightly build to catch regressions early." >> $GITHUB_STEP_SUMMARY

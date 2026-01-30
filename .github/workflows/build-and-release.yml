@@ -1,0 +1,398 @@
+name: Build Production (Windows)
+
+# Production builds using Windows + MSBuild for maximum compatibility
+# For main branch and releases only
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - beta
+
+env:
+  DOTNET_VERSION: '4.8'
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build:
+    name: Build Production (Windows/MSBuild)
+    runs-on: windows-latest  # Windows for maximum .NET Framework 4.8 compatibility
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for versioning
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+
+    - name: Restore NuGet packages
+      run: nuget restore Scripts/Scripts.csproj
+
+    - name: Build Scripts.csproj
+      run: msbuild Scripts/Scripts.csproj /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:Platform=AnyCPU /p:OutputPath=../bin/Release/
+
+    - name: Verify Scripts.dll
+      run: |
+        if (Test-Path "bin/Release/Scripts.dll") {
+          Write-Host "✓ Scripts.dll compiled successfully"
+          $size = (Get-Item "bin/Release/Scripts.dll").Length / 1MB
+          Write-Host "  Size: $($size.ToString('F2')) MB"
+        } else {
+          Write-Error "✗ Scripts.dll not found!"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Get version info
+      id: version
+      run: |
+        $version = "1.0.0"
+        $commit = "${{ github.sha }}".Substring(0,7)
+        $branch = "${{ github.ref_name }}"
+
+        # If tagged release, use tag version
+        if ("${{ github.ref }}" -match "refs/tags/v(.+)") {
+          $version = $matches[1]
+        } else {
+          # Use date-based version for non-tagged builds
+          $date = Get-Date -Format "yyyy.MM.dd"
+          $version = "$date-$commit"
+        }
+
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "commit=$commit" >> $env:GITHUB_OUTPUT
+        echo "branch=$branch" >> $env:GITHUB_OUTPUT
+
+        Write-Host "Version: $version"
+        Write-Host "Commit: $commit"
+        Write-Host "Branch: $branch"
+      shell: pwsh
+
+    - name: Create version file
+      run: |
+        @"
+        NMS UO Server Server
+        Version: ${{ steps.version.outputs.version }}
+        Build Date: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
+        Commit: ${{ steps.version.outputs.commit }}
+        Branch: ${{ steps.version.outputs.branch }}
+        "@ | Out-File -FilePath "bin/Release/VERSION.txt"
+      shell: pwsh
+
+    - name: Package production binaries
+      run: |
+        $releaseDir = "bin/Release"
+        $packageDir = "nms-uoserver-${{ steps.version.outputs.version }}"
+
+        # Create package directory structure
+        New-Item -ItemType Directory -Force -Path "$packageDir/bin"
+        New-Item -ItemType Directory -Force -Path "$packageDir/Data"
+        New-Item -ItemType Directory -Force -Path "$packageDir/Saves"
+        New-Item -ItemType Directory -Force -Path "$packageDir/Logs"
+
+        # Copy compiled binaries
+        Copy-Item "$releaseDir/Scripts.dll" "$packageDir/bin/"
+        Copy-Item "LinuxServer.exe" "$packageDir/" -ErrorAction SilentlyContinue
+        Copy-Item "WindowsServer.exe" "$packageDir/" -ErrorAction SilentlyContinue
+
+        # Copy dependencies
+        Copy-Item "*.dll" "$packageDir/bin/" -Exclude "Scripts.dll"
+
+        # Copy data files (configs only, not saves)
+        Copy-Item "Data/Regions.xml" "$packageDir/Data/" -ErrorAction SilentlyContinue
+        Copy-Item "Data/*.xml" "$packageDir/Data/" -ErrorAction SilentlyContinue
+
+        # Copy version file
+        Copy-Item "$releaseDir/VERSION.txt" "$packageDir/"
+
+        # Create README for deployment
+        @"
+        # NMS UO Server - Production Binaries
+
+        Version: ${{ steps.version.outputs.version }}
+        Build: ${{ steps.version.outputs.commit }}
+
+        ## Deployment Instructions
+
+        1. Extract this package to your server directory
+        2. Copy your UO client Files/ directory to the root
+        3. Configure Data/Regions.xml if needed
+        4. Run WindowsServer.exe (Windows) or LinuxServer.exe (Linux)
+
+        ## Directory Structure
+
+        - bin/Scripts.dll - Compiled game logic
+        - bin/*.dll - Dependencies
+        - Data/ - Configuration files
+        - Saves/ - World save directory (empty, will be populated)
+        - Logs/ - Log directory (empty)
+
+        ## Requirements
+
+        - .NET Framework 4.8 (Windows) or Mono (Linux)
+        - UO client files in Files/ directory
+        - ~2GB RAM minimum
+
+        ## Notes
+
+        - This package contains ONLY compiled binaries
+        - Source code NOT included (for security)
+        - Files/ directory NOT included (too large, provide your own)
+        - Existing Saves/ preserved during deployment
+
+        "@ | Out-File -FilePath "$packageDir/README.md"
+
+        # Create deployment script
+        @"
+        #!/bin/bash
+        # deploy.sh - Production deployment script
+
+        echo "Deploying NMS UO Server ${{ steps.version.outputs.version }}..."
+
+        # Backup existing Scripts.dll
+        if [ -f "bin/Scripts.dll" ]; then
+          cp bin/Scripts.dll bin/Scripts.dll.backup
+          echo "✓ Backed up existing Scripts.dll"
+        fi
+
+        # Copy new binaries
+        cp -r bin/* /path/to/production/bin/
+        cp -r Data/* /path/to/production/Data/
+
+        echo "✓ Deployment complete"
+        echo "  Restart server to load new version"
+        "@ | Out-File -FilePath "$packageDir/deploy.sh"
+
+        # Create zip archive
+        Compress-Archive -Path "$packageDir/*" -DestinationPath "$packageDir.zip"
+
+        Write-Host "✓ Package created: $packageDir.zip"
+        Get-Item "$packageDir.zip" | Select-Object Name, Length
+      shell: pwsh
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nms-uoserver-${{ steps.version.outputs.version }}
+        path: nms-uoserver-${{ steps.version.outputs.version }}.zip
+        retention-days: 30
+
+    - name: Upload Scripts.dll only (for quick downloads)
+      uses: actions/upload-artifact@v4
+      with:
+        name: Scripts-dll-${{ steps.version.outputs.version }}
+        path: bin/Release/Scripts.dll
+        retention-days: 30
+
+  test:
+    name: Test Build
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: nms-uoserver-*
+        merge-multiple: true
+
+    - name: Extract and verify
+      run: |
+        $zipFile = Get-ChildItem -Filter "nms-uoserver-*.zip" | Select-Object -First 1
+        Expand-Archive -Path $zipFile.FullName -DestinationPath "test-deploy"
+
+        # Verify critical files exist
+        $criticalFiles = @(
+          "bin/Scripts.dll",
+          "VERSION.txt",
+          "README.md"
+        )
+
+        $allExist = $true
+        foreach ($file in $criticalFiles) {
+          $path = "test-deploy/$file"
+          if (Test-Path $path) {
+            Write-Host "✓ $file exists"
+          } else {
+            Write-Error "✗ $file missing!"
+            $allExist = $false
+          }
+        }
+
+        if (-not $allExist) {
+          exit 1
+        }
+
+        Write-Host "`n✓ All critical files present"
+      shell: pwsh
+
+  release:
+    name: Create GitHub Release
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: nms-uoserver-*
+        merge-multiple: true
+
+    - name: Download Scripts.dll artifact
+      uses: actions/download-artifact@v4
+      with:
+        pattern: Scripts-dll-*
+        merge-multiple: true
+
+    - name: Get version
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" =~ refs/tags/v(.+) ]]; then
+          echo "version=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+        else
+          version="$(date +%Y.%m.%d)-${GITHUB_SHA:0:7}"
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        cat > RELEASE_NOTES.md << 'EOF'
+        ## NMS UO Server - Release ${{ steps.version.outputs.version }}
+
+        ### 📦 What's Included
+
+        - **Scripts.dll** - Compiled game logic (pre-built binary)
+        - **Dependencies** - All required DLL files
+        - **Server executables** - Windows and Linux versions
+        - **Configuration files** - Data/Regions.xml and other configs
+        - **Deployment scripts** - Ready-to-use deployment tools
+
+        ### 🚀 Quick Start
+
+        1. Download `nms-uoserver-${{ steps.version.outputs.version }}.zip`
+        2. Extract to your server directory
+        3. Add your UO client `Files/` directory
+        4. Run `WindowsServer.exe` or `LinuxServer.exe`
+
+        ### 📋 Requirements
+
+        - .NET Framework 4.8 (Windows) or Mono 6.0+ (Linux)
+        - UO client files (not included)
+        - ~2GB RAM minimum
+
+        ### 🔒 Security Note
+
+        This release contains **compiled binaries only** - no source code included.
+
+        ### 📝 Changes
+
+        $(git log --pretty=format:"- %s (%h)" $(git describe --tags --abbrev=0 @^)..@ 2>/dev/null || echo "Initial release")
+
+        ---
+
+        **Build Information:**
+        - Commit: ${{ github.sha }}
+        - Build Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        - Build Number: ${{ github.run_number }}
+        EOF
+
+        cat RELEASE_NOTES.md
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: NMS UO Server v${{ steps.version.outputs.version }}
+        body_path: RELEASE_NOTES.md
+        prerelease: ${{ steps.version.outputs.is_prerelease }}
+        files: |
+          nms-uoserver-*.zip
+          Scripts.dll
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Production Server
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://your-server.com
+
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        pattern: nms-uoserver-*
+        merge-multiple: true
+
+    - name: Extract package
+      run: |
+        unzip nms-uoserver-*.zip -d deploy
+        ls -lah deploy/
+
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to production
+      run: |
+        # Backup current version on server
+        ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} \
+          "cd ${{ secrets.PRODUCTION_PATH }} && \
+           mkdir -p backups && \
+           cp bin/Scripts.dll backups/Scripts.dll.$(date +%Y%m%d-%H%M%S)"
+
+        # Upload new binaries
+        rsync -avz --progress \
+          deploy/bin/ \
+          ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }}:${{ secrets.PRODUCTION_PATH }}/bin/
+
+        rsync -avz --progress \
+          deploy/Data/ \
+          ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }}:${{ secrets.PRODUCTION_PATH }}/Data/
+
+        echo "✓ Files deployed to production"
+
+    - name: Restart server (optional)
+      if: github.event.inputs.auto_restart == 'true'
+      run: |
+        ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} \
+          "systemctl restart ultima-server"
+
+        echo "✓ Server restarted"
