@@ -1,0 +1,70 @@
+#!/bin/bash
+# UO Server Maintenance Mode Manager
+# Manages maintenance mode flag and server process
+#
+# Usage:
+#   ./nms-maintenance start   # Enable maintenance mode and stop server
+#   ./nms-maintenance stop    # Disable maintenance mode and start server
+#   ./nms-maintenance status  # Check maintenance mode status
+
+MAINTENANCE_FLAG="/tmp/uo-maintenance-mode"
+SERVER_DIR="/opt/Ultima-Adventures"
+
+case "${1:-status}" in
+    start)
+        if [ -f "$MAINTENANCE_FLAG" ]; then
+            echo "Maintenance mode is already active."
+        else
+            echo "Enabling maintenance mode..."
+            echo "$(date): Maintenance mode enabled by $(whoami)" > "$MAINTENANCE_FLAG"
+
+            echo "Stopping server..."
+            if pgrep -f "mono.*LinuxServer" > /dev/null; then
+                pkill -f "mono.*LinuxServer"
+                sleep 2
+
+                if pgrep -f "mono.*LinuxServer" > /dev/null; then
+                    echo "Warning: Server still running. Force killing..."
+                    pkill -9 -f "mono.*LinuxServer"
+                    sleep 1
+                fi
+
+                echo "Server stopped."
+            else
+                echo "Server was not running."
+            fi
+
+            echo "Maintenance mode ENABLED. Auto-restart disabled."
+        fi
+        ;;
+    stop)
+        if [ -f "$MAINTENANCE_FLAG" ]; then
+            echo "Disabling maintenance mode..."
+            rm "$MAINTENANCE_FLAG"
+            echo "Maintenance mode DISABLED. Auto-restart enabled."
+            echo "Starting server..."
+            cd "$SERVER_DIR"
+            screen -dmS uoshard mono LinuxServer.exe
+            sleep 2
+            pgrep -f "mono.*LinuxServer" && echo "Server started successfully"
+        else
+            echo "Maintenance mode is not active."
+        fi
+        ;;
+    status)
+        if [ -f "$MAINTENANCE_FLAG" ]; then
+            echo "Maintenance mode: ACTIVE"
+            cat "$MAINTENANCE_FLAG"
+        else
+            echo "Maintenance mode: INACTIVE"
+        fi
+        ;;
+    *)
+        echo "Usage: nms-maintenance {start|stop|status}"
+        echo ""
+        echo "  start  - Enable maintenance mode and stop server"
+        echo "  stop   - Disable maintenance mode and start server"
+        echo "  status - Check maintenance mode status"
+        exit 1
+        ;;
+esac
