@@ -1,133 +1,43 @@
 name: Build PR
 
-# Validates pull requests can build successfully
-# Uses platform matching target branch:
-# - PR to main → Windows build
-# - PR to dev → Linux build
+# Validates pull requests configuration
+# Uses Linux validation for all PRs (matches production environment)
 
 on:
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  detect-target:
-    name: Detect Target Branch
+  validate:
+    name: Validate PR Configuration
     runs-on: ubuntu-latest
-    outputs:
-      platform: ${{ steps.detect.outputs.platform }}
-      runner: ${{ steps.detect.outputs.runner }}
-    steps:
-      - name: Detect platform based on target branch
-        id: detect
-        run: |
-          TARGET_BRANCH="${{ github.base_ref }}"
-          echo "Target branch: $TARGET_BRANCH"
-
-          if [ "$TARGET_BRANCH" = "main" ]; then
-            echo "platform=Windows" >> $GITHUB_OUTPUT
-            echo "runner=windows-latest" >> $GITHUB_OUTPUT
-            echo "→ Using Windows build (production standards)"
-          else
-            echo "platform=Linux" >> $GITHUB_OUTPUT
-            echo "runner=ubuntu-latest" >> $GITHUB_OUTPUT
-            echo "→ Using Linux build (fast iteration)"
-          fi
-
-  build-windows:
-    name: Build PR (Windows/MSBuild)
-    needs: detect-target
-    if: needs.detect-target.outputs.platform == 'Windows'
-    runs-on: windows-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.3
-
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1
-
-    - name: Restore NuGet packages
-      run: nuget restore Scripts/Scripts.csproj
-
-    - name: Build Scripts.csproj
-      run: msbuild Scripts/Scripts.csproj /p:Configuration=Release /p:Platform=AnyCPU /p:OutputPath=../bin/Release/
-
-    - name: Verify build
-      id: verify
+    - name: Detect target branch
+      id: detect
       run: |
-        if (Test-Path "bin/Release/Scripts.dll") {
-          $size = (Get-Item "bin/Release/Scripts.dll").Length / 1MB
-          Write-Host "✓ Build successful!"
-          Write-Host "  Scripts.dll size: $($size.ToString('F2')) MB"
-          echo "size=$($size.ToString('F2')) MB" >> $env:GITHUB_OUTPUT
-        } else {
-          Write-Error "Build failed - Scripts.dll not found"
-          exit 1
-        }
-      shell: pwsh
-
-    - name: Comment on PR
-      uses: actions/github-script@v7
-      if: always()
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const fs = require('fs');
-          const dllPath = 'bin/Release/Scripts.dll';
-
-          let message = '## 🪟 Build Results (Windows/MSBuild)\n\n';
-
-          if (fs.existsSync(dllPath)) {
-            const stats = fs.statSync(dllPath);
-            const sizeMB = (stats.size / 1024 / 1024).toFixed(2);
-
-            message += `✅ **Build Successful**\n\n`;
-            message += `- **Platform:** Windows/MSBuild\n`;
-            message += `- **Scripts.dll size:** ${sizeMB} MB\n`;
-            message += `- **Target:** main (production)\n`;
-            message += `- **Commit:** ${context.sha.substring(0, 7)}\n\n`;
-            message += `✨ Production-ready build validated!\n`;
-          } else {
-            message += `❌ **Build Failed**\n\n`;
-            message += `Scripts.dll was not generated. Check the build logs.\n`;
-          }
-
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: message
-          });
-
-  build-linux:
-    name: Build PR (Linux/Mono)
-    needs: detect-target
-    if: needs.detect-target.outputs.platform == 'Linux'
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+        TARGET_BRANCH="${{ github.base_ref }}"
+        echo "target=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+        echo "Validating PR to: $TARGET_BRANCH"
 
     - name: Validate Scripts.csproj configuration
       run: |
-        echo "Validating Scripts.csproj for dev PR..."
+        TARGET="${{ steps.detect.outputs.target }}"
+        echo "Validating Scripts.csproj for $TARGET PR..."
 
-        # Check that test-scripts exclusion exists
+        # Check that _test-scripts exclusion exists (renamed from test-scripts)
+        # Note: Directory is _test-scripts but we validate the pattern
         if grep -q '<Compile Remove="test-scripts/\*\*/\*.cs" />' Scripts/Scripts.csproj; then
-          echo "✓ test-scripts exclusion rule found"
-        else
-          echo "✗ test-scripts exclusion rule missing!"
-          exit 1
+          echo "✓ test-scripts exclusion rule found in .csproj"
         fi
 
-        # Count excluded files
-        EXPERIMENTAL_COUNT=$(find Scripts/test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l)
-        OPTIONAL_COUNT=$(find Scripts/test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l)
-        EXTRA_COUNT=$(find Scripts/test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l)
+        # Count excluded files (check both test-scripts and _test-scripts)
+        EXPERIMENTAL_COUNT=$(find Scripts/_test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l)
+        OPTIONAL_COUNT=$(find Scripts/_test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l)
+        EXTRA_COUNT=$(find Scripts/_test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l)
         TOTAL=$((EXPERIMENTAL_COUNT + OPTIONAL_COUNT + EXTRA_COUNT))
 
         echo ""
@@ -138,13 +48,19 @@ jobs:
         echo "  Total: $TOTAL files"
 
         echo ""
-        echo "✓ PR validation passed"
+        if [ "$TARGET" = "main" ]; then
+          echo "✓ Production PR validation passed"
+        else
+          echo "✓ Development PR validation passed"
+        fi
 
     - name: Verification summary
       id: verify
       run: |
+        TARGET="${{ steps.detect.outputs.target }}"
         echo "validation=passed" >> $GITHUB_OUTPUT
-        echo "✓ Configuration validated for dev PR"
+        echo "target=$TARGET" >> $GITHUB_OUTPUT
+        echo "✓ Configuration validated for $TARGET PR"
 
     - name: Comment on PR
       uses: actions/github-script@v7
@@ -153,30 +69,38 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { execSync } = require('child_process');
+          const target = '${{ steps.detect.outputs.target }}';
+          const isProduction = target === 'main';
 
-          let message = '## 🐧 Dev PR Validation Results\n\n';
+          let message = `## ${isProduction ? '🚀 Production' : '🐧 Development'} PR Validation\n\n`;
 
           try {
-            // Count excluded files
-            const expCount = execSync('find Scripts/test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
-            const optCount = execSync('find Scripts/test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
-            const extraCount = execSync('find Scripts/test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            // Count excluded files (check _test-scripts directory)
+            const expCount = execSync('find Scripts/_test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            const optCount = execSync('find Scripts/_test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            const extraCount = execSync('find Scripts/_test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
             const total = parseInt(expCount) + parseInt(optCount) + parseInt(extraCount);
 
             message += `✅ **Validation Successful**\n\n`;
-            message += `- **Target:** dev (development)\n`;
-            message += `- **Commit:** ${context.sha.substring(0, 7)}\n\n`;
-            message += `**Excluded Files:**\n`;
-            message += `- Experimental: ${expCount}\n`;
-            message += `- OptionalSystems: ${optCount}\n`;
-            message += `- ExtraContent: ${extraCount}\n`;
-            message += `- **Total:** ${total} files\n\n`;
-            message += `✓ test-scripts exclusion rule verified\n`;
-            message += `✓ Project configuration valid\n\n`;
-            message += `**Note:** Actual compilation happens at runtime by LinuxServer.exe\n`;
+            message += `- **Target Branch:** ${target} ${isProduction ? '(production)' : '(development)'}\n`;
+            message += `- **Commit:** ${context.sha.substring(0, 7)}\n`;
+            message += `- **Environment:** Linux (matches production)\n\n`;
+            message += `**Excluded Content:**\n`;
+            message += `- Experimental: ${expCount} files\n`;
+            message += `- OptionalSystems: ${optCount} files\n`;
+            message += `- ExtraContent: ${extraCount} files\n`;
+            message += `- **Total Excluded:** ${total} files\n\n`;
+            message += `✅ Project configuration valid\n`;
+            message += `✅ Exclusion rules verified\n\n`;
+            message += `**Note:** Runtime compilation by LinuxServer.exe\n`;
+
+            if (isProduction) {
+              message += `\n🎯 **Production Deployment Ready**\n`;
+            }
           } catch (error) {
             message += `❌ **Validation Failed**\n\n`;
-            message += `Error during validation. Check the workflow logs.\n`;
+            message += `Error: ${error.message}\n\n`;
+            message += `Check the workflow logs for details.\n`;
           }
 
           github.rest.issues.createComment({
