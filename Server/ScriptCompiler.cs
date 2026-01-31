@@ -778,7 +778,14 @@ namespace Server
 		public static void GetScripts( List<string> list, string path, string filter )
 		{
 			foreach( string dir in Directory.GetDirectories( path ) )
+			{
+				// Skip test-scripts directory (excluded content for evaluation)
+				string dirName = Path.GetFileName( dir );
+				if( dirName.Equals( "test-scripts", StringComparison.OrdinalIgnoreCase ) )
+					continue;
+
 				GetScripts( list, dir, filter );
+			}
 
 			list.AddRange( Directory.GetFiles( path, filter ) );
 		}

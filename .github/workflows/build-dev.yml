@@ -1,0 +1,171 @@
+name: Build Dev (Linux)
+
+# Fast builds for development using Linux + Mono
+# For dev branch only - faster iteration, lower cost
+
+on:
+  push:
+    branches: [ dev ]
+  workflow_dispatch:
+  # Note: PR validation handled by build-pr.yml
+
+env:
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  build-dev:
+    name: Build Scripts.dll (Linux/Mono)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate Scripts.csproj configuration
+      run: |
+        echo "Validating Scripts.csproj..."
+
+        # Check that test-scripts exclusion exists
+        if grep -q '<Compile Remove="test-scripts/\*\*/\*.cs" />' Scripts/Scripts.csproj; then
+          echo "✓ test-scripts exclusion rule found"
+        else
+          echo "✗ test-scripts exclusion rule missing!"
+          exit 1
+        fi
+
+        # Validate XML syntax
+        if command -v xmllint &> /dev/null; then
+          xmllint --noout Scripts/Scripts.csproj && echo "✓ Valid XML syntax"
+        else
+          echo "⚠ xmllint not available, skipping XML validation"
+        fi
+
+        echo ""
+        echo "✓ Project configuration validated"
+        echo "  - test-scripts properly excluded from compilation"
+        echo "  - Ready for runtime compilation by LinuxServer.exe"
+
+    - name: Count excluded files
+      run: |
+        EXPERIMENTAL_COUNT=$(find Scripts/test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l)
+        OPTIONAL_COUNT=$(find Scripts/test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l)
+        EXTRA_COUNT=$(find Scripts/test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l)
+        TOTAL=$((EXPERIMENTAL_COUNT + OPTIONAL_COUNT + EXTRA_COUNT))
+
+        echo "Files excluded from compilation:"
+        echo "  Experimental: $EXPERIMENTAL_COUNT"
+        echo "  OptionalSystems: $OPTIONAL_COUNT"
+        echo "  ExtraContent: $EXTRA_COUNT"
+        echo "  Total: $TOTAL files"
+
+        if [ $TOTAL -gt 0 ]; then
+          echo ""
+          echo "✓ $TOTAL files successfully excluded from compilation"
+        fi
+
+    - name: Create build validation report
+      run: |
+        mkdir -p bin/Release
+        cat > bin/Release/VALIDATION.txt << EOF
+        NMS UO Server - Dev Branch Validation
+
+        Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        Commit: $(git rev-parse --short HEAD)
+        Branch: dev
+
+        ✓ Project Configuration Validated
+        ✓ test-scripts exclusion rule present
+        ✓ Files properly excluded from compilation
+
+        Note: This build validates project configuration only.
+        Actual compilation happens at runtime by LinuxServer.exe.
+
+        Architecture: Server embedded in LinuxServer.exe
+        Scripts compiled at runtime via ScriptCompiler
+        EOF
+
+        cat bin/Release/VALIDATION.txt
+
+    - name: Verification summary
+      id: verify
+      run: |
+        echo "validation=passed" >> $GITHUB_OUTPUT
+        echo "✓ All validation checks passed"
+
+    - name: Get version info
+      id: version
+      run: |
+        COMMIT=$(echo "${{ github.sha }}" | cut -c1-7)
+        DATE=$(date +%Y.%m.%d)
+        VERSION="dev-$DATE-$COMMIT"
+
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "commit=$COMMIT" >> $GITHUB_OUTPUT
+        echo "date=$DATE" >> $GITHUB_OUTPUT
+
+        echo "Dev Build Version: $VERSION"
+
+    - name: Upload validation report
+      uses: actions/upload-artifact@v4
+      with:
+        name: validation-dev-${{ steps.version.outputs.version }}
+        path: bin/Release/VALIDATION.txt
+        retention-days: 5
+
+    - name: Comment on PR (if PR)
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+
+          let message = '## 🐧 Dev Branch Validation Results\n\n';
+
+          if (fs.existsSync('bin/Release/VALIDATION.txt')) {
+            // Count excluded files
+            const expCount = execSync('find Scripts/test-scripts/Experimental -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            const optCount = execSync('find Scripts/test-scripts/OptionalSystems -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            const extraCount = execSync('find Scripts/test-scripts/ExtraContent -name "*.cs" 2>/dev/null | wc -l || echo 0').toString().trim();
+            const total = parseInt(expCount) + parseInt(optCount) + parseInt(extraCount);
+
+            message += '✅ **Validation Successful**\n\n';
+            message += `- **Branch:** dev\n`;
+            message += `- **Version:** ${{ steps.version.outputs.version }}\n`;
+            message += `- **Commit:** ${{ steps.version.outputs.commit }}\n\n`;
+            message += '**Excluded Files:**\n';
+            message += `- Experimental: ${expCount}\n`;
+            message += `- OptionalSystems: ${optCount}\n`;
+            message += `- ExtraContent: ${extraCount}\n`;
+            message += `- **Total:** ${total} files\n\n`;
+            message += '✓ test-scripts exclusion rule verified\n';
+            message += '✓ Project configuration valid\n\n';
+            message += '**Note:** Actual compilation happens at runtime by LinuxServer.exe\n';
+          } else {
+            message += '❌ **Validation Failed**\n\n';
+            message += 'Validation report not found. Check the workflow logs.\n';
+          }
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: message
+          });
+
+    - name: Validation summary
+      if: always()
+      run: |
+        echo "## Dev Branch Validation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** dev" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Validation:** ${{ steps.verify.outputs.validation }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✓ Project configuration validated" >> $GITHUB_STEP_SUMMARY
+        echo "✓ test-scripts exclusion verified" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Note:** Server uses runtime compilation (LinuxServer.exe)" >> $GITHUB_STEP_SUMMARY

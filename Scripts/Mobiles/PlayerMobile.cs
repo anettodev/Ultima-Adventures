@@ -1282,6 +1282,16 @@ namespace Server.Mobiles
 				return;
 			}
 
+			// Check player limit (staff/admins bypass this limit)
+			if ( from.AccessLevel == AccessLevel.Player && NetState.Instances.Count >= StatusAPIConstants.MAX_PLAYERS )
+			{
+				string notice = string.Format( "O servidor está lotado. A capacidade máxima é de {0} jogadores. Por favor, tente novamente mais tarde.", StatusAPIConstants.MAX_PLAYERS );
+				from.SendGump( new NoticeGump( 1060637, 30720, notice, 0xFFC000, 300, 140, null, null ) );
+				Timer.DelayCall( TimeSpan.FromSeconds( 1.0 ), new TimerStateCallback( Disconnect ), from );
+				Console.WriteLine( "Login: {0}: Server full ({1}/{2} players)", from, NetState.Instances.Count, StatusAPIConstants.MAX_PLAYERS );
+				return;
+			}
+
 			if( from is PlayerMobile ) {
 				PlayerMobile player = (PlayerMobile)from;
 				player.TombstDelay = DateTime.UtcNow;

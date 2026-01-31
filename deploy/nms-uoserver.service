@@ -1,0 +1,58 @@
+# Systemd service file for NMS UO Server
+# Copy to: /etc/systemd/system/nms-uoserver.service
+#
+# Installation:
+#   sudo cp nms-uoserver.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable nms-uoserver
+#   sudo systemctl start nms-uoserver
+#
+# Usage:
+#   sudo systemctl start nms-uoserver    # Start server
+#   sudo systemctl stop nms-uoserver     # Stop server
+#   sudo systemctl restart nms-uoserver  # Restart server
+#   sudo systemctl status nms-uoserver   # Check status
+#   sudo journalctl -u nms-uoserver -f   # View logs
+
+[Unit]
+Description=NMS UO Server
+After=network.target
+
+[Service]
+Type=simple
+User=nms
+Group=nms
+WorkingDirectory=/opt/nms-uoserver
+
+# For Linux with Mono
+ExecStart=/usr/bin/mono LinuxServer.exe
+
+# For Windows (if using Windows Server with systemd alternative)
+# ExecStart=C:\opt\ultima-adventures\WindowsServer.exe
+
+# Restart policy
+Restart=on-failure
+RestartSec=10
+
+# Environment variables
+Environment="MONO_IOMAP=all"
+Environment="MONO_THREADS_PER_CPU=2000"
+
+# Limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nms-uoserver
+
+# Security (optional hardening)
+# PrivateTmp=true
+# NoNewPrivileges=true
+# ProtectSystem=strict
+# ProtectHome=true
+# ReadWritePaths=/opt/nms-uoserver/Saves /opt/nms-uoserver/Logs
+
+[Install]
+WantedBy=multi-user.target
