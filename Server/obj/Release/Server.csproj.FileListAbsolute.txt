@@ -1,0 +1,10 @@
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/Server.csproj.AssemblyReference.cache
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/Server.GeneratedMSBuildEditorConfig.editorconfig
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/Server.csproj.CoreCompileInputs.cache
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/Server.sourcelink.json
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/Server.csproj.Up2Date
+/Users/anetto/Developer/Ultima-Adventures/LinuxServer.exe.config
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/LinuxServer.exe
+/Users/anetto/Developer/Ultima-Adventures/Server/obj/Release/LinuxServer.pdb
+/Users/anetto/Developer/Ultima-Adventures/LinuxServer.exe
+/Users/anetto/Developer/Ultima-Adventures/LinuxServer.pdb

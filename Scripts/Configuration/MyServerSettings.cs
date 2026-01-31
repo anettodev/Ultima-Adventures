@@ -35,7 +35,11 @@ namespace Server.Misc
 			//return @"C:\UOShard\Ultima-Adventures\Files";
 
 			//Linux (production VPS path)
-			return @"/opt/Ultima-Adventures/Files";
+			//return @"/opt/Ultima-Adventures/Files";
+
+			// Auto-detect based on environment (works for both dev and production)
+			string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+			return System.IO.Path.Combine(baseDir, "Files");
 		}
 
 		public static bool AllowSaveFunction()

@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "dgSpecHash": "LeepkDlQVSE=",
+  "success": true,
+  "projectFilePath": "/Users/anetto/Developer/Ultima-Adventures/Server/Server.csproj",
+  "expectedPackageFiles": [
+    "/Users/anetto/.nuget/packages/microsoft.netframework.referenceassemblies/1.0.3/microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "/Users/anetto/.nuget/packages/microsoft.netframework.referenceassemblies.net48/1.0.3/microsoft.netframework.referenceassemblies.net48.1.0.3.nupkg.sha512",
+    "/Users/anetto/.nuget/packages/system.drawing.common/4.7.0/system.drawing.common.4.7.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1904",
+      "level": "Warning",
+      "message": "Package 'System.Drawing.Common' 4.7.0 has a known critical severity vulnerability, https://github.com/advisories/GHSA-rxg9-xrhp-64gj",
+      "projectPath": "/Users/anetto/Developer/Ultima-Adventures/Server/Server.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/anetto/Developer/Ultima-Adventures/Server/Server.csproj",
+      "libraryId": "System.Drawing.Common",
+      "targetGraphs": [
+        ".NETFramework,Version=v4.8"
+      ]
+    }
+  ]
+}
