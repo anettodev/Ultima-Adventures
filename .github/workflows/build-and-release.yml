@@ -8,9 +8,8 @@ on:
     branches: [ main ]
     tags:
       - 'v*.*.*'
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
+  # Note: PR validation handled by build-pr.yml
     inputs:
       release_type:
         description: 'Release type'

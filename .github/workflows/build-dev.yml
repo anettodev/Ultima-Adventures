@@ -6,9 +6,8 @@ name: Build Dev (Linux)
 on:
   push:
     branches: [ dev ]
-  pull_request:
-    branches: [ dev ]
   workflow_dispatch:
+  # Note: PR validation handled by build-pr.yml
 
 env:
   BUILD_CONFIGURATION: Release
