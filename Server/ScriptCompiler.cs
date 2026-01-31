@@ -243,22 +243,58 @@ namespace Server
 
 				Display( results );
 
+				Console.WriteLine( "[DEBUG] After Display(), errors.Count = {0}", results.Errors.Count );
+
 #if !MONO
+				// Check for actual errors (not warnings)
+				Console.WriteLine( "[DEBUG] Checking {0} items in results.Errors (non-MONO path)", results.Errors.Count );
 				if( results.Errors.Count > 0 )
 				{
-					assembly = null;
-					return false;
+					// On Mono, IsWarning and ErrorNumber are not populated correctly
+					// Parse the error text to determine if it's a warning
+					int actualErrors = 0;
+					foreach( CompilerError err in results.Errors )
+					{
+						// Warnings contain " warning CS" in the error text
+						bool isWarningByText = err.ErrorText.Contains(" warning CS");
+
+						if ( !err.IsWarning && !isWarningByText )
+						{
+							actualErrors++;
+							Console.WriteLine( "Error: {0}", err.ErrorText );
+							if ( actualErrors >= 5 ) {
+								Console.WriteLine( "... and more");
+								break;
+							}
+						}
+					}
+					if ( actualErrors > 0 ) {
+						assembly = null;
+						return false;
+					}
 				}
 #else
 				if( results.Errors.Count > 0 ) {
+					int errorCount = 0;
 					foreach( CompilerError err in results.Errors ) {
 						if ( !err.IsWarning ) {
-							assembly = null;
-							return false;
+							errorCount++;
+							Console.WriteLine( "[DEBUG] Found error: {0}", err.ErrorText );
+							if ( errorCount >= 5 ) {
+								Console.WriteLine( "[DEBUG] ... and more errors" );
+								break;
+							}
 						}
+					}
+					if ( errorCount > 0 ) {
+						Console.WriteLine( "[DEBUG] Total {0} actual errors found, returning false", errorCount );
+						assembly = null;
+						return false;
 					}
 				}
 #endif
+
+				Console.WriteLine( "[DEBUG] Passed error check, continuing..." );
 
 				if( cache && Path.GetFileName( path ) == "Scripts.CS.dll" )
 				{
@@ -280,6 +316,26 @@ namespace Server
 				}
 
 				assembly = results.CompiledAssembly;
+
+				Console.WriteLine( "[DEBUG] Assembly is {0}, path is {1}, file exists: {2}",
+					assembly == null ? "null" : "not null", path, File.Exists( path ) );
+
+				// On Mono, results.CompiledAssembly can be null even when compilation succeeds
+				// Manually load the assembly from the output path if needed
+				if( assembly == null && File.Exists( path ) )
+				{
+					try
+					{
+						assembly = Assembly.LoadFrom( path );
+						Console.WriteLine( " (loaded from file)" );
+					}
+					catch( Exception ex )
+					{
+						Console.WriteLine( "Failed to load assembly from {0}: {1}", path, ex.Message );
+						return false;
+					}
+				}
+
 				return true;
 			}
 		}
@@ -403,6 +459,26 @@ namespace Server
 				}
 
 				assembly = results.CompiledAssembly;
+
+				Console.WriteLine( "[DEBUG] Assembly is {0}, path is {1}, file exists: {2}",
+					assembly == null ? "null" : "not null", path, File.Exists( path ) );
+
+				// On Mono, results.CompiledAssembly can be null even when compilation succeeds
+				// Manually load the assembly from the output path if needed
+				if( assembly == null && File.Exists( path ) )
+				{
+					try
+					{
+						assembly = Assembly.LoadFrom( path );
+						Console.WriteLine( " (loaded from file)" );
+					}
+					catch( Exception ex )
+					{
+						Console.WriteLine( "Failed to load assembly from {0}: {1}", path, ex.Message );
+						return false;
+					}
+				}
+
 				return true;
 			}
 		}

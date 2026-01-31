@@ -145,6 +145,10 @@ namespace Server.Misc
         }
         public static void Next(string nput)
         {
+            // Null guard to prevent crash on empty/null console input
+            if (string.IsNullOrEmpty(nput))
+                return;
+
             string input = nput.ToLower();
             if (input.StartsWith("bc"))
             {

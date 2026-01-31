@@ -4284,7 +4284,8 @@ namespace Server
 		{
 			// Check if player has invisibility potion effect active
 			// Using/double-clicking items/tools reveals the player
-			Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( this, "usou um item" );
+			// TODO: This call to Scripts type breaks Server build - needs refactoring to event/callback pattern
+			// Server.Items.BaseInvisibilityPotion.CheckRevealOnAction( this, "usou um item" );
 
 			if( !item.Deleted )
 				item.OnItemUsed( this, item );
@@ -5249,12 +5250,13 @@ namespace Server
 
 				// Reveal hidden players instantly when they take any damage
 				// Remove Invisibility spell timer first to prevent it from re-hiding the player
-				if( this is PlayerMobile )
-				{
-					Console.WriteLine( "[DEBUG] Mobile.Damage() - Checking for InvisibilitySpell timer" );
-					Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
-					Console.WriteLine( "[DEBUG] Mobile.Damage() - After RemoveTimer, HasTimer: {0}", Spells.Sixth.InvisibilitySpell.HasTimer( this ) );
-				}
+				// TODO: These calls to Scripts types break Server build - needs refactoring to event/callback pattern
+				// if( this is PlayerMobile )
+				// {
+				// 	Console.WriteLine( "[DEBUG] Mobile.Damage() - Checking for InvisibilitySpell timer" );
+				// 	Spells.Sixth.InvisibilitySpell.RemoveTimer( this );
+				// 	Console.WriteLine( "[DEBUG] Mobile.Damage() - After RemoveTimer, HasTimer: {0}", Spells.Sixth.InvisibilitySpell.HasTimer( this ) );
+				// }
 				
 				// Call RevealingAction() first, then directly set Hidden = false as backup
 				Console.WriteLine( "[DEBUG] Mobile.Damage() - Calling RevealingAction(), Current Hidden={0}", m_Hidden );

@@ -39,6 +39,23 @@ namespace Server.Engines.Reports
 
 		public BarRegion[] _regions;
 
+		// Helper methods to replace System.Windows.Forms.ControlPaint (not available on Linux)
+		private static Color LightenColor(Color color, float percent)
+		{
+			int r = (int)Math.Min(255, color.R + (255 - color.R) * percent);
+			int g = (int)Math.Min(255, color.G + (255 - color.G) * percent);
+			int b = (int)Math.Min(255, color.B + (255 - color.B) * percent);
+			return Color.FromArgb(color.A, r, g, b);
+		}
+
+		private static Color DarkenColor(Color color, float percent)
+		{
+			int r = (int)(color.R * (1 - percent));
+			int g = (int)(color.G * (1 - percent));
+			int b = (int)(color.B * (1 - percent));
+			return Color.FromArgb(color.A, r, g, b);
+		}
+
 		private BarGraphRenderMode _renderMode;
 
 		// Overall related members
@@ -361,10 +378,10 @@ namespace Server.Engines.Reports
 
 									graph.FillPolygon( barBrush, new PointF[]{ pts[2], pts[3], pts[6], pts[5] } );
 
-									using ( SolidBrush ltBrsh = new SolidBrush( System.Windows.Forms.ControlPaint.Light(item.ItemColor,0.1f) ) )
+									using ( SolidBrush ltBrsh = new SolidBrush( LightenColor(item.ItemColor, 0.1f) ) )
 										graph.FillPolygon( ltBrsh, new PointF[]{ pts[0], pts[2], pts[5], pts[4] } );
 
-									using ( SolidBrush drkBrush = new SolidBrush( System.Windows.Forms.ControlPaint.Dark(item.ItemColor,0.05f) ) )
+									using ( SolidBrush drkBrush = new SolidBrush( DarkenColor(item.ItemColor, 0.05f) ) )
 										graph.FillPolygon( drkBrush, new PointF[]{ pts[0], pts[1], pts[3], pts[2] } );
 
 									graph.DrawLine( pen, pts[0], pts[1] );

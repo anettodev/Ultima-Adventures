@@ -20,6 +20,11 @@ namespace Server.Misc
 		public static void Initialize()
 		{
 			new AutoSave().Start();
+
+			DecayTimer decayTimer = new DecayTimer();
+			decayTimer.Start();
+			Console.WriteLine( "DecayTimer: Started - will run every {0} minutes", DecayTimer.GetInterval().TotalMinutes );
+
 			CommandSystem.Register( "SetSaves", AccessLevel.Administrator, new CommandEventHandler( SetSaves_OnCommand ) );
 		}
 
@@ -86,11 +91,11 @@ namespace Server.Misc
 				s %= 60;
 
 				if ( m > 0 && s > 0 )
-					World.Broadcast( 0x35, true, "The world will save in {0} minute{1} and {2} second{3}.", m, m != 1 ? "s" : "", s, s != 1 ? "s" : "" );
+					World.Broadcast( 0x35, true, "O mundo será salvo em {0} minuto{1} e {2} segundo{3}.", m, m != 1 ? "s" : "", s, s != 1 ? "s" : "" );
 				else if ( m > 0 )
-					World.Broadcast( 0x35, true, "The world will save in {0} minute{1}.", m, m != 1 ? "s" : "" );
+					World.Broadcast( 0x35, true, "O mundo será salvo em {0} minuto{1}.", m, m != 1 ? "s" : "" );
 				else
-					World.Broadcast( 0x35, true, "The world will save in {0} second{1}.", s, s != 1 ? "s" : "" );
+					World.Broadcast( 0x35, true, "O mundo será salvo em {0} segundo{1}.", s, s != 1 ? "s" : "" );
 
 				Timer.DelayCall( m_Warning, new TimerCallback( Save ) );
 			}
@@ -211,6 +216,86 @@ namespace Server.Misc
 					now.Minute,
 					now.Second
 				);
+		}
+	}
+
+	// Independent decay timer - runs every 5 minutes to remove expired items
+	// This improves world save performance by reducing item count before saves
+	public class DecayTimer : Timer
+	{
+		private static TimeSpan m_Interval = TimeSpan.FromMinutes( 5.0 );
+		private static int m_RunCount = 0;
+
+		public static TimeSpan GetInterval() { return m_Interval; }
+
+		public DecayTimer() : base( m_Interval, m_Interval )
+		{
+			Priority = TimerPriority.FiveSeconds;
+		}
+
+		protected override void OnTick()
+		{
+			m_RunCount++;
+			Console.WriteLine( "DecayTimer: OnTick() called (run #{0})", m_RunCount );
+
+			try
+			{
+				ProcessItemDecay();
+			}
+			catch ( Exception ex )
+			{
+				Console.WriteLine( "DecayTimer: ERROR - {0}", ex.Message );
+				Console.WriteLine( ex.StackTrace );
+			}
+		}
+
+		private static void ProcessItemDecay()
+		{
+			Console.WriteLine( "DecayTimer: Processing item decay..." );
+
+			DateTime now = DateTime.UtcNow;
+			List<Item> toDecay = new List<Item>();
+			int totalItems = World.Items.Count;
+			int decayableItems = 0;
+
+			// Find all items that should decay
+			foreach ( Item item in World.Items.Values )
+			{
+				if ( item.Decays )
+				{
+					decayableItems++;
+
+					if ( item.Parent == null && item.Map != Map.Internal &&
+					     (item.LastMoved + item.DecayTime) <= now )
+					{
+						toDecay.Add( item );
+					}
+				}
+			}
+
+			Console.WriteLine( "DecayTimer: Total items: {0}, Decayable: {1}, Expired: {2}",
+				totalItems, decayableItems, toDecay.Count );
+
+			// Delete expired items
+			int decayedCount = 0;
+			foreach ( Item item in toDecay )
+			{
+				if ( item.OnDecay() )
+				{
+					item.Delete();
+					decayedCount++;
+				}
+			}
+
+			if ( decayedCount > 0 )
+			{
+				Console.WriteLine( "DecayTimer: Successfully removed {0} expired item{1}",
+					decayedCount, decayedCount != 1 ? "s" : "" );
+			}
+			else
+			{
+				Console.WriteLine( "DecayTimer: No items removed (all items still valid)" );
+			}
 		}
 	}
 }
