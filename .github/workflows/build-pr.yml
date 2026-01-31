@@ -115,10 +115,7 @@ jobs:
     - name: Install Mono and build tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y mono-complete msbuild nuget
-
-    - name: Restore NuGet packages
-      run: nuget restore Scripts/Scripts.csproj
+        sudo apt-get install -y mono-complete
 
     - name: Build Scripts.csproj
       run: |
@@ -126,6 +123,8 @@ jobs:
           /p:Configuration=Release \
           /p:Platform=AnyCPU \
           /p:OutputPath=../bin/Release/ \
+          /t:Restore \
+          /t:Build \
           /verbosity:minimal
 
     - name: Verify build

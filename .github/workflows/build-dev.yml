@@ -26,17 +26,13 @@ jobs:
 
     - name: Install Mono and build tools
       run: |
-        echo "Installing Mono and MSBuild..."
+        echo "Installing Mono..."
         sudo apt-get update
-        sudo apt-get install -y mono-complete msbuild nuget
+        sudo apt-get install -y mono-complete
 
         echo "Installed versions:"
         mono --version
-        msbuild -version
-
-    - name: Restore NuGet packages
-      run: |
-        nuget restore Scripts/Scripts.csproj
+        msbuild -version || echo "MSBuild check failed, but will try to use it anyway"
 
     - name: Build Scripts.csproj
       run: |
@@ -44,6 +40,8 @@ jobs:
           /p:Configuration=${{ env.BUILD_CONFIGURATION }} \
           /p:Platform=AnyCPU \
           /p:OutputPath=../bin/Release/ \
+          /t:Restore \
+          /t:Build \
           /verbosity:minimal
 
     - name: Verify Scripts.dll
