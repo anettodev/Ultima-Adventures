@@ -1,20 +1,23 @@
-# Phase 5 Progress Report (Part 1)
+# Phase 5 Progress Report (Parts 1 & 2)
 
 **Date:** 2026-01-30
-**Status:** 🔄 IN PROGRESS (Part 1 Complete)
-**Duration:** ~25 minutes (Part 1)
+**Status:** 🔄 IN PROGRESS (Parts 1 & 2 Complete)
+**Duration:** ~50 minutes (both parts)
 **Risk:** Very Low (variant content moved to excluded directory)
 
 ---
 
-## ✅ What Was Accomplished (Part 1)
+## ✅ What Was Accomplished
 
-### Moved 523 Optional/Variant Files to test-scripts/ExtraContent/
+### Moved 1,060 Optional/Variant Files to test-scripts/ExtraContent/
+
+**Part 1:** 523 files - Initial variant categories
+**Part 2:** 537 files - Dragon variants, gargoyles, artifacts
 
 **Strategy:** Category-based migration of clearly optional content
 - Focus on variant creatures and cosmetic items
 - Move entire categories rather than individual evaluation
-- ~12% of total content files evaluated and moved
+- ~24% of total content files evaluated and moved
 
 ---
 
@@ -364,3 +367,26 @@ These are special armors that change appearance/abilities.
 **Summary:** Successfully moved 523 clearly optional/variant files (12% of content) to test-scripts/ExtraContent. Focused on specialty creatures and cosmetic items. Significant progress made. Can continue with more categories or proceed to Phase 6.
 
 Total excluded: 2,588 files. Excellent progress on codebase cleanup!
+
+---
+
+## 📊 Phase 5 Part 2 Summary
+
+**Additional Files Moved:** 537 files
+**Total Phase 5:** 1,060 files (Parts 1 + 2)
+**Total Excluded (All Phases):** 3,125 files
+
+**Part 2 Highlights:**
+- 🐉 29 dragon variants (Wyrms, Wyverns, Drakes, Hydras, Primeval)
+- 🏰 13 gargoyle variants (color and type variants)
+- ⚔️ 331 artifact items (special unique items)
+- 🏠 93 addons (decorative house items)
+- 🎣 40 fishing items
+- 👔 31 clothing items
+
+**Tags Created:**
+- phase5-part2-complete (commit: 0526ccc)
+- phase5-part1-complete (commit: 911b8c1)
+
+**Progress:** 26% of total content evaluated and moved
+**Remaining:** 74% (~3,251 files) - mostly core/essential content
